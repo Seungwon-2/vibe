@@ -7,10 +7,8 @@ import { RefreshCw, Search, Swords } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { TypeBadge } from '@/components/pokemon/TypeBadge';
 
 import {
   buildAllPokemonQuery,
@@ -145,74 +143,7 @@ function PokemonCombobox({
 
 // ──────────────── HP 바 ────────────────
 
-function HpBar({ current, max, reversed }: { current: number; max: number; reversed?: boolean }) {
-  const pct   = Math.max(0, Math.min(100, (current / max) * 100));
-  const color = pct > 50 ? 'bg-green-500' : pct > 20 ? 'bg-yellow-500' : 'bg-red-500';
-  return (
-    <div className={cn('flex items-center gap-2', reversed && 'flex-row-reverse')}>
-      <span className="w-24 shrink-0 text-xs text-muted-foreground">
-        {reversed ? `${current} / ${max}` : `${current} / ${max}`}
-      </span>
-      <div className="h-3 flex-1 overflow-hidden rounded-full bg-muted">
-        <div className={cn('h-full rounded-full transition-all duration-500', color)} style={{ width: `${pct}%` }} />
-      </div>
-    </div>
-  );
-}
 
-// ──────────────── 배틀 포켓몬 카드 ────────────────
-
-function BattleCard({
-  pokemon,
-  isPlayer,
-  actionState,
-  imageRef,
-}: {
-  pokemon: BattlePokemon;
-  isPlayer: boolean;
-  actionState?: ActionState;
-  imageRef?: React.RefObject<HTMLDivElement | null>;
-}) {
-  const isAttacker = actionState?.attackerSide === (isPlayer ? 'player' : 'enemy');
-  const isDefender = actionState?.attackerSide === (isPlayer ? 'enemy' : 'player');
-  
-  const isAttacking = isAttacker && actionState?.animState === 'attacking';
-  const isHit = isDefender && actionState?.animState === 'hit';
-  const isEvading = isDefender && actionState?.animState === 'evade';
-
-  return (
-    <div className={cn('flex gap-3 relative', !isPlayer && 'flex-row-reverse')}>
-      <div ref={imageRef} className={cn(
-        'relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 rounded-xl bg-muted/30 transition-transform duration-300',
-        !isPlayer && 'scale-x-[-1]',
-        isAttacking && (isPlayer ? 'animate-attack-player' : 'animate-attack-enemy'),
-        isHit && 'animate-shake-hit',
-        isEvading && 'animate-evade'
-      )}>
-        <Image src={pokemon.imageUrl} alt={pokemon.koreanName} fill className="object-contain p-2" sizes="128px" />
-        
-        {/* 이펙트 오버레이 */}
-        {isHit && actionState?.moveType && (
-          <div className={cn(
-            'absolute inset-0 rounded-full opacity-0 animate-effect-burst',
-            `effect-${actionState.moveType}`
-          )} />
-        )}
-      </div>
-      <div className="flex flex-1 flex-col justify-center gap-2">
-        <div className={cn('flex flex-wrap items-center gap-2', !isPlayer && 'flex-row-reverse')}>
-          <span className="text-lg font-bold">{pokemon.koreanName}</span>
-          <span className="text-xs capitalize text-muted-foreground">{pokemon.name}</span>
-          {isPlayer && <Badge variant="outline" className="text-xs">내 포켓몬</Badge>}
-        </div>
-        <HpBar current={pokemon.currentHp} max={pokemon.maxHp} reversed={!isPlayer} />
-        <div className={cn('flex flex-wrap gap-1', !isPlayer && 'justify-end')}>
-          {pokemon.types.map((t) => <TypeBadge key={t} type={t} />)}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ──────────────── 기술 버튼 ────────────────
 
@@ -377,6 +308,7 @@ export function BattlePageContainer() {
       setBattleLog([{ id: -1, text: `⚔️ ${pKo} vs ${eKo}! 대전 시작!`, kind: 'result' }]);
       setPhase('player_turn');
     }, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, moveResults, playerMoveNames.length, enemyMoveNames.length]);
 
   // ── 기술 사용

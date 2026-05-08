@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { BattleCanvasEffects, AMBIENT_TYPES } from './BattleCanvasEffects';
@@ -75,7 +75,9 @@ export function BattleArena({
   const [ambientType, setAmbientType] = useState<typeof AMBIENT_TYPES[number]>(AMBIENT_TYPES[0]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBgImage(BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)].value);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAmbientType(AMBIENT_TYPES[Math.floor(Math.random() * AMBIENT_TYPES.length)]);
   }, []);
 
@@ -123,7 +125,7 @@ export function BattleArena({
         <select 
           className="rounded-md border border-slate-700 bg-slate-900/80 px-2 py-1 text-xs text-white backdrop-blur-sm outline-none focus:ring-1 focus:ring-white"
           value={ambientType}
-          onChange={(e) => setAmbientType(e.target.value as any)}
+          onChange={(e) => setAmbientType(e.target.value as typeof AMBIENT_TYPES[number])}
         >
           {AMBIENT_TYPES.map((type) => (
             <option key={type} value={type}>{EFFECT_LABELS[type]}</option>

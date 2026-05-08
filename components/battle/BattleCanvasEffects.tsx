@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 
 type ActionState = {
@@ -9,6 +9,7 @@ type ActionState = {
   moveType: string | null;
   animState: 'idle' | 'attacking' | 'hit' | 'evade';
   isCritical: boolean;
+  faintedSide?: 'player' | 'enemy' | null;
 };
 
 type Props = {
