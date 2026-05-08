@@ -128,3 +128,87 @@
     @apply font-sans;
   }
 }
+
+/* 배틀 애니메이션 */
+@layer utilities {
+  .animate-attack-player {
+    animation: attack-lunge-player 0.3s ease-in-out;
+  }
+  .animate-attack-enemy {
+    animation: attack-lunge-enemy 0.3s ease-in-out;
+  }
+  .animate-shake-hit {
+    animation: shake-hit 0.4s ease-in-out;
+  }
+  .animate-shake-screen {
+    animation: shake-screen 0.4s ease-in-out;
+  }
+  .animate-evade {
+    animation: evade-jump 0.4s ease-out;
+  }
+
+  /* 이펙트 오버레이 애니메이션 */
+  .animate-effect-burst {
+    animation: effect-burst 0.5s ease-out forwards;
+  }
+
+  /* 타입별 파티클/오버레이 효과 색상 */
+  .effect-fire { background: radial-gradient(circle, rgba(255,100,0,0.8) 0%, rgba(255,0,0,0) 70%); }
+  .effect-water { background: radial-gradient(circle, rgba(0,150,255,0.8) 0%, rgba(0,0,255,0) 70%); }
+  .effect-grass { background: radial-gradient(circle, rgba(0,255,100,0.8) 0%, rgba(0,100,0,0) 70%); }
+  .effect-electric { background: radial-gradient(circle, rgba(255,255,0,0.9) 0%, rgba(255,200,0,0) 70%); mix-blend-mode: screen; }
+  .effect-psychic { background: radial-gradient(circle, rgba(200,0,255,0.8) 0%, rgba(100,0,150,0) 70%); }
+  .effect-ice { background: radial-gradient(circle, rgba(150,255,255,0.8) 0%, rgba(0,200,255,0) 70%); }
+  .effect-dragon { background: radial-gradient(circle, rgba(100,50,255,0.8) 0%, rgba(50,0,150,0) 70%); }
+  .effect-dark { background: radial-gradient(circle, rgba(50,50,50,0.9) 0%, rgba(0,0,0,0) 70%); }
+  .effect-fairy { background: radial-gradient(circle, rgba(255,150,255,0.8) 0%, rgba(255,50,150,0) 70%); }
+  .effect-normal { background: radial-gradient(circle, rgba(200,200,200,0.8) 0%, rgba(100,100,100,0) 70%); }
+  .effect-fighting { background: radial-gradient(circle, rgba(255,50,0,0.8) 0%, rgba(150,0,0,0) 70%); }
+  .effect-poison { background: radial-gradient(circle, rgba(150,0,200,0.8) 0%, rgba(50,0,100,0) 70%); }
+  .effect-ground { background: radial-gradient(circle, rgba(200,150,50,0.8) 0%, rgba(100,50,0,0) 70%); }
+  .effect-flying { background: radial-gradient(circle, rgba(150,200,255,0.8) 0%, rgba(50,100,200,0) 70%); }
+  .effect-bug { background: radial-gradient(circle, rgba(150,255,50,0.8) 0%, rgba(50,150,0,0) 70%); }
+  .effect-rock { background: radial-gradient(circle, rgba(150,150,100,0.8) 0%, rgba(100,100,50,0) 70%); }
+  .effect-ghost { background: radial-gradient(circle, rgba(100,50,150,0.8) 0%, rgba(50,0,100,0) 70%); }
+  .effect-steel { background: radial-gradient(circle, rgba(200,200,220,0.8) 0%, rgba(100,100,120,0) 70%); }
+}
+
+@keyframes attack-lunge-player {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -30px) scale(1.1); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes attack-lunge-enemy {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-30px, 30px) scale(1.1); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes shake-hit {
+  0%, 100% { transform: translateX(0); filter: brightness(1); }
+  20% { transform: translateX(-10px); filter: brightness(1.5) sepia(1) hue-rotate(-50deg) saturate(5); }
+  40% { transform: translateX(10px); }
+  60% { transform: translateX(-10px); filter: brightness(1.5) sepia(1) hue-rotate(-50deg) saturate(5); }
+  80% { transform: translateX(10px); }
+}
+
+@keyframes shake-screen {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5px, -5px); }
+  30% { transform: translate(5px, 5px); }
+  50% { transform: translate(-5px, 5px); }
+  70% { transform: translate(5px, -5px); }
+  90% { transform: translate(-3px, 3px); }
+}
+
+@keyframes evade-jump {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(-30px) translateX(30px); opacity: 0.5; }
+}
+
+@keyframes effect-burst {
+  0% { transform: scale(0.5); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1.5); opacity: 0; }
+}

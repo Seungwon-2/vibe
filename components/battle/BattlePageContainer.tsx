@@ -20,13 +20,24 @@ import {
 import { buildMoveDetailQuery } from '@/queries/move';
 import { buildBattleMove, buildBattlePokemon, pickRandomMoveNames, processTurn } from '@/utils/battle';
 import { OFFICIAL_ARTWORK_URL } from '@/const/pokemon';
+import pokemonNamesMap from '@/const/pokemonNames.json';
 import { cn } from '@/lib/utils';
 
+import { BattleArena } from './BattleArena';
 import type { BattlePhase, BattlePokemon, LogEntry } from '@/scheme/battle';
 
 // ──────────────── 내부 타입 ────────────────
 
 type PickedPokemon = { id: number; name: string };
+
+type ActionState = {
+  stepIndex: number;
+  attackerSide: 'player' | 'enemy' | null;
+  moveType: string | null;
+  animState: 'idle' | 'attacking' | 'hit' | 'evade';
+  isCritical: boolean;
+  faintedSide?: 'player' | 'enemy' | null;
+};
 
 const MOVES_PER      = 4;   // 배틀에 사용할 기술 수
 const CANDIDATES_PER = 12;  // 후보 기술 수 (power > 0 필터 후 4개 추림)
@@ -54,12 +65,14 @@ function PokemonCombobox({
     if (!query.trim()) return [];
     const q = query.toLowerCase();
     return allPokemon
-      .filter((p) => p.name.includes(q))
+      .map((p) => {
+        const id = parseInt(p.url.match(/\/(\d+)\/?$/)?.[1] ?? '0', 10);
+        const koName = (pokemonNamesMap as Record<string, string>)[String(id)] ?? p.name;
+        return { id, name: p.name, koName };
+      })
+      .filter((p) => p.name.includes(q) || p.koName.includes(q))
       .slice(0, 8)
-      .map((p) => ({
-        id:   parseInt(p.url.match(/\/(\d+)\/?$/)?.[1] ?? '0', 10),
-        name: p.name,
-      }));
+      .map((p) => ({ id: p.id, name: p.koName, enName: p.name }));
   }, [query, allPokemon]);
 
   useEffect(() => {
@@ -77,7 +90,7 @@ function PokemonCombobox({
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="pl-9"
-          placeholder="포켓몬 이름 입력 (영어)"
+          placeholder="포켓몬 이름 입력 (한/영)"
           value={query}
           disabled={disabled}
           onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
@@ -101,7 +114,11 @@ function PokemonCombobox({
                 height={32}
                 className="object-contain"
               />
-              <span className="capitalize">#{String(opt.id).padStart(4, '0')} {opt.name}</span>
+              <span className="capitalize text-sm flex gap-1.5 items-center">
+                <span className="text-muted-foreground text-xs">#{String(opt.id).padStart(4, '0')}</span>
+                <span className="font-semibold">{opt.name}</span>
+                <span className="text-xs text-muted-foreground">{opt.enName}</span>
+              </span>
             </button>
           ))}
         </div>
@@ -145,11 +162,42 @@ function HpBar({ current, max, reversed }: { current: number; max: number; rever
 
 // ──────────────── 배틀 포켓몬 카드 ────────────────
 
-function BattleCard({ pokemon, isPlayer }: { pokemon: BattlePokemon; isPlayer: boolean }) {
+function BattleCard({
+  pokemon,
+  isPlayer,
+  actionState,
+  imageRef,
+}: {
+  pokemon: BattlePokemon;
+  isPlayer: boolean;
+  actionState?: ActionState;
+  imageRef?: React.RefObject<HTMLDivElement | null>;
+}) {
+  const isAttacker = actionState?.attackerSide === (isPlayer ? 'player' : 'enemy');
+  const isDefender = actionState?.attackerSide === (isPlayer ? 'enemy' : 'player');
+  
+  const isAttacking = isAttacker && actionState?.animState === 'attacking';
+  const isHit = isDefender && actionState?.animState === 'hit';
+  const isEvading = isDefender && actionState?.animState === 'evade';
+
   return (
-    <div className={cn('flex gap-4', !isPlayer && 'flex-row-reverse')}>
-      <div className={cn('relative h-32 w-32 shrink-0 rounded-xl bg-muted/30', !isPlayer && 'scale-x-[-1]')}>
+    <div className={cn('flex gap-3 relative', !isPlayer && 'flex-row-reverse')}>
+      <div ref={imageRef} className={cn(
+        'relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 rounded-xl bg-muted/30 transition-transform duration-300',
+        !isPlayer && 'scale-x-[-1]',
+        isAttacking && (isPlayer ? 'animate-attack-player' : 'animate-attack-enemy'),
+        isHit && 'animate-shake-hit',
+        isEvading && 'animate-evade'
+      )}>
         <Image src={pokemon.imageUrl} alt={pokemon.koreanName} fill className="object-contain p-2" sizes="128px" />
+        
+        {/* 이펙트 오버레이 */}
+        {isHit && actionState?.moveType && (
+          <div className={cn(
+            'absolute inset-0 rounded-full opacity-0 animate-effect-burst',
+            `effect-${actionState.moveType}`
+          )} />
+        )}
       </div>
       <div className="flex flex-1 flex-col justify-center gap-2">
         <div className={cn('flex flex-wrap items-center gap-2', !isPlayer && 'flex-row-reverse')}>
@@ -197,7 +245,7 @@ function MoveButtons({
           disabled={disabled || move.currentPp <= 0}
           onClick={() => onSelect(i)}
           className={cn(
-            'rounded-xl border-2 p-3 text-left transition-all',
+            'rounded-xl border-2 p-2 sm:p-3 text-left transition-all',
             'hover:bg-muted focus:outline-none focus:ring-2',
             'disabled:cursor-not-allowed disabled:opacity-40',
             TYPE_BORDER[move.type] ?? 'border-border',
@@ -228,9 +276,9 @@ function BattleLog({ entries }: { entries: LogEntry[] }) {
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [entries]);
 
   return (
-    <div className="h-36 overflow-y-auto rounded-xl bg-muted/30 p-3 text-sm">
+    <div className="h-32 sm:h-48 overflow-y-auto rounded-xl bg-muted/30 p-3 text-sm shadow-inner">
       {entries.map((entry) => (
-        <p key={entry.id} className={cn('mb-0.5 leading-snug', LOG_STYLE[entry.kind])}>{entry.text}</p>
+        <p key={entry.id} className={cn('mb-1 leading-relaxed', LOG_STYLE[entry.kind])}>{entry.text}</p>
       ))}
       <div ref={bottomRef} />
     </div>
@@ -251,8 +299,15 @@ export function BattlePageContainer() {
   const [battleLog,    setBattleLog]    = useState<LogEntry[]>([]);
   const [winner,       setWinner]       = useState<'player' | 'enemy' | null>(null);
 
+  const [actionState, setActionState] = useState<ActionState>({
+    stepIndex: -1, attackerSide: null, moveType: null, animState: 'idle', isCritical: false, faintedSide: null
+  });
+
   const [playerMoveNames, setPlayerMoveNames] = useState<string[]>([]);
   const [enemyMoveNames,  setEnemyMoveNames]  = useState<string[]>([]);
+
+  const playerImageRef = useRef<HTMLDivElement>(null);
+  const enemyImageRef = useRef<HTMLDivElement>(null);
 
   // ── 쿼리
   const allPokemonQ    = useQuery(buildAllPokemonQuery());
@@ -280,8 +335,13 @@ export function BattlePageContainer() {
     if (!playerDetailQ.data || !enemyDetailQ.data) return;
     if (playerMoveNames.length > 0) return;
     // CANDIDATES_PER개 후보를 가져와서 power>0 필터 후 4개 사용
-    setPlayerMoveNames(pickRandomMoveNames(playerDetailQ.data.moves ?? [], CANDIDATES_PER));
-    setEnemyMoveNames(pickRandomMoveNames(enemyDetailQ.data.moves ?? [], CANDIDATES_PER));
+    const pMoves = pickRandomMoveNames(playerDetailQ.data.moves ?? [], CANDIDATES_PER);
+    const eMoves = pickRandomMoveNames(enemyDetailQ.data.moves ?? [], CANDIDATES_PER);
+    
+    setTimeout(() => {
+      setPlayerMoveNames(pMoves);
+      setEnemyMoveNames(eMoves);
+    }, 0);
   }, [phase, playerDetailQ.data, enemyDetailQ.data, playerMoveNames.length]);
 
   // ── Effect 2: 기술 로드 완료 → power>0 필터 후 배틀 시작
@@ -311,10 +371,12 @@ export function BattlePageContainer() {
     const pKo = playerSpeciesQ.data?.names.find((n) => n.language.name === 'ko')?.name ?? playerPick?.name ?? '';
     const eKo = enemySpeciesQ.data?.names.find((n) => n.language.name === 'ko')?.name ?? enemyPick?.name ?? '';
 
-    setBattlePlayer(buildBattlePokemon(playerDetailQ.data!, pMovesBuilt, pKo));
-    setBattleEnemy(buildBattlePokemon(enemyDetailQ.data!, eMovesBuilt, eKo));
-    setBattleLog([{ id: -1, text: `⚔️ ${pKo} vs ${eKo}! 대전 시작!`, kind: 'result' }]);
-    setPhase('player_turn');
+    setTimeout(() => {
+      setBattlePlayer(buildBattlePokemon(playerDetailQ.data!, pMovesBuilt, pKo));
+      setBattleEnemy(buildBattlePokemon(enemyDetailQ.data!, eMovesBuilt, eKo));
+      setBattleLog([{ id: -1, text: `⚔️ ${pKo} vs ${eKo}! 대전 시작!`, kind: 'result' }]);
+      setPhase('player_turn');
+    }, 0);
   }, [phase, moveResults, playerMoveNames.length, enemyMoveNames.length]);
 
   // ── 기술 사용
@@ -325,16 +387,49 @@ export function BattlePageContainer() {
 
     setPhase('animating');
     const result = processTurn(battlePlayer, move, battleEnemy);
-    setBattlePlayer(result.newPlayer);
-    setBattleEnemy(result.newEnemy);
-    setBattleLog((prev) => [...prev, ...result.newLog]);
 
-    if (result.winner) {
-      setWinner(result.winner);
-      setPhase('game_over');
-    } else {
-      setTimeout(() => setPhase('player_turn'), 700);
-    }
+    const runAnimations = async () => {
+      for (let i = 0; i < result.steps.length; i++) {
+        const step = result.steps[i];
+        
+        // 1. 공격 애니메이션
+        setActionState({ stepIndex: i, attackerSide: step.attackerSide, moveType: step.move.type, animState: 'attacking', isCritical: false });
+        await new Promise(r => setTimeout(r, 300));
+        
+        // 2. 피격/회피 애니메이션 및 상태 반영
+        const pFainted = step.playerState.currentHp <= 0;
+        const eFainted = step.enemyState.currentHp <= 0;
+        const faintedSide = pFainted ? 'player' : (eFainted ? 'enemy' : null);
+
+        setActionState({ 
+          stepIndex: i, 
+          attackerSide: step.attackerSide, 
+          moveType: step.move.type, 
+          animState: step.isHit ? 'hit' : 'evade', 
+          isCritical: step.isCritical,
+          faintedSide 
+        });
+        
+        setBattlePlayer(step.playerState);
+        setBattleEnemy(step.enemyState);
+        setBattleLog((prev) => [...prev, ...step.log]);
+        
+        await new Promise(r => setTimeout(r, 500));
+        
+        // 대기
+        setActionState({ stepIndex: -1, attackerSide: null, moveType: null, animState: 'idle', isCritical: false, faintedSide: null });
+        await new Promise(r => setTimeout(r, 400));
+      }
+
+      if (result.winner) {
+        setWinner(result.winner);
+        setPhase('game_over');
+      } else {
+        setPhase('player_turn');
+      }
+    };
+
+    runAnimations();
   }, [phase, battlePlayer, battleEnemy]);
 
   // ── 리셋
@@ -421,7 +516,7 @@ export function BattlePageContainer() {
   return (
     <PageContainer>
       {/* 헤더 */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-2 flex items-center justify-between">
         <PageHeader
           title="⚔️ 배틀 중"
           description={`${battlePlayer.koreanName} vs ${battleEnemy.koreanName}`}
@@ -432,18 +527,19 @@ export function BattlePageContainer() {
         </Button>
       </div>
 
-      {/* 상대 포켓몬 (위) */}
-      <div className="mb-3 rounded-xl border bg-card p-4 shadow-sm">
-        <BattleCard pokemon={battleEnemy} isPlayer={false} />
-      </div>
-
-      {/* 내 포켓몬 (아래) */}
-      <div className="mb-4 rounded-xl border bg-card p-4 shadow-sm">
-        <BattleCard pokemon={battlePlayer} isPlayer={true} />
+      {/* 통합 배틀 아레나 */}
+      <div className="mb-4 w-full">
+        <BattleArena 
+          battlePlayer={battlePlayer}
+          battleEnemy={battleEnemy}
+          actionState={actionState}
+          playerImageRef={playerImageRef}
+          enemyImageRef={enemyImageRef}
+        />
       </div>
 
       {/* 배틀 로그 */}
-      <div className="mb-4">
+      <div className="mb-2">
         <BattleLog entries={battleLog} />
       </div>
 

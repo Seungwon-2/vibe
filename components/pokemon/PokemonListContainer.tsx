@@ -57,7 +57,9 @@ export function PokemonListContainer() {
   );
 
   useEffect(() => {
-    setLocalKeyword(params.keyword);
+    // 비동기 처리로 cascading render 방지
+    const timer = setTimeout(() => setLocalKeyword(params.keyword), 0);
+    return () => clearTimeout(timer);
   }, [params.keyword]);
 
   const handleInputChange = useCallback(

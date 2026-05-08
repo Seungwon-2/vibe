@@ -70,10 +70,13 @@ export function calcDamage(
   attacker: BattlePokemon,
   move: BattleMove,
   defender: BattlePokemon,
-): { damage: number; effectiveness: number; stab: boolean } {
+): { damage: number; effectiveness: number; stab: boolean; isCritical: boolean } {
   const isPhysical = move.damageClass === 'physical';
   const atk = isPhysical ? attacker.attack : attacker.specialAttack;
   const def = isPhysical ? defender.defense : defender.specialDefense;
+
+  const isCritical = Math.random() < 0.0625; // 6.25% 확률 (1/16)
+  const critMod = isCritical ? 1.5 : 1;
 
   const base =
     Math.floor((((2 * LEVEL) / 5 + 2) * move.power * atk) / def) / 50 + 2;
@@ -83,8 +86,8 @@ export function calcDamage(
   const stabMod       = stab ? 1.5 : 1;
   const random        = 0.85 + Math.random() * 0.15;
 
-  const damage = Math.max(1, Math.floor(base * stabMod * effectiveness * random));
-  return { damage, effectiveness, stab };
+  const damage = Math.max(1, Math.floor(base * critMod * stabMod * effectiveness * random));
+  return { damage, effectiveness, stab, isCritical };
 }
 
 // ──────────────── AI 기술 선택 ────────────────
@@ -107,11 +110,21 @@ function log(text: string, kind: LogEntry['kind']): LogEntry {
   return { id: logId++, text, kind };
 }
 
+export interface TurnStep {
+  attackerSide: 'player' | 'enemy';
+  move: BattleMove;
+  isHit: boolean;
+  isCritical: boolean;
+  effectiveness: number;
+  damage: number;
+  log: LogEntry[];
+  playerState: BattlePokemon;
+  enemyState: BattlePokemon;
+}
+
 export interface TurnResult {
-  newPlayer: BattlePokemon;
-  newEnemy:  BattlePokemon;
-  newLog:    LogEntry[];
-  winner:    'player' | 'enemy' | null;
+  steps: TurnStep[];
+  winner: 'player' | 'enemy' | null;
 }
 
 export function processTurn(
@@ -119,7 +132,7 @@ export function processTurn(
   playerMove: BattleMove,
   enemy:      BattlePokemon,
 ): TurnResult {
-  const entries: LogEntry[] = [];
+  const steps: TurnStep[] = [];
 
   // 깊은 복사
   let p = { ...player, moves: player.moves.map((m) => ({ ...m })) };
@@ -130,10 +143,17 @@ export function processTurn(
 
   /** 공격 처리 → [updatedAttacker, updatedDefender] */
   function doAttack(
+    attackerSide: 'player' | 'enemy',
     att: BattlePokemon,
     move: BattleMove,
     def: BattlePokemon,
   ): [BattlePokemon, BattlePokemon] {
+    const stepLog: LogEntry[] = [];
+    let isHit = false;
+    let isCritical = false;
+    let effectiveness = 1;
+    let damage = 0;
+
     // PP 차감
     const updAtt = {
       ...att,
@@ -142,53 +162,74 @@ export function processTurn(
       ),
     };
 
-    entries.push(log(`${att.koreanName}이(가) ${move.koreanName}을(를) 사용했다!`, 'action'));
+    stepLog.push(log(`${att.koreanName}이(가) ${move.koreanName}을(를) 사용했다!`, 'action'));
 
     // 명중 판정
     if (Math.random() * 100 > move.accuracy) {
-      entries.push(log(`공격이 빗나갔다!`, 'damage'));
-      return [updAtt, def];
+      stepLog.push(log(`${def.koreanName}이(가) 공격을 아슬아슬하게 회피했다!`, 'damage'));
+    } else {
+      isHit = true;
+      const calc = calcDamage(updAtt, move, def);
+      damage = calc.damage;
+      effectiveness = calc.effectiveness;
+      isCritical = calc.isCritical;
+
+      if (isCritical) stepLog.push(log('급소에 맞았다!!', 'damage'));
+      if (calc.stab) stepLog.push(log('자속 보정!', 'effectiveness'));
+      
+      const effText = getEffectivenessLabel(effectiveness);
+      if (effText) stepLog.push(log(effText, 'effectiveness'));
+      
+      stepLog.push(log(`${def.koreanName}에게 ${damage} 데미지!`, 'damage'));
     }
 
-    const { damage, effectiveness, stab } = calcDamage(updAtt, move, def);
-    if (stab) entries.push(log('자속 보정!', 'effectiveness'));
-    const effText = getEffectivenessLabel(effectiveness);
-    if (effText) entries.push(log(effText, 'effectiveness'));
-    entries.push(log(`${def.koreanName}에게 ${damage} 데미지!`, 'damage'));
-
     const updDef = { ...def, currentHp: Math.max(0, def.currentHp - damage) };
+    
+    // Step 기록
+    steps.push({
+      attackerSide,
+      move,
+      isHit,
+      isCritical,
+      effectiveness,
+      damage,
+      log: stepLog,
+      playerState: attackerSide === 'player' ? updAtt : updDef,
+      enemyState: attackerSide === 'player' ? updDef : updAtt,
+    });
+
     return [updAtt, updDef];
   }
 
   let winner: 'player' | 'enemy' | null = null;
 
   if (playerFirst) {
-    [p, e] = doAttack(p, playerMove, e);
+    [p, e] = doAttack('player', p, playerMove, e);
     if (e.currentHp <= 0) {
-      entries.push(log(`${e.koreanName}이(가) 쓰러졌다!`, 'result'));
+      steps[steps.length - 1].log.push(log(`${e.koreanName}이(가) 쓰러졌다!`, 'result'));
       winner = 'player';
     } else {
-      [e, p] = doAttack(e, aiMove, p);
+      [e, p] = doAttack('enemy', e, aiMove, p);
       if (p.currentHp <= 0) {
-        entries.push(log(`${p.koreanName}이(가) 쓰러졌다!`, 'result'));
+        steps[steps.length - 1].log.push(log(`${p.koreanName}이(가) 쓰러졌다!`, 'result'));
         winner = 'enemy';
       }
     }
   } else {
-    [e, p] = doAttack(e, aiMove, p);
+    [e, p] = doAttack('enemy', e, aiMove, p);
     if (p.currentHp <= 0) {
-      entries.push(log(`${p.koreanName}이(가) 쓰러졌다!`, 'result'));
+      steps[steps.length - 1].log.push(log(`${p.koreanName}이(가) 쓰러졌다!`, 'result'));
       winner = 'enemy';
     } else {
-      [p, e] = doAttack(p, playerMove, e);
+      [p, e] = doAttack('player', p, playerMove, e);
       if (e.currentHp <= 0) {
-        entries.push(log(`${e.koreanName}이(가) 쓰러졌다!`, 'result'));
+        steps[steps.length - 1].log.push(log(`${e.koreanName}이(가) 쓰러졌다!`, 'result'));
         winner = 'player';
       }
     }
   }
 
-  return { newPlayer: p, newEnemy: e, newLog: entries, winner };
+  return { steps, winner };
 }
 
 // ──────────────── 랜덤 기술 이름 선택 ────────────────
