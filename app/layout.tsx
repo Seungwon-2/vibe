@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 
 import { Providers } from './providers';
 import { GlobalNav } from '@/components/layout/GlobalNav';
+import { PokemonPetsProvider } from '@/components/PokemonPetsProvider';
 import './globals.css';
 
 const geistSans = Geist({
@@ -36,6 +37,7 @@ export default function RootLayout({
           <GlobalNav />
           <main className="flex-1">{children}</main>
         </Providers>
+        <PokemonPetsProvider />
       </body>
     </html>
   );
