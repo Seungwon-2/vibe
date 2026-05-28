@@ -6,13 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate:draw-rarities": "node utils/generate_draw_rarities.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
     "@tanstack/react-query": "^5.99.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "html-to-image": "^1.11.13",
     "ky": "^2.0.0",
     "lucide-react": "^1.8.0",
     "next": "16.2.3",

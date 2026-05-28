@@ -1,3 +1,5 @@
+import pokemonDrawRarities from '@/const/pokemonDrawRarities.json';
+
 // ──────────────── 타입 ────────────────
 
 export const POKEMON_TYPES = [
@@ -78,6 +80,54 @@ export const GENERATIONS = [
   { label: '8세대', value: 8, min: 810, max: 905 },
   { label: '9세대', value: 9, min: 906, max: 1025 },
 ] as const;
+
+export function getGenerationRange(generation: number) {
+  return GENERATIONS.find((item) => item.value === generation) ?? { label: '전체', value: 0, min: 1, max: TOTAL_POKEMON };
+}
+
+export const DRAW_RARITIES = [
+  { label: '전체 희귀도', value: 'all', description: '모든 포켓몬' },
+  { label: '일반', value: 'common', description: '포획률 120 이상' },
+  { label: '레어', value: 'rare', description: '포획률 45~119' },
+  { label: '에픽', value: 'epic', description: '포획률 44 이하' },
+  { label: '전설', value: 'legendary', description: '전설의 포켓몬' },
+  { label: '환상', value: 'mythical', description: '환상의 포켓몬' },
+] as const;
+
+export type DrawRarity = (typeof DRAW_RARITIES)[number]['value'];
+
+type StaticDrawRarity = Exclude<DrawRarity, 'all'>;
+type PokemonDrawRarityIndex = Record<StaticDrawRarity, number[]>;
+
+type DrawRaritySource = {
+  capture_rate: number;
+  is_legendary: boolean;
+  is_mythical: boolean;
+};
+
+export function getPokemonDrawRarity(species: DrawRaritySource): Exclude<DrawRarity, 'all'> {
+  if (species.is_mythical) return 'mythical';
+  if (species.is_legendary) return 'legendary';
+  if (species.capture_rate <= 44) return 'epic';
+  if (species.capture_rate <= 119) return 'rare';
+  return 'common';
+}
+
+export function getDrawRarityMeta(rarity: DrawRarity) {
+  return DRAW_RARITIES.find((item) => item.value === rarity) ?? DRAW_RARITIES[0];
+}
+
+const POKEMON_DRAW_RARITIES = pokemonDrawRarities as PokemonDrawRarityIndex;
+
+export function getPokemonDrawPoolIds(generation: number, rarity: DrawRarity) {
+  const { min, max } = getGenerationRange(generation);
+
+  if (rarity === 'all') {
+    return Array.from({ length: max - min + 1 }, (_, index) => min + index);
+  }
+
+  return POKEMON_DRAW_RARITIES[rarity].filter((id) => id >= min && id <= max);
+}
 
 export const TOTAL_POKEMON = 1025;
 

@@ -77,6 +77,9 @@ export type PokemonDetail = z.infer<typeof PokemonDetail>;
 export const PokemonSpecies = z.object({
   id: z.number(),
   name: z.string(),
+  capture_rate: z.number(),
+  is_legendary: z.boolean(),
+  is_mythical: z.boolean(),
   names: z.array(
     z.object({
       name: z.string(),
@@ -114,12 +117,54 @@ export type PokemonSpecies = z.infer<typeof PokemonSpecies>;
 
 export type EvolutionChainLink = {
   species: { name: string; url: string };
+  evolution_details: Array<{
+    min_level?: number | null;
+    trigger: { name: string; url: string };
+    item?: { name: string; url: string } | null;
+    held_item?: { name: string; url: string } | null;
+    known_move?: { name: string; url: string } | null;
+    known_move_type?: { name: string; url: string } | null;
+    location?: { name: string; url: string } | null;
+    min_happiness?: number | null;
+    min_beauty?: number | null;
+    min_affection?: number | null;
+    needs_overworld_rain?: boolean;
+    party_species?: { name: string; url: string } | null;
+    party_type?: { name: string; url: string } | null;
+    relative_physical_stats?: number | null;
+    time_of_day?: string;
+    trade_species?: { name: string; url: string } | null;
+    turn_upside_down?: boolean;
+    gender?: number | null;
+  }>;
   evolves_to: EvolutionChainLink[];
 };
 
 const EvolutionChainLinkSchema: z.ZodType<EvolutionChainLink> = z.lazy(() =>
   z.object({
     species: z.object({ name: z.string(), url: z.string() }),
+    evolution_details: z.array(
+      z.object({
+        min_level: z.number().nullish(),
+        trigger: z.object({ name: z.string(), url: z.string() }),
+        item: z.object({ name: z.string(), url: z.string() }).nullish(),
+        held_item: z.object({ name: z.string(), url: z.string() }).nullish(),
+        known_move: z.object({ name: z.string(), url: z.string() }).nullish(),
+        known_move_type: z.object({ name: z.string(), url: z.string() }).nullish(),
+        location: z.object({ name: z.string(), url: z.string() }).nullish(),
+        min_happiness: z.number().nullish(),
+        min_beauty: z.number().nullish(),
+        min_affection: z.number().nullish(),
+        needs_overworld_rain: z.boolean().optional(),
+        party_species: z.object({ name: z.string(), url: z.string() }).nullish(),
+        party_type: z.object({ name: z.string(), url: z.string() }).nullish(),
+        relative_physical_stats: z.number().nullish(),
+        time_of_day: z.string().optional(),
+        trade_species: z.object({ name: z.string(), url: z.string() }).nullish(),
+        turn_upside_down: z.boolean().optional(),
+        gender: z.number().nullish(),
+      }),
+    ),
     evolves_to: z.array(EvolutionChainLinkSchema),
   }),
 );
