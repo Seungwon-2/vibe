@@ -6,5 +6,5 @@ export default async function PokemonDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <PokemonDetailContainer id={parseInt(id, 10)} />;
+  return <PokemonDetailContainer identifier={id} />;
 }

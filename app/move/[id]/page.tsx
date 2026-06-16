@@ -1,0 +1,11 @@
+import { MoveDetailContainer } from '@/components/move/MoveDetailContainer';
+
+export default async function MoveDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  return <MoveDetailContainer identifier={id} />;
+}

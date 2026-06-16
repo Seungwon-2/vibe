@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+export const LocalizedName = z.object({
+  name: z.string(),
+  language: z.object({ name: z.string() }),
+});
+
+export type LocalizedName = z.infer<typeof LocalizedName>;
+
 // ──────────────── List ────────────────
 
 export const PokemonListItem = z.object({
@@ -80,12 +87,7 @@ export const PokemonSpecies = z.object({
   capture_rate: z.number(),
   is_legendary: z.boolean(),
   is_mythical: z.boolean(),
-  names: z.array(
-    z.object({
-      name: z.string(),
-      language: z.object({ name: z.string() }),
-    }),
-  ),
+  names: z.array(LocalizedName),
   genera: z.array(
     z.object({
       genus: z.string(),
@@ -112,6 +114,25 @@ export const PokemonSpecies = z.object({
 });
 
 export type PokemonSpecies = z.infer<typeof PokemonSpecies>;
+
+export const LocalizedNamedApiResource = z.object({
+  id: z.number().optional(),
+  name: z.string(),
+  names: z.array(LocalizedName).optional(),
+  form_names: z.array(LocalizedName).optional(),
+});
+
+export type LocalizedNamedApiResource = z.infer<typeof LocalizedNamedApiResource>;
+
+export const PokemonFormDetail = z.object({
+  id: z.number(),
+  name: z.string(),
+  form_name: z.string(),
+  names: z.array(LocalizedName).optional(),
+  form_names: z.array(LocalizedName).optional(),
+});
+
+export type PokemonFormDetail = z.infer<typeof PokemonFormDetail>;
 
 // ──────────────── Evolution chain (재귀) ────────────────
 
@@ -196,12 +217,31 @@ export type PokemonTypeResponse = z.infer<typeof PokemonTypeResponse>;
 export const PokemonAbilityDetail = z.object({
   id: z.number(),
   name: z.string(),
-  names: z.array(
+  names: z.array(LocalizedName),
+  effect_entries: z.array(
     z.object({
-      name: z.string(),
+      effect: z.string(),
+      short_effect: z.string(),
       language: z.object({ name: z.string() }),
     }),
-  ),
+  ).optional(),
+  flavor_text_entries: z.array(
+    z.object({
+      flavor_text: z.string(),
+      language: z.object({ name: z.string() }),
+      version_group: z.object({ name: z.string() }).optional(),
+    }),
+  ).optional(),
+  pokemon: z.array(
+    z.object({
+      is_hidden: z.boolean(),
+      pokemon: z.object({
+        name: z.string(),
+        url: z.string(),
+      }),
+      slot: z.number(),
+    }),
+  ).optional(),
 });
 
 export type PokemonAbilityDetail = z.infer<typeof PokemonAbilityDetail>;

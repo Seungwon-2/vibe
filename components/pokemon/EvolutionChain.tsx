@@ -1,11 +1,16 @@
 'use client';
 
+import { useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 
-import { buildPokemonDetailQuery, buildPokemonSpeciesQuery } from '@/queries/pokemon';
+import {
+  buildLocalizedResourceByUrlQuery,
+  buildPokemonDetailQuery,
+  buildPokemonSpeciesQuery,
+} from '@/queries/pokemon';
 import type { EvolutionChainLink } from '@/scheme/pokemon';
 import { extractIdFromUrl } from '@/scheme/pokemon';
 import { OFFICIAL_ARTWORK_URL, POKEMON_TYPE_LABELS, type PokemonType } from '@/const/pokemon';
@@ -69,13 +74,26 @@ function formatRelativePhysicalStats(value?: number | null) {
   return null;
 }
 
-function formatEvolutionDetail(detail: EvolutionDetail) {
+type EvolutionResource = { name: string; url: string } | null | undefined;
+
+function resolveResourceName(
+  resource: EvolutionResource,
+  localizedResourceMap: Map<string, string>,
+) {
+  if (!resource) return '';
+  return localizedResourceMap.get(resource.url) ?? humanizeSlug(resource.name);
+}
+
+function formatEvolutionDetail(
+  detail: EvolutionDetail,
+  localizedResourceMap: Map<string, string>,
+) {
   const parts: string[] = [];
 
   if (detail.trigger.name === 'trade') {
     parts.push('교환');
   } else if (detail.trigger.name === 'use-item' && detail.item?.name) {
-    parts.push(`${humanizeSlug(detail.item.name)} 사용`);
+    parts.push(`${resolveResourceName(detail.item, localizedResourceMap)} 사용`);
   } else if (detail.trigger.name === 'level-up' && detail.min_level == null) {
     parts.push('레벨업');
   }
@@ -85,15 +103,15 @@ function formatEvolutionDetail(detail: EvolutionDetail) {
   }
 
   if (detail.item?.name && detail.trigger.name !== 'use-item') {
-    parts.push(`${humanizeSlug(detail.item.name)} 사용`);
+    parts.push(`${resolveResourceName(detail.item, localizedResourceMap)} 사용`);
   }
 
   if (detail.held_item?.name) {
-    parts.push(`${humanizeSlug(detail.held_item.name)} 지닌 상태`);
+    parts.push(`${resolveResourceName(detail.held_item, localizedResourceMap)} 지닌 상태`);
   }
 
   if (detail.known_move?.name) {
-    parts.push(`${humanizeSlug(detail.known_move.name)} 기술 습득`);
+    parts.push(`${resolveResourceName(detail.known_move, localizedResourceMap)} 기술 습득`);
   }
 
   if (detail.known_move_type?.name) {
@@ -102,7 +120,7 @@ function formatEvolutionDetail(detail: EvolutionDetail) {
   }
 
   if (detail.location?.name) {
-    parts.push(`${humanizeSlug(detail.location.name)} 지역`);
+    parts.push(`${resolveResourceName(detail.location, localizedResourceMap)} 지역`);
   }
 
   if (detail.min_happiness != null) {
@@ -122,7 +140,7 @@ function formatEvolutionDetail(detail: EvolutionDetail) {
   }
 
   if (detail.party_species?.name) {
-    parts.push(`${humanizeSlug(detail.party_species.name)}가 파티에 있을 때`);
+    parts.push(`${resolveResourceName(detail.party_species, localizedResourceMap)}가 파티에 있을 때`);
   }
 
   if (detail.party_type?.name) {
@@ -140,7 +158,7 @@ function formatEvolutionDetail(detail: EvolutionDetail) {
   }
 
   if (detail.trade_species?.name) {
-    parts.push(`${humanizeSlug(detail.trade_species.name)}와 교환`);
+    parts.push(`${resolveResourceName(detail.trade_species, localizedResourceMap)}와 교환`);
   }
 
   if (detail.turn_upside_down) {
@@ -168,12 +186,15 @@ function formatEvolutionDetail(detail: EvolutionDetail) {
   }
 }
 
-function formatEvolutionConditions(evolutionDetails: EvolutionDetail[]) {
+function formatEvolutionConditions(
+  evolutionDetails: EvolutionDetail[],
+  localizedResourceMap: Map<string, string>,
+) {
   if (evolutionDetails.length === 0) {
     return null;
   }
 
-  return evolutionDetails.map(formatEvolutionDetail).join(' / ');
+  return evolutionDetails.map((detail) => formatEvolutionDetail(detail, localizedResourceMap)).join(' / ');
 }
 
 function flattenEvolutionChain(
@@ -212,12 +233,56 @@ function EvolutionNode({
   const { data: pokemon } = useQuery(buildPokemonDetailQuery(id));
   const { data: species } = useQuery(buildPokemonSpeciesQuery(id));
 
+  const localizedResources = useMemo(() => {
+    const resources = evolutionDetails.flatMap((detail) => [
+      detail.item,
+      detail.held_item,
+      detail.known_move,
+      detail.location,
+      detail.party_species,
+      detail.trade_species,
+    ]);
+
+    const uniqueResources = new Map<string, { name: string; url: string }>();
+    resources.forEach((resource) => {
+      if (resource?.url) {
+        uniqueResources.set(resource.url, resource);
+      }
+    });
+
+    return [...uniqueResources.values()];
+  }, [evolutionDetails]);
+
+  const localizedResourceResults = useQueries({
+    queries: localizedResources.map((resource) => ({
+      ...buildLocalizedResourceByUrlQuery(resource.url),
+      enabled: !!resource.url,
+    })),
+  });
+
+  const localizedResourceMap = useMemo(() => {
+    const map = new Map<string, string>();
+
+    localizedResources.forEach((resource, index) => {
+      const data = localizedResourceResults[index]?.data;
+      const localizedName =
+        data?.names?.find((entry) => entry.language.name === 'ko')?.name ??
+        data?.form_names?.find((entry) => entry.language.name === 'ko')?.name ??
+        data?.names?.find((entry) => entry.language.name === 'en')?.name ??
+        humanizeSlug(resource.name);
+
+      map.set(resource.url, localizedName);
+    });
+
+    return map;
+  }, [localizedResources, localizedResourceResults]);
+
   const koreanName = species?.names.find((n) => n.language.name === 'ko')?.name;
   const displayName = koreanName ?? name;
 
   const imageUrl =
     pokemon?.sprites.other?.['official-artwork'].front_default ?? OFFICIAL_ARTWORK_URL(id);
-  const evolutionConditionText = formatEvolutionConditions(evolutionDetails);
+  const evolutionConditionText = formatEvolutionConditions(evolutionDetails, localizedResourceMap);
 
   return (
     <Link

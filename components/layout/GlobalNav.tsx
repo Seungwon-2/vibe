@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpen, Sparkles, Swords, UserRound } from 'lucide-react';
+import { BookOpen, Sparkles, Swords, UserRound, WandSparkles } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
 const PRIMARY_NAV_LINKS = [
   { href: '/',       label: '포켓몬 도감', icon: BookOpen },
+  { href: '/move',   label: '기술 도감',   icon: WandSparkles },
   { href: '/draw',   label: '포켓몬 뽑기', icon: Sparkles },
   { href: '/battle', label: '모의 대전',   icon: Swords },
 ];

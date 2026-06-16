@@ -168,7 +168,7 @@ export const STAT_LABELS: Record<string, string> = {
   hp: 'HP',
   attack: '공격',
   defense: '방어',
-  'special-attack': '특공',
-  'special-defense': '특방',
+  'special-attack': '특수공격',
+  'special-defense': '특수방어',
   speed: '스피드',
 };

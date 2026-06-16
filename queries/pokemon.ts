@@ -9,6 +9,8 @@ import {
   PokemonAbilityDetail,
   EvolutionChain,
   PokemonTypeResponse,
+  LocalizedNamedApiResource,
+  PokemonFormDetail,
 } from '@/scheme/pokemon';
 
 // ──────────────── 전체 포켓몬 목록 (이름 + ID만) ────────────────
@@ -52,6 +54,18 @@ export function buildPokemonSpeciesQuery(id: number | string) {
   });
 }
 
+export function buildPokemonSpeciesByUrlQuery(url: string) {
+  return queryOptions({
+    queryKey: ['/pokemon-species-by-url', url],
+    queryFn: async () => {
+      const data = await ky.get(url).json<unknown>();
+      return PokemonSpecies.parse(data);
+    },
+    staleTime: 1000 * 60 * 60,
+    enabled: !!url,
+  });
+}
+
 // ──────────────── 진화 체인 ────────────────
 
 export function buildEvolutionChainQuery(url: string) {
@@ -75,6 +89,30 @@ export function buildPokemonAbilityQuery(name: string) {
     queryFn: async () => {
       const data = await pokeapi.get(`ability/${name}`).json<unknown>();
       return PokemonAbilityDetail.parse(data);
+    },
+    staleTime: Infinity,
+    enabled: !!name,
+  });
+}
+
+export function buildLocalizedResourceByUrlQuery(url: string) {
+  return queryOptions({
+    queryKey: ['/localized-resource-by-url', url],
+    queryFn: async () => {
+      const data = await ky.get(url).json<unknown>();
+      return LocalizedNamedApiResource.parse(data);
+    },
+    staleTime: Infinity,
+    enabled: !!url,
+  });
+}
+
+export function buildPokemonFormQuery(name: string) {
+  return queryOptions({
+    queryKey: ['/pokemon-form', name],
+    queryFn: async () => {
+      const data = await pokeapi.get(`pokemon-form/${name}`).json<unknown>();
+      return PokemonFormDetail.parse(data);
     },
     staleTime: Infinity,
     enabled: !!name,
