@@ -7,10 +7,10 @@
 [P01 Game Client](./phases/2026-10-21-azure-platformer/P01-game-client/phase.md)
 
 ## Active Task
-[T03 Gameplay Loop](./phases/2026-10-21-azure-platformer/P01-game-client/T03-gameplay-loop.md)
+[T04 Worlds, Bosses, and UI](./phases/2026-10-21-azure-platformer/P01-game-client/T04-worlds-and-ui.md)
 
 ## Status
-- T01 and T02 complete and committed; T03 ready to start
+- T01, T02, and T03 complete and committed; T04 ready to start
 
 ## Next Step (IMPORTANT)
-Implement player controls, platform collisions, enemies, hazards, lives, checkpoints, speed modifiers, and score according to T03.
+Add themed worlds, boss stages, progression, menus, HUD, and the local game-service adapter according to T04.

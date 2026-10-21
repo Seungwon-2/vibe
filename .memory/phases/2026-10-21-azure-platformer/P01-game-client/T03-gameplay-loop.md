@@ -1,6 +1,6 @@
 # Task: T03 Platformer Gameplay Loop
 
-## Status: pending
+## Status: done
 
 ## Goal
 Implement the desktop controls and selected platformer rules in deterministic, testable Phaser gameplay systems.
@@ -35,9 +35,9 @@ Implement the desktop controls and selected platformer rules in deterministic, t
   - Pure score function: coins*100 + enemyStomps*200 + stageClearBonus + extraLifeOverflow*1000.
 
 ## Acceptance Criteria
-- [ ] Movement, stomp, damage, hazards, checkpoint, invulnerability, life cap, game-over, and score match decisions.
-- [ ] Repeated collision callbacks cannot remove multiple lives during invulnerability.
-- [ ] Speed effects replace prior pickups and expire after 3 seconds.
+- [x] Movement, stomp, damage, hazards, checkpoint, invulnerability, life cap, game-over, and score match decisions.
+- [x] Repeated collision callbacks cannot remove multiple lives during invulnerability.
+- [x] Speed effects replace prior pickups and expire after 3 seconds.
 
 ## Validation
 - npm test -- --run src/game/systems/PlayerController.test.ts src/game/systems/CollisionRules.test.ts src/game/systems/RunState.test.ts — rules pass.
@@ -54,6 +54,6 @@ Task: T03-gameplay-loop
 - implement lives, checkpoints, and score events
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed
+- commit: recorded in Git history
