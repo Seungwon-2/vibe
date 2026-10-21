@@ -1,15 +1,22 @@
 import Phaser from 'phaser';
 import { useEffect, useRef } from 'react';
 import { createGameConfig } from './config/createGameConfig';
+import type { GameEvent } from './events';
+import type { PlayerSave } from '../services/GameGateway';
 
 type PhaserGameProps = {
-  onReady?: (game: Phaser.Game) => void;
+  stageId: string;
+  initialLives: number;
+  initialSave?: PlayerSave | null;
+  paused: boolean;
+  onEvent: (event: GameEvent) => void;
   onDestroy?: () => void;
 };
 
-export function PhaserGame({ onReady, onDestroy }: PhaserGameProps): React.JSX.Element {
+export function PhaserGame({ stageId, initialLives, initialSave, paused, onEvent, onDestroy }: PhaserGameProps): React.JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
+  const gameRef = useRef<Phaser.Game | null>(null);
 
   useEffect(() => {
     const parent = hostRef.current;
@@ -17,9 +24,10 @@ export function PhaserGame({ onReady, onDestroy }: PhaserGameProps): React.JSX.E
 
     let game: Phaser.Game;
     try {
-      game = new Phaser.Game(createGameConfig(parent));
+      game = new Phaser.Game(createGameConfig(parent, stageId, initialLives, initialSave));
+      gameRef.current = game;
       if (errorRef.current) errorRef.current.hidden = true;
-      onReady?.(game);
+      game.events.on('platformer-event', onEvent);
     } catch (cause) {
       if (errorRef.current) {
         errorRef.current.textContent = `게임을 시작할 수 없습니다: ${
@@ -31,10 +39,20 @@ export function PhaserGame({ onReady, onDestroy }: PhaserGameProps): React.JSX.E
     }
 
     return () => {
+      game.events.off('platformer-event', onEvent);
       game.destroy(true);
+      gameRef.current = null;
       onDestroy?.();
     };
-  }, [onDestroy, onReady]);
+  }, [initialLives, initialSave, onDestroy, onEvent, stageId]);
+
+  useEffect(() => {
+    const game = gameRef.current;
+    if (game?.scene.isActive('PlayScene')) {
+      if (paused) game.scene.pause('PlayScene');
+      else game.scene.resume('PlayScene');
+    }
+  }, [paused]);
 
   return (
     <div className="phaser-frame" aria-label="플랫포머 게임 화면">

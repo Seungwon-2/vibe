@@ -5,6 +5,7 @@ Build a desktop React + Phaser platformer for the company Entra tenant. A signed
 
 ## Confirmed Decisions
 - Worlds: windy ancient ruins and luminous underground mine; four stages each; each fourth stage is a boss.
+- World 2 Stage 3 is a 120-second vertical jump challenge with no checkpoints: falling restarts at the bottom without life loss, while time and collected coins persist. Bosses become unstompable and 15% faster after two stomps; five seconds later they present distinct commands (4 seconds to enter in World 1, 6 seconds in World 2); success opens a 3-second stomp window for the final hit.
 - Controls: arrows or WASD move, Space jumps, Shift runs. World-shared lives start at 5 and cap at 9. A life loss respawns at the last checkpoint with 1.5 seconds invulnerability. Zero lives triggers game-over then restarts the current stage with 5 lives. New world starts with 5 lives.
 - Speed pickups last 3 seconds and replace the current pickup effect. Stage mechanics can also change speed. Extra-life pickup at cap yields 1,000 points.
 - Auto-save on checkpoint and stage clear; one slot per user; confirm before overwriting. Stage score resets per stage: coin 100, enemy stomp 200, clear 500; tie by faster clear. Keep each player's best score per stage, all-time, display Entra name.
@@ -15,8 +16,8 @@ Build a desktop React + Phaser platformer for the company Entra tenant. A signed
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | in_progress | Initialize React and implement Phaser game, player, stages, and menus. | [P01](../phases/2026-10-21-azure-platformer/P01-game-client/phase.md) |
-| P02 | pending | Create Functions API, Entra validation, SQL persistence, save slot, and leaderboard. | [P02](../phases/2026-10-21-azure-platformer/P02-services/phase.md) |
+| P01 | done | Initialize React and implement Phaser game, player, stages, and menus. | [P01](../phases/2026-10-21-azure-platformer/P01-game-client/phase.md) |
+| P02 | in_progress | Create Functions API, Entra validation, SQL persistence, save slot, and leaderboard. | [P02](../phases/2026-10-21-azure-platformer/P02-services/phase.md) |
 | P03 | pending | Connect the client to secured APIs and prepare Azure deployment and verification. | [P03](../phases/2026-10-21-azure-platformer/P03-integration-release/phase.md) |
 
 ## Execution Notes

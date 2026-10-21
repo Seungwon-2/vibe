@@ -4,13 +4,14 @@
 [Azure Platformer MVP](./plans/2026-10-21-azure-platformer.md)
 
 ## Active Phase
-[P01 Game Client](./phases/2026-10-21-azure-platformer/P01-game-client/phase.md)
+[P02 Azure Services](./phases/2026-10-21-azure-platformer/P02-services/phase.md)
 
 ## Active Task
-[T04 Worlds, Bosses, and UI](./phases/2026-10-21-azure-platformer/P01-game-client/T04-worlds-and-ui.md)
+[T01 Functions and SQL Foundation](./phases/2026-10-21-azure-platformer/P02-services/T01-functions-sql.md)
 
 ## Status
-- T01, T02, and T03 complete and committed; T04 ready to start
+- P01 complete: T01, T02, T03, and T04 are done and committed
+- P02 active: T01 ready to execute
 
 ## Next Step (IMPORTANT)
-Add themed worlds, boss stages, progression, menus, HUD, and the local game-service adapter according to T04.
+Create the Azure Functions v4 API shell, repeat-safe SQL schema, and managed-identity SQL adapter according to P02-T01.

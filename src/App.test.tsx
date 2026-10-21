@@ -7,10 +7,11 @@ vi.mock('./game/PhaserGame', () => ({
 }));
 
 describe('App', () => {
-  it('shows the game title and game canvas host', () => {
+  it('shows the main menu and campaign actions', () => {
     render(<App />);
 
     expect(screen.getByRole('heading', { name: '바람과 빛의 모험' })).toBeInTheDocument();
-    expect(screen.getByLabelText('플랫포머 게임 화면')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '새 게임' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '스테이지 랭킹' })).toBeInTheDocument();
   });
 });

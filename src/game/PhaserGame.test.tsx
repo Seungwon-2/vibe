@@ -16,6 +16,10 @@ vi.mock('phaser', () => ({
       constructor(config: { parent: HTMLElement }) {
         phaserLifecycle.created(config.parent);
         config.parent.append(document.createElement('canvas'));
+        Object.assign(this, {
+          events: { on: vi.fn(), off: vi.fn() },
+          scene: { isActive: vi.fn(() => false), pause: vi.fn(), resume: vi.fn() },
+        });
       }
 
       destroy(removeCanvas: boolean) {
@@ -34,13 +38,13 @@ describe('PhaserGame', () => {
   afterEach(cleanup);
 
   it('creates one Phaser game and tears it down with its React host', () => {
-    const onReady = vi.fn();
+    const onEvent = vi.fn();
     const onDestroy = vi.fn();
-    const view = render(<PhaserGame onReady={onReady} onDestroy={onDestroy} />);
+    const view = render(<PhaserGame stageId="ruins-1" initialLives={5} paused={false} onEvent={onEvent} onDestroy={onDestroy} />);
 
     expect(screen.getByLabelText('플랫포머 게임 화면')).toContainElement(document.querySelector('canvas'));
     expect(phaserLifecycle.created).toHaveBeenCalledTimes(1);
-    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(onEvent).not.toHaveBeenCalled();
 
     view.unmount();
 

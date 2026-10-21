@@ -50,4 +50,29 @@ describe('RunState', () => {
     run.startNewWorld('mine', 'mine-1');
     expect(run.snapshot()).toMatchObject({ lives: 5, worldId: 'mine', stageId: 'mine-1' });
   });
+
+  it('restores checkpoint, score, coins, and unlock progress without sharing mutable coin ids', () => {
+    const run = new RunState('ruins', 'ruins-2', 2);
+    const collectedCoinIds = ['coin-1'];
+    run.restoreProgress({
+      lives: 3,
+      checkpointId: 'checkpoint-1',
+      stageScore: 500,
+      coins: 5,
+      collectedCoinIds,
+      enemyStomps: 1,
+      extraLifeOverflow: 0,
+      elapsedMs: 20_000,
+      unlockedStageOrdinal: 4,
+    });
+    collectedCoinIds.push('coin-mutated-after-restore');
+    expect(run.snapshot()).toMatchObject({
+      lives: 3,
+      checkpointId: 'checkpoint-1',
+      stageScore: 500,
+      coins: 5,
+      collectedCoinIds: ['coin-1'],
+      unlockedStageOrdinal: 4,
+    });
+  });
 });

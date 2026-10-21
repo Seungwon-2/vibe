@@ -5,6 +5,7 @@ export type RunStateSnapshot = {
   checkpointId: string;
   stageScore: number;
   coins: number;
+  collectedCoinIds: string[];
   enemyStomps: number;
   extraLifeOverflow: number;
   elapsedMs: number;
@@ -46,6 +47,7 @@ export class RunState {
       checkpointId: 'start',
       stageScore: 0,
       coins: 0,
+      collectedCoinIds: [],
       enemyStomps: 0,
       extraLifeOverflow: 0,
       elapsedMs: 0,
@@ -54,7 +56,7 @@ export class RunState {
   }
 
   snapshot(): RunStateSnapshot {
-    return { ...this.current };
+    return { ...this.current, collectedCoinIds: [...this.current.collectedCoinIds] };
   }
 
   tick(deltaMs: number): void {
@@ -111,8 +113,9 @@ export class RunState {
     };
   }
 
-  collectCoin(): void {
+  collectCoin(coinId?: string): void {
     this.current.coins += 1;
+    if (coinId && !this.current.collectedCoinIds.includes(coinId)) this.current.collectedCoinIds.push(coinId);
     this.recalculateScore();
   }
 
@@ -144,6 +147,7 @@ export class RunState {
     this.current.checkpointId = 'start';
     this.current.stageScore = 0;
     this.current.coins = 0;
+    this.current.collectedCoinIds = [];
     this.current.enemyStomps = 0;
     this.current.extraLifeOverflow = 0;
     this.current.elapsedMs = 0;
@@ -164,11 +168,25 @@ export class RunState {
     this.current.checkpointId = 'start';
     this.current.stageScore = 0;
     this.current.coins = 0;
+    this.current.collectedCoinIds = [];
     this.current.enemyStomps = 0;
     this.current.extraLifeOverflow = 0;
     this.current.elapsedMs = 0;
     this.invulnerabilityRemainingMs = 0;
     this.stageCleared = false;
+  }
+
+  restoreProgress(progress: Pick<RunStateSnapshot, 'lives' | 'checkpointId' | 'stageScore' | 'coins' | 'collectedCoinIds' | 'enemyStomps' | 'extraLifeOverflow' | 'elapsedMs' | 'unlockedStageOrdinal'>): void {
+    this.current = {
+      ...this.current,
+      ...progress,
+      lives: Math.min(MAX_LIVES, Math.max(1, progress.lives)),
+      stageScore: Math.max(0, progress.stageScore),
+      coins: Math.max(0, progress.coins),
+      collectedCoinIds: [...progress.collectedCoinIds],
+      elapsedMs: Math.max(0, progress.elapsedMs),
+      unlockedStageOrdinal: Math.max(this.stageOrdinal, progress.unlockedStageOrdinal),
+    };
   }
 
   isInvulnerable(): boolean {

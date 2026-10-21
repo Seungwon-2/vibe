@@ -18,6 +18,10 @@ export class BootScene extends Phaser.Scene {
 
   create(): void {
     this.registry.set('characterFrameCount', atlas.frames.length);
-    this.scene.start('PlayScene');
+    this.scene.start('PlayScene', {
+      stageId: this.registry.get('initialStageId') as string | undefined,
+      lives: this.registry.get('initialLives') as number | undefined,
+      save: this.registry.get('initialSave'),
+    });
   }
 }
