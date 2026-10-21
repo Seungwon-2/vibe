@@ -1,6 +1,6 @@
 # Task: T02 Phaser and Character Registry
 
-## Status: pending
+## Status: done
 
 ## Goal
 Mount Phaser inside React and load the selected protagonist through a reusable character definition so a later playable character can be registered without changing game-scene logic.
@@ -44,10 +44,10 @@ Mount Phaser inside React and load the selected protagonist through a reusable c
   - Reject duplicate ids, absent animation frames, invalid dimensions, or unknown character ids with descriptive errors. A test fixture registers a second character without changing PlayerActor or PlayScene.
 
 ## Acceptance Criteria
-- [ ] Phaser creates and destroys cleanly from React.
-- [ ] The protagonist has idle, idle-look, walk, run, jump, hurt, start, victory, and game-over animations.
-- [ ] A second fixture character registers without edits to actor/scene logic.
-- [ ] Source drafts are unchanged; runtime assets have consistent 96x96 transparent frames.
+- [x] Phaser creates and destroys cleanly from React.
+- [x] The protagonist has idle, idle-look, walk, run, jump, hurt, start, victory, and game-over animations.
+- [x] A second fixture character registers without edits to actor/scene logic.
+- [x] Source drafts are unchanged; runtime assets have consistent 96x96 transparent frames.
 
 ## Validation
 - npm test -- --run src/game/characters/characterRegistry.test.ts src/game/PhaserGame.test.tsx — tests pass.
@@ -65,6 +65,6 @@ Task: T02-phaser-character
 - normalize protagonist frames and add character registry
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed
+- commit: recorded in Git history

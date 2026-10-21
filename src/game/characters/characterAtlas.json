@@ -1,0 +1,50 @@
+{
+  "id": "player-default",
+  "displayName": "청백 메이드",
+  "textureKey": "player-default",
+  "frameWidth": 96,
+  "frameHeight": 96,
+  "contentSize": 88,
+  "atlasColumns": 8,
+  "sources": {
+    "poses": {
+      "path": "assets/character/platformer-character-spritesheet-v2.png",
+      "width": 1536,
+      "height": 1024,
+      "columns": 4,
+      "rowBoundaries": [0, 384, 740, 1024]
+    },
+    "actions": {
+      "path": "assets/character/platformer-character-actions-v1.png",
+      "width": 1536,
+      "height": 1024,
+      "columns": 4,
+      "rowBoundaries": [0, 384, 740, 1024]
+    }
+  },
+  "frames": [
+    { "name": "idle-00", "source": "poses", "column": 0, "row": 0, "animation": "idle" },
+    { "name": "idle-01", "source": "poses", "column": 2, "row": 0, "animation": "idle" },
+    { "name": "idle-look-00", "source": "poses", "column": 1, "row": 0, "animation": "idleLook" },
+    { "name": "idle-look-01", "source": "poses", "column": 3, "row": 0, "animation": "idleLook" },
+    { "name": "walk-00", "source": "poses", "column": 0, "row": 1, "animation": "walk" },
+    { "name": "walk-01", "source": "poses", "column": 1, "row": 1, "animation": "walk" },
+    { "name": "walk-02", "source": "poses", "column": 2, "row": 1, "animation": "walk" },
+    { "name": "walk-03", "source": "poses", "column": 3, "row": 1, "animation": "walk" },
+    { "name": "run-00", "source": "poses", "column": 0, "row": 2, "animation": "run" },
+    { "name": "run-01", "source": "poses", "column": 1, "row": 2, "animation": "run" },
+    { "name": "jump-00", "source": "actions", "column": 1, "row": 1, "animation": "jump" },
+    { "name": "hurt-00", "source": "actions", "column": 0, "row": 1, "animation": "hurt" },
+    { "name": "hurt-01", "source": "actions", "column": 0, "row": 2, "animation": "hurt" },
+    { "name": "hurt-02", "source": "actions", "column": 1, "row": 2, "animation": "hurt" },
+    { "name": "start-00", "source": "actions", "column": 0, "row": 0, "animation": "start" },
+    { "name": "start-01", "source": "actions", "column": 1, "row": 0, "animation": "start" },
+    { "name": "victory-00", "source": "actions", "column": 2, "row": 1, "animation": "victory" },
+    { "name": "victory-01", "source": "actions", "column": 3, "row": 1, "animation": "victory" },
+    { "name": "victory-02", "source": "actions", "column": 2, "row": 0, "animation": "victory" },
+    { "name": "game-over-00", "source": "actions", "column": 1, "row": 2, "animation": "gameOver" },
+    { "name": "game-over-01", "source": "actions", "column": 2, "row": 2, "animation": "gameOver" },
+    { "name": "game-over-02", "source": "actions", "column": 3, "row": 2, "animation": "gameOver" },
+    { "name": "game-over-03", "source": "actions", "column": 0, "row": 2, "animation": "gameOver" }
+  ]
+}
