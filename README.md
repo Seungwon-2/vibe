@@ -1,3 +1,6 @@
+# vibe
+vibe
+
 # 🚀 Project Memory Starter Kit
 
 > **"AI에게 대화창으로 매번 길게 설명하지 마세요. 파일 기반 메모리로 세션을 영구 유지하세요."**
