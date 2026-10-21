@@ -1,0 +1,79 @@
+:root {
+  font-family: "Trebuchet MS", "Malgun Gothic", sans-serif;
+  color: #f4f5ff;
+  background: #10152d;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-weight: 500;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(ellipse at 50% 10%, rgb(65 91 170 / 24%), transparent 52%),
+    #10152d;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.landing-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+}
+
+.title-card {
+  width: min(100%, 720px);
+  padding: clamp(28px, 7vw, 64px);
+  border: 1px solid rgb(187 204 255 / 24%);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgb(35 47 91 / 94%), rgb(24 30 62 / 96%));
+  box-shadow: 0 24px 80px rgb(2 5 22 / 38%);
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  color: #a9c2ff;
+  font-size: 0.85rem;
+  letter-spacing: 0.14em;
+}
+
+h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(2rem, 6vw, 4rem);
+  line-height: 1.15;
+}
+
+.intro-copy {
+  max-width: 38rem;
+  margin: 22px auto 28px;
+  color: #d3dcff;
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  line-height: 1.7;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid rgb(159 194 255 / 42%);
+  border-radius: 999px;
+  background: rgb(65 105 183 / 25%);
+  color: #dce8ff;
+  font-size: 0.95rem;
+}
