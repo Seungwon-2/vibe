@@ -1,6 +1,6 @@
 # Task: T02 Runner Scene and Controls
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -51,11 +51,11 @@ Create the Phaser runner scene and fixed-position player, with keyboard and Reac
 
 ## Acceptance Criteria
 
-- [ ] Phaser canvas mounts once and is destroyed on React unmount; pause does not recreate it.
-- [ ] Keyboard and touch use the same action bridge.
-- [ ] Ground jump, one airborne jump, landing reset, held slide, Toa grace, and Yuni impulse modifier work.
-- [ ] Standing and sliding body boxes remain bottom-aligned and fit 96x96 frames.
-- [ ] No sideways player control or stage/platform dependency remains.
+- [x] Phaser canvas mounts once and is destroyed on React unmount; pause does not recreate it.
+- [x] Keyboard and touch use the same action bridge.
+- [x] Ground jump, one airborne jump, landing reset, held slide, Toa grace, and Yuni impulse modifier work.
+- [x] Standing and sliding body boxes remain bottom-aligned and fit 96x96 frames.
+- [x] No sideways player control or stage/platform dependency remains.
 
 ## Validation
 
@@ -78,6 +78,6 @@ Task: T02-runner-scene-and-controls
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed (`npm test -- src/game/runner/RunnerPlayer.test.ts src/game/runner/RunnerGame.test.tsx`; `npm run typecheck`; `npm run build`; `npm run lint`)
 - commit: pending

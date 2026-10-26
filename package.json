@@ -17,6 +17,7 @@
     "assets:validate": "node scripts/prepare-character-assets.mjs --check"
   },
   "dependencies": {
+    "phaser": "^3.90.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
