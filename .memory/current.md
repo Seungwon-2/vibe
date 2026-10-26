@@ -1,26 +1,25 @@
-﻿# Current Context
+# Current Context
 
 ## Active Plan
-[Running Action Redesign](./plans/2026-10-26-running-action-redesign.md)
+
+[Unified Runner Motions and Five-Character Roster](./plans/2026-10-26-rin-unified-motion.md)
 
 ## Active Phase
-[P03 Course and UI](./phases/2026-10-26-running-action-redesign/P03-course-and-ui/phase.md)
+
+[P01 Motion Assets](./phases/2026-10-26-rin-unified-motion/P01-motion-assets/phase.md)
 
 ## Active Task
-[T01 Biome Pixel Art](./phases/2026-10-26-running-action-redesign/P03-course-and-ui/T01-biome-pixel-art.md)
+
+[T01 Five Motion Atlases](./phases/2026-10-26-rin-unified-motion/P01-motion-assets/T01-five-motion-atlases.md)
 
 ## Status
-- P01 is complete; the four-character selector now includes portrait cards, SD previews, and a looping selected-character run animation.
-- P01 validation passed: `npm test`, `npm run typecheck`, and `npm run build`.
-- Azure Entra ID remains deferred; local browser play and ranking are in scope.
-- The two user-provided runner/selector screenshots are composition references in the same plan: P03 covers layered course scenery, HUD/touch layout, and a four-character showcase selector.
-- P02-T01 is complete (`efe3d9d`): deterministic timer, distance, gates, pickups, collision rules, and character passive modifiers passed focused tests and type checking.
-- P02-T02 is complete (`0d0f3ea`): Phaser scene, fixed player, input bridge, double jump, and held slide passed tests, type checking, build, and lint.
-- P02-T03 is complete (`62346c3`): authored hazard patterns, telegraphs, Arcade overlap, collision penalty, and protection passed focused tests and type checking.
-- P02-T04 is complete (`e2c40ee`): collectible schedule, three gate events, bounded React snapshots, and a minimal playable preview passed all 35 tests, type checking, build, and lint. P03-T01 is active.
-- P02 runner hotfix (`99b74d1`): ground recovery after a double jump, an 800ms course freeze on collision, and a terminal `gameOver` animation passed 38 tests, build, and lint. P03-T01 remains active.
-- P02 slide alignment hotfix (`46e0ebd`) first aligned both frames to the ground; the later single-pose stabilization supersedes its 72x40 collider settings.
-- P02 slide stabilization (`85465a6`): slide now holds one frame at uniform 72% scale with a 64x48 collider and 6px overhead clearance. The run, jump, and slide art still come from different source batches; a unified gameplay motion sheet is a future art task. P03-T01 remains active.
+
+- Planning is complete; no implementation code was changed in the memory-plan step.
+- Five 1536×1024 reference PNGs are committed under `assets/character/reference/` on `project02`.
+- Target roster: Aokumo Rin, Shizuki Toa, Cogane Rang, Hanayo Hiyori, Tokino Mary. Yuni/Lize leave active selection; historical files remain.
+- The preceding [Running Action Redesign](./plans/2026-10-26-running-action-redesign.md) is paused at P03-T01 Biome Pixel Art and is not marked complete. Resume/reconcile it after this motion plan.
+- The unrelated untracked `.memory/image.png` is untouched.
 
 ## Next Step
-Read P03-T01 and draw the four layered biome backgrounds and course visuals without changing runner physics or obstacle dimensions.
+
+Read P01-T01 and implement `scripts/build-motion-atlases.mjs` plus `scripts/motion-study-layout.mjs` to produce and validate the five transparent atlases before changing game imports.

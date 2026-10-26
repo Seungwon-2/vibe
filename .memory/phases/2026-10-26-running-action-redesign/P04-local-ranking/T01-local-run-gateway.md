@@ -1,5 +1,7 @@
 # Task: T01 Local Run Gateway
 
+> **Dependency update:** The active roster after `2026-10-26-rin-unified-motion` has five characters, and that plan adds a separate `running-action:personal-best:v1` store for terminal animation. Keep this task's future unified top-ten `running-action:records:v1` gateway distinct, update its character-count assertions to five, and read the newer plan before execution.
+
 ## Status: pending
 
 ## Goal

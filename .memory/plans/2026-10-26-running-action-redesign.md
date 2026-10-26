@@ -1,5 +1,7 @@
 # Plan: Running Action Redesign
 
+> **Roster supersession (2026-10-26):** [Unified Runner Motions and Five-Character Roster](./2026-10-26-rin-unified-motion.md) is active before P03-T01 resumes. Its confirmed five-character roster, motion atlases, and passives replace this document's older four-character assumptions. P03-T01 is still pending; P03-T04 and P04 must be reconciled with the five-character registry when resumed.
+
 ## Goal
 
 Replace the Project 02 platformer starter with a locally playable, landscape 2D auto-runner. Preserve and port the four characters, their character-selection experience, and their motion artwork; add double-jump and held-slide play, fair authored hazards, four pixel-art biomes, a 90-second distance run with time bonuses, adjustable character passives, and browser-local rankings. Azure Entra ID and cloud ranking remain deferred.

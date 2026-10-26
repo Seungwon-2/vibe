@@ -33,6 +33,10 @@
 - **Chosen**: Use `assets/character/reference/aokumo-rin-motion-study.png`, `shizuki-toa-motion-study.png`, `cogane-rang-motion-study.png`, `hanayo-hiyori-motion-study.png`, and `tokino-mary-motion-study.png` as the five character motion references. Names are Aokumo Rin, Shizuki Toa, Cogane Rang, Hanayo Hiyori, and Tokino Mary. Preserve Rin `#2b66c0` and Toa `#513661`; use sheet-palette representative colors Rang `#c98743`, Hiyori `#fca6d0`, and Mary `#6d929a`.
 - **Rationale**: The four newly supplied filenames resolve the line-wrapped English names in the message. The user chose palette-derived colors for the three new characters.
 
+## D08. New character passives
+- **Chosen**: Retain Rin's +1-second time-pickup bonus and Toa's 150ms slide-release grace. Give Rang +8% second-jump impulse, Hiyori +20px pickup collection radius, and Mary +250ms protection after a collision. Keep values in central code configuration for later tuning.
+- **Rationale**: The user chose distinct, modest passive abilities for all three new characters during planning. Hiyori's radius must be tuned so the optional upper pickup row still requires a jump.
+
 ## Existing-code findings for the implementation plan
 - `src/game/characters/characterAtlas.json` currently has twelve run frames, one jump frame, two double-jump frames, two slide frames, three hit frames, three victory frames, and three game-over frames for Rin. The source paths point to multiple art batches.
 - `src/game/runner/RunnerScene.ts` currently creates a single held slide frame and does not register victory as a runner-scene animation.

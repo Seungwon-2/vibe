@@ -1,5 +1,7 @@
 # Task: T04 Character Showcase Selector
 
+> **Needs replan before execution:** This older four-card/2×2 blueprint predates `2026-10-26-rin-unified-motion`. The active roster is Rin, Toa, Rang, Hiyori, and Mary. Replace all four-character assumptions, portrait/passive examples, card counts, and responsive acceptance criteria with five-character versions before this task is executed; do not reintroduce Yuni/Lize.
+
 ## Status: pending
 
 ## Goal

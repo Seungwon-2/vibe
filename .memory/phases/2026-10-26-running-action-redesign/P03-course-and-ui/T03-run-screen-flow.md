@@ -1,5 +1,7 @@
 # Task: T03 Run Screen Flow
 
+> **Dependency update:** Execute after `2026-10-26-rin-unified-motion`. That plan adds five active characters, `PersonalBestStore`, and a `RunnerFinishOutcome` callback for victory/cry. Reuse those contracts when replacing this minimal `RunnerPreview`; do not create a second personal-best store or revert to a four-card selector.
+
 ## Status: pending
 
 ## Goal
