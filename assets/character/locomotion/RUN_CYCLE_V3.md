@@ -4,10 +4,10 @@ These four transparent 4-column by 3-row source sheets replace the earlier eight
 
 | Character | Source sheet | Runtime prefix |
 | --- | --- | --- |
-| Aokumo Rin | `aokumo-rin-run-cycle-v4.png` | `run-00`–`run-11` |
+| Aokumo Rin | `aokumo-rin-run-cycle-v5.png` | `run-00`–`run-11` |
 | Shizuki Toa | `shizuki-toa-run-cycle-v3.png` | `goth-student-run-00`–`goth-student-run-11` |
 | Ayatsuno Yuni | `ayatsuno-yuni-run-cycle-v6.png` | `moonwing-run-00`–`moonwing-run-11` |
-| Akane Lize | `akane-lize-run-cycle-v4.png` | `akane-lize-run-00`–`akane-lize-run-11` |
+| Akane Lize | `akane-lize-run-cycle-v5.png` | `akane-lize-run-00`–`akane-lize-run-11` |
 
 ## Image generation brief
 
@@ -19,7 +19,9 @@ Yuni's `v4` motion still read as a small twitch because both boots occupied simi
 
 The `v5` crossover was visible but still read as walking: the torso stayed upright and the stride and knee lift were small. `ayatsuno-yuni-run-cycle-v6.png` uses Toa's `shizuki-toa-run-cycle-v3.png` as the mandatory twelve-pose action reference, while Yuni's portrait and idle sprite define her identity. The brief specified Toa's forward lean, high knee recovery, broad stride, pumping arms, and short flight phase, while keeping Yuni's horn, wings, and outfit. The atlas now uses `v6` with the same 768ms cycle and source alpha cleanup.
 
-Rin's `v3` had too many similar front-leg poses and a narrow stride hidden by her skirt. The built-in image generation tool produced `aokumo-rin-run-cycle-v4.png` with Toa's twelve-pose run as the motion reference and Rin's old run sheet, portrait, and idle frame as identity references. The prompt requested a forward lean, wider strides, high-knee recovery, alternating near/far shoes below the skirt, opposing arm drive, and a consistent foot baseline. The atlas uses `v4` and an alpha threshold of 64 to remove faint blue source residue. The earlier `v3` remains for comparison.
+Rin's `v3` had too many similar front-leg poses and a narrow stride hidden by her skirt. The built-in image generation tool produced `aokumo-rin-run-cycle-v4.png` with Toa's twelve-pose run as the motion reference and Rin's old run sheet, portrait, and idle frame as identity references. The prompt requested a forward lean, wider strides, high-knee recovery, alternating near/far shoes below the skirt, opposing arm drive, and a consistent foot baseline. The later Rin sheets use an alpha threshold of 64 to remove faint blue source residue. The earlier `v3` remains for comparison.
+
+The arm-motion follow-up used `arm-swing-pose-guide-v1.svg` (and its PNG rendering) to specify twelve near/far arm phases. Full-sheet and single-frame image-generation trials showed that same-colored sleeves can still collapse into a visually repeated pose. Rin `v5` was selected for its more distinct rear-hand-to-front-hand movement while retaining her `v4` leg cycle and costume; Lize `v5` was generated afresh from the pose guide and her portrait because editing `v4` kept both sleeves static. Compare key frames 00, 03, 06, and 09 at 96px when tuning these sheets. The source sheets and runtime atlases use the same twelve-frame, 768ms contract. Toa and Yuni retain their existing sheets because their arm changes remain readable at runtime size.
 
 ## Runtime preparation
 

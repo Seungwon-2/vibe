@@ -59,8 +59,8 @@
         887
       ]
     },
-    "runCycleV4": {
-      "path": "assets/character/locomotion/aokumo-rin-run-cycle-v4.png",
+    "runCycleV5": {
+      "path": "assets/character/locomotion/aokumo-rin-run-cycle-v5.png",
       "width": 1448,
       "height": 1086,
       "columns": 4,
@@ -79,84 +79,84 @@
   "frames": [
     {
       "name": "run-00",
-      "source": "runCycleV4",
+      "source": "runCycleV5",
       "column": 0,
       "row": 0,
       "animation": "run"
     },
     {
       "name": "run-01",
-      "source": "runCycleV4",
+      "source": "runCycleV5",
       "column": 1,
       "row": 0,
       "animation": "run"
     },
     {
       "name": "run-02",
-      "source": "runCycleV4",
+      "source": "runCycleV5",
       "column": 2,
       "row": 0,
       "animation": "run"
     },
     {
       "name": "run-03",
-      "source": "runCycleV4",
+      "source": "runCycleV5",
       "column": 3,
       "row": 0,
       "animation": "run"
     },
     {
       "name": "run-04",
-      "source": "runCycleV4",
+      "source": "runCycleV5",
       "column": 0,
       "row": 1,
       "animation": "run"
     },
     {
       "name": "run-05",
-      "source": "runCycleV4",
+      "source": "runCycleV5",
       "column": 1,
       "row": 1,
       "animation": "run"
     },
     {
       "name": "run-06",
-      "source": "runCycleV4",
+      "source": "runCycleV5",
       "column": 2,
       "row": 1,
       "animation": "run"
     },
     {
       "name": "run-07",
-      "source": "runCycleV4",
+      "source": "runCycleV5",
       "column": 3,
       "row": 1,
       "animation": "run"
     },
     {
       "name": "run-08",
-      "source": "runCycleV4",
+      "source": "runCycleV5",
       "column": 0,
       "row": 2,
       "animation": "run"
     },
     {
       "name": "run-09",
-      "source": "runCycleV4",
+      "source": "runCycleV5",
       "column": 1,
       "row": 2,
       "animation": "run"
     },
     {
       "name": "run-10",
-      "source": "runCycleV4",
+      "source": "runCycleV5",
       "column": 2,
       "row": 2,
       "animation": "run"
     },
     {
       "name": "run-11",
-      "source": "runCycleV4",
+      "source": "runCycleV5",
       "column": 3,
       "row": 2,
       "animation": "run"
