@@ -57,6 +57,18 @@ test('edge flood removes pale background while preserving outlined white costume
   assert.equal(result.data[(1 * width + 1) * 4 + 3], 255, 'dark outline should remain');
 });
 
+test('Rin running frame keeps pale hair even where its outline opens onto the sheet background', async () => {
+  const sheet = MOTION_SHEETS[0];
+  const { data, info } = await sharp(sheet.sourcePath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { rect } = getMotionFrameDescriptors(sheet).find(({ name }) => name === 'run-05');
+  const frame = cutoutPaleBackground(extractMotionFrame(
+    { data, width: info.width, height: info.height }, rect,
+  ), sheet.backgroundTolerance);
+  const alpha = (x, y) => frame.data[(y * frame.width + x) * 4 + 3];
+  assert.equal(alpha(75, 35), 255, 'light hair and face must stay opaque');
+  assert.equal(alpha(100, 10), 0, 'nearby blank paper must stay transparent');
+});
+
 test('floor-shadow cleanup removes a long tinted ellipse and preserves isolated costume color', () => {
   const width = 24;
   const height = 20;
