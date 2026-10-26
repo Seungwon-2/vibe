@@ -19,7 +19,8 @@
 - P02-T03 is complete (`62346c3`): authored hazard patterns, telegraphs, Arcade overlap, collision penalty, and protection passed focused tests and type checking.
 - P02-T04 is complete (`e2c40ee`): collectible schedule, three gate events, bounded React snapshots, and a minimal playable preview passed all 35 tests, type checking, build, and lint. P03-T01 is active.
 - P02 runner hotfix (`99b74d1`): ground recovery after a double jump, an 800ms course freeze on collision, and a terminal `gameOver` animation passed 38 tests, build, and lint. P03-T01 remains active.
-- P02 slide alignment hotfix (`46e0ebd`): all four characters' two slide frames now meet the ground, match a 72x40 body, and clear overhead hazards by 6px. Asset-bound tests, the 40-test suite, build, and lint passed; P03-T01 remains active.
+- P02 slide alignment hotfix (`46e0ebd`) first aligned both frames to the ground; the later single-pose stabilization supersedes its 72x40 collider settings.
+- P02 slide stabilization (`85465a6`): slide now holds one frame at uniform 72% scale with a 64x48 collider and 6px overhead clearance. The run, jump, and slide art still come from different source batches; a unified gameplay motion sheet is a future art task. P03-T01 remains active.
 
 ## Next Step
 Read P03-T01 and draw the four layered biome backgrounds and course visuals without changing runner physics or obstacle dimensions.
