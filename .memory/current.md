@@ -4,15 +4,15 @@
 [Running Action Redesign](./plans/2026-10-26-running-action-redesign.md)
 
 ## Active Phase
-[P01 Characters and Entry](./phases/2026-10-26-running-action-redesign/P01-characters-and-entry/phase.md)
+[P02 Runner Engine](./phases/2026-10-26-running-action-redesign/P02-runner-engine/phase.md)
 
 ## Active Task
-[T04 Character Selector](./phases/2026-10-26-running-action-redesign/P01-characters-and-entry/T04-character-selector.md)
+[T01 Run State and Tuning](./phases/2026-10-26-running-action-redesign/P02-runner-engine/T01-run-state-and-tuning.md)
 
 ## Status
-- T01 through T03 are complete; four characters' art, typed catalog, and centralized passive definitions are ready for the selector.
-- T03 validation passed: `npm test -- src/game/characters/characterRegistry.test.ts` and `npm run typecheck`.
+- P01 is complete; the four-character selector now includes portrait cards, SD previews, and a looping selected-character run animation.
+- P01 validation passed: `npm test`, `npm run typecheck`, and `npm run build`.
 - Azure Entra ID remains deferred; local browser play and ranking are in scope.
 
 ## Next Step
-Read T04 and port/finish the character selector with a looping run preview for the selected character.
+Read P02-T01 and implement pure run-state rules for countdown, timer, speed ramp, distance, gates, pickups, collision penalties, and character ability modifiers.

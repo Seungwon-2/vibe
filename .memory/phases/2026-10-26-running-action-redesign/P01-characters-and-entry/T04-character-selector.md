@@ -1,6 +1,6 @@
-# Task: T04 Character Selector
+﻿# Task: T04 Character Selector
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -41,10 +41,10 @@ Port the four vertical character cards into Project 02 and show a looping run an
 
 ## Acceptance Criteria
 
-- [ ] Four cards show the correct portrait, SD sprite, name, and accent border.
-- [ ] Selected character visibly runs in a repeating animation; unselected cards show front-facing idle.
-- [ ] Keyboard focus, screen-reader pressed state, reduced-motion behavior, and back/start actions work.
-- [ ] Cards remain horizontally scrollable and unclipped on narrow screens.
+- [x] Four cards show the correct portrait, SD sprite, name, and accent border.
+- [x] Selected character visibly runs in a repeating animation; unselected cards show front-facing idle.
+- [x] Keyboard focus, screen-reader pressed state, reduced-motion behavior, and back/start actions work.
+- [x] Cards remain horizontally scrollable and unclipped on narrow screens.
 
 ## Validation
 
@@ -66,6 +66,6 @@ Task: T04-character-selector
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed (`npm test`; `npm run typecheck`; `npm run build`)
+- commit: 79e6214
