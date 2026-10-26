@@ -1,6 +1,6 @@
 # Task: T03 Obstacles and Collisions
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -46,11 +46,11 @@ Add deterministic, distance-scaled ground and overhead obstacles with clear warn
 
 ## Acceptance Criteria
 
-- [ ] Patterns progress by distance through all four difficulty bands and are repeatable.
-- [ ] Every hazard type has a visible warning and a documented, accurate collision box.
-- [ ] Pattern spacing meets the warning/recovery constraints at 325 units/s.
-- [ ] Collision costs are delegated to the run model, trigger only once per protection window, and stop at timer zero.
-- [ ] No random spawn can create an impossible sequence.
+- [x] Patterns progress by distance through all four difficulty bands and are repeatable.
+- [x] Every hazard type has a visible warning and a documented, accurate collision box.
+- [x] Pattern spacing meets the warning/recovery constraints at 325 units/s.
+- [x] Collision costs are delegated to the run model, trigger only once per protection window, and stop at timer zero.
+- [x] No random spawn can create an impossible sequence.
 
 ## Validation
 
@@ -72,6 +72,6 @@ Task: T03-obstacles-and-collisions
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed (`npm test -- src/game/runner/hazardPatterns.test.ts src/game/runner/CollisionSystem.test.ts`; `npm run typecheck`; `npm run lint`)
 - commit: pending

@@ -36,6 +36,10 @@ export class RunnerPlayer {
     return this.sprite.body as Phaser.Physics.Arcade.Body;
   }
 
+  get gameObject(): Phaser.Physics.Arcade.Sprite {
+    return this.sprite;
+  }
+
   get isSliding(): boolean {
     return this.slidingHeld && this.grounded || this.slideGraceMs > 0 && this.grounded;
   }
@@ -69,6 +73,10 @@ export class RunnerPlayer {
 
   setHurt(hurt: boolean): void {
     this.hurt = hurt;
+  }
+
+  setProtected(remainingMs: number): void {
+    this.sprite.setAlpha(remainingMs > 0 && Math.floor(remainingMs / 100) % 2 === 0 ? 0.4 : 1);
   }
 
   update(deltaMs: number): void {

@@ -6,6 +6,8 @@ import { RunnerPlayer, RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { RunnerInputBridge } from './RunnerInput';
 import type { RunnerResult, RunnerSnapshot } from './runnerTypes';
 import { RUNNER_CONFIG } from './runnerConfig';
+import { ObstacleSpawner } from './ObstacleSpawner';
+import { tryResolveHazardHit } from './CollisionSystem';
 
 export class RunnerScene extends Phaser.Scene {
   private inputBridge!: RunnerInputBridge;
@@ -15,6 +17,8 @@ export class RunnerScene extends Phaser.Scene {
   private onSnapshot!: (snapshot: RunnerSnapshot) => void;
   private onFinished!: (result: RunnerResult) => void;
   private heldKeyboardActions = new Set<string>();
+  private spawner!: ObstacleSpawner;
+  private finishedEmitted = false;
 
   constructor() {
     super({ key: 'RunnerScene' });
@@ -52,6 +56,7 @@ export class RunnerScene extends Phaser.Scene {
     );
     this.physics.add.collider(sprite, floor);
     this.player = new RunnerPlayer(sprite, characterId);
+    this.spawner = new ObstacleSpawner(this, this.player.gameObject, this.handleHazardOverlap);
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
     window.addEventListener('blur', this.handleBlur);
@@ -74,9 +79,12 @@ export class RunnerScene extends Phaser.Scene {
     this.player.update(deltaMs);
     const { state, result } = advanceRunner(this.snapshot, deltaMs);
     this.publish(state);
+    this.player.setHurt(state.staggerRemainingMs > 0);
+    this.player.setProtected(state.protectionRemainingMs);
+    this.spawner.update(state);
     if (result) {
       this.inputBridge.clear();
-      this.onFinished(result);
+      this.emitFinished(result);
     }
   }
 
@@ -101,6 +109,22 @@ export class RunnerScene extends Phaser.Scene {
   protected publish(snapshot: RunnerSnapshot): void {
     this.snapshot = snapshot;
     this.onSnapshot(snapshot);
+  }
+
+  private readonly handleHazardOverlap = (): void => {
+    const { state, hit, result } = tryResolveHazardHit(this.snapshot);
+    if (!hit) return;
+    this.publish(state);
+    this.player.setHurt(true);
+    this.player.setProtected(state.protectionRemainingMs);
+    if (result) this.emitFinished(result);
+  };
+
+  private emitFinished(result: RunnerResult): void {
+    if (this.finishedEmitted) return;
+    this.finishedEmitted = true;
+    this.inputBridge.clear();
+    this.onFinished(result);
   }
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
@@ -138,5 +162,6 @@ export class RunnerScene extends Phaser.Scene {
     this.heldKeyboardActions.clear();
     this.inputBridge?.clear();
     this.player?.destroy();
+    this.spawner?.destroy();
   }
 }
