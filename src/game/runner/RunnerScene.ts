@@ -44,13 +44,15 @@ export class RunnerScene extends Phaser.Scene {
     this.snapshot = createRunnerSnapshot(characterId);
 
     for (const name of ['run', 'jump', 'doubleJump', 'slide', 'hurt', 'gameOver'] as const) {
-      const frames = character.animations[name];
+      const frames = name === 'slide'
+        ? character.animations.slide.slice(0, 1)
+        : character.animations[name];
       if (frames.length === 0) continue;
       this.anims.create({
         key: `${characterId}:${name}`,
         frames: frames.map((frame) => ({ key: character.textureKey, frame })),
         frameRate: name === 'run' ? 12 / 0.768 : 12,
-        repeat: name === 'run' || name === 'slide' ? -1 : 0,
+        repeat: name === 'run' ? -1 : 0,
       });
     }
 

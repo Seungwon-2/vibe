@@ -86,10 +86,11 @@ describe('RunnerPlayer and input bridge', () => {
   it('keeps the body bottom aligned while sliding and gives Toa release grace', () => {
     const { player, body, sprite } = createPlayer('goth-student');
     player.setSliding(true);
-    expect(body.width).toBeCloseTo(72);
-    expect(body.height).toBeCloseTo(40);
+    expect(body.width).toBeCloseTo(64);
+    expect(body.height).toBeCloseTo(48);
     expect(body.bottom).toBeCloseTo(470);
-    expect(sprite.scaleY).toBe(0.6);
+    expect(sprite.scaleX).toBe(0.72);
+    expect(sprite.scaleY).toBe(0.72);
     expect(sprite.y).toBeGreaterThan(470);
     expect(player.jump()).toBe(false);
     player.setSliding(false);
@@ -101,14 +102,16 @@ describe('RunnerPlayer and input bridge', () => {
     expect(sprite.scaleY).toBe(1);
   });
 
-  it('anchors every slide frame at the ground without moving its collision box', () => {
+  it('holds one slide pose without switching frames while the button stays down', () => {
     const { player, body, sprite } = createPlayer('player-default');
     player.setSliding(true);
     const firstY = sprite.y;
-    sprite.frame.name = 'slide-01';
+    const slideCalls = sprite.anims.play.mock.calls.length;
     player.update(16);
-    expect(sprite.y).toBeGreaterThan(firstY);
-    expect(body.position.y).toBeCloseTo(430);
+    player.update(16);
+    expect(sprite.y).toBe(firstY);
+    expect(sprite.anims.play.mock.calls.length).toBe(slideCalls);
+    expect(body.position.y).toBeCloseTo(422);
     expect(body.bottom).toBeCloseTo(470);
   });
 

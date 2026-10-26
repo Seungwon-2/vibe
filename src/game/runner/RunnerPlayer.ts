@@ -128,7 +128,7 @@ export class RunnerPlayer {
 
   private applyPose(): void {
     if (this.animation === 'slide') {
-      const pose = getSlidePose(this.characterId, this.sprite.frame.name);
+      const pose = getSlidePose(this.characterId);
       if (this.poseKey === pose.key) return;
       this.poseKey = pose.key;
       this.sprite.setScale(pose.scaleX, pose.scaleY);
@@ -152,7 +152,7 @@ export class RunnerPlayer {
 
   private snapToGround(): void {
     this.sprite.y = this.animation === 'slide'
-      ? getSlidePose(this.characterId, this.sprite.frame.name).spriteY
+      ? getSlidePose(this.characterId).spriteY
       : RUNNER_GROUND_Y;
     this.body.setVelocityY(0);
     this.body.updateFromGameObject();
