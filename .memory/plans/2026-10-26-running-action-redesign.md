@@ -15,6 +15,12 @@ Replace the Project 02 platformer starter with a locally playable, landscape 2D 
 - Keep all four characters in one distance leaderboard. Centralize and tune their initial passives: Rin time pickup +1s; Toa 150ms slide-release grace; Yuni +12% second-jump impulse; Lize collision penalty 4s instead of 5s.
 - Save local run records in the browser first; add Entra-backed all-player ranking in a future plan.
 
+## Visual direction from the two reference images
+
+- **Run composition:** use the first screenshot's layered side-scrolling composition, continuous floor, strong obstacle/pickup silhouettes, compact top information band, and bottom-corner Jump/Slide touch controls. Apply it to the original dawn city, moonlit forest, crystal mine, and cloud skyway biomes on the planned 960x540 canvas. Preserve the existing run rules and avoid platform/gap gameplay.
+- **Character selection:** use the second screenshot's asymmetric showcase composition: a large selected-character area on the left and four compact selectable portrait cards in a 2x2 roster on the right. Keep the existing SD character preview, name, accent-color selection state, selected run loop, back button, and start confirmation. Do not add rarity, levels, prices, upgrades, unlocks, or a shop.
+- These are layout and visual-hierarchy references, not assets to copy. P03-T01/T02/T03 now specify stage presentation; P03-T04 is the selector-showcase redesign. P02-T01 remains the current task so the playable runner is built before stage polish.
+
 ## Project 02 starting point and migration boundary
 
 - The `project02` remote branch begins at `6d1116e` and contains the React/Vite starter, not the latest game implementation.
@@ -30,7 +36,7 @@ Replace the Project 02 platformer starter with a locally playable, landscape 2D 
 | :--- | :--- | :--- | :--- |
 | P01 | `done` | Port character artwork, finish runner poses, centralize character data/passives, and animate selection previews. | [P01](../phases/2026-10-26-running-action-redesign/P01-characters-and-entry/phase.md) |
 | P02 | `in_progress` | Build the deterministic run model, Phaser runner, controls, hazards, pickups, and collision rules. | [P02](../phases/2026-10-26-running-action-redesign/P02-runner-engine/phase.md) |
-| P03 | `pending` | Add the four pixel-art course biomes, live HUD/touch controls, and complete screen flow. | [P03](../phases/2026-10-26-running-action-redesign/P03-course-and-ui/phase.md) |
+| P03 | `pending` | Add four pixel-art course biomes, reference-led run HUD/touch controls, complete screen flow, and a showcase-style four-character selector. | [P03](../phases/2026-10-26-running-action-redesign/P03-course-and-ui/phase.md) |
 | P04 | `pending` | Persist local results, show the unified distance ranking, and verify local landscape play. | [P04](../phases/2026-10-26-running-action-redesign/P04-local-ranking/phase.md) |
 
 ## Execution order

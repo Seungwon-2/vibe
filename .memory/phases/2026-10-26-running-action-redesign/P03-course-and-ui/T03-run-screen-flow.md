@@ -10,6 +10,7 @@ Replace the starter/platformer route with the complete runner menu, character se
 
 - Keep the simple main menu, character selector, and rankings entry. Remove world map, stage map, continue-save, stage-clear, checkpoint-retry, and life/game-over routes.
 - After selecting a character and pressing start, begin the 3-second countdown; after timeout, offer retry with the same character or return to character selection.
+- Present the run as one landscape play surface with Phaser scenery underneath React HUD/touch overlays; the first screenshot's action-first composition is a reference, not a new stage map or score system.
 
 ## Implementation
 
@@ -27,6 +28,9 @@ Replace the starter/platformer route with the complete runner menu, character se
 - `AppScreen = 'menu' | 'character-select' | 'run' | 'result' | 'rankings'`.
 - `App` selected ID starts as `player-default`; main-menu start opens `CharacterSelect`; confirmation stores the selected ID and mounts `RunScreen`; no world/stage query parameter or stage selection.
 - `RunScreenProps = { characterId: CharacterId; onFinish(result: RunnerResult): void; onExit(): void }`. It owns `countdown | running | paused` presentation state and passes `characterId` and callbacks to `RunnerGame`.
+- Give `RunScreen` a 16:9 game viewport that scales the 960x540 Phaser canvas as one unit. Layer `RunnerHud`, countdown, pause, and `TouchControls` over that viewport instead of adding separate tall panels that push the controls below the fold. If the browser aspect ratio differs, letterbox without cropping canvas content; use the P03-T02 portrait pause prompt on upright phones.
+- Keep the HUD layer above backdrop, hazards, and pickups, with touch controls above the canvas only at the two lower corners. The scene's ground top (y=470) and player's x=170 remain the shared reference for visual QA. Ensure starting, pausing, finishing, and retrying do not flash a stale character or old course frame.
+- Forward `RunnerGame`'s one-off `pickup`/`gate` events to `RunnerHud` as `recentBonus: { id, kind, awardedMs } | null`; replace the cue on a new event and clear it after roughly 900ms or on run restart/unmount. Ignore zero-award capped events. Keep this presentation timer separate from the simulation clock and pause/clear it with the run so it cannot leak across retries.
 - `RunResultProps = { result: RunnerResult; bestDistanceMeters: number; onRetry(): void; onChooseCharacter(): void; onRankings(): void }`. Show rounded final distance, collected coins, personal best, character and its result animation. Retry preserves the selected character and starts a fresh 3-second countdown; choosing a character returns to selection.
 - Keep a small main menu with “달리기 시작” and “랭킹”; no “이어하기” or stage/world data. Exiting an active run opens a confirmation dialog before discarding the attempt.
 - Replace all visible starter copy and platformer UI references in `App.tsx`/`global.css`. Avoid stage/life/checkpoint terminology.
@@ -50,6 +54,7 @@ Replace the starter/platformer route with the complete runner menu, character se
 - [ ] Rankings is reachable from the main menu and result screen.
 - [ ] No platformer stage map, checkpoint, lives, boss, or stage-save screen is reachable.
 - [ ] Phaser is destroyed exactly once when leaving or restarting a run.
+- [ ] Desktop and landscape mobile show the full 16:9 course, top HUD, and both touch controls together without clipped canvas edges or unrelated platformer UI.
 
 ## Validation
 

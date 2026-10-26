@@ -26,7 +26,8 @@ Verify the complete offline runner, landscape play at desktop and mobile sizes, 
 - Integration scenario: menu → select each character → countdown → run → jump and double jump → hold/release slide → collide once and lose character-adjusted time → collect coin/time item → cross each time gate and biome boundary → timer expires → persist result → retry same character → return to selector → load ranking after reload.
 - Mock `Date` and game event boundary where needed so timer, gates, and finished timestamp are deterministic. Do not rely on wall-clock sleeps.
 - README lists Node engine `>=22.12.0 <25`, `npm ci`, `npm run dev`, `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, keyboard/touch controls, timer/pickup/gate rules, and localStorage key `running-action:records:v1`.
-- Manually inspect landscape at 1366x768, 844x390, and 667x375. In portrait, confirm the rotate prompt pauses without losing the run. Check 320px-wide selector cards do not clip horizontally (scrollable rail is expected).
+- Manually inspect landscape at 1366x768, 844x390, and 667x375. In portrait, confirm the rotate prompt pauses without losing the run.
+- Recheck the reference-led P03 presentation at those sizes: all four biome backdrops retain clear hazard/pickup silhouettes, the top HUD and lower-corner Jump/Slide controls fit the 16:9 course, all three +20s visual gates align with a single reward event, and the new left-showcase/right-2x2 selector keeps its CTA reachable. At 320px portrait, the selector may scroll vertically but must not clip cards or the CTA; the former horizontal card rail is no longer expected.
 - Start a local run and verify no network/auth dependency; ensure Azure config is not required.
 
 ### I02. Final quality gate

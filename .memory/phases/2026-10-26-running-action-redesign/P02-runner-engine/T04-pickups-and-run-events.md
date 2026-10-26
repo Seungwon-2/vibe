@@ -32,12 +32,14 @@ Collect coins/time items and milestone gates exactly once, then publish bounded 
 
 - Related Files:
   - `src/game/runner/runnerEvents.ts` :: `RunnerEvent` union and `RunnerCallbacks`; new.
-  - `src/game/runner/RunnerScene.ts` :: snapshot emitter and terminal notification; modify.
+  - `src/game/runner/RunnerScene.ts` :: snapshot emitter, pickup/gate notifications, and terminal notification; modify.
+  - `src/game/runner/RunnerGame.tsx` :: forward one-off runner events to React without re-creating Phaser; modify.
   - `src/game/runner/RunnerEvents.test.ts` :: event sequencing tests; new.
 
 #### Details
 
-- `RunnerEvent = { type: 'snapshot'; snapshot: RunnerSnapshot } | { type: 'gate'; gateId: RunnerGateId; bonusMs: number } | { type: 'run-finished'; result: RunnerResult } | { type: 'fatal-error'; message: string }`.
+- `RunnerEvent = { type: 'snapshot'; snapshot: RunnerSnapshot } | { type: 'pickup'; pickupId: string; kind: RunnerPickupKind; awardedMs: number } | { type: 'gate'; gateId: RunnerGateId; awardedMs: number } | { type: 'run-finished'; result: RunnerResult } | { type: 'fatal-error'; message: string }`. `awardedMs` is the time actually added after the 120-second cap (zero for coins), not the uncapped nominal reward.
+- Extend `RunnerGameProps` with optional `onEvent(event: RunnerEvent): void` and keep its latest callback in the same ref used for `onSnapshot`/`onFinished`. Emit one `pickup` or `gate` event after its state transition, keyed by stable ID, so P03 can show accurate `+Ns` feedback without diffing 10Hz snapshots. Do not emit a reward event twice on overlap/retry cleanup.
 - Emit snapshots at 10Hz maximum (every 100ms) plus immediately on pickup, collision, pause/resume, gate, and finish. Never set React state every Phaser frame.
 - Emit `run-finished` exactly once when remaining time reaches zero; include final rounded meters, coins, character ID, active duration, and ISO timestamp.
 - When browser tab loses focus, pause through the same run-state transition so timer, distance, hazards, and inputs cannot continue invisibly.
