@@ -1,6 +1,6 @@
-# Task: T03 Character Catalog and Passives
+﻿# Task: T03 Character Catalog and Passives
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -50,15 +50,15 @@ Create a data-driven runner character catalog and centralized tunable passive de
 
 ## Acceptance Criteria
 
-- [ ] All four existing characters load through one typed catalog with correct ID, name, color, atlas, and portrait.
-- [ ] Every required animation key resolves to atlas frames for all characters.
-- [ ] Passive values are located in one configuration module and are editable in one place.
-- [ ] No per-character base speed or player-facing ability slider is introduced.
+- [x] All four existing characters load through one typed catalog with correct ID, name, color, atlas, and portrait.
+- [x] Every required animation key resolves to atlas frames for all characters.
+- [x] Passive values are located in one configuration module and are editable in one place.
+- [x] No per-character base speed or player-facing ability slider is introduced.
 
 ## Validation
 
-- `npm test -- src/game/characters/characterRegistry.test.ts` — validates catalog completeness and passive mapping.
-- `npm run typecheck` — validates the typed catalog and Phaser manifest imports.
+- `npm test -- src/game/characters/characterRegistry.test.ts` ??validates catalog completeness and passive mapping.
+- `npm run typecheck` ??validates the typed catalog and Phaser manifest imports.
 
 ## Commit Message
 
@@ -75,6 +75,6 @@ Task: T03-character-catalog-and-passives
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed (`npm test -- src/game/characters/characterRegistry.test.ts`; `npm run typecheck`)
+- commit: ac69379
