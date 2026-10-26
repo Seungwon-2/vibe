@@ -6,8 +6,8 @@
 - Source image: `assets/character/reference/aokumo-rin-motion-study.png` (1536 × 1024 PNG)
 
 ## D01. Character and scope
-- **Chosen**: Use the supplied motion study as the design and pose source for Aokumo Rin in the existing right-moving 2D running game. Keep the existing character selector and the other three characters' assets.
-- **Rationale**: The runner already exists in Phaser, while Rin currently mixes art from several sheets. Rebuilding Rin first establishes a consistent visual baseline without disrupting the other characters.
+- **Chosen**: Use the supplied motion study as the design and pose source for Aokumo Rin in the existing right-moving 2D running game. Keep the character selector and Shizuki Toa. Remove Ayatsuno Yuni and Akane Lize from the future selectable/playable roster, then add new characters when their sheets and identities are provided.
+- **Rationale**: The runner already exists in Phaser, while Rin currently mixes art from several sheets. The user chose to retain Toa and replace the other two roster members. Their historical source files can remain in Git; roster removal does not require deleting art history.
 
 ## D02. Animation inventory
 - **Chosen**: Extract the twelve RUN poses in order for a looping run cycle. Use the six poses shown for each of HIT, SLIDE, JUMP, DOUBLE JUMP, VICTORY, and CRY. Keep the sheet's IDLE and CHEER rows available for subsequent animation integration.
@@ -35,6 +35,7 @@
 - `src/game/runner/RunnerPlayer.ts` always plays `gameOver` on finish. The current result screen does not store or evaluate a local personal best.
 - `scripts/prepare-character-assets.mjs` already builds transparent 96 × 96 atlas frames and checks edge padding. Its per-frame resizing and mixed anchors need review for this unified sheet.
 - `.memory/current.md` still points to P03-T01 biome pixel art. A new plan should make this motion work the active task without marking the unfinished biome task complete.
+- The current four-character registry and selector need a roster update when implementation begins. Toa remains available while the new characters are added; Yuni and Lize should no longer appear as choices.
 
 ## Input and verification notes
 - The original PNG is present at the source path above. Its background is pale rather than transparent, so frame extraction needs visual inspection of edge cleanup, especially near white hair and frills.
