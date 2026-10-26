@@ -1,24 +1,26 @@
 import Phaser from 'phaser';
 import { getCharacter } from '../characters/characterCatalog';
 import type { CharacterId } from '../characters/characterTypes';
-import { advanceRunner, createRunnerSnapshot, pauseRunner, resumeRunner, startRunner } from './RunnerSimulation';
+import { advanceRunner, collectPickup, createRunnerSnapshot, pauseRunner, resumeRunner, startRunner } from './RunnerSimulation';
 import { RunnerPlayer, RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { RunnerInputBridge } from './RunnerInput';
-import type { RunnerResult, RunnerSnapshot } from './runnerTypes';
+import type { RunnerGateId, RunnerResult, RunnerSnapshot } from './runnerTypes';
 import { RUNNER_CONFIG } from './runnerConfig';
 import { ObstacleSpawner } from './ObstacleSpawner';
 import { tryResolveHazardHit } from './CollisionSystem';
+import { CollectibleSpawner, type PickupDefinition } from './CollectibleSpawner';
+import { RunnerEventEmitter } from './runnerEvents';
+import type { RunnerEvent } from './runnerEvents';
 
 export class RunnerScene extends Phaser.Scene {
   private inputBridge!: RunnerInputBridge;
   private player!: RunnerPlayer;
   private snapshot!: RunnerSnapshot;
   private countdownRemainingMs = RUNNER_CONFIG.countdownMs;
-  private onSnapshot!: (snapshot: RunnerSnapshot) => void;
-  private onFinished!: (result: RunnerResult) => void;
+  private eventEmitter!: RunnerEventEmitter;
   private heldKeyboardActions = new Set<string>();
   private spawner!: ObstacleSpawner;
-  private finishedEmitted = false;
+  private collectibles!: CollectibleSpawner;
 
   constructor() {
     super({ key: 'RunnerScene' });
@@ -34,8 +36,11 @@ export class RunnerScene extends Phaser.Scene {
     const characterId = this.registry.get('characterId') as CharacterId;
     const character = getCharacter(characterId);
     this.inputBridge = this.registry.get('inputBridge') as RunnerInputBridge;
-    this.onSnapshot = this.registry.get('onSnapshot') as (snapshot: RunnerSnapshot) => void;
-    this.onFinished = this.registry.get('onFinished') as (result: RunnerResult) => void;
+    this.eventEmitter = new RunnerEventEmitter({
+      onSnapshot: this.registry.get('onSnapshot') as (snapshot: RunnerSnapshot) => void,
+      onFinished: this.registry.get('onFinished') as (result: RunnerResult) => void,
+      onEvent: this.registry.get('onEvent') as ((event: RunnerEvent) => void) | undefined,
+    });
     this.snapshot = createRunnerSnapshot(characterId);
 
     for (const name of ['run', 'jump', 'doubleJump', 'slide', 'hurt'] as const) {
@@ -57,12 +62,13 @@ export class RunnerScene extends Phaser.Scene {
     this.physics.add.collider(sprite, floor);
     this.player = new RunnerPlayer(sprite, characterId);
     this.spawner = new ObstacleSpawner(this, this.player.gameObject, this.handleHazardOverlap);
+    this.collectibles = new CollectibleSpawner(this, this.player.gameObject, this.handlePickup);
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
     window.addEventListener('blur', this.handleBlur);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.cleanup, this);
     this.events.once(Phaser.Scenes.Events.DESTROY, this.cleanup, this);
-    this.onSnapshot(this.snapshot);
+    this.publish(this.snapshot, true);
     if (this.registry.get('paused')) this.setPaused(true);
   }
 
@@ -70,18 +76,25 @@ export class RunnerScene extends Phaser.Scene {
     if (!this.player || this.snapshot.phase === 'finished') return;
     if (this.snapshot.phase === 'countdown') {
       this.countdownRemainingMs -= deltaMs;
-      if (this.countdownRemainingMs <= 0) this.publish(startRunner(this.snapshot));
+      if (this.countdownRemainingMs <= 0) {
+        this.inputBridge.clear();
+        this.publish(startRunner(this.snapshot), true);
+      }
       return;
     }
     const input = this.inputBridge.consumeFrame();
     this.player.setSliding(input.slideHeld);
     if (input.jumpPressed) this.player.jump();
     this.player.update(deltaMs);
-    const { state, result } = advanceRunner(this.snapshot, deltaMs);
-    this.publish(state);
+    const gateAwards: { id: RunnerGateId; awardedMs: number }[] = [];
+    const { state, result } = advanceRunner(this.snapshot, deltaMs,
+      (id, awardedMs) => gateAwards.push({ id, awardedMs }));
+    this.publish(state, gateAwards.length > 0 || result !== null);
+    for (const gate of gateAwards) this.eventEmitter.gate(gate.id, gate.awardedMs);
     this.player.setHurt(state.staggerRemainingMs > 0);
     this.player.setProtected(state.protectionRemainingMs);
     this.spawner.update(state);
+    this.collectibles.update(state);
     if (result) {
       this.inputBridge.clear();
       this.emitFinished(result);
@@ -94,10 +107,10 @@ export class RunnerScene extends Phaser.Scene {
     this.inputBridge.clear();
     this.heldKeyboardActions.clear();
     if (paused) {
-      this.publish(pauseRunner(this.snapshot));
+      this.publish(pauseRunner(this.snapshot), true);
       this.scene.pause();
     } else {
-      this.publish(resumeRunner(this.snapshot));
+      this.publish(resumeRunner(this.snapshot), true);
       this.scene.resume();
     }
   }
@@ -106,25 +119,31 @@ export class RunnerScene extends Phaser.Scene {
     return this.snapshot;
   }
 
-  protected publish(snapshot: RunnerSnapshot): void {
+  protected publish(snapshot: RunnerSnapshot, force = false): void {
     this.snapshot = snapshot;
-    this.onSnapshot(snapshot);
+    this.eventEmitter.snapshot(snapshot, this.time.now, force);
   }
+
+  private readonly handlePickup = (pickup: PickupDefinition): void => {
+    const next = collectPickup(this.snapshot, pickup);
+    if (next === this.snapshot) return;
+    const awardedMs = next.remainingMs - this.snapshot.remainingMs;
+    this.publish(next, true);
+    this.eventEmitter.pickup(pickup.id, pickup.kind, awardedMs);
+  };
 
   private readonly handleHazardOverlap = (): void => {
     const { state, hit, result } = tryResolveHazardHit(this.snapshot);
     if (!hit) return;
-    this.publish(state);
+    this.publish(state, true);
     this.player.setHurt(true);
     this.player.setProtected(state.protectionRemainingMs);
     if (result) this.emitFinished(result);
   };
 
   private emitFinished(result: RunnerResult): void {
-    if (this.finishedEmitted) return;
-    this.finishedEmitted = true;
     this.inputBridge.clear();
-    this.onFinished(result);
+    this.eventEmitter.finish(result);
   }
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
@@ -140,13 +159,17 @@ export class RunnerScene extends Phaser.Scene {
     if (!['Space', 'ArrowUp', 'ArrowDown'].includes(event.code)) return;
     event.preventDefault();
     this.heldKeyboardActions.delete(event.code);
-    this.inputBridge.release(event.code === 'ArrowDown' ? 'slide' : 'jump');
+    if (event.code === 'ArrowDown') this.inputBridge.release('slide');
+    else if (!this.heldKeyboardActions.has('Space') && !this.heldKeyboardActions.has('ArrowUp')) {
+      this.inputBridge.release('jump');
+    }
   };
 
   private readonly handleBlur = (): void => {
     this.heldKeyboardActions.clear();
     this.inputBridge.clear();
     this.player?.setSliding(false);
+    this.setPaused(true);
   };
 
   private handleLoadError(file: { key: string }): void {
@@ -163,5 +186,6 @@ export class RunnerScene extends Phaser.Scene {
     this.inputBridge?.clear();
     this.player?.destroy();
     this.spawner?.destroy();
+    this.collectibles?.destroy();
   }
 }

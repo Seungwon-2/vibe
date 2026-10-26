@@ -5,6 +5,7 @@ import { createRunnerGameConfig } from './createRunnerGameConfig';
 import type { RunnerInputBridge } from './RunnerInput';
 import type { RunnerResult, RunnerSnapshot } from './runnerTypes';
 import { RunnerScene } from './RunnerScene';
+import type { RunnerEvent } from './runnerEvents';
 
 export type RunnerGameProps = {
   characterId: CharacterId;
@@ -12,21 +13,22 @@ export type RunnerGameProps = {
   paused: boolean;
   onSnapshot(snapshot: RunnerSnapshot): void;
   onFinished(result: RunnerResult): void;
+  onEvent?(event: RunnerEvent): void;
 };
 
 export function RunnerGame({
-  characterId, inputBridge, paused, onSnapshot, onFinished,
+  characterId, inputBridge, paused, onSnapshot, onFinished, onEvent,
 }: RunnerGameProps): React.JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
   const initialPaused = useRef(paused);
-  const callbacksRef = useRef({ onSnapshot, onFinished });
+  const callbacksRef = useRef({ onSnapshot, onFinished, onEvent });
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    callbacksRef.current = { onSnapshot, onFinished };
-  }, [onSnapshot, onFinished]);
+    callbacksRef.current = { onSnapshot, onFinished, onEvent };
+  }, [onSnapshot, onFinished, onEvent]);
 
   useEffect(() => {
     if (!hostRef.current) return;
@@ -35,7 +37,11 @@ export function RunnerGame({
       game = new Phaser.Game(createRunnerGameConfig(hostRef.current, characterId, inputBridge, {
         onSnapshot: (snapshot) => callbacksRef.current.onSnapshot(snapshot),
         onFinished: (result) => callbacksRef.current.onFinished(result),
-        onError: (failure) => setError(failure.message),
+        onEvent: (event) => callbacksRef.current.onEvent?.(event),
+        onError: (failure) => {
+          callbacksRef.current.onEvent?.({ type: 'fatal-error', message: failure.message });
+          setError(failure.message);
+        },
       }));
       game.registry.set('paused', initialPaused.current);
       gameRef.current = game;
@@ -55,7 +61,7 @@ export function RunnerGame({
     if (!game) return;
     game.registry.set('paused', paused);
     if (!game.isBooted) return;
-    const scene = game.scene.getScene('RunnerScene');
+    const scene = game.scene.keys.RunnerScene;
     if (scene instanceof RunnerScene) scene.setPaused(paused);
   }, [paused, attempt]);
 

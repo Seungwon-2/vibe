@@ -3,10 +3,12 @@ import type { CharacterId } from '../characters/characterTypes';
 import type { RunnerResult, RunnerSnapshot } from './runnerTypes';
 import type { RunnerInputBridge } from './RunnerInput';
 import { RunnerScene } from './RunnerScene';
+import type { RunnerEvent } from './runnerEvents';
 
 export type RunnerGameCallbacks = {
   onSnapshot(snapshot: RunnerSnapshot): void;
   onFinished(result: RunnerResult): void;
+  onEvent?(event: RunnerEvent): void;
   onError(error: Error): void;
 };
 
@@ -34,6 +36,7 @@ export function createRunnerGameConfig(
         game.registry.set('inputBridge', inputBridge);
         game.registry.set('onSnapshot', callbacks.onSnapshot);
         game.registry.set('onFinished', callbacks.onFinished);
+        game.registry.set('onEvent', callbacks.onEvent);
         game.registry.set('onError', callbacks.onError);
       },
     },

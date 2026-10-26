@@ -154,6 +154,7 @@ export function finishRunner(
 export function advanceRunner(
   state: RunnerSnapshot,
   deltaMs: number,
+  onGateAward?: (gateId: RunnerGateId, awardedMs: number) => void,
 ): { state: RunnerSnapshot; result: RunnerResult | null } {
   if (state.phase !== 'running') return { state, result: null };
   if (state.remainingMs <= 0) return finishRunner(state);
@@ -181,6 +182,7 @@ export function advanceRunner(
         ),
         passedGateIds: [...atGate.passedGateIds, nextGate.id],
       };
+      onGateAward?.(nextGate.id, current.remainingMs - atGate.remainingMs);
       unspentMs = Math.max(0, unspentMs - segmentMs);
       continue;
     }

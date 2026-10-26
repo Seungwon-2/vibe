@@ -1,6 +1,6 @@
 # Task: T04 Pickups and Run Events
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -46,11 +46,11 @@ Collect coins/time items and milestone gates exactly once, then publish bounded 
 
 ## Acceptance Criteria
 
-- [ ] Coins increment by one on contact and do not alter timer or movement.
-- [ ] Time items apply character passives and obey the cap.
-- [ ] Each of the three gates fires once at its distance and gives +20 seconds subject to cap.
-- [ ] Snapshot events are bounded and terminal event is exactly once.
-- [ ] No collectible is mandatory for a hazard pattern to be completed.
+- [x] Coins increment by one on contact and do not alter timer or movement.
+- [x] Time items apply character passives and obey the cap.
+- [x] Each of the three gates fires once at its distance and gives +20 seconds subject to cap.
+- [x] Snapshot events are bounded and terminal event is exactly once.
+- [x] No collectible is mandatory for a hazard pattern to be completed.
 
 ## Validation
 
@@ -72,6 +72,7 @@ Task: T04-pickups-and-run-events
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed (`npm test`; `npm run typecheck`; `npm run build`; `npm run lint`)
+- A minimal `RunnerPreview` screen connects the engine to the existing character selection flow; P03 retains the full visual redesign.
 - commit: pending

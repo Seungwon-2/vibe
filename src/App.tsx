@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { CharacterSelect } from './app/screens/CharacterSelect';
-import { getCharacter } from './game/characters/characterCatalog';
 import type { CharacterId } from './game/characters/characterTypes';
+
+const RunnerPreview = lazy(() => import('./app/screens/RunnerPreview').then((module) => ({ default: module.RunnerPreview })));
 
 function App(): React.JSX.Element {
   const [screen, setScreen] = useState<'home' | 'characters' | 'ready'>(() =>
@@ -24,18 +25,10 @@ function App(): React.JSX.Element {
   }
 
   if (screen === 'ready') {
-    const character = getCharacter(selectedCharacterId);
     return (
-      <main className="landing-shell">
-        <section className="title-card" aria-labelledby="game-title">
-          <p className="eyebrow">RUNNER PREVIEW</p>
-          <h1 id="game-title">{character.displayName}</h1>
-          <p className="intro-copy">선택한 캐릭터로 러닝을 시작할 준비가 되었어요.</p>
-          <button className="selector-confirm" type="button" onClick={() => setScreen('characters')}>
-            캐릭터 다시 선택
-          </button>
-        </section>
-      </main>
+      <Suspense fallback={<main className="landing-shell">러닝 화면을 여는 중…</main>}>
+        <RunnerPreview characterId={selectedCharacterId} onBack={() => setScreen('characters')} />
+      </Suspense>
     );
   }
 

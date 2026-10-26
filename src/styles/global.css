@@ -31,6 +31,53 @@ button {
   color: inherit;
 }
 
+.runner-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.runner-panel { width: min(100%, 1040px); }
+.runner-header, .runner-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  background: #202d53;
+  border-radius: 16px;
+}
+.runner-stats, .runner-menu { display: flex; gap: 14px; align-items: center; }
+.runner-header button, .runner-controls button, .runner-overlay button {
+  padding: 10px 20px;
+  border: 1px solid #7895d2;
+  border-radius: 12px;
+  background: #314878;
+  cursor: pointer;
+}
+.runner-stage { position: relative; margin: 12px 0; aspect-ratio: 16 / 9; }
+.runner-game, .runner-game__canvas, .runner-game__canvas canvas { width: 100%; height: 100%; }
+.runner-game__canvas canvas { display: block; }
+.runner-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+  background: rgb(8 15 39 / 58%);
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  text-align: center;
+}
+.runner-controls button { min-width: 100px; touch-action: none; user-select: none; }
+.runner-controls span { text-align: center; }
+@media (max-width: 650px) {
+  .runner-header { flex-wrap: wrap; }
+  .runner-controls span { font-size: 0.8rem; }
+}
+
 .landing-shell {
   display: grid;
   min-height: 100vh;
