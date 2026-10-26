@@ -1,0 +1,20 @@
+# Twelve-frame run cycle sources
+
+These four transparent 4-column by 3-row source sheets replace the earlier eight-frame run rows. Each source cell is 362×362 px. The earlier `*-locomotion-v2.png` and `*-run-inbetweens-v1.png` files remain as versioned references.
+
+| Character | Source sheet | Runtime prefix |
+| --- | --- | --- |
+| Aokumo Rin | `aokumo-rin-run-cycle-v3.png` | `run-00`–`run-11` |
+| Shizuki Toa | `shizuki-toa-run-cycle-v3.png` | `goth-student-run-00`–`goth-student-run-11` |
+| Ayatsuno Yuni | `ayatsuno-yuni-run-cycle-v3.png` | `moonwing-run-00`–`moonwing-run-11` |
+| Akane Lize | `akane-lize-run-cycle-v3.png` | `akane-lize-run-00`–`akane-lize-run-11` |
+
+## Image generation brief
+
+Each sheet was generated with the built-in image generation tool using its character's existing runtime atlas as the pixel-art identity reference and its portrait as a costume reference. The shared brief requested twelve consecutive right-facing running poses in a transparent 4×3 grid, a right-leg stride followed by a left-leg stride, arms counter-swinging against the legs, consistent face/costume/proportions, a steady torso scale and baseline, and full limbs inside every cell. Character-specific details retained Rin's blue maid outfit, Toa's purple school uniform, Yuni's horn and wings, and Lize's red hair and dark jacket.
+
+## Runtime preparation
+
+`npm run assets:prepare` extracts the twelve cells from each sheet, removes detached generation residue, fits each pose into an 88px content area, normalizes its displayed height to 84px, and anchors the feet in a 96×96 frame. The run frames occupy the first twelve slots of each 1152×288 runtime atlas. The selector plays the strip in 768ms (15.625fps). The planned Phaser runner should use the same atlas frames and cycle duration.
+
+The generated source artwork is retained so individual poses can be repainted if a gait transition still looks wrong at game size. Frame timing or an engine swap cannot repair a malformed leg or arm pose.

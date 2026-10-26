@@ -27,7 +27,7 @@ describe('runner character registry', () => {
     for (const character of CHARACTERS) {
       expect(character.portraitUrl).toMatch(/\.png/);
       expect(character.atlasUrl).toMatch(/\.png/);
-      expect(character.atlasManifest.meta.size).toEqual({ w: 768, h: 384 });
+      expect(character.atlasManifest.meta.size).toEqual({ w: 1152, h: 288 });
     }
   });
 
@@ -35,7 +35,7 @@ describe('runner character registry', () => {
     for (const character of CHARACTERS) {
       expect(character.frameWidth).toBe(96);
       expect(character.frameHeight).toBe(96);
-      expect(character.animations.run).toHaveLength(8);
+      expect(character.animations.run).toHaveLength(12);
       expect(Object.keys(character.animations)).toEqual(REQUIRED_ANIMATIONS);
 
       for (const animation of REQUIRED_ANIMATIONS) {

@@ -5,7 +5,7 @@
   "frameWidth": 96,
   "frameHeight": 96,
   "contentSize": 88,
-  "atlasColumns": 8,
+  "atlasColumns": 12,
   "sources": {
     "sheet": {
       "path": "assets/character/akane-lize-spritesheet.png",
@@ -59,19 +59,107 @@
         887
       ]
     },
-    "runInbetweens": {
-      "path": "assets/character/locomotion/akane-lize-run-inbetweens-v1.png",
-      "width": 2172,
-      "height": 724,
+    "runCycleV3": {
+      "path": "assets/character/locomotion/akane-lize-run-cycle-v3.png",
+      "width": 1448,
+      "height": 1086,
       "columns": 4,
       "backgroundMode": "transparent",
       "rowBoundaries": [
         0,
-        724
-      ]
+        362,
+        724,
+        1086
+      ],
+      "cleanupMode": "runCycle",
+      "targetHeight": 84
     }
   },
   "frames": [
+    {
+      "name": "akane-lize-run-00",
+      "source": "runCycleV3",
+      "column": 0,
+      "row": 0,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-01",
+      "source": "runCycleV3",
+      "column": 1,
+      "row": 0,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-02",
+      "source": "runCycleV3",
+      "column": 2,
+      "row": 0,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-03",
+      "source": "runCycleV3",
+      "column": 3,
+      "row": 0,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-04",
+      "source": "runCycleV3",
+      "column": 0,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-05",
+      "source": "runCycleV3",
+      "column": 1,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-06",
+      "source": "runCycleV3",
+      "column": 2,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-07",
+      "source": "runCycleV3",
+      "column": 3,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-08",
+      "source": "runCycleV3",
+      "column": 0,
+      "row": 2,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-09",
+      "source": "runCycleV3",
+      "column": 1,
+      "row": 2,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-10",
+      "source": "runCycleV3",
+      "column": 2,
+      "row": 2,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-11",
+      "source": "runCycleV3",
+      "column": 3,
+      "row": 2,
+      "animation": "run"
+    },
     {
       "name": "akane-lize-idle-00",
       "source": "sheet",
@@ -127,102 +215,6 @@
       "column": 3,
       "row": 0,
       "animation": "walk"
-    },
-    {
-      "name": "akane-lize-run-00",
-      "source": "movementV2",
-      "column": 0,
-      "row": 1,
-      "animation": "run",
-      "rect": {
-        "left": 0,
-        "top": 0,
-        "width": 444,
-        "height": 444
-      },
-      "minComponentPixels": 8000,
-      "componentPadding": 0
-    },
-    {
-      "name": "akane-lize-run-01",
-      "source": "runInbetweens",
-      "column": 0,
-      "row": 0,
-      "animation": "run",
-      "minComponentPixels": 120,
-      "componentPadding": 0
-    },
-    {
-      "name": "akane-lize-run-02",
-      "source": "movementV2",
-      "column": 1,
-      "row": 1,
-      "animation": "run",
-      "rect": {
-        "left": 444,
-        "top": 0,
-        "width": 443,
-        "height": 444
-      },
-      "minComponentPixels": 8000,
-      "componentPadding": 0
-    },
-    {
-      "name": "akane-lize-run-03",
-      "source": "runInbetweens",
-      "column": 1,
-      "row": 0,
-      "animation": "run",
-      "minComponentPixels": 120,
-      "componentPadding": 0
-    },
-    {
-      "name": "akane-lize-run-04",
-      "source": "movementV2",
-      "column": 2,
-      "row": 1,
-      "animation": "run",
-      "rect": {
-        "left": 887,
-        "top": 0,
-        "width": 444,
-        "height": 444
-      },
-      "minComponentPixels": 8000,
-      "componentPadding": 0
-    },
-    {
-      "name": "akane-lize-run-05",
-      "source": "runInbetweens",
-      "column": 2,
-      "row": 0,
-      "animation": "run",
-      "minComponentPixels": 120,
-      "componentPadding": 0
-    },
-    {
-      "name": "akane-lize-run-06",
-      "source": "movementV2",
-      "column": 3,
-      "row": 1,
-      "animation": "run",
-      "rect": {
-        "left": 1331,
-        "top": 0,
-        "width": 443,
-        "height": 444
-      },
-      "minComponentPixels": 8000,
-      "componentPadding": 0
-    },
-    {
-      "name": "akane-lize-run-07",
-      "source": "runInbetweens",
-      "column": 3,
-      "row": 0,
-      "animation": "run",
-      "minComponentPixels": 120,
-      "componentPadding": 0
     },
     {
       "name": "akane-lize-slide-00",
@@ -380,7 +372,7 @@
     "idle": 2,
     "idleLook": 2,
     "walk": 4,
-    "run": 8,
+    "run": 12,
     "slide": 2,
     "doubleJump": 2,
     "jump": 1,

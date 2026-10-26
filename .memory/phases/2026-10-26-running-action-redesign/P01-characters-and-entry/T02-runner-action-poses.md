@@ -4,7 +4,7 @@
 
 ## Follow-up: natural run cycle
 
-- The original four alternating key poses remain as even-numbered frames. A later motion refinement added four transparent in-between poses for each character, so the runtime `run` animation now contains eight frames (`run-00` through `run-07`). The selector and future runner play the eight-frame cycle at about 12fps without a synthetic bounce.
+- The first pass used four key poses and four independently generated in-between poses. A later follow-up replaced that run row for all four characters with a cohesive twelve-pose source sheet per character (`assets/character/locomotion/*-run-cycle-v3.png`). Runtime frames are `run-00` through `run-11` at 96x96; the selector loops them in 768ms. Old source sheets remain as versioned reference assets. The future runner must use the twelve-frame atlas cycle.
 
 ## Goal
 

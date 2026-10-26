@@ -40,7 +40,7 @@ describe('CharacterSelect', () => {
     const preview = screen.getByTestId('character-preview-moonwing');
     expect(preview).toHaveClass('is-running');
     expect(preview).toHaveAttribute('src', expect.stringContaining('moonwing.png'));
-    expect(preview.style.animationTimingFunction).toBe('steps(8, end)');
+    expect(preview.style.animationTimingFunction).toBe('steps(12, end)');
     expect(preview.style.animationDuration).toBe('768ms');
   });
 

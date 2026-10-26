@@ -189,6 +189,17 @@ function clearConnectedLowDifferenceBackground(data, width, height, maxDifferenc
   }
 }
 
+function clearGeneratedRunArtifacts(data, width, height) {
+  const [main, ...detached] = findOpaqueComponents(data, width, height);
+  if (!main) return;
+  for (const component of detached) {
+    const horizontalGap = Math.max(0, component.left - main.right, main.left - component.right);
+    const verticalGap = Math.max(0, component.top - main.bottom, main.top - component.bottom);
+    if (component.size >= 500 && Math.max(horizontalGap, verticalGap) <= 12) continue;
+    for (const index of component.pixels) data[index * 4 + 3] = 0;
+  }
+}
+
 async function makeTransparentFrame(frame) {
   const source = config.sources[frame.source];
   const rect = resolveFrameRect(frame, source);
@@ -205,6 +216,9 @@ async function makeTransparentFrame(frame) {
     clearConnectedLowDifferenceBackground(pixels, info.width, info.height, config.sources[frame.source].backgroundDifference);
   } else {
     clearConnectedBlueBackground(pixels, info.width, info.height);
+  }
+  if (source.cleanupMode === 'runCycle') {
+    clearGeneratedRunArtifacts(pixels, info.width, info.height);
   }
   const cleanup = config.cleanup ?? {};
   const { removed } = clearSmallDetachedComponents(pixels, info.width, info.height, {
@@ -223,9 +237,12 @@ async function makeTransparentFrame(frame) {
     .resize(config.contentSize, config.contentSize, { fit: 'inside', kernel: 'nearest' })
     .png()
     .toBuffer({ resolveWithObject: true });
-  const resizedPixels = trimmed.data;
+  const normalized = source.cleanupMode === 'runCycle'
+    ? await sharp(trimmed.data).resize(trimmed.info.width, source.targetHeight, { fit: 'fill', kernel: 'nearest' }).png().toBuffer({ resolveWithObject: true })
+    : trimmed;
+  const resizedPixels = normalized.data;
   const anchor = frame.anchor ?? (['idle', 'idleLook', 'walk', 'run', 'start'].includes(frame.animation) ? 'feet' : 'center');
-  const offset = getAlignedOffset({ left: 0, top: 0, right: trimmed.info.width - 1, bottom: trimmed.info.height - 1 },
+  const offset = getAlignedOffset({ left: 0, top: 0, right: normalized.info.width - 1, bottom: normalized.info.height - 1 },
     config.frameWidth, config.frameHeight, anchor, config.floorPadding ?? 4);
   return sharp({
     create: {

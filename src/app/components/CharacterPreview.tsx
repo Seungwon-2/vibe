@@ -21,7 +21,7 @@ export function CharacterPreview({ character, selected }: CharacterPreviewProps)
     width: character.atlasManifest.meta.size.w,
     height: character.atlasManifest.meta.size.h,
     transform: `translate3d(${-frame.x}px, ${-frame.y}px, 0)`,
-    animationDuration: `${runFrames.length * 96}ms`,
+    animationDuration: `${runFrames.length * 64}ms`,
     animationTimingFunction: `steps(${runFrames.length}, end)`,
     '--run-start-x': `${-runStart.x}px`,
     '--run-end-x': `${-(runStart.x + runFrames.length * character.frameWidth)}px`,

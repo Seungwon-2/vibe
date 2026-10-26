@@ -1,169 +1,9 @@
 {
   "frames": {
-    "akane-lize-idle-00": {
-      "frame": {
-        "x": 0,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 96,
-        "h": 96
-      }
-    },
-    "akane-lize-idle-01": {
-      "frame": {
-        "x": 96,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 96,
-        "h": 96
-      }
-    },
-    "akane-lize-idle-look-00": {
-      "frame": {
-        "x": 192,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 96,
-        "h": 96
-      }
-    },
-    "akane-lize-idle-look-01": {
-      "frame": {
-        "x": 288,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 96,
-        "h": 96
-      }
-    },
-    "akane-lize-walk-00": {
-      "frame": {
-        "x": 384,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 96,
-        "h": 96
-      }
-    },
-    "akane-lize-walk-01": {
-      "frame": {
-        "x": 480,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 96,
-        "h": 96
-      }
-    },
-    "akane-lize-walk-02": {
-      "frame": {
-        "x": 576,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 96,
-        "h": 96
-      }
-    },
-    "akane-lize-walk-03": {
-      "frame": {
-        "x": 672,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 96,
-        "h": 96
-      },
-      "sourceSize": {
-        "w": 96,
-        "h": 96
-      }
-    },
     "akane-lize-run-00": {
       "frame": {
         "x": 0,
-        "y": 96,
+        "y": 0,
         "w": 96,
         "h": 96
       },
@@ -183,7 +23,7 @@
     "akane-lize-run-01": {
       "frame": {
         "x": 96,
-        "y": 96,
+        "y": 0,
         "w": 96,
         "h": 96
       },
@@ -203,7 +43,7 @@
     "akane-lize-run-02": {
       "frame": {
         "x": 192,
-        "y": 96,
+        "y": 0,
         "w": 96,
         "h": 96
       },
@@ -223,7 +63,7 @@
     "akane-lize-run-03": {
       "frame": {
         "x": 288,
-        "y": 96,
+        "y": 0,
         "w": 96,
         "h": 96
       },
@@ -243,7 +83,7 @@
     "akane-lize-run-04": {
       "frame": {
         "x": 384,
-        "y": 96,
+        "y": 0,
         "w": 96,
         "h": 96
       },
@@ -263,7 +103,7 @@
     "akane-lize-run-05": {
       "frame": {
         "x": 480,
-        "y": 96,
+        "y": 0,
         "w": 96,
         "h": 96
       },
@@ -283,7 +123,7 @@
     "akane-lize-run-06": {
       "frame": {
         "x": 576,
-        "y": 96,
+        "y": 0,
         "w": 96,
         "h": 96
       },
@@ -301,6 +141,246 @@
       }
     },
     "akane-lize-run-07": {
+      "frame": {
+        "x": 672,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "akane-lize-run-08": {
+      "frame": {
+        "x": 768,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "akane-lize-run-09": {
+      "frame": {
+        "x": 864,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "akane-lize-run-10": {
+      "frame": {
+        "x": 960,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "akane-lize-run-11": {
+      "frame": {
+        "x": 1056,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "akane-lize-idle-00": {
+      "frame": {
+        "x": 0,
+        "y": 96,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "akane-lize-idle-01": {
+      "frame": {
+        "x": 96,
+        "y": 96,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "akane-lize-idle-look-00": {
+      "frame": {
+        "x": 192,
+        "y": 96,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "akane-lize-idle-look-01": {
+      "frame": {
+        "x": 288,
+        "y": 96,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "akane-lize-walk-00": {
+      "frame": {
+        "x": 384,
+        "y": 96,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "akane-lize-walk-01": {
+      "frame": {
+        "x": 480,
+        "y": 96,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "akane-lize-walk-02": {
+      "frame": {
+        "x": 576,
+        "y": 96,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    "akane-lize-walk-03": {
       "frame": {
         "x": 672,
         "y": 96,
@@ -322,8 +402,8 @@
     },
     "akane-lize-slide-00": {
       "frame": {
-        "x": 0,
-        "y": 192,
+        "x": 768,
+        "y": 96,
         "w": 96,
         "h": 96
       },
@@ -342,8 +422,8 @@
     },
     "akane-lize-slide-01": {
       "frame": {
-        "x": 96,
-        "y": 192,
+        "x": 864,
+        "y": 96,
         "w": 96,
         "h": 96
       },
@@ -362,8 +442,8 @@
     },
     "akane-lize-double-jump-00": {
       "frame": {
-        "x": 192,
-        "y": 192,
+        "x": 960,
+        "y": 96,
         "w": 96,
         "h": 96
       },
@@ -382,8 +462,8 @@
     },
     "akane-lize-double-jump-01": {
       "frame": {
-        "x": 288,
-        "y": 192,
+        "x": 1056,
+        "y": 96,
         "w": 96,
         "h": 96
       },
@@ -402,7 +482,7 @@
     },
     "akane-lize-jump-00": {
       "frame": {
-        "x": 384,
+        "x": 0,
         "y": 192,
         "w": 96,
         "h": 96
@@ -422,7 +502,7 @@
     },
     "akane-lize-hurt-00": {
       "frame": {
-        "x": 480,
+        "x": 96,
         "y": 192,
         "w": 96,
         "h": 96
@@ -442,7 +522,7 @@
     },
     "akane-lize-hurt-01": {
       "frame": {
-        "x": 576,
+        "x": 192,
         "y": 192,
         "w": 96,
         "h": 96
@@ -462,7 +542,7 @@
     },
     "akane-lize-hurt-02": {
       "frame": {
-        "x": 672,
+        "x": 288,
         "y": 192,
         "w": 96,
         "h": 96
@@ -482,8 +562,8 @@
     },
     "akane-lize-start-00": {
       "frame": {
-        "x": 0,
-        "y": 288,
+        "x": 384,
+        "y": 192,
         "w": 96,
         "h": 96
       },
@@ -502,8 +582,8 @@
     },
     "akane-lize-start-01": {
       "frame": {
-        "x": 96,
-        "y": 288,
+        "x": 480,
+        "y": 192,
         "w": 96,
         "h": 96
       },
@@ -522,8 +602,8 @@
     },
     "akane-lize-victory-00": {
       "frame": {
-        "x": 192,
-        "y": 288,
+        "x": 576,
+        "y": 192,
         "w": 96,
         "h": 96
       },
@@ -542,8 +622,8 @@
     },
     "akane-lize-victory-01": {
       "frame": {
-        "x": 288,
-        "y": 288,
+        "x": 672,
+        "y": 192,
         "w": 96,
         "h": 96
       },
@@ -562,8 +642,8 @@
     },
     "akane-lize-victory-02": {
       "frame": {
-        "x": 384,
-        "y": 288,
+        "x": 768,
+        "y": 192,
         "w": 96,
         "h": 96
       },
@@ -582,8 +662,8 @@
     },
     "akane-lize-game-over-00": {
       "frame": {
-        "x": 480,
-        "y": 288,
+        "x": 864,
+        "y": 192,
         "w": 96,
         "h": 96
       },
@@ -602,8 +682,8 @@
     },
     "akane-lize-game-over-01": {
       "frame": {
-        "x": 576,
-        "y": 288,
+        "x": 960,
+        "y": 192,
         "w": 96,
         "h": 96
       },
@@ -622,8 +702,8 @@
     },
     "akane-lize-game-over-02": {
       "frame": {
-        "x": 672,
-        "y": 288,
+        "x": 1056,
+        "y": 192,
         "w": 96,
         "h": 96
       },
@@ -646,8 +726,8 @@
     "image": "akane-lize.png",
     "format": "RGBA8888",
     "size": {
-      "w": 768,
-      "h": 384
+      "w": 1152,
+      "h": 288
     },
     "scale": "1"
   }
