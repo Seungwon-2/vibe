@@ -277,22 +277,17 @@ async function makeProof(atlas) {
     .composite([{ input: atlas, left: 0, top: 0 }]).png().toBuffer();
 }
 
-async function makePortrait(source, sheet) {
-  const rect = sheet.portraitRect ?? { left: 69, top: 815, width: 205, height: 178 };
-  const cut = cutoutPaleBackground(extractMotionFrame(source, rect), sheet.backgroundTolerance);
-  removeDetachedEffects(cut);
-  const { bounds } = measure(cut, `${sheet.id}/portrait`);
-  const width = bounds.right - bounds.left + 1;
-  const height = bounds.bottom - bounds.top + 1;
-  const scale = Math.min(480 / width, 480 / height);
-  const targetWidth = Math.max(1, Math.round(width * scale));
-  const targetHeight = Math.max(1, Math.round(height * scale));
-  const art = await sharp(cut.data, { raw: { width: cut.width, height: cut.height, channels: 4 } })
-    .extract({ left: bounds.left, top: bounds.top, width, height })
-    .resize(targetWidth, targetHeight, { kernel: 'nearest' }).png().toBuffer();
-  return sharp({ create: { width: 512, height: 512, channels: 4, background: TRANSPARENT } })
-    .composite([{ input: art, left: Math.floor((512 - targetWidth) / 2), top: 504 - targetHeight }])
-    .png().toBuffer();
+async function validatePortrait(sheet) {
+  const file = path.join(PORTRAIT_DIR, `${sheet.slug}-portrait.png`);
+  let metadata;
+  try { metadata = await sharp(file).metadata(); }
+  catch { throw new Error(`Missing or unreadable curated portrait: ${path.relative(ROOT, file)}.`); }
+  if (metadata.format !== 'png' || metadata.width < 1024 || metadata.height < 1024 || !metadata.hasAlpha) {
+    throw new Error(`${sheet.slug} portrait must be a high-resolution transparent PNG.`);
+  }
+  const corner = await sharp(file).extract({ left: 0, top: 0, width: 1, height: 1 })
+    .ensureAlpha().raw().toBuffer();
+  if (corner[3] !== 0) throw new Error(`${sheet.slug} portrait background is not transparent.`);
 }
 
 function hash(buffer) {
@@ -355,10 +350,7 @@ export async function buildCharacterAtlas(sheet, checkOnly = false) {
   await saveOrCheck(path.join(RUNTIME_DIR, `${sheet.id}.png`), atlas, checkOnly);
   await saveOrCheck(path.join(RUNTIME_DIR, `${sheet.id}.json`), manifest, checkOnly);
   await saveOrCheck(path.join(PROOF_DIR, `${sheet.id}-contact.png`), await makeProof(atlas), checkOnly);
-  if (!['player-default', 'goth-student'].includes(sheet.id)) {
-    const portrait = await makePortrait(source, sheet);
-    await saveOrCheck(path.join(PORTRAIT_DIR, `${sheet.slug}-portrait.png`), portrait, checkOnly);
-  }
+  await validatePortrait(sheet);
   console.log(`${checkOnly ? 'Validated' : 'Prepared'} ${sheet.id}: 60 frames, 1152x480 atlas.`);
 }
 
