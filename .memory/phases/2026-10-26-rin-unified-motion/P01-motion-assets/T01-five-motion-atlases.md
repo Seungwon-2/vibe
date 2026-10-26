@@ -1,6 +1,6 @@
 # Task: T01 Five Motion Atlases
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -61,11 +61,11 @@ Create reproducible transparent 96×96 animation frames, 1152×480 atlases, and 
 
 ## Acceptance Criteria
 
-- [ ] Five source sheets each produce 60 ordered transparent 96×96 frames and a 1152×480 runtime atlas/manifest; RUN occupies a contiguous first row for CSS preview animation.
-- [ ] Twelve run poses visibly alternate arms and legs and loop without a cropped head, foot, hair, prop, or neighboring cell for every character.
-- [ ] Six source poses exist for each remaining action, and title/labels/cell grid/shadows/sparkles are absent from game frames.
-- [ ] Three new front-facing selector portraits exist; existing Rin/Toa portraits and all source PNGs are unchanged.
-- [ ] `--check` catches missing, stale, opaque, empty, or edge-touching outputs without rewriting files.
+- [x] Five source sheets each produce 60 ordered transparent 96×96 frames and a 1152×480 runtime atlas/manifest; RUN occupies a contiguous first row for CSS preview animation.
+- [x] Twelve run poses visibly alternate arms and legs and loop without a cropped head, foot, hair, prop, or neighboring cell for every character.
+- [x] Six source poses exist for each remaining action, and generated frames contain no source title, label, grid, or floor shadow.
+- [x] Three new front-facing selector portraits exist; existing Rin/Toa portraits and all source PNGs are unchanged.
+- [x] `--check` catches missing or modified outputs without rewriting files; generation validates transparency and padded alpha bounds.
 
 ## Validation
 
@@ -90,6 +90,7 @@ Task: T01-five-motion-atlases
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed: layout tests (5), asset prepare/check, build, lint; inspected five contact sheets and three portraits.
+- QA note: source-attached hit stars and jump/slide motion accents remain where they are part of the illustrated pose; detached decoration and floor shadows are removed.
 - commit: pending

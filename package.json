@@ -13,8 +13,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "assets:prepare": "node scripts/prepare-character-assets.mjs",
-    "assets:validate": "node scripts/prepare-character-assets.mjs --check"
+    "assets:prepare": "node scripts/build-motion-atlases.mjs",
+    "assets:validate": "node scripts/build-motion-atlases.mjs --check"
   },
   "dependencies": {
     "phaser": "^3.90.0",
