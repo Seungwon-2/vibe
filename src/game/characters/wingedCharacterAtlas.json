@@ -59,8 +59,8 @@
         887
       ]
     },
-    "runCycleV5": {
-      "path": "assets/character/locomotion/ayatsuno-yuni-run-cycle-v5.png",
+    "runCycleV6": {
+      "path": "assets/character/locomotion/ayatsuno-yuni-run-cycle-v6.png",
       "width": 1448,
       "height": 1086,
       "columns": 4,
@@ -79,84 +79,84 @@
   "frames": [
     {
       "name": "moonwing-run-00",
-      "source": "runCycleV5",
+      "source": "runCycleV6",
       "column": 0,
       "row": 0,
       "animation": "run"
     },
     {
       "name": "moonwing-run-01",
-      "source": "runCycleV5",
+      "source": "runCycleV6",
       "column": 1,
       "row": 0,
       "animation": "run"
     },
     {
       "name": "moonwing-run-02",
-      "source": "runCycleV5",
+      "source": "runCycleV6",
       "column": 2,
       "row": 0,
       "animation": "run"
     },
     {
       "name": "moonwing-run-03",
-      "source": "runCycleV5",
+      "source": "runCycleV6",
       "column": 3,
       "row": 0,
       "animation": "run"
     },
     {
       "name": "moonwing-run-04",
-      "source": "runCycleV5",
+      "source": "runCycleV6",
       "column": 0,
       "row": 1,
       "animation": "run"
     },
     {
       "name": "moonwing-run-05",
-      "source": "runCycleV5",
+      "source": "runCycleV6",
       "column": 1,
       "row": 1,
       "animation": "run"
     },
     {
       "name": "moonwing-run-06",
-      "source": "runCycleV5",
+      "source": "runCycleV6",
       "column": 2,
       "row": 1,
       "animation": "run"
     },
     {
       "name": "moonwing-run-07",
-      "source": "runCycleV5",
+      "source": "runCycleV6",
       "column": 3,
       "row": 1,
       "animation": "run"
     },
     {
       "name": "moonwing-run-08",
-      "source": "runCycleV5",
+      "source": "runCycleV6",
       "column": 0,
       "row": 2,
       "animation": "run"
     },
     {
       "name": "moonwing-run-09",
-      "source": "runCycleV5",
+      "source": "runCycleV6",
       "column": 1,
       "row": 2,
       "animation": "run"
     },
     {
       "name": "moonwing-run-10",
-      "source": "runCycleV5",
+      "source": "runCycleV6",
       "column": 2,
       "row": 2,
       "animation": "run"
     },
     {
       "name": "moonwing-run-11",
-      "source": "runCycleV5",
+      "source": "runCycleV6",
       "column": 3,
       "row": 2,
       "animation": "run"
