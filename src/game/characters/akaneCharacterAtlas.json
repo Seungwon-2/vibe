@@ -1,0 +1,216 @@
+{
+  "id": "akane-lize",
+  "displayName": "Akane Lize",
+  "textureKey": "akane-lize",
+  "frameWidth": 96,
+  "frameHeight": 96,
+  "contentSize": 88,
+  "atlasColumns": 8,
+  "sources": {
+    "sheet": {
+      "path": "assets/character/akane-lize-spritesheet.png",
+      "width": 1024,
+      "height": 1536,
+      "columns": 4,
+      "backgroundMode": "transparent",
+      "rowBoundaries": [
+        0,
+        256,
+        512,
+        768,
+        1024,
+        1280,
+        1536
+      ]
+    },
+    "movement": {
+      "path": "assets/character/locomotion/akane-lize-locomotion-v1.png",
+      "width": 1024,
+      "height": 512,
+      "columns": 4,
+      "backgroundMode": "transparent",
+      "rowBoundaries": [
+        0,
+        256,
+        512
+      ]
+    }
+  },
+  "frames": [
+    {
+      "name": "akane-lize-idle-00",
+      "source": "sheet",
+      "column": 0,
+      "row": 0,
+      "animation": "idle"
+    },
+    {
+      "name": "akane-lize-idle-01",
+      "source": "sheet",
+      "column": 1,
+      "row": 0,
+      "animation": "idle"
+    },
+    {
+      "name": "akane-lize-idle-look-00",
+      "source": "sheet",
+      "column": 2,
+      "row": 0,
+      "animation": "idleLook"
+    },
+    {
+      "name": "akane-lize-idle-look-01",
+      "source": "sheet",
+      "column": 3,
+      "row": 0,
+      "animation": "idleLook"
+    },
+    {
+      "name": "akane-lize-walk-00",
+      "source": "movement",
+      "column": 0,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "akane-lize-walk-01",
+      "source": "movement",
+      "column": 1,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "akane-lize-walk-02",
+      "source": "movement",
+      "column": 2,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "akane-lize-walk-03",
+      "source": "movement",
+      "column": 3,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "akane-lize-run-00",
+      "source": "movement",
+      "column": 0,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-01",
+      "source": "movement",
+      "column": 1,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-02",
+      "source": "movement",
+      "column": 2,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-run-03",
+      "source": "movement",
+      "column": 3,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "akane-lize-jump-00",
+      "source": "sheet",
+      "column": 0,
+      "row": 3,
+      "animation": "jump"
+    },
+    {
+      "name": "akane-lize-hurt-00",
+      "source": "sheet",
+      "column": 1,
+      "row": 3,
+      "animation": "hurt"
+    },
+    {
+      "name": "akane-lize-hurt-01",
+      "source": "sheet",
+      "column": 2,
+      "row": 3,
+      "animation": "hurt"
+    },
+    {
+      "name": "akane-lize-hurt-02",
+      "source": "sheet",
+      "column": 3,
+      "row": 3,
+      "animation": "hurt"
+    },
+    {
+      "name": "akane-lize-start-00",
+      "source": "sheet",
+      "column": 0,
+      "row": 4,
+      "animation": "start"
+    },
+    {
+      "name": "akane-lize-start-01",
+      "source": "sheet",
+      "column": 1,
+      "row": 4,
+      "animation": "start"
+    },
+    {
+      "name": "akane-lize-victory-00",
+      "source": "sheet",
+      "column": 2,
+      "row": 4,
+      "animation": "victory"
+    },
+    {
+      "name": "akane-lize-victory-01",
+      "source": "sheet",
+      "column": 3,
+      "row": 4,
+      "animation": "victory"
+    },
+    {
+      "name": "akane-lize-victory-02",
+      "source": "sheet",
+      "column": 0,
+      "row": 5,
+      "animation": "victory"
+    },
+    {
+      "name": "akane-lize-game-over-00",
+      "source": "sheet",
+      "column": 1,
+      "row": 5,
+      "animation": "gameOver"
+    },
+    {
+      "name": "akane-lize-game-over-01",
+      "source": "sheet",
+      "column": 2,
+      "row": 5,
+      "animation": "gameOver"
+    },
+    {
+      "name": "akane-lize-game-over-02",
+      "source": "sheet",
+      "column": 3,
+      "row": 5,
+      "animation": "gameOver"
+    }
+  ],
+  "accentColor": "#971b2f",
+  "cleanup": {
+    "minComponentPixels": 0,
+    "mainPadding": 2,
+    "runtimeMinComponentPixels": 120,
+    "runtimeMainPadding": 6
+  }
+}

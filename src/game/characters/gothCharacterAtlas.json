@@ -1,0 +1,216 @@
+{
+  "id": "goth-student",
+  "displayName": "Shizuki Toa",
+  "textureKey": "goth-student",
+  "frameWidth": 96,
+  "frameHeight": 96,
+  "contentSize": 88,
+  "atlasColumns": 8,
+  "sources": {
+    "sheet": {
+      "path": "assets/character/goth-student-spritesheet-v2.png",
+      "width": 1024,
+      "height": 1536,
+      "columns": 4,
+      "backgroundMode": "transparent",
+      "rowBoundaries": [
+        0,
+        256,
+        512,
+        768,
+        1024,
+        1280,
+        1536
+      ]
+    },
+    "movement": {
+      "path": "assets/character/locomotion/shizuki-toa-locomotion-v1.png",
+      "width": 1024,
+      "height": 512,
+      "columns": 4,
+      "backgroundMode": "transparent",
+      "rowBoundaries": [
+        0,
+        256,
+        512
+      ]
+    }
+  },
+  "frames": [
+    {
+      "name": "goth-student-idle-00",
+      "source": "sheet",
+      "column": 0,
+      "row": 0,
+      "animation": "idle"
+    },
+    {
+      "name": "goth-student-idle-01",
+      "source": "sheet",
+      "column": 1,
+      "row": 0,
+      "animation": "idle"
+    },
+    {
+      "name": "goth-student-idle-look-00",
+      "source": "sheet",
+      "column": 2,
+      "row": 0,
+      "animation": "idleLook"
+    },
+    {
+      "name": "goth-student-idle-look-01",
+      "source": "sheet",
+      "column": 3,
+      "row": 0,
+      "animation": "idleLook"
+    },
+    {
+      "name": "goth-student-walk-00",
+      "source": "movement",
+      "column": 0,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "goth-student-walk-01",
+      "source": "movement",
+      "column": 1,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "goth-student-walk-02",
+      "source": "movement",
+      "column": 2,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "goth-student-walk-03",
+      "source": "movement",
+      "column": 3,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "goth-student-run-00",
+      "source": "movement",
+      "column": 0,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "goth-student-run-01",
+      "source": "movement",
+      "column": 1,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "goth-student-run-02",
+      "source": "movement",
+      "column": 2,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "goth-student-run-03",
+      "source": "movement",
+      "column": 3,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "goth-student-jump-00",
+      "source": "sheet",
+      "column": 0,
+      "row": 3,
+      "animation": "jump"
+    },
+    {
+      "name": "goth-student-hurt-00",
+      "source": "sheet",
+      "column": 1,
+      "row": 3,
+      "animation": "hurt"
+    },
+    {
+      "name": "goth-student-hurt-01",
+      "source": "sheet",
+      "column": 2,
+      "row": 3,
+      "animation": "hurt"
+    },
+    {
+      "name": "goth-student-hurt-02",
+      "source": "sheet",
+      "column": 3,
+      "row": 3,
+      "animation": "hurt"
+    },
+    {
+      "name": "goth-student-start-00",
+      "source": "sheet",
+      "column": 0,
+      "row": 4,
+      "animation": "start"
+    },
+    {
+      "name": "goth-student-start-01",
+      "source": "sheet",
+      "column": 1,
+      "row": 4,
+      "animation": "start"
+    },
+    {
+      "name": "goth-student-victory-00",
+      "source": "sheet",
+      "column": 2,
+      "row": 4,
+      "animation": "victory"
+    },
+    {
+      "name": "goth-student-victory-01",
+      "source": "sheet",
+      "column": 3,
+      "row": 4,
+      "animation": "victory"
+    },
+    {
+      "name": "goth-student-victory-02",
+      "source": "sheet",
+      "column": 0,
+      "row": 5,
+      "animation": "victory"
+    },
+    {
+      "name": "goth-student-game-over-00",
+      "source": "sheet",
+      "column": 1,
+      "row": 5,
+      "animation": "gameOver"
+    },
+    {
+      "name": "goth-student-game-over-01",
+      "source": "sheet",
+      "column": 2,
+      "row": 5,
+      "animation": "gameOver"
+    },
+    {
+      "name": "goth-student-game-over-02",
+      "source": "sheet",
+      "column": 3,
+      "row": 5,
+      "animation": "gameOver"
+    }
+  ],
+  "accentColor": "#513661",
+  "cleanup": {
+    "minComponentPixels": 0,
+    "mainPadding": 2,
+    "runtimeMinComponentPixels": 120,
+    "runtimeMainPadding": 6
+  }
+}

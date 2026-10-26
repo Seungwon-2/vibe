@@ -1,0 +1,216 @@
+{
+  "id": "moonwing",
+  "displayName": "Ayatsuno Yuni",
+  "textureKey": "moonwing",
+  "frameWidth": 96,
+  "frameHeight": 96,
+  "contentSize": 88,
+  "atlasColumns": 8,
+  "sources": {
+    "sheet": {
+      "path": "assets/character/moonwing-spritesheet-v2.png",
+      "width": 1024,
+      "height": 1536,
+      "columns": 4,
+      "backgroundMode": "transparent",
+      "rowBoundaries": [
+        0,
+        256,
+        512,
+        768,
+        1024,
+        1280,
+        1536
+      ]
+    },
+    "movement": {
+      "path": "assets/character/locomotion/ayatsuno-yuni-locomotion-v1.png",
+      "width": 1024,
+      "height": 512,
+      "columns": 4,
+      "backgroundMode": "transparent",
+      "rowBoundaries": [
+        0,
+        256,
+        512
+      ]
+    }
+  },
+  "frames": [
+    {
+      "name": "moonwing-idle-00",
+      "source": "sheet",
+      "column": 0,
+      "row": 0,
+      "animation": "idle"
+    },
+    {
+      "name": "moonwing-idle-01",
+      "source": "sheet",
+      "column": 1,
+      "row": 0,
+      "animation": "idle"
+    },
+    {
+      "name": "moonwing-idle-look-00",
+      "source": "sheet",
+      "column": 2,
+      "row": 0,
+      "animation": "idleLook"
+    },
+    {
+      "name": "moonwing-idle-look-01",
+      "source": "sheet",
+      "column": 3,
+      "row": 0,
+      "animation": "idleLook"
+    },
+    {
+      "name": "moonwing-walk-00",
+      "source": "movement",
+      "column": 0,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "moonwing-walk-01",
+      "source": "movement",
+      "column": 1,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "moonwing-walk-02",
+      "source": "movement",
+      "column": 2,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "moonwing-walk-03",
+      "source": "movement",
+      "column": 3,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "moonwing-run-00",
+      "source": "movement",
+      "column": 0,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "moonwing-run-01",
+      "source": "movement",
+      "column": 1,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "moonwing-run-02",
+      "source": "movement",
+      "column": 2,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "moonwing-run-03",
+      "source": "movement",
+      "column": 3,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "moonwing-jump-00",
+      "source": "sheet",
+      "column": 0,
+      "row": 3,
+      "animation": "jump"
+    },
+    {
+      "name": "moonwing-hurt-00",
+      "source": "sheet",
+      "column": 1,
+      "row": 3,
+      "animation": "hurt"
+    },
+    {
+      "name": "moonwing-hurt-01",
+      "source": "sheet",
+      "column": 2,
+      "row": 3,
+      "animation": "hurt"
+    },
+    {
+      "name": "moonwing-hurt-02",
+      "source": "sheet",
+      "column": 3,
+      "row": 3,
+      "animation": "hurt"
+    },
+    {
+      "name": "moonwing-start-00",
+      "source": "sheet",
+      "column": 0,
+      "row": 4,
+      "animation": "start"
+    },
+    {
+      "name": "moonwing-start-01",
+      "source": "sheet",
+      "column": 1,
+      "row": 4,
+      "animation": "start"
+    },
+    {
+      "name": "moonwing-victory-00",
+      "source": "sheet",
+      "column": 2,
+      "row": 4,
+      "animation": "victory"
+    },
+    {
+      "name": "moonwing-victory-01",
+      "source": "sheet",
+      "column": 3,
+      "row": 4,
+      "animation": "victory"
+    },
+    {
+      "name": "moonwing-victory-02",
+      "source": "sheet",
+      "column": 0,
+      "row": 5,
+      "animation": "victory"
+    },
+    {
+      "name": "moonwing-game-over-00",
+      "source": "sheet",
+      "column": 1,
+      "row": 5,
+      "animation": "gameOver"
+    },
+    {
+      "name": "moonwing-game-over-01",
+      "source": "sheet",
+      "column": 2,
+      "row": 5,
+      "animation": "gameOver"
+    },
+    {
+      "name": "moonwing-game-over-02",
+      "source": "sheet",
+      "column": 3,
+      "row": 5,
+      "animation": "gameOver"
+    }
+  ],
+  "accentColor": "#857fd8",
+  "cleanup": {
+    "minComponentPixels": 0,
+    "mainPadding": 2,
+    "runtimeMinComponentPixels": 120,
+    "runtimeMainPadding": 2
+  }
+}

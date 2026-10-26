@@ -1,0 +1,216 @@
+{
+  "id": "player-default",
+  "displayName": "Aokumo Rin",
+  "textureKey": "player-default",
+  "frameWidth": 96,
+  "frameHeight": 96,
+  "contentSize": 88,
+  "atlasColumns": 8,
+  "sources": {
+    "sheet": {
+      "path": "assets/character/aokumo-rin-spritesheet-v4.png",
+      "width": 1024,
+      "height": 1536,
+      "columns": 4,
+      "backgroundMode": "transparent",
+      "rowBoundaries": [
+        0,
+        256,
+        512,
+        768,
+        1024,
+        1280,
+        1536
+      ]
+    },
+    "movement": {
+      "path": "assets/character/locomotion/aokumo-rin-locomotion-v1.png",
+      "width": 1024,
+      "height": 512,
+      "columns": 4,
+      "backgroundMode": "transparent",
+      "rowBoundaries": [
+        0,
+        256,
+        512
+      ]
+    }
+  },
+  "frames": [
+    {
+      "name": "idle-00",
+      "source": "sheet",
+      "column": 0,
+      "row": 0,
+      "animation": "idle"
+    },
+    {
+      "name": "idle-01",
+      "source": "sheet",
+      "column": 1,
+      "row": 0,
+      "animation": "idle"
+    },
+    {
+      "name": "idle-look-00",
+      "source": "sheet",
+      "column": 2,
+      "row": 0,
+      "animation": "idleLook"
+    },
+    {
+      "name": "idle-look-01",
+      "source": "sheet",
+      "column": 3,
+      "row": 0,
+      "animation": "idleLook"
+    },
+    {
+      "name": "walk-00",
+      "source": "movement",
+      "column": 0,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "walk-01",
+      "source": "movement",
+      "column": 1,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "walk-02",
+      "source": "movement",
+      "column": 2,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "walk-03",
+      "source": "movement",
+      "column": 3,
+      "row": 0,
+      "animation": "walk"
+    },
+    {
+      "name": "run-00",
+      "source": "movement",
+      "column": 0,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "run-01",
+      "source": "movement",
+      "column": 1,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "run-02",
+      "source": "movement",
+      "column": 2,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "run-03",
+      "source": "movement",
+      "column": 3,
+      "row": 1,
+      "animation": "run"
+    },
+    {
+      "name": "jump-00",
+      "source": "sheet",
+      "column": 0,
+      "row": 3,
+      "animation": "jump"
+    },
+    {
+      "name": "hurt-00",
+      "source": "sheet",
+      "column": 1,
+      "row": 3,
+      "animation": "hurt"
+    },
+    {
+      "name": "hurt-01",
+      "source": "sheet",
+      "column": 2,
+      "row": 3,
+      "animation": "hurt"
+    },
+    {
+      "name": "hurt-02",
+      "source": "sheet",
+      "column": 3,
+      "row": 3,
+      "animation": "hurt"
+    },
+    {
+      "name": "start-00",
+      "source": "sheet",
+      "column": 0,
+      "row": 4,
+      "animation": "start"
+    },
+    {
+      "name": "start-01",
+      "source": "sheet",
+      "column": 1,
+      "row": 4,
+      "animation": "start"
+    },
+    {
+      "name": "victory-00",
+      "source": "sheet",
+      "column": 2,
+      "row": 4,
+      "animation": "victory"
+    },
+    {
+      "name": "victory-01",
+      "source": "sheet",
+      "column": 3,
+      "row": 4,
+      "animation": "victory"
+    },
+    {
+      "name": "victory-02",
+      "source": "sheet",
+      "column": 0,
+      "row": 5,
+      "animation": "victory"
+    },
+    {
+      "name": "game-over-00",
+      "source": "sheet",
+      "column": 1,
+      "row": 5,
+      "animation": "gameOver"
+    },
+    {
+      "name": "game-over-01",
+      "source": "sheet",
+      "column": 2,
+      "row": 5,
+      "animation": "gameOver"
+    },
+    {
+      "name": "game-over-02",
+      "source": "sheet",
+      "column": 3,
+      "row": 5,
+      "animation": "gameOver"
+    }
+  ],
+  "accentColor": "#2b66c0",
+  "cleanup": {
+    "minComponentPixels": 0,
+    "mainPadding": 12,
+    "runtimeMinComponentPixels": 3,
+    "runtimeMainPadding": 6
+  }
+}

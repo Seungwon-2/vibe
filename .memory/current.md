@@ -1,16 +1,19 @@
-# Current Context
+﻿# Current Context
 
 ## Active Plan
-[Azure Platformer MVP](./plans/2026-10-21-azure-platformer.md)
+[Running Action Redesign](./plans/2026-10-26-running-action-redesign.md)
 
 ## Active Phase
-[P01 Game Client](./phases/2026-10-21-azure-platformer/P01-game-client/phase.md)
+[P01 Characters and Entry](./phases/2026-10-26-running-action-redesign/P01-characters-and-entry/phase.md)
 
 ## Active Task
-[T02 Phaser and Character Registry](./phases/2026-10-21-azure-platformer/P01-game-client/T02-phaser-character.md)
+[T02 Runner Action Poses](./phases/2026-10-26-running-action-redesign/P01-characters-and-entry/T02-runner-action-poses.md)
 
 ## Status
-- T01 complete and committed; T02 ready to start
+- T01 is complete and committed on branch `project02`.
+- Four characters' portraits, source sheets, locomotion references, generated source images, and existing runtime atlas baselines were imported from local branch `project02-running-action`.
+- The repeatable asset preparation and validation tools are available; all four atlases pass validation.
+- Azure Entra ID remains deferred; local browser play and ranking are in scope.
 
-## Next Step (IMPORTANT)
-Read T02 and implement the React-managed Phaser lifecycle, character registry, and normalized runtime assets from the supplied protagonist sheets.
+## Next Step
+Read T02 and create four-frame alternating-leg run cycles plus two-frame slide and double-jump poses for each character. Regenerate and visually inspect runtime atlas frames; preserve the original v1 locomotion sheets.
