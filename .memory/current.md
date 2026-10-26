@@ -7,13 +7,12 @@
 [P01 Characters and Entry](./phases/2026-10-26-running-action-redesign/P01-characters-and-entry/phase.md)
 
 ## Active Task
-[T02 Runner Action Poses](./phases/2026-10-26-running-action-redesign/P01-characters-and-entry/T02-runner-action-poses.md)
+[T03 Character Catalog and Passives](./phases/2026-10-26-running-action-redesign/P01-characters-and-entry/T03-character-catalog-and-passives.md)
 
 ## Status
-- T01 is complete and committed on branch `project02`.
-- Four characters' portraits, source sheets, locomotion references, generated source images, and existing runtime atlas baselines were imported from local branch `project02-running-action`.
-- The repeatable asset preparation and validation tools are available; all four atlases pass validation.
+- T01 and T02 are complete; four characters' art and runtime atlases now include run, slide, and double-jump states.
+- `npm run assets:validate` and `npm run typecheck` passed after atlas regeneration.
 - Azure Entra ID remains deferred; local browser play and ranking are in scope.
 
 ## Next Step
-Read T02 and create four-frame alternating-leg run cycles plus two-frame slide and double-jump poses for each character. Regenerate and visually inspect runtime atlas frames; preserve the original v1 locomotion sheets.
+Read T03 and implement the typed runner character catalog with the agreed four centralized, tuneable passive abilities. Keep character performance comparable for the shared ranking and do not add a player-facing tuning UI.

@@ -34,6 +34,30 @@
         256,
         512
       ]
+    },
+    "movementV1": {
+      "path": "assets/character/locomotion/akane-lize-locomotion-v1.png",
+      "width": 1024,
+      "height": 512,
+      "columns": 4,
+      "backgroundMode": "transparent",
+      "rowBoundaries": [
+        0,
+        256,
+        512
+      ]
+    },
+    "movementV2": {
+      "path": "assets/character/locomotion/akane-lize-locomotion-v2.png",
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "backgroundMode": "transparent",
+      "rowBoundaries": [
+        0,
+        444,
+        887
+      ]
     }
   },
   "frames": [
@@ -67,59 +91,151 @@
     },
     {
       "name": "akane-lize-walk-00",
-      "source": "movement",
+      "source": "movementV1",
       "column": 0,
       "row": 0,
       "animation": "walk"
     },
     {
       "name": "akane-lize-walk-01",
-      "source": "movement",
+      "source": "movementV1",
       "column": 1,
       "row": 0,
       "animation": "walk"
     },
     {
       "name": "akane-lize-walk-02",
-      "source": "movement",
+      "source": "movementV1",
       "column": 2,
       "row": 0,
       "animation": "walk"
     },
     {
       "name": "akane-lize-walk-03",
-      "source": "movement",
+      "source": "movementV1",
       "column": 3,
       "row": 0,
       "animation": "walk"
     },
     {
       "name": "akane-lize-run-00",
-      "source": "movement",
+      "source": "movementV2",
       "column": 0,
       "row": 1,
-      "animation": "run"
+      "animation": "run",
+      "rect": {
+        "left": 0,
+        "top": 0,
+        "width": 444,
+        "height": 444
+      },
+      "minComponentPixels": 8000,
+      "componentPadding": 0
     },
     {
       "name": "akane-lize-run-01",
-      "source": "movement",
+      "source": "movementV2",
       "column": 1,
       "row": 1,
-      "animation": "run"
+      "animation": "run",
+      "rect": {
+        "left": 444,
+        "top": 0,
+        "width": 443,
+        "height": 444
+      },
+      "minComponentPixels": 8000,
+      "componentPadding": 0
     },
     {
       "name": "akane-lize-run-02",
-      "source": "movement",
+      "source": "movementV2",
       "column": 2,
       "row": 1,
-      "animation": "run"
+      "animation": "run",
+      "rect": {
+        "left": 887,
+        "top": 0,
+        "width": 444,
+        "height": 444
+      },
+      "minComponentPixels": 8000,
+      "componentPadding": 0
     },
     {
       "name": "akane-lize-run-03",
-      "source": "movement",
+      "source": "movementV2",
       "column": 3,
       "row": 1,
-      "animation": "run"
+      "animation": "run",
+      "rect": {
+        "left": 1331,
+        "top": 0,
+        "width": 443,
+        "height": 444
+      },
+      "minComponentPixels": 8000,
+      "componentPadding": 0
+    },
+    {
+      "name": "akane-lize-slide-00",
+      "source": "movementV2",
+      "column": 0,
+      "row": 1,
+      "animation": "slide",
+      "rect": {
+        "left": 0,
+        "top": 444,
+        "width": 444,
+        "height": 443
+      },
+      "minComponentPixels": 8000,
+      "componentPadding": 0
+    },
+    {
+      "name": "akane-lize-slide-01",
+      "source": "movementV2",
+      "column": 1,
+      "row": 1,
+      "animation": "slide",
+      "rect": {
+        "left": 444,
+        "top": 444,
+        "width": 443,
+        "height": 443
+      },
+      "minComponentPixels": 8000,
+      "componentPadding": 0
+    },
+    {
+      "name": "akane-lize-double-jump-00",
+      "source": "movementV2",
+      "column": 2,
+      "row": 1,
+      "animation": "doubleJump",
+      "rect": {
+        "left": 887,
+        "top": 444,
+        "width": 444,
+        "height": 443
+      },
+      "minComponentPixels": 8000,
+      "componentPadding": 0
+    },
+    {
+      "name": "akane-lize-double-jump-01",
+      "source": "movementV2",
+      "column": 3,
+      "row": 1,
+      "animation": "doubleJump",
+      "rect": {
+        "left": 1331,
+        "top": 444,
+        "width": 443,
+        "height": 443
+      },
+      "minComponentPixels": 8000,
+      "componentPadding": 0
     },
     {
       "name": "akane-lize-jump-00",
@@ -212,5 +328,18 @@
     "mainPadding": 2,
     "runtimeMinComponentPixels": 120,
     "runtimeMainPadding": 6
+  },
+  "animationCounts": {
+    "idle": 2,
+    "idleLook": 2,
+    "walk": 4,
+    "run": 4,
+    "slide": 2,
+    "doubleJump": 2,
+    "jump": 1,
+    "hurt": 3,
+    "start": 2,
+    "victory": 3,
+    "gameOver": 3
   }
 }

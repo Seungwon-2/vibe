@@ -1,6 +1,6 @@
 # Task: T02 Runner Action Poses
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -50,10 +50,10 @@ Correct the four characters' run loops and add legible slide and double-jump ani
 
 ## Acceptance Criteria
 
-- [ ] All four run cycles visibly alternate the leading leg and loop without a foot/torso pop.
-- [ ] All four characters have complete two-frame slide and double-jump states.
-- [ ] Frame bounds, transparent backgrounds, atlas coordinates, and animation names validate.
-- [ ] Existing character states are preserved and remain loadable.
+- [x] All four run cycles visibly alternate the leading leg and loop without a foot/torso pop.
+- [x] All four characters have complete two-frame slide and double-jump states.
+- [x] Frame bounds, transparent backgrounds, atlas coordinates, and animation names validate.
+- [x] Existing character states are preserved and remain loadable.
 
 ## Validation
 
@@ -75,6 +75,6 @@ Task: T02-runner-action-poses
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed
 - commit: pending

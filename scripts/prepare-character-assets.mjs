@@ -26,14 +26,26 @@ const configText = await fs.readFile(atlasPath, 'utf8');
 const config = JSON.parse(configText.replace(/^\uFEFF/, ''));
 const characterOutputDir = outputDir;
 
-if (config.frames.length !== 24 || new Set(config.frames.map((frame) => frame.name)).size !== config.frames.length) {
-  throw new Error(`${config.displayName} must define exactly 24 uniquely named frames.`);
+const frameNames = new Set(config.frames.map((frame) => frame.name));
+if (frameNames.size !== config.frames.length) {
+  throw new Error(`${config.id} must define uniquely named frames.`);
+}
+for (const [animation, expectedCount] of Object.entries(config.animationCounts ?? {})) {
+  const actualCount = config.frames.filter((frame) => frame.animation === animation).length;
+  if (actualCount !== expectedCount) {
+    throw new Error(`${config.id}/${animation} must define ${expectedCount} frames; found ${actualCount}.`);
+  }
+}
+for (const frame of config.frames) {
+  if (!Object.hasOwn(config.animationCounts ?? {}, frame.animation)) {
+    throw new Error(`${config.id}/${frame.name} uses unconfigured animation "${frame.animation}".`);
+  }
 }
 
 for (const source of Object.values(config.sources)) {
   const metadata = await sharp(path.join(root, source.path)).metadata();
   if (metadata.width !== source.width || metadata.height !== source.height) {
-    throw new Error(`Source dimensions changed for ${source.path}; update ${path.basename(atlasPath)} crop bounds.`);
+    throw new Error(`${config.id} source dimensions changed for ${source.path}; update ${path.basename(atlasPath)} crop bounds.`);
   }
 }
 
@@ -230,7 +242,11 @@ async function makeTransparentFrame(frame) {
 
 const frameFiles = new Map();
 for (const frame of config.frames) {
-  resolveFrameRect(frame, config.sources[frame.source]);
+  try {
+    resolveFrameRect(frame, config.sources[frame.source]);
+  } catch (error) {
+    throw new Error(`${config.id}/${frame.name} has an invalid source crop: ${error.message}`);
+  }
   const output = path.join(frameDir, `${frame.name}.png`);
   if (!checkOnly) {
     frameFiles.set(frame.name, await makeTransparentFrame(frame));
