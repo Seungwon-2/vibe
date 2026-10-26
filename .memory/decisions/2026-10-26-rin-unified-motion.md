@@ -6,7 +6,7 @@
 - Source image: `assets/character/reference/aokumo-rin-motion-study.png` (1536 × 1024 PNG)
 
 ## D01. Character and scope
-- **Chosen**: Use the supplied motion study as the design and pose source for Aokumo Rin in the existing right-moving 2D running game. Keep the character selector and Shizuki Toa. Remove Ayatsuno Yuni and Akane Lize from the future selectable/playable roster, then add new characters when their sheets and identities are provided.
+- **Chosen**: Use the supplied motion study as the design and pose source for Aokumo Rin in the existing right-moving 2D running game. Keep the character selector and Shizuki Toa. Replace Ayatsuno Yuni and Akane Lize in the selectable/playable roster with Cogane Rang, Hanayo Hiyori, and Tokino Mary. The target roster has five characters.
 - **Rationale**: The runner already exists in Phaser, while Rin currently mixes art from several sheets. The user chose to retain Toa and replace the other two roster members. Their historical source files can remain in Git; roster removal does not require deleting art history.
 
 ## D02. Animation inventory
@@ -29,14 +29,19 @@
 - **Chosen**: Continue managing jump impulse, maximum jump count, vertical position, standing/slide collision bodies, obstacle hits, and timer in code. Changing artwork or animation timing must not change those gameplay values. Preserve the right-facing runner and existing touch/keyboard controls.
 - **Rationale**: The current `RunnerPlayer`, `runnerPose`, and `RunnerSimulation` already separate physics from art; the new atlas should respect that boundary.
 
+## D07. Character source sheets and colors
+- **Chosen**: Use `assets/character/reference/aokumo-rin-motion-study.png`, `shizuki-toa-motion-study.png`, `cogane-rang-motion-study.png`, `hanayo-hiyori-motion-study.png`, and `tokino-mary-motion-study.png` as the five character motion references. Names are Aokumo Rin, Shizuki Toa, Cogane Rang, Hanayo Hiyori, and Tokino Mary. Preserve Rin `#2b66c0` and Toa `#513661`; use sheet-palette representative colors Rang `#c98743`, Hiyori `#fca6d0`, and Mary `#6d929a`.
+- **Rationale**: The four newly supplied filenames resolve the line-wrapped English names in the message. The user chose palette-derived colors for the three new characters.
+
 ## Existing-code findings for the implementation plan
 - `src/game/characters/characterAtlas.json` currently has twelve run frames, one jump frame, two double-jump frames, two slide frames, three hit frames, three victory frames, and three game-over frames for Rin. The source paths point to multiple art batches.
 - `src/game/runner/RunnerScene.ts` currently creates a single held slide frame and does not register victory as a runner-scene animation.
 - `src/game/runner/RunnerPlayer.ts` always plays `gameOver` on finish. The current result screen does not store or evaluate a local personal best.
 - `scripts/prepare-character-assets.mjs` already builds transparent 96 × 96 atlas frames and checks edge padding. Its per-frame resizing and mixed anchors need review for this unified sheet.
 - `.memory/current.md` still points to P03-T01 biome pixel art. A new plan should make this motion work the active task without marking the unfinished biome task complete.
-- The current four-character registry and selector need a roster update when implementation begins. Toa remains available while the new characters are added; Yuni and Lize should no longer appear as choices.
+- The current four-character registry and selector need a five-character roster update when implementation begins. Toa remains available; Yuni and Lize should no longer appear as choices.
 
 ## Input and verification notes
 - The original PNG is present at the source path above. Its background is pale rather than transparent, so frame extraction needs visual inspection of edge cleanup, especially near white hair and frills.
+- The four additional PNGs are present at their D07 paths. All five sheets are 1536 × 1024 without an alpha channel and share twelve RUN cells plus six cells for each other labeled motion row. Extraction must also exclude label bars, icons, dust trails, sparkles, and cell boundaries while preserving character-specific costume and held props.
 - The image-generation cutout drafts made during the interview changed poses and introduced residue; they were not added to the repository and are not selected as the production source.
