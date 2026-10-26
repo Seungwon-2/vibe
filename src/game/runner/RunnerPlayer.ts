@@ -16,7 +16,9 @@ export class RunnerPlayer {
   private slidingHeld = false;
   private slideGraceMs = 0;
   private hurt = false;
+  private finished = false;
   private animation: CharacterAnimationName | null = null;
+  private bodyHeight = 0;
   private readonly passive;
   private readonly character;
 
@@ -49,7 +51,7 @@ export class RunnerPlayer {
   }
 
   jump(): boolean {
-    if (this.isSliding || this.jumpsUsed >= 2) return false;
+    if (this.finished || this.hurt || this.isSliding || this.jumpsUsed >= 2) return false;
     if (!this.grounded && this.jumpsUsed === 0) this.jumpsUsed = 1;
     const second = this.jumpsUsed === 1;
     const multiplier = second && this.passive.id === 'double-jump-impulse'
@@ -63,6 +65,7 @@ export class RunnerPlayer {
   }
 
   setSliding(held: boolean): void {
+    if (this.finished || this.hurt) return;
     if (held && !this.grounded) return;
     if (!held && this.slidingHeld && this.passive.id === 'slide-release-grace') {
       this.slideGraceMs = this.passive.graceMs;
@@ -72,7 +75,21 @@ export class RunnerPlayer {
   }
 
   setHurt(hurt: boolean): void {
+    if (this.finished) return;
     this.hurt = hurt;
+  }
+
+  finish(): void {
+    if (this.finished) return;
+    this.finished = true;
+    this.slidingHeld = false;
+    this.slideGraceMs = 0;
+    this.hurt = false;
+    this.sprite.setAlpha(1);
+    this.body.setVelocity(0, 0);
+    this.body.setAllowGravity(false);
+    this.body.enable = false;
+    this.play('gameOver');
   }
 
   setProtected(remainingMs: number): void {
@@ -80,12 +97,13 @@ export class RunnerPlayer {
   }
 
   update(deltaMs: number): void {
-    const onFloor = this.body.blocked.down || this.body.touching.down;
+    if (this.finished) return;
+    const onFloor = this.body.blocked.down || this.body.touching.down ||
+      this.body.bottom >= RUNNER_GROUND_Y - 0.5;
     if (onFloor && this.body.velocity.y >= 0) {
       this.grounded = true;
       this.jumpsUsed = 0;
-      this.sprite.y = RUNNER_GROUND_Y;
-      this.body.setVelocityY(0);
+      this.snapToGround();
     } else if (this.body.velocity.y !== 0) {
       this.grounded = false;
     }
@@ -100,8 +118,21 @@ export class RunnerPlayer {
   }
 
   private setBodyHeight(height: number): void {
-    this.body.setSize(BODY_WIDTH, height);
+    if (this.bodyHeight === height) return;
+    this.bodyHeight = height;
+    this.body.setSize(BODY_WIDTH, height, false);
     this.body.setOffset(28, 96 - height);
+    this.body.updateFromGameObject();
+    this.body.prev.copy(this.body.position);
+    this.body.prevFrame.copy(this.body.position);
+  }
+
+  private snapToGround(): void {
+    this.sprite.y = RUNNER_GROUND_Y;
+    this.body.setVelocityY(0);
+    this.body.updateFromGameObject();
+    this.body.prev.copy(this.body.position);
+    this.body.prevFrame.copy(this.body.position);
   }
 
   private play(name: CharacterAnimationName): void {

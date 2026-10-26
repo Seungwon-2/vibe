@@ -118,6 +118,27 @@ describe('RunnerSimulation', () => {
     expect(fatal.finishedAtElapsedMs).toBe(0);
   });
 
+  it('freezes map distance for 800ms after a hit while the timer continues', () => {
+    const hit = applyCollision(running());
+    const halfway = advanceRunner(hit, 400).state;
+    expect(halfway.distanceMeters).toBe(hit.distanceMeters);
+    expect(halfway.remainingMs).toBe(84_600);
+    expect(halfway.staggerRemainingMs).toBe(400);
+    const recovered = advanceRunner(halfway, 400).state;
+    expect(recovered.distanceMeters).toBe(hit.distanceMeters);
+    expect(recovered.staggerRemainingMs).toBe(0);
+    expect(recovered.protectionRemainingMs).toBe(0);
+    const moving = advanceRunner(recovered, 100).state;
+    expect(moving.distanceMeters).toBeGreaterThan(hit.distanceMeters);
+    expect(advanceRunner(hit, 900).state.distanceMeters).toBeCloseTo(moving.distanceMeters, 7);
+
+    const nearlyExpired = { ...hit, remainingMs: 100 };
+    const expiredDuringFreeze = advanceRunner(nearlyExpired, 1_000);
+    expect(expiredDuringFreeze.state.phase).toBe('finished');
+    expect(expiredDuringFreeze.state.distanceMeters).toBe(hit.distanceMeters);
+    expect(expiredDuringFreeze.result).not.toBeNull();
+  });
+
   it('awards a gate reached before timeout but does not travel after the timer ends', () => {
     const nearGate = {
       ...running(), distanceMeters: 2_490, worldDistance: 2_490 * 3, remainingMs: 500,

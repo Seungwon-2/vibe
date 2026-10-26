@@ -163,6 +163,20 @@ export function advanceRunner(
 
   let current = state;
   while (unspentMs > EPSILON) {
+    if (current.staggerRemainingMs > EPSILON) {
+      const frozenMs = Math.min(unspentMs, current.staggerRemainingMs, current.remainingMs);
+      current = {
+        ...current,
+        elapsedMs: current.elapsedMs + frozenMs,
+        remainingMs: Math.max(0, current.remainingMs - frozenMs),
+        speedUnitsPerSecond: getSpeed(current.elapsedMs + frozenMs),
+        staggerRemainingMs: Math.max(0, current.staggerRemainingMs - frozenMs),
+        protectionRemainingMs: Math.max(0, current.protectionRemainingMs - frozenMs),
+      };
+      unspentMs = Math.max(0, unspentMs - frozenMs);
+      if (current.remainingMs <= EPSILON) return finishRunner(current);
+      continue;
+    }
     const availableMs = Math.min(unspentMs, current.remainingMs);
     const nextGate = getNextGate(current);
     const segmentMeters = traveledWorldUnits(current.elapsedMs, availableMs) *

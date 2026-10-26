@@ -43,7 +43,7 @@ export class RunnerScene extends Phaser.Scene {
     });
     this.snapshot = createRunnerSnapshot(characterId);
 
-    for (const name of ['run', 'jump', 'doubleJump', 'slide', 'hurt'] as const) {
+    for (const name of ['run', 'jump', 'doubleJump', 'slide', 'hurt', 'gameOver'] as const) {
       const frames = character.animations[name];
       if (frames.length === 0) continue;
       this.anims.create({
@@ -143,6 +143,7 @@ export class RunnerScene extends Phaser.Scene {
 
   private emitFinished(result: RunnerResult): void {
     this.inputBridge.clear();
+    this.player.finish();
     this.eventEmitter.finish(result);
   }
 
