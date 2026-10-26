@@ -18,6 +18,7 @@
 - P02-T02 is complete (`0d0f3ea`): Phaser scene, fixed player, input bridge, double jump, and held slide passed tests, type checking, build, and lint.
 - P02-T03 is complete (`62346c3`): authored hazard patterns, telegraphs, Arcade overlap, collision penalty, and protection passed focused tests and type checking.
 - P02-T04 is complete (`e2c40ee`): collectible schedule, three gate events, bounded React snapshots, and a minimal playable preview passed all 35 tests, type checking, build, and lint. P03-T01 is active.
+- P02 runner hotfix (`99b74d1`): ground recovery after a double jump, an 800ms course freeze on collision, and a terminal `gameOver` animation passed 38 tests, build, and lint. P03-T01 remains active.
 
 ## Next Step
 Read P03-T01 and draw the four layered biome backgrounds and course visuals without changing runner physics or obstacle dimensions.
