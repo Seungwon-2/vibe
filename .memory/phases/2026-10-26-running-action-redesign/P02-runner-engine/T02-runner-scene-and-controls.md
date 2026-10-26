@@ -80,4 +80,4 @@ Task: T02-runner-scene-and-controls
 
 - [x] Implementation complete
 - [x] Validation passed (`npm test -- src/game/runner/RunnerPlayer.test.ts src/game/runner/RunnerGame.test.tsx`; `npm run typecheck`; `npm run build`; `npm run lint`)
-- commit: pending
+- commit: 0d0f3ea

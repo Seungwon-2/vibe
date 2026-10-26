@@ -75,4 +75,4 @@ Task: T04-pickups-and-run-events
 - [x] Implementation complete
 - [x] Validation passed (`npm test`; `npm run typecheck`; `npm run build`; `npm run lint`)
 - A minimal `RunnerPreview` screen connects the engine to the existing character selection flow; P03 retains the full visual redesign.
-- commit: pending
+- commit: e2c40ee

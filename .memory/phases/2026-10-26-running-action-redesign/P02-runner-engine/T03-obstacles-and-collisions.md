@@ -74,4 +74,4 @@ Task: T03-obstacles-and-collisions
 
 - [x] Implementation complete
 - [x] Validation passed (`npm test -- src/game/runner/hazardPatterns.test.ts src/game/runner/CollisionSystem.test.ts`; `npm run typecheck`; `npm run lint`)
-- commit: pending
+- commit: 62346c3
