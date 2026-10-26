@@ -117,4 +117,4 @@ Task: T01-five-character-gameplay
 
 - [x] Implementation complete
 - [x] Validation passed: asset validation, 44 Vitest tests, typecheck, build, lint; headless Edge selector checks at 1366×768, 844×390, 667×375, and 320×640 plus five game loads and Rang jump/slide/pause.
-- commit: pending
+- commit: `ff2db77` (`project02`)

@@ -8,12 +8,12 @@ Use the prepared atlases in the selector and runner, with art-independent moveme
 
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `in_progress` | Replace the active roster and wire the five atlases into selector and runner motions. | [T01](./T01-five-character-gameplay.md) |
-| T02 | `pending` | Persist personal bests and show victory or crying at run end. | [T02](./T02-personal-best-results.md) |
+| T01 | `done` ✅ | Replace the active roster and wire the five atlases into selector and runner motions. | [T01](./T01-five-character-gameplay.md) |
+| T02 | `in_progress` | Persist personal bests and show victory or crying at run end. | [T02](./T02-personal-best-results.md) |
 
 ## Progress
 
-- done: 0/2 (active: T01)
+- done: 1/2 (active: T02)
 
 ## Gate to completion
 
