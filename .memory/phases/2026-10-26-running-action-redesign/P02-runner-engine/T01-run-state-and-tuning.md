@@ -91,4 +91,4 @@ Task: T01-run-state-and-tuning
 
 - [x] Implementation complete
 - [x] Validation passed (`npm test -- src/game/runner/RunnerSimulation.test.ts`; `npm run typecheck`; `npm run lint`)
-- commit: pending
+- commit: efe3d9d
