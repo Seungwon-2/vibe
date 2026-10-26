@@ -217,6 +217,11 @@ async function makeTransparentFrame(frame) {
   } else {
     clearConnectedBlueBackground(pixels, info.width, info.height);
   }
+  if (source.alphaThreshold) {
+    for (let index = 3; index < pixels.length; index += 4) {
+      if (pixels[index] < source.alphaThreshold) pixels[index] = 0;
+    }
+  }
   if (source.cleanupMode === 'runCycle') {
     clearGeneratedRunArtifacts(pixels, info.width, info.height);
   }
