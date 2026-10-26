@@ -93,4 +93,4 @@ Task: T01-five-motion-atlases
 - [x] Implementation complete
 - [x] Validation passed: layout tests (5), asset prepare/check, build, lint; inspected five contact sheets and three portraits.
 - QA note: source-attached hit stars and jump/slide motion accents remain where they are part of the illustrated pose; detached decoration and floor shadows are removed.
-- commit: pending
+- commit: `c4f5222` (`project02`)

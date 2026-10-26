@@ -24,8 +24,8 @@ Rin's +1-second time pickup and Toa's 150ms slide-release grace stay as implemen
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | Build and visually validate 60 aligned transparent frames and one runtime atlas for each of the five source sheets. | [P01](../phases/2026-10-26-rin-unified-motion/P01-motion-assets/phase.md) |
-| P02 | `pending` | Replace the playable roster, wire the new animations and slide pose, and show personal-best victory or crying on completion. | [P02](../phases/2026-10-26-rin-unified-motion/P02-character-runtime/phase.md) |
+| P01 | `done` | Build and visually validate 60 aligned transparent frames and one runtime atlas for each of the five source sheets. | [P01](../phases/2026-10-26-rin-unified-motion/P01-motion-assets/phase.md) |
+| P02 | `in_progress` | Replace the playable roster, wire the new animations and slide pose, and show personal-best victory or crying on completion. | [P02](../phases/2026-10-26-rin-unified-motion/P02-character-runtime/phase.md) |
 
 ## Execution order and boundaries
 

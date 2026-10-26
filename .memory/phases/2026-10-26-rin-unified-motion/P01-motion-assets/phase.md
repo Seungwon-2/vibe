@@ -8,11 +8,11 @@ Convert the five committed motion-study PNGs into consistent transparent runtime
 
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `pending` | Extract and validate five 60-frame atlases plus three selector portraits. | [T01](./T01-five-motion-atlases.md) |
+| T01 | `done` ✅ | Extract and validate five 60-frame atlases plus three selector portraits. | [T01](./T01-five-motion-atlases.md) |
 
 ## Progress
 
-- done: 0/1 (active: T01)
+- done: 1/1 (active: P02-T01)
 
 ## Gate to P02
 
