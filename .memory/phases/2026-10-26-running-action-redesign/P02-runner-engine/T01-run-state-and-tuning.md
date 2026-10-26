@@ -1,6 +1,6 @@
 # Task: T01 Run State and Tuning
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -56,13 +56,18 @@ Implement deterministic, framework-independent rules for elapsed run time, dista
 - Resolve the biome by greatest crossed threshold: `<2500 dawn-city`, `<5000 moonlit-forest`, `<7500 crystal-mine`, otherwise `cloud-skyway`.
 - When timer reaches zero, set `phase='finished'`, freeze distance/speed, and return `{ state, result }` with one final result. Return `result: null` while the run remains active. A paused or finished state never advances.
 
+### Implementation note
+
+- `RunnerSnapshot` also stores `startedAtIso` and `finishedAtIso` so a given initial snapshot and delta sequence produce the same result timestamp. `advanceRunner` uses the initial timestamp plus active elapsed time; `finishRunner(state, now)` can stamp an explicit wall-clock finish when supplied by a caller.
+- An update that spans a gate is split at the gate crossing. Only time before expiry contributes distance, and the gate bonus applies at the crossing before processing any remaining frame time. This keeps large and small update steps equivalent.
+
 ## Acceptance Criteria
 
-- [ ] Identical initial state and delta sequence produce identical distance, timer, gates, and result.
-- [ ] Speed reaches 325 exactly after 90 active seconds and remains capped after extensions.
-- [ ] Gate crossings and unique pickups apply once and respect the 120-second cap.
-- [ ] Collision penalties use the selected character passive, never create negative timer values, and protection blocks repeat hits for 800ms.
-- [ ] No platformer, stage, life, or checkpoint fields appear in runner state/result.
+- [x] Identical initial state and delta sequence produce identical distance, timer, gates, and result.
+- [x] Speed reaches 325 exactly after 90 active seconds and remains capped after extensions.
+- [x] Gate crossings and unique pickups apply once and respect the 120-second cap.
+- [x] Collision penalties use the selected character passive, never create negative timer values, and protection blocks repeat hits for 800ms.
+- [x] No platformer, stage, life, or checkpoint fields appear in runner state/result.
 
 ## Validation
 
@@ -84,6 +89,6 @@ Task: T01-run-state-and-tuning
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed (`npm test -- src/game/runner/RunnerSimulation.test.ts`; `npm run typecheck`; `npm run lint`)
 - commit: pending
