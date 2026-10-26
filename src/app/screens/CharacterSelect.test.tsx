@@ -39,9 +39,8 @@ describe('CharacterSelect', () => {
     expect(screen.getByTestId('character-preview-moonwing')).toHaveAttribute('data-animation', 'run');
     expect(screen.getByTestId('character-preview-moonwing')).toHaveAttribute('data-frame', 'moonwing-run-00');
 
-    act(() => vi.advanceTimersByTime(80));
+    act(() => vi.advanceTimersByTime(83));
     expect(screen.getByTestId('character-preview-moonwing')).toHaveAttribute('data-frame', 'moonwing-run-01');
-    expect(screen.getByTestId('character-preview-moonwing')).toHaveAttribute('data-stride-phase', 'landing');
     expect(container.querySelector('.character-preview__sprite[src]')).toBeInTheDocument();
   });
 

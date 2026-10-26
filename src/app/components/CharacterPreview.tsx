@@ -6,7 +6,7 @@ type CharacterPreviewProps = {
   selected: boolean;
 };
 
-const RUN_FRAME_INTERVAL_MS = 80;
+const RUN_FRAME_INTERVAL_MS = 83;
 
 const RUNTIME_FRAME_URLS = Object.fromEntries(
   Object.entries(
@@ -56,13 +56,12 @@ export function CharacterPreview({ character, selected }: CharacterPreviewProps)
   const frameUrl = useMemo(() => RUNTIME_FRAME_URLS[frameName], [frameName]);
 
   return (
-    <span className={`character-preview${shouldAnimate ? ' is-running' : ''}`} aria-hidden="true">
+    <span className="character-preview" aria-hidden="true">
       <img
         className="character-preview__sprite"
         data-testid={`character-preview-${character.id}`}
         data-animation={selected ? 'run' : 'idle'}
         data-frame={frameName}
-        data-stride-phase={shouldAnimate ? (frameIndex % 2 === 0 ? 'flight' : 'landing') : undefined}
         src={frameUrl}
         alt=""
         draggable={false}

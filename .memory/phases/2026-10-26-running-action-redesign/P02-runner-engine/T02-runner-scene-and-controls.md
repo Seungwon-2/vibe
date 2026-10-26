@@ -46,7 +46,7 @@ Create the Phaser runner scene and fixed-position player, with keyboard and Reac
 - Place player body at x=170 and ground bottom y=470 on the 960x540 design canvas. Actor stays at this x; no horizontal movement or platform collision system is used.
 - Ground jump applies -420 impulse. Permit one second jump while airborne, then disable until Arcade reports grounded. Yuni's second jump impulse is `-420 * 1.12`; other characters use -420. Play `jump`/`doubleJump` atlas animations respectively.
 - Start and held slide require grounded state. While held, set body to 40x40 with bottom edge anchored to the standing body's floor. On release, restore 40x76; Toa retains the crouched collision pose for 150ms after input release, then restores standing dimensions.
-- Animation state priority is `hurt` > `slide` > `doubleJump` > `jump` > `run`. During normal auto-run, loop `run` at 12.5fps (80ms per frame), matching the character selector. Lift only the displayed sprite by about 8px on wide-stride frames 0/2; keep the physics body on the ground so obstacle collisions remain accurate.
+- Animation state priority is `hurt` > `slide` > `doubleJump` > `jump` > `run`. During normal auto-run, loop all eight `run` frames at about 12fps (83ms per frame), matching the character selector. The sprite and physics body remain grounded without a synthetic bounce.
 - `RunnerPlayer` exposes `jump(): boolean`, `setSliding(held: boolean): void`, `update(deltaMs: number): void`, and `destroy(): void`.
 
 ## Acceptance Criteria

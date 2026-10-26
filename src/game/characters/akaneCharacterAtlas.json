@@ -58,6 +58,17 @@
         444,
         887
       ]
+    },
+    "runInbetweens": {
+      "path": "assets/character/locomotion/akane-lize-run-inbetweens-v1.png",
+      "width": 2172,
+      "height": 724,
+      "columns": 4,
+      "backgroundMode": "transparent",
+      "rowBoundaries": [
+        0,
+        724
+      ]
     }
   },
   "frames": [
@@ -134,6 +145,15 @@
     },
     {
       "name": "akane-lize-run-01",
+      "source": "runInbetweens",
+      "column": 0,
+      "row": 0,
+      "animation": "run",
+      "minComponentPixels": 120,
+      "componentPadding": 0
+    },
+    {
+      "name": "akane-lize-run-02",
       "source": "movementV2",
       "column": 1,
       "row": 1,
@@ -148,7 +168,16 @@
       "componentPadding": 0
     },
     {
-      "name": "akane-lize-run-02",
+      "name": "akane-lize-run-03",
+      "source": "runInbetweens",
+      "column": 1,
+      "row": 0,
+      "animation": "run",
+      "minComponentPixels": 120,
+      "componentPadding": 0
+    },
+    {
+      "name": "akane-lize-run-04",
       "source": "movementV2",
       "column": 2,
       "row": 1,
@@ -163,7 +192,16 @@
       "componentPadding": 0
     },
     {
-      "name": "akane-lize-run-03",
+      "name": "akane-lize-run-05",
+      "source": "runInbetweens",
+      "column": 2,
+      "row": 0,
+      "animation": "run",
+      "minComponentPixels": 120,
+      "componentPadding": 0
+    },
+    {
+      "name": "akane-lize-run-06",
       "source": "movementV2",
       "column": 3,
       "row": 1,
@@ -175,6 +213,15 @@
         "height": 444
       },
       "minComponentPixels": 8000,
+      "componentPadding": 0
+    },
+    {
+      "name": "akane-lize-run-07",
+      "source": "runInbetweens",
+      "column": 3,
+      "row": 0,
+      "animation": "run",
+      "minComponentPixels": 120,
       "componentPadding": 0
     },
     {
@@ -333,7 +380,7 @@
     "idle": 2,
     "idleLook": 2,
     "walk": 4,
-    "run": 4,
+    "run": 8,
     "slide": 2,
     "doubleJump": 2,
     "jump": 1,

@@ -35,6 +35,7 @@ describe('runner character registry', () => {
     for (const character of CHARACTERS) {
       expect(character.frameWidth).toBe(96);
       expect(character.frameHeight).toBe(96);
+      expect(character.animations.run).toHaveLength(8);
       expect(Object.keys(character.animations)).toEqual(REQUIRED_ANIMATIONS);
 
       for (const animation of REQUIRED_ANIMATIONS) {

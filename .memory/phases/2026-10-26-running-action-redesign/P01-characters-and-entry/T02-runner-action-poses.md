@@ -2,6 +2,10 @@
 
 ## Status: done
 
+## Follow-up: natural run cycle
+
+- The original four alternating key poses remain as even-numbered frames. A later motion refinement added four transparent in-between poses for each character, so the runtime `run` animation now contains eight frames (`run-00` through `run-07`). The selector and future runner play the eight-frame cycle at about 12fps without a synthetic bounce.
+
 ## Goal
 
 Correct the four characters' run loops and add legible slide and double-jump animation states required by the runner controls.
