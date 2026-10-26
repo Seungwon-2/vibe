@@ -22,8 +22,9 @@ describe('hazard collision', () => {
     expect(first.state.remainingMs).toBe(85_000);
     expect(first.state.protectionRemainingMs).toBe(800);
     expect(tryResolveHazardHit(first.state)).toEqual({ state: first.state, hit: false, result: null });
-    const lize = startRunner(createRunnerSnapshot('akane-lize'));
-    expect(tryResolveHazardHit(lize).state.remainingMs).toBe(86_000);
+    const mary = startRunner(createRunnerSnapshot('tokino-mary'));
+    expect(tryResolveHazardHit(mary).state.remainingMs).toBe(85_000);
+    expect(tryResolveHazardHit(mary).state.protectionRemainingMs).toBe(1_050);
   });
 
   it('finishes once when a collision depletes the remaining timer', () => {

@@ -43,15 +43,24 @@ export class RunnerScene extends Phaser.Scene {
     });
     this.snapshot = createRunnerSnapshot(characterId);
 
-    for (const name of ['run', 'jump', 'doubleJump', 'slide', 'hurt', 'gameOver'] as const) {
-      const frames = name === 'slide'
-        ? character.animations.slide.slice(0, 1)
-        : character.animations[name];
-      if (frames.length === 0) continue;
+    const animationFrames = {
+      run: character.animations.run,
+      jump: character.animations.jump.slice(0, 4),
+      'jump-fall': character.animations.jump.slice(4),
+      doubleJump: character.animations.doubleJump.slice(0, 4),
+      'double-jump-fall': character.animations.doubleJump.slice(4),
+      slide: character.animations.slide.slice(1, 4),
+      hurt: character.animations.hurt,
+      victory: character.animations.victory,
+      gameOver: character.animations.gameOver,
+    } as const;
+    for (const [name, frames] of Object.entries(animationFrames)) {
+      if (frames.length === 0) throw new Error(`Missing ${characterId}:${name} frames`);
+      if (this.anims.exists(`${characterId}:${name}`)) continue;
       this.anims.create({
         key: `${characterId}:${name}`,
         frames: frames.map((frame) => ({ key: character.textureKey, frame })),
-        frameRate: name === 'run' ? 12 / 0.768 : 12,
+        frameRate: name === 'run' ? 12 / 0.768 : name === 'slide' ? 18 : 12,
         repeat: name === 'run' ? -1 : 0,
       });
     }
@@ -64,7 +73,7 @@ export class RunnerScene extends Phaser.Scene {
     this.physics.add.collider(sprite, floor);
     this.player = new RunnerPlayer(sprite, characterId);
     this.spawner = new ObstacleSpawner(this, this.player.gameObject, this.handleHazardOverlap);
-    this.collectibles = new CollectibleSpawner(this, this.player.gameObject, this.handlePickup);
+    this.collectibles = new CollectibleSpawner(this, this.player.gameObject, this.handlePickup, characterId);
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
     window.addEventListener('blur', this.handleBlur);

@@ -1,15 +1,18 @@
-import akaneAtlasUrl from '../../../assets/character/runtime/akane-lize.png?url';
-import akaneManifest from '../../../assets/character/runtime/akane-lize.json';
-import akanePortraitUrl from '../../../assets/character/portraits/akane-lize-portrait.png?url';
+import rangAtlasUrl from '../../../assets/character/runtime/cogane-rang.png?url';
+import rangManifest from '../../../assets/character/runtime/cogane-rang.json';
+import rangPortraitUrl from '../../../assets/character/portraits/cogane-rang-portrait.png?url';
+import hiyoriAtlasUrl from '../../../assets/character/runtime/hanayo-hiyori.png?url';
+import hiyoriManifest from '../../../assets/character/runtime/hanayo-hiyori.json';
+import hiyoriPortraitUrl from '../../../assets/character/portraits/hanayo-hiyori-portrait.png?url';
+import maryAtlasUrl from '../../../assets/character/runtime/tokino-mary.png?url';
+import maryManifest from '../../../assets/character/runtime/tokino-mary.json';
+import maryPortraitUrl from '../../../assets/character/portraits/tokino-mary-portrait.png?url';
 import rinAtlasUrl from '../../../assets/character/runtime/player-default.png?url';
 import rinManifest from '../../../assets/character/runtime/player-default.json';
 import rinPortraitUrl from '../../../assets/character/portraits/aokumo-rin-portrait.png?url';
 import toaAtlasUrl from '../../../assets/character/runtime/goth-student.png?url';
 import toaManifest from '../../../assets/character/runtime/goth-student.json';
 import toaPortraitUrl from '../../../assets/character/portraits/shizuki-toa-portrait.png?url';
-import yuniAtlasUrl from '../../../assets/character/runtime/moonwing.png?url';
-import yuniManifest from '../../../assets/character/runtime/moonwing.json';
-import yuniPortraitUrl from '../../../assets/character/portraits/ayatsuno-yuni-portrait.png?url';
 import type { RuntimeAtlasManifest } from './characterTypes';
 
 export const CHARACTER_ATLASES = {
@@ -23,14 +26,19 @@ export const CHARACTER_ATLASES = {
     atlasManifest: toaManifest as RuntimeAtlasManifest,
     portraitUrl: toaPortraitUrl,
   },
-  moonwing: {
-    atlasUrl: yuniAtlasUrl,
-    atlasManifest: yuniManifest as RuntimeAtlasManifest,
-    portraitUrl: yuniPortraitUrl,
+  'cogane-rang': {
+    atlasUrl: rangAtlasUrl,
+    atlasManifest: rangManifest as RuntimeAtlasManifest,
+    portraitUrl: rangPortraitUrl,
   },
-  'akane-lize': {
-    atlasUrl: akaneAtlasUrl,
-    atlasManifest: akaneManifest as RuntimeAtlasManifest,
-    portraitUrl: akanePortraitUrl,
+  'hanayo-hiyori': {
+    atlasUrl: hiyoriAtlasUrl,
+    atlasManifest: hiyoriManifest as RuntimeAtlasManifest,
+    portraitUrl: hiyoriPortraitUrl,
+  },
+  'tokino-mary': {
+    atlasUrl: maryAtlasUrl,
+    atlasManifest: maryManifest as RuntimeAtlasManifest,
+    portraitUrl: maryPortraitUrl,
   },
 } as const;

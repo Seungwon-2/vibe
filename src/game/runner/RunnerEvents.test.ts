@@ -23,7 +23,7 @@ describe('runner event bridge', () => {
     const onFinished = vi.fn();
     const bridge = new RunnerEventEmitter({ onSnapshot: vi.fn(), onFinished,
       onEvent: (event) => events.push(event) });
-    const result = { characterId: 'moonwing' as const, distanceMeters: 300,
+    const result = { characterId: 'cogane-rang' as const, distanceMeters: 300,
       coins: 2, durationMs: 3000, finishedAtIso: '2026-10-26T00:00:03.000Z' };
     bridge.pickup('coin-a', 'coin', 0);
     bridge.pickup('coin-a', 'coin', 0);

@@ -36,6 +36,19 @@ function createCharacter(
   accentColor: string,
 ): CharacterDefinition {
   const atlas = CHARACTER_ATLASES[id];
+  const animations = getAnimationFrames(Object.keys(atlas.atlasManifest.frames), id);
+  const expected = { idle: 6, run: 12, jump: 6, doubleJump: 6, slide: 6,
+    hurt: 6, start: 6, victory: 6, gameOver: 6 } as const;
+  if (atlas.atlasManifest.meta.size.w !== 1152 || atlas.atlasManifest.meta.size.h !== 480 ||
+      Object.keys(atlas.atlasManifest.frames).length !== 60) {
+    throw new Error(`Invalid atlas layout: ${id}`);
+  }
+  for (const name of Object.keys(expected) as CharacterAnimationName[]) {
+    if (animations[name].length !== expected[name] || animations[name].some((frameName) => {
+      const frame = atlas.atlasManifest.frames[frameName]?.frame;
+      return !frame || frame.w !== 96 || frame.h !== 96;
+    })) throw new Error(`Missing or malformed ${id}:${name} frames`);
+  }
 
   return {
     id,
@@ -47,7 +60,7 @@ function createCharacter(
     atlasManifest: atlas.atlasManifest,
     frameWidth: 96,
     frameHeight: 96,
-    animations: getAnimationFrames(Object.keys(atlas.atlasManifest.frames), id),
+    animations,
     passive: getCharacterPassiveId(id),
   };
 }
@@ -55,8 +68,9 @@ function createCharacter(
 export const CHARACTERS: readonly CharacterDefinition[] = Object.freeze([
   createCharacter('player-default', 'Aokumo Rin', '#2b66c0'),
   createCharacter('goth-student', 'Shizuki Toa', '#513661'),
-  createCharacter('moonwing', 'Ayatsuno Yuni', '#857fd8'),
-  createCharacter('akane-lize', 'Akane Lize', '#971b2f'),
+  createCharacter('cogane-rang', 'Cogane Rang', '#c98743'),
+  createCharacter('hanayo-hiyori', 'Hanayo Hiyori', '#fca6d0'),
+  createCharacter('tokino-mary', 'Tokino Mary', '#6d929a'),
 ]);
 
 const CHARACTER_BY_ID: ReadonlyMap<CharacterId, CharacterDefinition> = new Map(

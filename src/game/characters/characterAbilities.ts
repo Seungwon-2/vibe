@@ -3,28 +3,32 @@ import type { CharacterId } from './characterTypes';
 export type CharacterPassiveId =
   | 'time-pickup'
   | 'slide-release-grace'
-  | 'double-jump-impulse'
-  | 'collision-penalty-reduction';
+  | 'rang-second-jump'
+  | 'hiyori-pickup-magnet'
+  | 'mary-hit-protection';
 
 export type CharacterPassiveDefinition =
   | Readonly<{ id: 'time-pickup'; bonusMs: number }>
   | Readonly<{ id: 'slide-release-grace'; graceMs: number }>
-  | Readonly<{ id: 'double-jump-impulse'; multiplier: number }>
-  | Readonly<{ id: 'collision-penalty-reduction'; reductionMs: number }>;
+  | Readonly<{ id: 'rang-second-jump'; multiplier: number }>
+  | Readonly<{ id: 'hiyori-pickup-magnet'; radiusPx: number }>
+  | Readonly<{ id: 'mary-hit-protection'; bonusMs: number }>;
 
 export const CHARACTER_PASSIVES: Readonly<Record<CharacterPassiveId, CharacterPassiveDefinition>> =
   Object.freeze({
     'time-pickup': Object.freeze({ id: 'time-pickup', bonusMs: 1000 }),
     'slide-release-grace': Object.freeze({ id: 'slide-release-grace', graceMs: 150 }),
-    'double-jump-impulse': Object.freeze({ id: 'double-jump-impulse', multiplier: 1.12 }),
-    'collision-penalty-reduction': Object.freeze({ id: 'collision-penalty-reduction', reductionMs: 1000 }),
+    'rang-second-jump': Object.freeze({ id: 'rang-second-jump', multiplier: 1.08 }),
+    'hiyori-pickup-magnet': Object.freeze({ id: 'hiyori-pickup-magnet', radiusPx: 20 }),
+    'mary-hit-protection': Object.freeze({ id: 'mary-hit-protection', bonusMs: 250 }),
   });
 
 const CHARACTER_PASSIVE_BY_ID: Readonly<Record<CharacterId, CharacterPassiveId>> = Object.freeze({
   'player-default': 'time-pickup',
   'goth-student': 'slide-release-grace',
-  moonwing: 'double-jump-impulse',
-  'akane-lize': 'collision-penalty-reduction',
+  'cogane-rang': 'rang-second-jump',
+  'hanayo-hiyori': 'hiyori-pickup-magnet',
+  'tokino-mary': 'mary-hit-protection',
 });
 
 export function getCharacterPassive(characterId: CharacterId): CharacterPassiveDefinition {

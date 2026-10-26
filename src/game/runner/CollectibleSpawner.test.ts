@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { PICKUP_SCHEDULE } from './CollectibleSpawner';
+import { getPickupBodySize, PICKUP_SCHEDULE } from './CollectibleSpawner';
+import { RUNNER_GROUND_Y, STANDING_BODY_HEIGHT } from './runnerPose';
 import { RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 
 describe('authored collectible schedule', () => {
@@ -30,5 +31,17 @@ describe('authored collectible schedule', () => {
     for (const distance of RUNNER_GATE_DISTANCES_M) {
       expect(PICKUP_SCHEDULE.every((pickup) => pickup.distanceMeters !== distance)).toBe(true);
     }
+  });
+});
+
+describe('pickup collision radius', () => {
+  it('extends Hiyori pickup overlap by 20px per side without catching upper coins on the ground', () => {
+    expect(getPickupBodySize('player-default')).toBe(24);
+    expect(getPickupBodySize('hanayo-hiyori')).toBe(64);
+    const upper = PICKUP_SCHEDULE.find((pickup) => pickup.optionalJump);
+    expect(upper).toBeDefined();
+    const upperBottom = RUNNER_GROUND_Y - upper!.heightUnits + getPickupBodySize('hanayo-hiyori') / 2;
+    const standingTop = RUNNER_GROUND_Y - STANDING_BODY_HEIGHT;
+    expect(upperBottom).toBeLessThan(standingTop);
   });
 });

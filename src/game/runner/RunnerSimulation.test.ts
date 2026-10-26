@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
+import type { CharacterId } from '../characters/characterTypes';
 import {
   advanceRunner,
   applyCollision,
@@ -13,7 +14,7 @@ import {
 
 const EPOCH = new Date('2026-10-26T00:00:00.000Z');
 
-function running(characterId: 'player-default' | 'goth-student' | 'moonwing' | 'akane-lize' = 'player-default') {
+function running(characterId: CharacterId = 'player-default') {
   return startRunner(createRunnerSnapshot(characterId, EPOCH));
 }
 
@@ -91,27 +92,31 @@ describe('RunnerSimulation', () => {
     expect(withCoin.remainingMs).toBe(94_000);
     expect(rin.coins).toBe(0);
 
-    expect(collectPickup(running('moonwing'), { id: 'time-a', kind: 'time' }).remainingMs)
+    expect(collectPickup(running('cogane-rang'), { id: 'time-a', kind: 'time' }).remainingMs)
       .toBe(93_000);
     const almostFull = { ...rin, remainingMs: 119_000 };
     expect(collectPickup(almostFull, { id: 'time-b', kind: 'time' }).remainingMs).toBe(120_000);
     expect(collectPickup(pauseRunner(rin), { id: 'coin-b', kind: 'coin' }).coins).toBe(0);
   });
 
-  it('uses Lize collision tuning and counts down protection only while running', () => {
+  it('uses Mary collision protection while retaining the standard penalty and stagger', () => {
     const rin = running();
-    const lize = running('akane-lize');
+    const mary = running('tokino-mary');
     expect(applyCollision(rin).remainingMs).toBe(85_000);
-    const firstHit = applyCollision(lize);
-    expect(firstHit.remainingMs).toBe(86_000);
+    const firstHit = applyCollision(mary);
+    expect(firstHit.remainingMs).toBe(85_000);
     expect(firstHit.staggerRemainingMs).toBe(800);
+    expect(firstHit.protectionRemainingMs).toBe(1_050);
     expect(applyCollision(firstHit)).toBe(firstHit);
-    expect(advanceRunner(pauseRunner(firstHit), 2_000).state.protectionRemainingMs).toBe(800);
+    expect(advanceRunner(pauseRunner(firstHit), 2_000).state.protectionRemainingMs).toBe(1_050);
 
     const recovered = advanceRunner(firstHit, 800).state;
-    expect(recovered.protectionRemainingMs).toBe(0);
+    expect(recovered.protectionRemainingMs).toBe(250);
     expect(recovered.staggerRemainingMs).toBe(0);
-    expect(applyCollision(recovered).remainingMs).toBe(81_200);
+    expect(applyCollision(recovered)).toBe(recovered);
+    const unprotected = advanceRunner(recovered, 250).state;
+    expect(unprotected.protectionRemainingMs).toBe(0);
+    expect(applyCollision(unprotected).remainingMs).toBe(unprotected.remainingMs - 5_000);
     const fatal = applyCollision({ ...rin, remainingMs: 2_000 });
     expect(fatal.phase).toBe('finished');
     expect(fatal.remainingMs).toBe(0);

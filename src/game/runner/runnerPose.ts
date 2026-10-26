@@ -4,16 +4,20 @@ export const RUNNER_GROUND_Y = 470;
 export const RUNNER_PLAYER_X = 170;
 export const STANDING_BODY_WIDTH = 40;
 export const STANDING_BODY_HEIGHT = 76;
+export const STANDING_FRAME_BOTTOM = 92;
+export const STANDING_SPRITE_Y = RUNNER_GROUND_Y + (96 - STANDING_FRAME_BOTTOM);
+export const STANDING_BODY_OFFSET_Y = STANDING_FRAME_BOTTOM - STANDING_BODY_HEIGHT;
 export const SLIDING_BODY_WIDTH = 64;
 export const SLIDING_BODY_HEIGHT = 48;
 export const SLIDE_SCALE = 0.72;
 
-// Opaque bottom edge (maxY + 1) of the one held slide frame, measured at alpha > 20.
+// Opaque bottom edge (maxY + 1) of slide frames 01..03, measured at alpha > 20.
 const SLIDE_FRAME_BOTTOM: Readonly<Record<CharacterId, number>> = {
-  'player-default': 75,
-  'goth-student': 80,
-  moonwing: 78,
-  'akane-lize': 78,
+  'player-default': 92,
+  'goth-student': 92,
+  'cogane-rang': 92,
+  'hanayo-hiyori': 92,
+  'tokino-mary': 92,
 };
 
 export function getSlidePose(characterId: CharacterId) {

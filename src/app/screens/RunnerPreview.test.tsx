@@ -21,7 +21,7 @@ import { RunnerPreview } from './RunnerPreview';
 
 describe('RunnerPreview', () => {
   it('sends touch buttons through the shared bridge and pauses without remounting', () => {
-    render(<RunnerPreview characterId="moonwing" onBack={vi.fn()} />);
+    render(<RunnerPreview characterId="hanayo-hiyori" onBack={vi.fn()} />);
     expect(screen.getByTestId('runner-canvas')).toBeInTheDocument();
     fireEvent.pointerDown(screen.getByRole('button', { name: '점프' }));
     expect(mock.bridge?.consumeFrame()).toEqual({ jumpPressed: true, slideHeld: false });

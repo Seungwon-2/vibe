@@ -3,8 +3,9 @@ import type { CharacterPassiveId } from './characterAbilities';
 export type CharacterId =
   | 'player-default'
   | 'goth-student'
-  | 'moonwing'
-  | 'akane-lize';
+  | 'cogane-rang'
+  | 'hanayo-hiyori'
+  | 'tokino-mary';
 
 export type CharacterAnimationName =
   | 'idle'

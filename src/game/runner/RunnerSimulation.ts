@@ -236,13 +236,13 @@ export function applyCollision(state: RunnerSnapshot): RunnerSnapshot {
     return state;
   }
   const passive = getCharacterPassive(state.characterId);
-  const reductionMs = passive.id === 'collision-penalty-reduction' ? passive.reductionMs : 0;
-  const remainingMs = Math.max(0, state.remainingMs - RUNNER_CONFIG.collisionPenaltyMs + reductionMs);
+  const remainingMs = Math.max(0, state.remainingMs - RUNNER_CONFIG.collisionPenaltyMs);
   const hit: RunnerSnapshot = {
     ...state,
     remainingMs,
     staggerRemainingMs: RUNNER_CONFIG.staggerMs,
-    protectionRemainingMs: RUNNER_CONFIG.protectionMs,
+    protectionRemainingMs: RUNNER_CONFIG.protectionMs +
+      (passive.id === 'mary-hit-protection' ? passive.bonusMs : 0),
   };
   return remainingMs === 0 ? finishRunner(hit).state : hit;
 }

@@ -9,7 +9,7 @@ describe('CharacterSelect', () => {
     vi.unstubAllGlobals();
   });
 
-  it('shows all four characters and defaults to Rin when the saved ID is invalid', () => {
+  it('shows the five-character roster and defaults to Rin when the saved ID is invalid', () => {
     render(
       <CharacterSelect
         selectedCharacterId={'unknown-id' as never}
@@ -18,9 +18,11 @@ describe('CharacterSelect', () => {
       />,
     );
 
-    for (const name of ['Aokumo Rin', 'Shizuki Toa', 'Ayatsuno Yuni', 'Akane Lize']) {
+    for (const name of ['Aokumo Rin', 'Shizuki Toa', 'Cogane Rang', 'Hanayo Hiyori', 'Tokino Mary']) {
       expect(screen.getByRole('button', { name })).toBeInTheDocument();
     }
+    expect(screen.queryByRole('button', { name: 'Ayatsuno Yuni' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Akane Lize' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Aokumo Rin' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('character-preview-player-default')).toHaveAttribute('data-animation', 'run');
     expect(screen.getByTestId('character-preview-goth-student')).toHaveAttribute('data-animation', 'idle');
@@ -31,15 +33,15 @@ describe('CharacterSelect', () => {
       <CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ayatsuno Yuni' }));
-    expect(screen.getByRole('button', { name: 'Ayatsuno Yuni' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Hanayo Hiyori' }));
+    expect(screen.getByRole('button', { name: 'Hanayo Hiyori' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: 'Aokumo Rin' })).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByTestId('character-preview-moonwing')).toHaveAttribute('data-animation', 'run');
-    expect(screen.getByTestId('character-preview-moonwing')).toHaveAttribute('data-frame', 'moonwing-run-00');
+    expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-animation', 'run');
+    expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-frame', 'hanayo-hiyori-run-00');
 
-    const preview = screen.getByTestId('character-preview-moonwing');
+    const preview = screen.getByTestId('character-preview-hanayo-hiyori');
     expect(preview).toHaveClass('is-running');
-    expect(preview).toHaveAttribute('src', expect.stringContaining('moonwing.png'));
+    expect(preview).toHaveAttribute('src', expect.stringContaining('hanayo-hiyori.png'));
     expect(preview.style.animationTimingFunction).toBe('steps(12, end)');
     expect(preview.style.animationDuration).toBe('768ms');
   });
@@ -49,10 +51,10 @@ describe('CharacterSelect', () => {
     const onBack = vi.fn();
     render(<CharacterSelect selectedCharacterId="player-default" onConfirm={onConfirm} onBack={onBack} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Akane Lize' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Tokino Mary' }));
     fireEvent.click(screen.getByRole('button', { name: '선택한 캐릭터로 게임 시작' }));
     expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm).toHaveBeenCalledWith('akane-lize');
+    expect(onConfirm).toHaveBeenCalledWith('tokino-mary');
 
     fireEvent.click(screen.getByRole('button', { name: '뒤로' }));
     expect(onBack).toHaveBeenCalledTimes(1);

@@ -3,10 +3,14 @@ import { getCharacter } from '../characters/characterCatalog';
 import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterAnimationName, CharacterId } from '../characters/characterTypes';
 import { getSlidePose, RUNNER_GROUND_Y, RUNNER_PLAYER_X,
-  STANDING_BODY_HEIGHT, STANDING_BODY_WIDTH } from './runnerPose';
+  STANDING_BODY_HEIGHT, STANDING_BODY_OFFSET_Y, STANDING_BODY_WIDTH,
+  STANDING_SPRITE_Y } from './runnerPose';
 
 export { RUNNER_PLAYER_X, RUNNER_GROUND_Y } from './runnerPose';
 const JUMP_IMPULSE = -420;
+type RunnerAction = 'run' | 'jump' | 'doubleJump' | 'slide' | 'hurt' | 'victory' | 'gameOver';
+type AirPhase = 'ascending' | 'descending';
+type RunnerAnimation = RunnerAction | 'jump-fall' | 'double-jump-fall';
 
 export class RunnerPlayer {
   private jumpsUsed = 0;
@@ -15,7 +19,8 @@ export class RunnerPlayer {
   private slideGraceMs = 0;
   private hurt = false;
   private finished = false;
-  private animation: CharacterAnimationName | null = null;
+  private animation: RunnerAnimation | null = null;
+  private airPhase: AirPhase = 'ascending';
   private poseKey = '';
   private readonly passive;
   private readonly character;
@@ -27,7 +32,7 @@ export class RunnerPlayer {
     this.passive = getCharacterPassive(characterId);
     this.character = getCharacter(characterId);
     sprite.setOrigin(0.5, 1);
-    sprite.setPosition(RUNNER_PLAYER_X, RUNNER_GROUND_Y);
+    sprite.setPosition(RUNNER_PLAYER_X, STANDING_SPRITE_Y);
     this.play('run');
     this.applyPose();
   }
@@ -52,11 +57,12 @@ export class RunnerPlayer {
     if (this.finished || this.hurt || this.isSliding || this.jumpsUsed >= 2) return false;
     if (!this.grounded && this.jumpsUsed === 0) this.jumpsUsed = 1;
     const second = this.jumpsUsed === 1;
-    const multiplier = second && this.passive.id === 'double-jump-impulse'
+    const multiplier = second && this.passive.id === 'rang-second-jump'
       ? this.passive.multiplier : 1;
     this.body.setVelocityY(JUMP_IMPULSE * multiplier);
     this.jumpsUsed += 1;
     this.grounded = false;
+    this.airPhase = 'ascending';
     this.slideGraceMs = 0;
     this.play(second ? 'doubleJump' : 'jump');
     return true;
@@ -87,16 +93,21 @@ export class RunnerPlayer {
     }
   }
 
-  finish(): void {
+  finish(outcome: 'victory' | 'gameOver' = 'gameOver'): void {
     if (this.finished) return;
     this.finished = true;
     this.slidingHeld = false;
     this.slideGraceMs = 0;
     this.hurt = false;
+    this.grounded = true;
     this.sprite.setAlpha(1);
-    this.play('gameOver');
+    this.sprite.y = STANDING_SPRITE_Y;
+    this.play(outcome);
     this.applyPose();
     this.body.setVelocity(0, 0);
+    this.body.updateFromGameObject();
+    this.body.prev.copy(this.body.position);
+    this.body.prevFrame.copy(this.body.position);
     this.body.setAllowGravity(false);
     this.body.enable = false;
   }
@@ -112,13 +123,17 @@ export class RunnerPlayer {
     if (onFloor && this.body.velocity.y >= 0) {
       this.grounded = true;
       this.jumpsUsed = 0;
+      this.airPhase = 'ascending';
       this.snapToGround();
     } else if (this.body.velocity.y !== 0) {
       this.grounded = false;
     }
     if (!this.slidingHeld) this.slideGraceMs = Math.max(0, this.slideGraceMs - deltaMs);
+    if (!this.grounded && this.body.velocity.y >= 0) this.airPhase = 'descending';
     this.play(this.hurt ? 'hurt' : this.isSliding ? 'slide' :
-      !this.grounded ? this.jumpsUsed === 2 ? 'doubleJump' : 'jump' : 'run');
+      !this.grounded ? this.jumpsUsed === 2
+        ? this.airPhase === 'descending' ? 'double-jump-fall' : 'doubleJump'
+        : this.airPhase === 'descending' ? 'jump-fall' : 'jump' : 'run');
     this.applyPose();
   }
 
@@ -140,10 +155,10 @@ export class RunnerPlayer {
       if (this.poseKey === 'standing') return;
       this.poseKey = 'standing';
       this.sprite.setScale(1);
-      if (this.grounded) this.sprite.y = RUNNER_GROUND_Y;
+      if (this.grounded) this.sprite.y = STANDING_SPRITE_Y;
       this.body.updateFromGameObject();
       this.body.setSize(STANDING_BODY_WIDTH, STANDING_BODY_HEIGHT, false);
-      this.body.setOffset(28, 20);
+      this.body.setOffset(28, STANDING_BODY_OFFSET_Y);
     }
     this.body.updateFromGameObject();
     this.body.prev.copy(this.body.position);
@@ -153,18 +168,21 @@ export class RunnerPlayer {
   private snapToGround(): void {
     this.sprite.y = this.animation === 'slide'
       ? getSlidePose(this.characterId).spriteY
-      : RUNNER_GROUND_Y;
+      : STANDING_SPRITE_Y;
     this.body.setVelocityY(0);
     this.body.updateFromGameObject();
     this.body.prev.copy(this.body.position);
     this.body.prevFrame.copy(this.body.position);
   }
 
-  private play(name: CharacterAnimationName): void {
+  private play(name: RunnerAnimation): void {
     if (this.animation === name) return;
     const key = `${this.characterId}:${name}`;
-    const frames = this.character.animations[name];
-    if (frames.length === 0) return;
+    const catalogName: CharacterAnimationName = name === 'jump-fall' ? 'jump'
+      : name === 'double-jump-fall' ? 'doubleJump' : name;
+    if (this.character.animations[catalogName].length === 0) {
+      throw new Error(`Missing ${this.characterId}:${catalogName} animation`);
+    }
     this.sprite.anims.play(key, true);
     this.animation = name;
   }

@@ -1,4 +1,6 @@
 import type Phaser from 'phaser';
+import { getCharacterPassive } from '../characters/characterAbilities';
+import type { CharacterId } from '../characters/characterTypes';
 import { RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import type { RunnerPickupKind, RunnerSnapshot } from './runnerTypes';
 import { METERS_PER_WORLD_UNIT } from './hazardPatterns';
@@ -25,6 +27,11 @@ export const PICKUP_SCHEDULE: readonly PickupDefinition[] = Object.freeze(
   }).flat(),
 );
 
+export function getPickupBodySize(characterId: CharacterId): number {
+  const passive = getCharacterPassive(characterId);
+  return 24 + (passive.id === 'hiyori-pickup-magnet' ? passive.radiusPx * 2 : 0);
+}
+
 type ActivePickup = {
   definition: PickupDefinition;
   box: Phaser.GameObjects.Rectangle;
@@ -43,6 +50,7 @@ export class CollectibleSpawner {
     private readonly scene: Phaser.Scene,
     private readonly player: Phaser.Physics.Arcade.Sprite,
     private readonly onPickup: (pickup: PickupDefinition) => void,
+    private readonly characterId: CharacterId,
   ) {}
 
   update(snapshot: RunnerSnapshot): void {
@@ -95,7 +103,8 @@ export class CollectibleSpawner {
   }
 
   private spawnPickup(definition: PickupDefinition): void {
-    const box = this.scene.add.rectangle(0, 0, 24, 24, 0xffffff, 0);
+    const pickupSize = getPickupBodySize(this.characterId);
+    const box = this.scene.add.rectangle(0, 0, pickupSize, pickupSize, 0xffffff, 0);
     this.scene.physics.add.existing(box);
     const body = box.body as Phaser.Physics.Arcade.Body;
     body.setAllowGravity(false);

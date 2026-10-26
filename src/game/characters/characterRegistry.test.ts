@@ -16,18 +16,20 @@ const REQUIRED_ANIMATIONS: readonly CharacterAnimationName[] = [
 ];
 
 describe('runner character registry', () => {
-  it('loads the four stable characters with their names, colors, and assets', () => {
+  it('loads the five active characters with their names, colors, and assets', () => {
     expect(CHARACTERS.map(({ id, displayName, accentColor }) => [id, displayName, accentColor])).toEqual([
       ['player-default', 'Aokumo Rin', '#2b66c0'],
       ['goth-student', 'Shizuki Toa', '#513661'],
-      ['moonwing', 'Ayatsuno Yuni', '#857fd8'],
-      ['akane-lize', 'Akane Lize', '#971b2f'],
+      ['cogane-rang', 'Cogane Rang', '#c98743'],
+      ['hanayo-hiyori', 'Hanayo Hiyori', '#fca6d0'],
+      ['tokino-mary', 'Tokino Mary', '#6d929a'],
     ]);
 
     for (const character of CHARACTERS) {
       expect(character.portraitUrl).toMatch(/\.png/);
       expect(character.atlasUrl).toMatch(/\.png/);
-      expect(character.atlasManifest.meta.size).toEqual({ w: 1152, h: 288 });
+      expect(character.atlasManifest.meta.size).toEqual({ w: 1152, h: 480 });
+      expect(Object.keys(character.atlasManifest.frames)).toHaveLength(60);
     }
   });
 
@@ -40,7 +42,7 @@ describe('runner character registry', () => {
 
       for (const animation of REQUIRED_ANIMATIONS) {
         const frames = character.animations[animation];
-        expect(frames.length, `${character.id} ${animation}`).toBeGreaterThan(0);
+        expect(frames.length, `${character.id} ${animation}`).toBe(animation === 'run' ? 12 : 6);
         for (const frameName of frames) {
           expect(character.atlasManifest.frames[frameName]).toBeDefined();
           expect(character.atlasManifest.frames[frameName].frame).toMatchObject({ w: 96, h: 96 });
@@ -50,10 +52,12 @@ describe('runner character registry', () => {
   });
 
   it('falls back to Rin for unknown saved character IDs and throws for invalid direct lookup', () => {
-    expect(resolveCharacterId('moonwing')).toBe('moonwing');
+    expect(resolveCharacterId('moonwing')).toBe('player-default');
+    expect(resolveCharacterId('akane-lize')).toBe('player-default');
     expect(resolveCharacterId('unknown')).toBe('player-default');
     expect(resolveCharacterId(null)).toBe('player-default');
     expect(getCharacter('goth-student').displayName).toBe('Shizuki Toa');
+    expect(() => getCharacter('moonwing' as never)).toThrow('Unknown character: moonwing');
     expect(() => getCharacter('unknown' as never)).toThrow('Unknown character: unknown');
   });
 
@@ -61,14 +65,16 @@ describe('runner character registry', () => {
     expect(CHARACTER_PASSIVES).toEqual({
       'time-pickup': { id: 'time-pickup', bonusMs: 1000 },
       'slide-release-grace': { id: 'slide-release-grace', graceMs: 150 },
-      'double-jump-impulse': { id: 'double-jump-impulse', multiplier: 1.12 },
-      'collision-penalty-reduction': { id: 'collision-penalty-reduction', reductionMs: 1000 },
+      'rang-second-jump': { id: 'rang-second-jump', multiplier: 1.08 },
+      'hiyori-pickup-magnet': { id: 'hiyori-pickup-magnet', radiusPx: 20 },
+      'mary-hit-protection': { id: 'mary-hit-protection', bonusMs: 250 },
     });
     expect(CHARACTERS.map(({ id }) => getCharacterPassive(id).id)).toEqual([
       'time-pickup',
       'slide-release-grace',
-      'double-jump-impulse',
-      'collision-penalty-reduction',
+      'rang-second-jump',
+      'hiyori-pickup-magnet',
+      'mary-hit-protection',
     ]);
     expect(Object.isFrozen(CHARACTER_PASSIVES)).toBe(true);
   });

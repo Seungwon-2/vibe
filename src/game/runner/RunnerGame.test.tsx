@@ -45,7 +45,7 @@ describe('RunnerGame', () => {
 
   it('shows a retry path when Phaser construction fails', async () => {
     mocks.shouldThrow = true;
-    render(<RunnerGame characterId="moonwing" inputBridge={new RunnerInputBridge()} paused={false}
+    render(<RunnerGame characterId="cogane-rang" inputBridge={new RunnerInputBridge()} paused={false}
       onSnapshot={vi.fn()} onFinished={vi.fn()} />);
     expect(await screen.findByRole('alert')).toHaveTextContent('WebGL unavailable');
     expect(screen.getByRole('button', { name: '다시 시도' })).toBeInTheDocument();

@@ -68,19 +68,33 @@ describe('RunnerPlayer and input bridge', () => {
     expect(input.consumeFrame()).toEqual({ jumpPressed: false, slideHeld: false });
   });
 
-  it('allows exactly two jumps, boosts Yuni second jump, and resets on landing', () => {
-    const { player, body, sprite } = createPlayer('moonwing');
+  it('allows exactly two jumps, boosts Rang second jump, and resets on landing', () => {
+    const { player, body, sprite } = createPlayer('cogane-rang');
     expect(player.jump()).toBe(true);
     expect(body.velocity.y).toBe(-420);
     body.blocked.down = false;
     expect(player.jump()).toBe(true);
-    expect(body.velocity.y).toBeCloseTo(-470.4);
+    expect(body.velocity.y).toBeCloseTo(-453.6);
     expect(player.jump()).toBe(false);
     body.blocked.down = true;
     body.velocity.y = 0;
     player.update(16);
     expect(player.jump()).toBe(true);
-    expect(sprite.anims.play).toHaveBeenCalledWith('moonwing:doubleJump', true);
+    expect(sprite.anims.play).toHaveBeenCalledWith('cogane-rang:doubleJump', true);
+  });
+
+  it('switches to the falling frames once velocity changes sign without changing jump physics', () => {
+    const { player, body, sprite } = createPlayer('player-default');
+    player.jump();
+    body.blocked.down = false;
+    sprite.y = 360;
+    body.updateFromGameObject();
+    body.velocity.y = 40;
+    player.update(16);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:jump-fall', true);
+    expect(body.velocity.y).toBe(40);
+    player.update(16);
+    expect(sprite.anims.play.mock.calls.filter(([key]) => key === 'player-default:jump-fall')).toHaveLength(1);
   });
 
   it('keeps the body bottom aligned while sliding and gives Toa release grace', () => {
@@ -98,7 +112,7 @@ describe('RunnerPlayer and input bridge', () => {
     expect(player.isSliding).toBe(true);
     player.update(51);
     expect(player.isSliding).toBe(false);
-    expect(body.setOffset).toHaveBeenLastCalledWith(28, 20);
+    expect(body.setOffset).toHaveBeenLastCalledWith(28, 16);
     expect(sprite.scaleY).toBe(1);
   });
 
@@ -136,7 +150,7 @@ describe('RunnerPlayer and input bridge', () => {
     body.position.y = 464;
     sprite.y = 540;
     player.update(16);
-    expect(sprite.y).toBe(470);
+    expect(sprite.y).toBe(474);
     expect(body.position.y).toBe(394);
     expect(body.velocity.y).toBe(0);
     expect(player.isGrounded).toBe(true);
@@ -145,12 +159,22 @@ describe('RunnerPlayer and input bridge', () => {
 
   it('stops physics and plays the terminal animation only once', () => {
     const { player, body, sprite } = createPlayer('player-default');
+    sprite.y = 360;
+    body.velocity.y = -100;
     player.finish();
     player.finish();
     expect(body.enable).toBe(false);
     expect(body.setAllowGravity).toHaveBeenCalledWith(false);
+    expect(sprite.y).toBe(474);
+    expect(body.position.y).toBe(394);
     expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:gameOver', true);
     expect(sprite.anims.play).toHaveBeenCalledTimes(2); // run, then game-over
     expect(player.jump()).toBe(false);
+  });
+
+  it('can play a victory result without changing the default crying outcome', () => {
+    const { player, sprite } = createPlayer('tokino-mary');
+    player.finish('victory');
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('tokino-mary:victory', true);
   });
 });

@@ -1,6 +1,6 @@
 # Task: T01 Five-Character Gameplay
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -86,11 +86,11 @@ Replace the active four-character roster with Rin, Toa, Rang, Hiyori, and Mary a
 
 ## Acceptance Criteria
 
-- [ ] Selector contains exactly the five named characters, each with correct color, portrait, idle/run preview, and start flow; Yuni/Lize are absent and old IDs fall back to Rin.
-- [ ] Every playable atlas resolves 12 run frames and six frames for every other mapped action with 96×96 frame dimensions; animation keys do not collide across character switches.
-- [ ] Run, hit, jump, double jump, slide entry/hold, and default crying playback are visible for all five; slide art stays grounded and clears the overhead obstacle without changing jump height or timer rules.
-- [ ] New passive effects are centrally configured and tested: Rang +8% second jump, Hiyori +20px pickup radius without ground-grabbing high coins, Mary +250ms post-hit protection.
-- [ ] Pausing freezes game and animation; resume continues; ending a run in mid-air settles the result pose on the floor.
+- [x] Selector contains exactly the five named characters, each with correct color, portrait, idle/run preview, and start flow; Yuni/Lize are absent and old IDs fall back to Rin.
+- [x] Every playable atlas resolves 12 run frames and six frames for every other mapped action with 96×96 frame dimensions; animation keys do not collide across character switches.
+- [x] Run, hit, jump, double jump, slide entry/hold, and default crying playback are wired for all five; slide art stays grounded and clears the overhead obstacle without changing jump height or timer rules.
+- [x] New passive effects are centrally configured and tested: Rang +8% second jump, Hiyori +20px pickup radius without ground-grabbing high coins, Mary +250ms post-hit protection.
+- [x] Pausing freezes game and animation; resume continues; ending a run in mid-air settles the result pose on the floor.
 
 ## Validation
 
@@ -115,6 +115,6 @@ Task: T01-five-character-gameplay
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed: asset validation, 44 Vitest tests, typecheck, build, lint; headless Edge selector checks at 1366×768, 844×390, 667×375, and 320×640 plus five game loads and Rang jump/slide/pause.
 - commit: pending
