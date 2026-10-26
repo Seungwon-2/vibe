@@ -4,7 +4,7 @@
 
 ## Follow-up: natural run cycle
 
-- The first pass used four key poses and four independently generated in-between poses. A later follow-up replaced that run row for all four characters with a cohesive twelve-pose source sheet per character (`assets/character/locomotion/*-run-cycle-v3.png`). Runtime frames are `run-00` through `run-11` at 96x96; the selector loops them in 768ms. Old source sheets remain as versioned reference assets. The future runner must use the twelve-frame atlas cycle.
+- The first pass used four key poses and four independently generated in-between poses. A later follow-up replaced that run row for all four characters with cohesive twelve-pose source sheets (`assets/character/locomotion/*-run-cycle-v3.png`). Yuni and Lize received `v4` revisions for steadier silhouettes and gait. Runtime frames are `run-00` through `run-11` at 96x96; the selector loops them in 768ms. Old source sheets remain as versioned reference assets. The future runner must use the twelve-frame atlas cycle.
 
 ## Goal
 

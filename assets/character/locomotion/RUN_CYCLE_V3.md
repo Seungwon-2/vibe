@@ -6,12 +6,14 @@ These four transparent 4-column by 3-row source sheets replace the earlier eight
 | --- | --- | --- |
 | Aokumo Rin | `aokumo-rin-run-cycle-v3.png` | `run-00`–`run-11` |
 | Shizuki Toa | `shizuki-toa-run-cycle-v3.png` | `goth-student-run-00`–`goth-student-run-11` |
-| Ayatsuno Yuni | `ayatsuno-yuni-run-cycle-v3.png` | `moonwing-run-00`–`moonwing-run-11` |
-| Akane Lize | `akane-lize-run-cycle-v3.png` | `akane-lize-run-00`–`akane-lize-run-11` |
+| Ayatsuno Yuni | `ayatsuno-yuni-run-cycle-v4.png` | `moonwing-run-00`–`moonwing-run-11` |
+| Akane Lize | `akane-lize-run-cycle-v4.png` | `akane-lize-run-00`–`akane-lize-run-11` |
 
 ## Image generation brief
 
 Each sheet was generated with the built-in image generation tool using its character's existing runtime atlas as the pixel-art identity reference and its portrait as a costume reference. The shared brief requested twelve consecutive right-facing running poses in a transparent 4×3 grid, a right-leg stride followed by a left-leg stride, arms counter-swinging against the legs, consistent face/costume/proportions, a steady torso scale and baseline, and full limbs inside every cell. Character-specific details retained Rin's blue maid outfit, Toa's purple school uniform, Yuni's horn and wings, and Lize's red hair and dark jacket.
+
+Yuni and Lize received a second image-generation edit pass after the initial four-character refresh. Yuni's follow-up brief requested steady horn, wing, and hair silhouettes while preserving clear alternating boots. Lize's requested distinct knees and boots, counter-swinging arms, and steadier red-hair volume. Their `v3` source sheets remain in this directory for comparison; the atlas configs now use the `v4` sheets.
 
 ## Runtime preparation
 
