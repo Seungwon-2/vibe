@@ -212,12 +212,41 @@ h1 {
   background: radial-gradient(ellipse at 50% 88%, rgb(104 130 220 / 23%), transparent 60%);
 }
 
+.character-preview.is-running::before {
+  position: absolute;
+  left: 12%;
+  top: 36%;
+  width: 70px;
+  height: 75px;
+  background:
+    linear-gradient(90deg, transparent, rgb(166 200 255 / 70%), transparent) 0 6px / 55px 2px no-repeat,
+    linear-gradient(90deg, transparent, rgb(166 200 255 / 55%), transparent) 12px 31px / 44px 2px no-repeat,
+    linear-gradient(90deg, transparent, rgb(166 200 255 / 65%), transparent) 3px 56px / 60px 2px no-repeat;
+  content: '';
+  pointer-events: none;
+  animation: runner-speed-lines 260ms linear infinite;
+}
+
 .character-preview__sprite {
   width: 160px;
   height: 160px;
   object-fit: contain;
   image-rendering: pixelated;
   filter: drop-shadow(0 7px 12px rgb(3 5 18 / 60%));
+}
+
+.character-preview.is-running .character-preview__sprite[data-stride-phase='flight'] {
+  transform: translateY(-8px) rotate(-2deg);
+}
+
+.character-preview.is-running .character-preview__sprite[data-stride-phase='landing'] {
+  transform: translateY(2px) rotate(1deg);
+}
+
+@keyframes runner-speed-lines {
+  from { transform: translateX(12px); opacity: 0; }
+  35% { opacity: 0.8; }
+  to { transform: translateX(-18px); opacity: 0; }
 }
 
 .character-card__name {

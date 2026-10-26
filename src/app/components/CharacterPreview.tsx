@@ -6,6 +6,8 @@ type CharacterPreviewProps = {
   selected: boolean;
 };
 
+const RUN_FRAME_INTERVAL_MS = 80;
+
 const RUNTIME_FRAME_URLS = Object.fromEntries(
   Object.entries(
     import.meta.glob('../../../assets/character/runtime/frames/*.png', {
@@ -40,26 +42,27 @@ export function CharacterPreview({ character, selected }: CharacterPreviewProps)
 
   useEffect(() => {
     setFrameIndex(0);
-  }, [character.id, selected]);
+  }, [character.id, selected, reducedMotion]);
 
   useEffect(() => {
     if (!shouldAnimate) return;
     const timerId = window.setInterval(() => {
       setFrameIndex((currentIndex) => (currentIndex + 1) % runFrames.length);
-    }, 125);
+    }, RUN_FRAME_INTERVAL_MS);
     return () => window.clearInterval(timerId);
   }, [character.id, runFrames.length, shouldAnimate]);
 
-  const frameName = selected ? runFrames[frameIndex] : idleFrame;
+  const frameName = selected ? runFrames[shouldAnimate ? frameIndex : 0] : idleFrame;
   const frameUrl = useMemo(() => RUNTIME_FRAME_URLS[frameName], [frameName]);
 
   return (
-    <span className="character-preview" aria-hidden="true">
+    <span className={`character-preview${shouldAnimate ? ' is-running' : ''}`} aria-hidden="true">
       <img
         className="character-preview__sprite"
         data-testid={`character-preview-${character.id}`}
         data-animation={selected ? 'run' : 'idle'}
         data-frame={frameName}
+        data-stride-phase={shouldAnimate ? (frameIndex % 2 === 0 ? 'flight' : 'landing') : undefined}
         src={frameUrl}
         alt=""
         draggable={false}

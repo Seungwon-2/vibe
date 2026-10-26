@@ -25,7 +25,7 @@ Port the four vertical character cards into Project 02 and show a looping run an
 
 - Props: `CharacterSelectProps = { selectedCharacterId: CharacterId; onConfirm(characterId: CharacterId): void; onBack(): void }`.
 - Render catalog order in four tall cards. Each button has `aria-pressed`, a name-based accessible label, portrait as decorative image, SD preview, and visible character name. Use CSS custom property `--character-accent` for selected border/glow; do not print hex values or a color label.
-- Before selection render the first idle frame. On selection, `CharacterPreview` cycles the four `run` frame URLs at 8 frames/second; it returns to frame 0 when the selected ID changes. Use an interval/ref cleanup on unmount. Respect `prefers-reduced-motion` by showing the first run frame without cycling.
+- Before selection render the first idle frame. On selection, `CharacterPreview` cycles the four `run` frame URLs at 12.5 frames/second (80ms per frame); it returns to frame 0 when the selected ID changes. Give wide-stride frames 0/2 an 8px display-only lift and keep contact frames 1/3 low so the motion reads as running. Use an interval/ref cleanup on unmount. Respect `prefers-reduced-motion` by showing the first run frame without cycling or speed-line effects.
 - Keep the start CTA below the cards. It calls `onConfirm(candidateCharacterId)` exactly once. The back control calls `onBack` and never starts a run.
 - At widths below 760px use an overflow-x card rail with snap points; do not shrink four cards into unreadable columns. Keep the landscape page content within the viewport and make card/button targets at least 44px tall.
 - Add no world-map text or stage selection UI.
