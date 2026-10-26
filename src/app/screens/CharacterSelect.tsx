@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CharacterPreview } from '../components/CharacterPreview';
 import { CHARACTERS, resolveCharacterId } from '../../game/characters/characterCatalog';
 import type { CharacterId } from '../../game/characters/characterTypes';
@@ -17,10 +17,6 @@ export function CharacterSelect({
   const [candidateCharacterId, setCandidateCharacterId] = useState(() =>
     resolveCharacterId(selectedCharacterId),
   );
-
-  useEffect(() => {
-    setCandidateCharacterId(resolveCharacterId(selectedCharacterId));
-  }, [selectedCharacterId]);
 
   return (
     <main className="selector-shell">

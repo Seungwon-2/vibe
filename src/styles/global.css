@@ -206,18 +206,38 @@ h1 {
   z-index: 1;
   display: grid;
   width: 100%;
-  height: 170px;
+  height: 196px;
   place-items: center;
   margin-bottom: -2px;
   background: radial-gradient(ellipse at 50% 88%, rgb(104 130 220 / 23%), transparent 60%);
 }
 
 .character-preview__sprite {
-  width: 160px;
-  height: 160px;
-  object-fit: contain;
+  display: block;
+  width: 96px;
+  height: 96px;
+  flex: none;
+  overflow: hidden;
   image-rendering: pixelated;
+  transform: scale(2);
   filter: drop-shadow(0 7px 12px rgb(3 5 18 / 60%));
+}
+
+.character-preview__sheet {
+  display: block;
+  max-width: none;
+  image-rendering: pixelated;
+}
+
+.character-preview__sheet.is-running {
+  animation-name: character-preview-run;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+@keyframes character-preview-run {
+  from { transform: translate3d(var(--run-start-x), var(--run-row-y), 0); }
+  to { transform: translate3d(var(--run-end-x), var(--run-row-y), 0); }
 }
 
 .character-card__name {
@@ -313,7 +333,7 @@ h1 {
   }
 
   .character-preview {
-    height: 160px;
+    height: 196px;
   }
 
   .selector-footer p {
@@ -342,6 +362,10 @@ h1 {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .character-preview__sheet.is-running {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {

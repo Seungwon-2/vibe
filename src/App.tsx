@@ -12,6 +12,7 @@ function App(): React.JSX.Element {
   if (screen === 'characters') {
     return (
       <CharacterSelect
+        key={selectedCharacterId}
         selectedCharacterId={selectedCharacterId}
         onConfirm={(characterId) => {
           setSelectedCharacterId(characterId);

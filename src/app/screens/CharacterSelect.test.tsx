@@ -1,11 +1,10 @@
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CharacterSelect } from './CharacterSelect';
 
 describe('CharacterSelect', () => {
   afterEach(() => {
     cleanup();
-    vi.useRealTimers();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
@@ -27,9 +26,8 @@ describe('CharacterSelect', () => {
     expect(screen.getByTestId('character-preview-goth-student')).toHaveAttribute('data-animation', 'idle');
   });
 
-  it('changes selection and loops the selected character through its run frames', () => {
-    vi.useFakeTimers();
-    const { container } = render(
+  it('changes selection and starts the selected character on a single atlas animation', () => {
+    render(
       <CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />,
     );
 
@@ -39,9 +37,11 @@ describe('CharacterSelect', () => {
     expect(screen.getByTestId('character-preview-moonwing')).toHaveAttribute('data-animation', 'run');
     expect(screen.getByTestId('character-preview-moonwing')).toHaveAttribute('data-frame', 'moonwing-run-00');
 
-    act(() => vi.advanceTimersByTime(83));
-    expect(screen.getByTestId('character-preview-moonwing')).toHaveAttribute('data-frame', 'moonwing-run-01');
-    expect(container.querySelector('.character-preview__sprite[src]')).toBeInTheDocument();
+    const preview = screen.getByTestId('character-preview-moonwing');
+    expect(preview).toHaveClass('is-running');
+    expect(preview).toHaveAttribute('src', expect.stringContaining('moonwing.png'));
+    expect(preview.style.animationTimingFunction).toBe('steps(8, end)');
+    expect(preview.style.animationDuration).toBe('768ms');
   });
 
   it('confirms only the chosen character and keeps back separate from confirmation', () => {
@@ -59,30 +59,7 @@ describe('CharacterSelect', () => {
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 
-  it('cleans up the selected preview timer when unmounted', () => {
-    vi.useFakeTimers();
-    const clearIntervalSpy = vi.spyOn(window, 'clearInterval');
-    const { unmount } = render(
-      <CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />,
-    );
-
-    expect(vi.getTimerCount()).toBe(1);
-    unmount();
-    expect(clearIntervalSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('uses the first run frame when reduced motion is requested', () => {
-    vi.useFakeTimers();
-    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({
-      matches: true,
-      media: '(prefers-reduced-motion: reduce)',
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
+  it('keeps the first run frame as the static reduced-motion fallback', () => {
     render(<CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />);
 
     const selectedCard = screen.getByRole('button', { name: 'Aokumo Rin' });
@@ -90,6 +67,5 @@ describe('CharacterSelect', () => {
       'data-frame',
       'run-00',
     );
-    expect(vi.getTimerCount()).toBe(0);
   });
 });
