@@ -4,7 +4,7 @@ These four transparent 4-column by 3-row source sheets replace the earlier eight
 
 | Character | Source sheet | Runtime prefix |
 | --- | --- | --- |
-| Aokumo Rin | `aokumo-rin-run-cycle-v3.png` | `run-00`–`run-11` |
+| Aokumo Rin | `aokumo-rin-run-cycle-v4.png` | `run-00`–`run-11` |
 | Shizuki Toa | `shizuki-toa-run-cycle-v3.png` | `goth-student-run-00`–`goth-student-run-11` |
 | Ayatsuno Yuni | `ayatsuno-yuni-run-cycle-v6.png` | `moonwing-run-00`–`moonwing-run-11` |
 | Akane Lize | `akane-lize-run-cycle-v4.png` | `akane-lize-run-00`–`akane-lize-run-11` |
@@ -18,6 +18,8 @@ Yuni and Lize received a second image-generation edit pass after the initial fou
 Yuni's `v4` motion still read as a small twitch because both boots occupied similar positions throughout the loop. `yuni-run-pose-guide-v1.svg` and its PNG rendering specify a twelve-step near/far leg crossover: the blue near leg starts forward and moves behind, while the lavender far leg starts behind and moves forward, then they exchange again. The built-in image generation tool used this guide, Yuni's portrait, and her idle sprite as references for `ayatsuno-yuni-run-cycle-v5.png`. The earlier Yuni sheets remain for comparison. A source alpha threshold removes faint generated color residue before runtime scaling.
 
 The `v5` crossover was visible but still read as walking: the torso stayed upright and the stride and knee lift were small. `ayatsuno-yuni-run-cycle-v6.png` uses Toa's `shizuki-toa-run-cycle-v3.png` as the mandatory twelve-pose action reference, while Yuni's portrait and idle sprite define her identity. The brief specified Toa's forward lean, high knee recovery, broad stride, pumping arms, and short flight phase, while keeping Yuni's horn, wings, and outfit. The atlas now uses `v6` with the same 768ms cycle and source alpha cleanup.
+
+Rin's `v3` had too many similar front-leg poses and a narrow stride hidden by her skirt. The built-in image generation tool produced `aokumo-rin-run-cycle-v4.png` with Toa's twelve-pose run as the motion reference and Rin's old run sheet, portrait, and idle frame as identity references. The prompt requested a forward lean, wider strides, high-knee recovery, alternating near/far shoes below the skirt, opposing arm drive, and a consistent foot baseline. The atlas uses `v4` and an alpha threshold of 64 to remove faint blue source residue. The earlier `v3` remains for comparison.
 
 ## Runtime preparation
 
