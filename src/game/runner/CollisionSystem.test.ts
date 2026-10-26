@@ -11,7 +11,7 @@ const overhead: HazardDefinition = { id: 'bar', kind: 'overhead', offsetMeters: 
 describe('hazard collision', () => {
   it('uses boxes aligned to standing and sliding silhouettes', () => {
     expect(getHazardGeometry(ground, 100)).toEqual({ x: 100, y: 422, width: 46, height: 48 });
-    expect(getHazardGeometry(overhead, 100)).toEqual({ x: 100, y: 392, width: 64, height: 36 });
+    expect(getHazardGeometry(overhead, 100)).toEqual({ x: 100, y: 388, width: 64, height: 36 });
     expect(getHazardGeometry(overhead, 100).y + overhead.height).toBeLessThan(430);
   });
 

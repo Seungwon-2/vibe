@@ -11,25 +11,43 @@ function createPlayer(characterId: CharacterId) {
     touching: { down: false },
     velocity: { y: 0 },
     position: { x: 0, y: 0 },
+    width: 96,
     height: 96,
+    sourceWidth: 96,
+    sourceHeight: 96,
     enable: true,
     get bottom() { return body.position.y + body.height; },
     prev: { copy: vi.fn() },
     prevFrame: { copy: vi.fn() },
-    setSize: vi.fn((_width: number, height: number) => { body.height = height; }),
+    setSize: vi.fn((width: number, height: number) => {
+      body.sourceWidth = width;
+      body.sourceHeight = height;
+      body.width = width * sprite.scaleX;
+      body.height = height * sprite.scaleY;
+    }),
     setOffset: vi.fn((x: number, y: number) => { offset.x = x; offset.y = y; }),
     setVelocityY: vi.fn((value: number) => { body.velocity.y = value; }),
     setVelocity: vi.fn((_x: number, y: number) => { body.velocity.y = y; }),
     setAllowGravity: vi.fn(),
-    updateFromGameObject: vi.fn(() => { body.position.y = sprite.y + offset.y - 96; }),
+    updateFromGameObject: vi.fn(() => {
+      body.width = body.sourceWidth * sprite.scaleX;
+      body.height = body.sourceHeight * sprite.scaleY;
+      body.position.y = sprite.y + (offset.y - 96) * sprite.scaleY;
+    }),
   };
   const sprite = {
     body,
     y: 470,
+    scaleX: 1,
+    scaleY: 1,
+    frame: { name: 'run-00' },
     setOrigin: vi.fn(),
     setPosition: vi.fn((_x: number, y: number) => { sprite.y = y; }),
+    setScale: vi.fn((x: number, y = x) => { sprite.scaleX = x; sprite.scaleY = y; }),
     setAlpha: vi.fn(),
-    anims: { play: vi.fn() },
+    anims: { play: vi.fn((key: string) => {
+      sprite.frame.name = key.endsWith(':slide') ? 'slide-00' : 'run-00';
+    }) },
     destroy: vi.fn(),
   };
   return { player: new RunnerPlayer(sprite as unknown as Phaser.Physics.Arcade.Sprite, characterId), body, sprite };
@@ -66,10 +84,13 @@ describe('RunnerPlayer and input bridge', () => {
   });
 
   it('keeps the body bottom aligned while sliding and gives Toa release grace', () => {
-    const { player, body } = createPlayer('goth-student');
+    const { player, body, sprite } = createPlayer('goth-student');
     player.setSliding(true);
-    expect(body.setSize).toHaveBeenLastCalledWith(40, 40, false);
-    expect(body.setOffset).toHaveBeenLastCalledWith(28, 56);
+    expect(body.width).toBeCloseTo(72);
+    expect(body.height).toBeCloseTo(40);
+    expect(body.bottom).toBeCloseTo(470);
+    expect(sprite.scaleY).toBe(0.6);
+    expect(sprite.y).toBeGreaterThan(470);
     expect(player.jump()).toBe(false);
     player.setSliding(false);
     player.update(100);
@@ -77,6 +98,18 @@ describe('RunnerPlayer and input bridge', () => {
     player.update(51);
     expect(player.isSliding).toBe(false);
     expect(body.setOffset).toHaveBeenLastCalledWith(28, 20);
+    expect(sprite.scaleY).toBe(1);
+  });
+
+  it('anchors every slide frame at the ground without moving its collision box', () => {
+    const { player, body, sprite } = createPlayer('player-default');
+    player.setSliding(true);
+    const firstY = sprite.y;
+    sprite.frame.name = 'slide-01';
+    player.update(16);
+    expect(sprite.y).toBeGreaterThan(firstY);
+    expect(body.position.y).toBeCloseTo(430);
+    expect(body.bottom).toBeCloseTo(470);
   });
 
   it('rejects an airborne slide and restores run after landing', () => {

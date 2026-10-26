@@ -2,13 +2,11 @@ import type Phaser from 'phaser';
 import { getCharacter } from '../characters/characterCatalog';
 import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterAnimationName, CharacterId } from '../characters/characterTypes';
+import { getSlidePose, RUNNER_GROUND_Y, RUNNER_PLAYER_X,
+  STANDING_BODY_HEIGHT, STANDING_BODY_WIDTH } from './runnerPose';
 
-export const RUNNER_PLAYER_X = 170;
-export const RUNNER_GROUND_Y = 470;
+export { RUNNER_PLAYER_X, RUNNER_GROUND_Y } from './runnerPose';
 const JUMP_IMPULSE = -420;
-const BODY_WIDTH = 40;
-const STANDING_HEIGHT = 76;
-const SLIDING_HEIGHT = 40;
 
 export class RunnerPlayer {
   private jumpsUsed = 0;
@@ -18,7 +16,7 @@ export class RunnerPlayer {
   private hurt = false;
   private finished = false;
   private animation: CharacterAnimationName | null = null;
-  private bodyHeight = 0;
+  private poseKey = '';
   private readonly passive;
   private readonly character;
 
@@ -30,8 +28,8 @@ export class RunnerPlayer {
     this.character = getCharacter(characterId);
     sprite.setOrigin(0.5, 1);
     sprite.setPosition(RUNNER_PLAYER_X, RUNNER_GROUND_Y);
-    this.setBodyHeight(STANDING_HEIGHT);
     this.play('run');
+    this.applyPose();
   }
 
   get body(): Phaser.Physics.Arcade.Body {
@@ -65,18 +63,28 @@ export class RunnerPlayer {
   }
 
   setSliding(held: boolean): void {
-    if (this.finished || this.hurt) return;
+    if (this.finished) return;
+    if (this.hurt) {
+      this.slidingHeld = held && this.grounded;
+      return;
+    }
     if (held && !this.grounded) return;
     if (!held && this.slidingHeld && this.passive.id === 'slide-release-grace') {
       this.slideGraceMs = this.passive.graceMs;
     }
     this.slidingHeld = held;
-    this.setBodyHeight(this.isSliding ? SLIDING_HEIGHT : STANDING_HEIGHT);
+    if (this.isSliding) this.play('slide');
+    else if (this.animation === 'slide') this.play('run');
+    this.applyPose();
   }
 
   setHurt(hurt: boolean): void {
     if (this.finished) return;
     this.hurt = hurt;
+    if (hurt) {
+      this.play('hurt');
+      this.applyPose();
+    }
   }
 
   finish(): void {
@@ -86,10 +94,11 @@ export class RunnerPlayer {
     this.slideGraceMs = 0;
     this.hurt = false;
     this.sprite.setAlpha(1);
+    this.play('gameOver');
+    this.applyPose();
     this.body.setVelocity(0, 0);
     this.body.setAllowGravity(false);
     this.body.enable = false;
-    this.play('gameOver');
   }
 
   setProtected(remainingMs: number): void {
@@ -108,27 +117,43 @@ export class RunnerPlayer {
       this.grounded = false;
     }
     if (!this.slidingHeld) this.slideGraceMs = Math.max(0, this.slideGraceMs - deltaMs);
-    this.setBodyHeight(this.isSliding ? SLIDING_HEIGHT : STANDING_HEIGHT);
     this.play(this.hurt ? 'hurt' : this.isSliding ? 'slide' :
       !this.grounded ? this.jumpsUsed === 2 ? 'doubleJump' : 'jump' : 'run');
+    this.applyPose();
   }
 
   destroy(): void {
     this.sprite.destroy();
   }
 
-  private setBodyHeight(height: number): void {
-    if (this.bodyHeight === height) return;
-    this.bodyHeight = height;
-    this.body.setSize(BODY_WIDTH, height, false);
-    this.body.setOffset(28, 96 - height);
+  private applyPose(): void {
+    if (this.animation === 'slide') {
+      const pose = getSlidePose(this.characterId, this.sprite.frame.name);
+      if (this.poseKey === pose.key) return;
+      this.poseKey = pose.key;
+      this.sprite.setScale(pose.scaleX, pose.scaleY);
+      this.sprite.y = pose.spriteY;
+      this.body.updateFromGameObject();
+      this.body.setSize(pose.sourceBodyWidth, pose.sourceBodyHeight, false);
+      this.body.setOffset(pose.offsetX, pose.offsetY);
+    } else {
+      if (this.poseKey === 'standing') return;
+      this.poseKey = 'standing';
+      this.sprite.setScale(1);
+      if (this.grounded) this.sprite.y = RUNNER_GROUND_Y;
+      this.body.updateFromGameObject();
+      this.body.setSize(STANDING_BODY_WIDTH, STANDING_BODY_HEIGHT, false);
+      this.body.setOffset(28, 20);
+    }
     this.body.updateFromGameObject();
     this.body.prev.copy(this.body.position);
     this.body.prevFrame.copy(this.body.position);
   }
 
   private snapToGround(): void {
-    this.sprite.y = RUNNER_GROUND_Y;
+    this.sprite.y = this.animation === 'slide'
+      ? getSlidePose(this.characterId, this.sprite.frame.name).spriteY
+      : RUNNER_GROUND_Y;
     this.body.setVelocityY(0);
     this.body.updateFromGameObject();
     this.body.prev.copy(this.body.position);
