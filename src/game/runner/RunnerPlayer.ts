@@ -16,9 +16,11 @@ export class RunnerPlayer {
   private jumpsUsed = 0;
   private grounded = true;
   private slidingHeld = false;
-  private slideGraceMs = 0;
   private hurt = false;
   private finished = false;
+  private passiveRescuing = false;
+  private pitFalling = false;
+  private passiveEffectActive = false;
   private animation: RunnerAnimation | null = null;
   private airPhase: AirPhase = 'ascending';
   private poseKey = '';
@@ -46,7 +48,7 @@ export class RunnerPlayer {
   }
 
   get isSliding(): boolean {
-    return this.slidingHeld && this.grounded || this.slideGraceMs > 0 && this.grounded;
+    return this.slidingHeld && this.grounded;
   }
 
   get isGrounded(): boolean {
@@ -54,30 +56,24 @@ export class RunnerPlayer {
   }
 
   jump(): boolean {
-    if (this.finished || this.hurt || this.isSliding || this.jumpsUsed >= 2) return false;
+    if (this.finished || this.passiveRescuing || this.pitFalling || this.hurt || this.isSliding || this.jumpsUsed >= 2) return false;
     if (!this.grounded && this.jumpsUsed === 0) this.jumpsUsed = 1;
     const second = this.jumpsUsed === 1;
-    const multiplier = second && this.passive.id === 'rang-second-jump'
-      ? this.passive.multiplier : 1;
-    this.body.setVelocityY(JUMP_IMPULSE * multiplier);
+    this.body.setVelocityY(JUMP_IMPULSE);
     this.jumpsUsed += 1;
     this.grounded = false;
     this.airPhase = 'ascending';
-    this.slideGraceMs = 0;
     this.play(second ? 'doubleJump' : 'jump');
     return true;
   }
 
   setSliding(held: boolean): void {
-    if (this.finished) return;
+    if (this.finished || this.passiveRescuing || this.pitFalling) return;
     if (this.hurt) {
       this.slidingHeld = held && this.grounded;
       return;
     }
     if (held && !this.grounded) return;
-    if (!held && this.slidingHeld && this.passive.id === 'slide-release-grace') {
-      this.slideGraceMs = this.passive.graceMs;
-    }
     this.slidingHeld = held;
     if (this.isSliding) this.play('slide');
     else if (this.animation === 'slide') this.play('run');
@@ -93,12 +89,62 @@ export class RunnerPlayer {
     }
   }
 
+  setPassiveEffect(remainingMs: number): void {
+    const active = this.passive.id === 'hiyori-guard' && remainingMs > 0;
+    if (active === this.passiveEffectActive) return;
+    this.passiveEffectActive = active;
+    if (active) this.sprite.setTint(0xff8bc4);
+    else this.sprite.clearTint();
+  }
+
+  beginPitRescue(): void {
+    if (this.finished || this.passiveRescuing) return;
+    this.passiveRescuing = true;
+    this.slidingHeld = false;
+    this.hurt = false;
+    this.grounded = false;
+    this.body.setVelocity(0, 0);
+    this.body.setAllowGravity(false);
+    this.body.enable = false;
+    this.play('jump-fall');
+    this.applyPose();
+  }
+
+  endPitRescue(): void {
+    if (this.finished || !this.passiveRescuing) return;
+    this.passiveRescuing = false;
+    this.grounded = true;
+    this.jumpsUsed = 0;
+    this.airPhase = 'ascending';
+    this.body.enable = true;
+    this.body.setAllowGravity(true);
+    this.body.setVelocity(0, 0);
+    this.play('run');
+    this.applyPose();
+    this.snapToGround();
+  }
+
+  beginPitFall(): void {
+    if (this.finished || this.pitFalling) return;
+    this.pitFalling = true;
+    this.passiveRescuing = false;
+    this.slidingHeld = false;
+    this.hurt = false;
+    this.grounded = false;
+    this.body.setVelocity(0, 0);
+    this.body.setAllowGravity(false);
+    this.body.enable = false;
+    this.play('jump-fall');
+  }
+
   finish(outcome: 'victory' | 'gameOver'): void {
     if (this.finished) return;
     this.finished = true;
+    this.passiveRescuing = false;
+    this.pitFalling = false;
     this.slidingHeld = false;
-    this.slideGraceMs = 0;
     this.hurt = false;
+    this.setPassiveEffect(0);
     this.grounded = true;
     this.sprite.setAlpha(1);
     this.play(outcome);
@@ -116,8 +162,8 @@ export class RunnerPlayer {
     this.sprite.setAlpha(remainingMs > 0 && Math.floor(remainingMs / 100) % 2 === 0 ? 0.4 : 1);
   }
 
-  update(deltaMs: number): void {
-    if (this.finished) return;
+  update(_deltaMs: number): void {
+    if (this.finished || this.passiveRescuing || this.pitFalling) return;
     // Use Arcade's floor-contact flags for normal landings. The former 0.5px
     // bottom fallback could mark an airborne frame as grounded and switch to run.
     const floorContactFlag = this.body.blocked.down || this.body.touching.down;
@@ -136,7 +182,6 @@ export class RunnerPlayer {
     } else if (this.body.velocity.y !== 0) {
       this.grounded = false;
     }
-    if (!this.slidingHeld) this.slideGraceMs = Math.max(0, this.slideGraceMs - deltaMs);
     if (!this.grounded && this.body.velocity.y >= 0) this.airPhase = 'descending';
     this.play(this.hurt ? 'hurt' : this.isSliding ? 'slide' :
       !this.grounded ? this.jumpsUsed === 2

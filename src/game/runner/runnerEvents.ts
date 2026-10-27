@@ -5,6 +5,7 @@ export type RunnerEvent =
   | Readonly<{ type: 'countdown'; value: 0 | 1 | 2 | 3 }>
   | Readonly<{ type: 'pickup'; pickupId: string; kind: RunnerPickupKind; awardedMs: number }>
   | Readonly<{ type: 'gate'; gateId: RunnerGateId; awardedMs: number }>
+  | Readonly<{ type: 'passive-triggered'; passiveId: 'hiyori-guard'; remainingCharges: number; trigger: 'obstacle' | 'pit' }>
   | Readonly<{ type: 'run-finished'; result: RunnerResult; outcome: RunnerFinishOutcome }>
   | Readonly<{ type: 'fatal-error'; message: string }>;
 
@@ -43,6 +44,10 @@ export class RunnerEventEmitter {
     if (this.gateIds.has(gateId)) return;
     this.gateIds.add(gateId);
     this.callbacks.onEvent?.({ type: 'gate', gateId, awardedMs });
+  }
+
+  passiveTriggered(remainingCharges: number, trigger: 'obstacle' | 'pit'): void {
+    this.callbacks.onEvent?.({ type: 'passive-triggered', passiveId: 'hiyori-guard', remainingCharges, trigger });
   }
 
   finish(result: RunnerResult, outcome: RunnerFinishOutcome): void {

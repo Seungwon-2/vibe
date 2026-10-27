@@ -15,29 +15,34 @@ const GATE_IDS: readonly RunnerGateId[] = RUNNER_GATE_DISTANCES_M.map(
 );
 const EPSILON = 1e-7;
 
-function getSpeed(elapsedMs: number, gateCount: number): number {
+function getSpeed(elapsedMs: number, gateCount: number, characterId: CharacterId): number {
   const { initialSpeedUnitsPerSecond, maxSpeedUnitsPerSecond, speedRampMs } = RUNNER_CONFIG;
   const progress = Math.min(1, Math.max(0, elapsedMs / speedRampMs));
+  const passive = getCharacterPassive(characterId);
+  const passiveBonus = passive.id === 'rin-speed' ? passive.speedBonusRatio : 0;
   const targetSpeed = maxSpeedUnitsPerSecond *
-    (1 + gateCount * RUNNER_CONFIG.gateSpeedBonusRatio);
+    (1 + gateCount * RUNNER_CONFIG.gateSpeedBonusRatio + passiveBonus);
   return initialSpeedUnitsPerSecond +
     (targetSpeed - initialSpeedUnitsPerSecond) * progress;
 }
 
-function traveledWorldUnits(elapsedMs: number, deltaMs: number, gateCount: number): number {
+function traveledWorldUnits(elapsedMs: number, deltaMs: number, gateCount: number, characterId: CharacterId): number {
   const rampEnd = RUNNER_CONFIG.speedRampMs;
   const firstEnd = Math.min(elapsedMs + deltaMs, rampEnd);
   const rampDeltaMs = Math.max(0, firstEnd - elapsedMs);
-  const rampUnits = (getSpeed(elapsedMs, gateCount) + getSpeed(firstEnd, gateCount)) / 2 * rampDeltaMs / 1_000;
+  const rampUnits = (getSpeed(elapsedMs, gateCount, characterId) +
+    getSpeed(firstEnd, gateCount, characterId)) / 2 * rampDeltaMs / 1_000;
   const cappedDeltaMs = Math.max(0, elapsedMs + deltaMs - Math.max(elapsedMs, rampEnd));
+  const passive = getCharacterPassive(characterId);
+  const passiveBonus = passive.id === 'rin-speed' ? passive.speedBonusRatio : 0;
   const targetSpeed = RUNNER_CONFIG.maxSpeedUnitsPerSecond *
-    (1 + gateCount * RUNNER_CONFIG.gateSpeedBonusRatio);
+    (1 + gateCount * RUNNER_CONFIG.gateSpeedBonusRatio + passiveBonus);
   return rampUnits + targetSpeed * cappedDeltaMs / 1_000;
 }
 
 function advanceSegment(state: RunnerSnapshot, deltaMs: number, gateCount = state.passedGateIds.length): RunnerSnapshot {
   const elapsedMs = state.elapsedMs + deltaMs;
-  const worldDistance = state.worldDistance + traveledWorldUnits(state.elapsedMs, deltaMs, gateCount);
+  const worldDistance = state.worldDistance + traveledWorldUnits(state.elapsedMs, deltaMs, gateCount, state.characterId);
   const distanceMeters = worldDistance * RUNNER_CONFIG.metersPerWorldUnit;
   return {
     ...state,
@@ -45,9 +50,10 @@ function advanceSegment(state: RunnerSnapshot, deltaMs: number, gateCount = stat
     remainingMs: Math.max(0, state.remainingMs - deltaMs),
     worldDistance,
     distanceMeters,
-    speedUnitsPerSecond: getSpeed(elapsedMs, gateCount),
+    speedUnitsPerSecond: getSpeed(elapsedMs, gateCount, state.characterId),
     staggerRemainingMs: Math.max(0, state.staggerRemainingMs - deltaMs),
     protectionRemainingMs: Math.max(0, state.protectionRemainingMs - deltaMs),
+    passiveEffectRemainingMs: Math.max(0, state.passiveEffectRemainingMs - deltaMs),
     biomeId: getBiomeForDistance(distanceMeters).id,
   };
 }
@@ -64,7 +70,7 @@ function millisecondsToReach(
   for (let index = 0; index < 48; index += 1) {
     const middle = (low + high) / 2;
     const distance = state.distanceMeters +
-      traveledWorldUnits(state.elapsedMs, middle, gateCount) * RUNNER_CONFIG.metersPerWorldUnit;
+      traveledWorldUnits(state.elapsedMs, middle, gateCount, state.characterId) * RUNNER_CONFIG.metersPerWorldUnit;
     if (distance >= gateDistanceMeters) high = middle;
     else low = middle;
   }
@@ -110,6 +116,11 @@ export function createRunnerSnapshot(characterId: CharacterId, now: Date = new D
     passedGateIds: [],
     staggerRemainingMs: 0,
     protectionRemainingMs: 0,
+    passiveChargesRemaining: (() => {
+      const passive = getCharacterPassive(characterId);
+      return passive.id === 'hiyori-guard' ? passive.chargesPerRun : 0;
+    })(),
+    passiveEffectRemainingMs: 0,
     biomeId: 'dawn-city',
     finishedAtElapsedMs: null,
     finishReason: null,
@@ -166,9 +177,10 @@ export function advanceRunner(
         ...current,
         elapsedMs: current.elapsedMs + frozenMs,
         remainingMs: Math.max(0, current.remainingMs - frozenMs),
-        speedUnitsPerSecond: getSpeed(current.elapsedMs + frozenMs, current.passedGateIds.length),
+        speedUnitsPerSecond: getSpeed(current.elapsedMs + frozenMs, current.passedGateIds.length, current.characterId),
         staggerRemainingMs: Math.max(0, current.staggerRemainingMs - frozenMs),
         protectionRemainingMs: Math.max(0, current.protectionRemainingMs - frozenMs),
+        passiveEffectRemainingMs: Math.max(0, current.passiveEffectRemainingMs - frozenMs),
       };
       unspentMs = Math.max(0, unspentMs - frozenMs);
       if (current.remainingMs <= EPSILON) return finishRunner(current);
@@ -177,7 +189,7 @@ export function advanceRunner(
     const availableMs = Math.min(unspentMs, current.remainingMs);
     const nextGate = getNextGate(current);
     const gateCount = current.passedGateIds.length;
-    const segmentMeters = traveledWorldUnits(current.elapsedMs, availableMs, gateCount) *
+    const segmentMeters = traveledWorldUnits(current.elapsedMs, availableMs, gateCount, current.characterId) *
       RUNNER_CONFIG.metersPerWorldUnit;
 
     if (nextGate && current.distanceMeters + segmentMeters >= nextGate.distance - EPSILON) {
@@ -187,7 +199,7 @@ export function advanceRunner(
         ...atGate,
         distanceMeters: nextGate.distance,
         worldDistance: nextGate.distance / RUNNER_CONFIG.metersPerWorldUnit,
-        speedUnitsPerSecond: getSpeed(atGate.elapsedMs, gateCount + 1),
+        speedUnitsPerSecond: getSpeed(atGate.elapsedMs, gateCount + 1, current.characterId),
         biomeId: getBiomeForDistance(nextGate.distance).id,
         remainingMs: Math.min(
           RUNNER_CONFIG.maxTimerMs,
@@ -219,7 +231,7 @@ export function collectPickup(
     return { ...state, coins: state.coins + 1, collectedPickupIds };
   }
   const passive = getCharacterPassive(state.characterId);
-  const bonusMs = passive.id === 'time-pickup' ? passive.bonusMs : 0;
+  const bonusMs = passive.id === 'rin-speed' ? 1_000 : 0;
   return {
     ...state,
     remainingMs: Math.min(
@@ -235,13 +247,35 @@ export function applyCollision(state: RunnerSnapshot): RunnerSnapshot {
     return state;
   }
   const passive = getCharacterPassive(state.characterId);
+  if (passive.id === 'hiyori-guard' && state.passiveChargesRemaining > 0) {
+    return {
+      ...state,
+      passiveChargesRemaining: state.passiveChargesRemaining - 1,
+      passiveEffectRemainingMs: 700,
+    };
+  }
   const remainingMs = Math.max(0, state.remainingMs - RUNNER_CONFIG.collisionPenaltyMs);
   const hit: RunnerSnapshot = {
     ...state,
     remainingMs,
     staggerRemainingMs: RUNNER_CONFIG.staggerMs,
-    protectionRemainingMs: RUNNER_CONFIG.protectionMs +
-      (passive.id === 'mary-hit-protection' ? passive.bonusMs : 0),
+    protectionRemainingMs: RUNNER_CONFIG.protectionMs,
   };
   return remainingMs === 0 ? finishRunner(hit).state : hit;
+}
+
+export function applyPitFall(state: RunnerSnapshot): { state: RunnerSnapshot; blockedByPassive: boolean } {
+  if (state.phase !== 'running' || state.remainingMs <= 0) return { state, blockedByPassive: false };
+  const passive = getCharacterPassive(state.characterId);
+  if (passive.id === 'hiyori-guard' && state.passiveChargesRemaining > 0) {
+    return {
+      state: {
+        ...state,
+        passiveChargesRemaining: state.passiveChargesRemaining - 1,
+        passiveEffectRemainingMs: 700,
+      },
+      blockedByPassive: true,
+    };
+  }
+  return { state: finishRunner(state, undefined, 'pit').state, blockedByPassive: false };
 }

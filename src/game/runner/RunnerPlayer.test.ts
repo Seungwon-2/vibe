@@ -45,6 +45,8 @@ function createPlayer(characterId: CharacterId) {
     setPosition: vi.fn((_x: number, y: number) => { sprite.y = y; }),
     setScale: vi.fn((x: number, y = x) => { sprite.scaleX = x; sprite.scaleY = y; }),
     setAlpha: vi.fn(),
+    setTint: vi.fn(),
+    clearTint: vi.fn(),
     anims: { play: vi.fn((key: string) => {
       sprite.frame.name = key.endsWith(':slide') ? 'slide-00' : 'run-00';
     }) },
@@ -68,13 +70,13 @@ describe('RunnerPlayer and input bridge', () => {
     expect(input.consumeFrame()).toEqual({ jumpPressed: false, slideHeld: false });
   });
 
-  it('allows exactly two jumps, boosts Rang second jump, and resets on landing', () => {
+  it('allows exactly two jumps with shared physics and resets on landing', () => {
     const { player, body, sprite } = createPlayer('cogane-rang');
     expect(player.jump()).toBe(true);
     expect(body.velocity.y).toBe(-420);
     body.blocked.down = false;
     expect(player.jump()).toBe(true);
-    expect(body.velocity.y).toBeCloseTo(-453.6);
+    expect(body.velocity.y).toBe(-420);
     expect(player.jump()).toBe(false);
     body.blocked.down = true;
     body.velocity.y = 0;
@@ -113,7 +115,7 @@ describe('RunnerPlayer and input bridge', () => {
     expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:jump-fall', true);
   });
 
-  it('keeps the body bottom aligned while sliding and gives Toa release grace', () => {
+  it('keeps the body bottom aligned while sliding and releases Toa slide immediately', () => {
     const { player, body, sprite } = createPlayer('goth-student');
     player.setSliding(true);
     expect(body.width).toBeCloseTo(64);
@@ -125,8 +127,6 @@ describe('RunnerPlayer and input bridge', () => {
     expect(player.jump()).toBe(false);
     player.setSliding(false);
     player.update(100);
-    expect(player.isSliding).toBe(true);
-    player.update(51);
     expect(player.isSliding).toBe(false);
     expect(body.setOffset).toHaveBeenLastCalledWith(28, 16);
     expect(sprite.scaleY).toBe(1);
@@ -195,5 +195,40 @@ describe('RunnerPlayer and input bridge', () => {
     const { player, sprite } = createPlayer('tokino-mary');
     player.finish('victory');
     expect(sprite.anims.play).toHaveBeenLastCalledWith('tokino-mary:victory', true);
+  });
+
+  it('locks Hiyori into a brief near-fall rescue pose and returns her to safe running height', () => {
+    const { player, body, sprite } = createPlayer('hanayo-hiyori');
+    player.setPassiveEffect(700);
+    player.beginPitRescue();
+    expect(player.jump()).toBe(false);
+    player.setSliding(true);
+    player.update(16);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('hanayo-hiyori:jump-fall', true);
+    expect(body.enable).toBe(false);
+    expect(sprite.setTint).toHaveBeenCalledWith(0xff8bc4);
+    player.endPitRescue();
+    expect(body.enable).toBe(true);
+    expect(sprite.y).toBe(474);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('hanayo-hiyori:run', true);
+    player.setPassiveEffect(0);
+    expect(sprite.clearTint).toHaveBeenCalledOnce();
+  });
+
+  it('locks a fatal fall pose until the game-over result is finalized', () => {
+    const { player, body, sprite } = createPlayer('player-default');
+    player.beginPitFall();
+    const fallCalls = sprite.anims.play.mock.calls.length;
+    player.beginPitFall();
+    expect(sprite.anims.play.mock.calls).toHaveLength(fallCalls);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:jump-fall', true);
+    expect(body.enable).toBe(false);
+    expect(body.setAllowGravity).toHaveBeenLastCalledWith(false);
+    expect(player.jump()).toBe(false);
+    player.setSliding(true);
+    player.update(16);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:jump-fall', true);
+    player.finish('gameOver');
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:gameOver', true);
   });
 });

@@ -11,8 +11,8 @@ Success means deterministic simulation and spawner tests cover gate/speed/timer 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | P01 | `done` | Update runner course scheduling, gates, pickups, obstacle waves, and pit behavior. | [P01](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P01-runner-course/phase.md) |
-| P02 | `in_progress` | Implement the new passive definitions and their gameplay effects. | [P02](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P02-character-passives/phase.md) |
-| P03 | `pending` | Show abilities clearly and refine the four agreed screens. | [P03](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P03-screen-polish/phase.md) |
+| P02 | `done` | Implement character passives, then stage a cinematic for fatal pit falls. | [P02](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P02-character-passives/phase.md) |
+| P03 | `in_progress` | Show abilities clearly and refine the four agreed screens. | [P03](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P03-screen-polish/phase.md) |
 
 ## Scope and constraints
 
@@ -22,10 +22,11 @@ Success means deterministic simulation and spawner tests cover gate/speed/timer 
 - Keep the themes dawn city 0–2,000m, moonlit forest 2,000–4,000m, crystal mine 4,000–6,000m, and cloud skyway from 6,000m onward.
 - Place safe-route pickups at about 125m intervals, retain the existing optional jump-reward stream and time-pickup value/frequency, and prevent collisions with hazards, pits, and gates.
 - First pit: 850m; later candidate pits: 1,750m apart. Use a 30m gap, at least 250m tutorial warning lead, and a 200m exclusion zone from other hazards. The first pit alone gets the explicit tutorial marker. An ordinary runner hitting a pit ends the run immediately. Hiyori's two per-run defenses can block pit falls.
+- For a fatal pit after P02-T01 defense resolution, freeze the course and timer at contact, show a 700ms fall below the playfield, shake the game camera for 250ms, and then publish/record the existing pit result. Guarded falls continue without this sequence.
 - Keep existing code-based, biome-themed Phaser graphics and pastel UI direction. No Azure or server-ranking work is included.
 
 ## Progress
 
 - P01: `done` (4/4 tasks)
-- P02: `in_progress` (0/1 task)
-- P03: `pending` (0/2 tasks)
+- P02: `done` (2/2 tasks)
+- P03: `in_progress` (0/2 tasks)

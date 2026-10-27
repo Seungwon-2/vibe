@@ -1,6 +1,6 @@
-# Task: T01 Character Passive Gameplay
+﻿# Task: T01 Character Passive Gameplay
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -9,7 +9,7 @@ Implement the three agreed passive abilities as deterministic gameplay effects a
 ## Decision Summary
 
 - Rin: 「질주의 메이드」, cloud emblem, +5 percentage points to her maximum-speed target. This adds to (not multiplies) the shared +5 points per passed gate.
-- Hiyori: 「유령의 수호」, pink flame emblem, two total per-run blocks against ordinary collision or pit fall. A block removes no time, causes no stagger, emits a brief effect, and protects against that triggering hazard. No recharge. Once exhausted, ordinary collisions use standard behavior and pits end the run immediately.
+- Hiyori: `유령의 수호` pink flame emblem, two total per-run blocks against ordinary collision or pit fall. A block removes no time, causes no stagger, emits a brief effect, and protects against that triggering hazard. A blocked pit dips below ground and bounces back to safe running height while the course continues; it never plays the fatal off-screen fall. No recharge. Once exhausted, ordinary collisions use standard behavior and pits follow the fatal pit result flow.
 - Mary: 「별빛 자석」, sparkling magnet emblem, item collection radius +30px.
 - Keep every tuning value centrally configurable. Toa and Rang return `unassigned` until playable; no active abilities or settings UI.
 
@@ -59,18 +59,18 @@ Implement the three agreed passive abilities as deterministic gameplay effects a
 - Keep existing signature `applyCollision(state: RunnerSnapshot): RunnerSnapshot`. Define `tryResolveHazardHit(state: RunnerSnapshot): { state: RunnerSnapshot; hit: boolean; blockedByPassive: boolean; result: RunnerResult | null }` and `tryResolvePitFall(state: RunnerSnapshot): { state: RunnerSnapshot; blockedByPassive: boolean; result: RunnerResult | null }` so scene callers can distinguish a spent defense from a terminal pit fall.
 - Add `applyPitFall(state: RunnerSnapshot): { state: RunnerSnapshot; blockedByPassive: boolean }`. If Hiyori has charges, decrement one, keep `phase: 'running'`, preserve `remainingMs`, `distanceMeters`, `staggerRemainingMs`, and `finishReason`, and set a short passive-effect duration of 700ms. If no charge (or another character), call `finishRunner(state, undefined, 'pit')` and return the terminal state.
 - On an ordinary collision, honor existing invulnerability first. If Hiyori has charges, decrement one and do not subtract the existing 5,000ms penalty, add 1,200ms stagger, or set ordinary-hit protection. Otherwise preserve standard collision behavior.
-- Add `passiveEffectRemainingMs: number` to `RunnerSnapshot`, initialize to zero, and decrement during both normal movement and staggered-time advancement; it is visual state only and must not stop elapsed time or movement. Call `RunnerPlayer.setPassiveEffect(remainingMs)` to present the brief character-side effect without granting generic extra invulnerability.
+- Add `passiveEffectRemainingMs: number` to `RunnerSnapshot`, initialize to zero, and decrement during both normal movement and staggered-time advancement; it is visual state only and must not stop elapsed time or movement. Call `RunnerPlayer.setPassiveEffect(remainingMs)` to present the pink flame guard effect without granting generic extra invulnerability.
 - Add event `Readonly<{ type: 'passive-triggered'; passiveId: 'hiyori-guard'; remainingCharges: number; trigger: 'obstacle' | 'pit' }>` and an emitter method that forwards it once per blocked event.
-- On blocked pit, remove/consume the pit overlap and continue at the same safe lane position; no checkpoint reset or timer penalty. On unblocked pit, preserve the pit finish reason and force the player game-over animation even if that distance is a personal best. Normal timeout/personal-best animation behavior remains unchanged.
+- On blocked pit, remove/consume the pit overlap and keep the run moving at the same course distance progression, without a checkpoint reset or timer penalty. Present a near-fall rescue: lock player input/pose briefly, tween the sprite 36px below its running position for 180ms, then bounce it back to its captured safe running position for 320ms; keep the pink-flame visual effect for 700ms total. Use no full-screen/off-screen fall. On unblocked pit, preserve the pit finish reason and force the player game-over animation even if that distance is a personal best. Normal timeout/personal-best animation behavior remains unchanged.
 - `emitFinished` must preserve result reason when recording; the local ranking continues sorting by distance/coins/date only.
 
 ## Acceptance Criteria
 
-- [ ] Rin's speed bonus is additive with gates and absent for other characters.
-- [ ] Hiyori starts with exactly two charges and completely blocks two mixed obstacle/pit events; the third ordinary hit follows normal collision behavior, while an unblocked pit immediately finishes.
-- [ ] Blocked pits preserve the run and resume safely; passive activation events report the remaining count.
-- [ ] Mary pickup overlap expands by 30px per side; old Hiyori +20px and Mary +250ms hit-protection behaviors are removed.
-- [ ] Toa and Rang produce `unassigned` with no gameplay effect.
+- [x] Rin's speed bonus is additive with gates and absent for other characters.
+- [x] Hiyori starts with exactly two charges and completely blocks two mixed obstacle/pit events; the third ordinary hit follows normal collision behavior, while an unblocked pit immediately finishes.
+- [x] Blocked pits preserve the run and resume safely; passive activation events report the remaining count.
+- [x] Mary pickup overlap expands by 30px per side; old Hiyori +20px and Mary +250ms hit-protection behaviors are removed.
+- [x] Toa and Rang produce `unassigned` with no gameplay effect.
 
 ## Validation
 
@@ -92,6 +92,6 @@ Task: T01-passive-gameplay
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed (56 targeted tests and typecheck)
+- commit: included with P02-T02 (shared runner lifecycle changes)

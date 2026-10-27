@@ -4,8 +4,9 @@
 
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `in_progress` | Replace old placeholder passives with Rin speed, Hiyori two-use guard, Mary's pickup radius, and an unassigned state for Toa/Rang. | [T01](./T01-passive-gameplay.md) |
+| T01 | `done` | Replace old placeholder passives with Rin speed, Hiyori two-use guard, Mary's pickup radius, and an unassigned state for Toa/Rang. | [T01](./T01-passive-gameplay.md) |
+| T02 | `done` | Show a fatal pit fall, then a short camera shake before publishing the run result. | [T02](./T02-pit-fall-cinematic.md) |
 
 ## Progress
 
-- done: 0/1 (active: T01)
+- done: 2/2

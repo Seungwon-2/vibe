@@ -6,16 +6,16 @@
 
 ## Active Phase
 
-[P02 Character Passives](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P02-character-passives/phase.md)
+[P03 Screen Polish](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P03-screen-polish/phase.md)
 
 ## Active Task
 
-[T01 Character Passive Gameplay](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P02-character-passives/T01-passive-gameplay.md)
+[T01 Ability Visibility](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P03-screen-polish/T01-ability-visibility.md)
 
 ## Status
 
-- The Runner Course, Gates, Pits, and UI Polish plan is active on `project02`; P01 is complete, P02-T01 is active.
-- The plan divides work into runner-course mechanics, character passives, and screen polish. P02-T01 is the active task.
+- The Runner Course, Gates, Pits, and UI Polish plan is active on `project02`; P01 and P02 are complete, and P03-T01 is active.
+- The plan divides work into runner-course mechanics, character passives, and screen polish. The fatal-pit cinematic is the active task; Hiyori's near-fall guard rescue is already implemented.
 - Earlier P02-T01 roster work is recorded in its original implementation history; this active plan's P02-T01 is the biome backdrop task completed in `16fc63a`.
 - Asset validation, 44 tests, typecheck, build, and lint passed. Headless Edge confirmed five game loads, responsive selection, Rang jump/slide, and pause/resume.
 - Rang, Hiyori, and Mary now use curated full-size transparent selector portraits based on the supplied references. `assets:prepare` preserves them and `assets:validate` checks their format and transparency.
@@ -52,7 +52,8 @@
 - P02-T03 completed in `f330ae2` on `project02`; the Character Selector and Visual Refresh plan is complete. The four biome scenes were visually reviewed at 960x540, 844x390, and 667x375, including the three +20s gate landmarks and a 375ms midpoint crossfade capture. The full simulation and offline integration tests confirm all three gates, timer rewards, timeout, distance, and biome transitions. Full suite (88), typecheck, lint, and build passed. A natural 90-second headless run was not timed because virtual clock throttling distorted elapsed progression; this limit is recorded in T03.
 - P02-T02 completed in `5500344` on `project02`: added four distinct low/overhead hazard skins, biome-emblem coins, clock-shaped time pickups, and themed +20s gate emblems. Renderer tests verify all four themes, strong outline palette usage, and that hazard drawing stays within configured bounds. Pickup schedules, hazard patterns, collision bodies, gate triggers, and reward values were not changed. Eleven targeted tests, typecheck, lint, and build passed. Browser screenshots were unavailable; P02-T03 retains full viewport review.
 - P01-T04 completed on `project02`: pickup generation now creates a deterministic ground-safe coin stream around every 125m, keeps time items in nearby safe slots, retains optional upper coins when clear, and excludes hazard, pit-clearance, and gate zones. Mary's pickup-body logic is ready to use her centrally defined `radiusPx`; no passive tuning changed in this task. Three targeted files (16 tests) and typecheck passed.
+- P02-T01/T02 completed: centrally tuned Rin's +5% maximum speed, Hiyori's two mixed-use guards, and Mary's +30px pickup radius; Hiyori's guard performs a pink-flame 180ms dip/320ms bounce rescue. Unguarded pit falls now freeze the run at contact, descend for 700ms, shake the game camera for 250ms, then publish the preserved pit result once. 56 passive tests and 29 pit/runner tests plus typecheck passed.
 
 ## Next Step
 
-Read [P02-T01 Character Passive Gameplay](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P02-character-passives/T01-passive-gameplay.md) and implement centrally tuned Rin speed, Hiyori's two-use guard, Mary's pickup radius, and unassigned passives for Toa and Rang.
+Read [P03-T01 Ability Visibility](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P03-screen-polish/T01-ability-visibility.md) and verify the character passives and remaining Hiyori guard count are clear in the selector and runner HUD.

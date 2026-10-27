@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getHazardGeometry, tryResolveHazardHit } from './CollisionSystem';
+import { getHazardGeometry, tryResolveHazardHit, tryResolvePitFall } from './CollisionSystem';
 import { createRunnerSnapshot, startRunner } from './RunnerSimulation';
 import type { HazardDefinition } from './hazardTypes';
 
@@ -21,10 +21,15 @@ describe('hazard collision', () => {
     expect(first.hit).toBe(true);
     expect(first.state.remainingMs).toBe(85_000);
     expect(first.state.protectionRemainingMs).toBe(1_200);
-    expect(tryResolveHazardHit(first.state)).toEqual({ state: first.state, hit: false, result: null });
+    expect(tryResolveHazardHit(first.state)).toEqual({ state: first.state, hit: false, blockedByPassive: false, result: null });
     const mary = startRunner(createRunnerSnapshot('tokino-mary'));
     expect(tryResolveHazardHit(mary).state.remainingMs).toBe(85_000);
-    expect(tryResolveHazardHit(mary).state.protectionRemainingMs).toBe(1_450);
+    expect(tryResolveHazardHit(mary).state.protectionRemainingMs).toBe(1_200);
+
+    const hiyori = startRunner(createRunnerSnapshot('hanayo-hiyori'));
+    const guarded = tryResolveHazardHit(hiyori);
+    expect(guarded).toMatchObject({ hit: true, blockedByPassive: true, result: null });
+    expect(guarded.state).toMatchObject({ remainingMs: 90_000, passiveChargesRemaining: 1 });
   });
 
   it('finishes once when a collision depletes the remaining timer', () => {
@@ -33,5 +38,19 @@ describe('hazard collision', () => {
     expect(hit.state.phase).toBe('finished');
     expect(hit.result?.distanceMeters).toBe(0);
     expect(tryResolveHazardHit(hit.state).hit).toBe(false);
+  });
+
+  it('blocks a pit while Hiyori has a charge and returns a fatal pit result after charges are spent', () => {
+    const initial = startRunner(createRunnerSnapshot('hanayo-hiyori'));
+    expect(tryResolvePitFall(initial)).toMatchObject({
+      blockedByPassive: true, result: null,
+      state: { phase: 'running', passiveChargesRemaining: 1, remainingMs: 90_000 },
+    });
+    const noCharges = { ...initial, passiveChargesRemaining: 0, distanceMeters: 845, coins: 3 };
+    expect(tryResolvePitFall(noCharges)).toMatchObject({
+      blockedByPassive: false,
+      result: { finishReason: 'pit', distanceMeters: 845, coins: 3 },
+      state: { phase: 'finished', finishReason: 'pit' },
+    });
   });
 });

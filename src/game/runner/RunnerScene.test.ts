@@ -59,47 +59,146 @@ describe('RunnerScene finish boundary', () => {
     expect(finishEvent).toHaveBeenCalledExactlyOnceWith(result, 'completed');
   });
 
-  it('keeps pit falls as game over even when the distance sets a personal best', () => {
+  it('delays a fatal pit result until after the fall and camera shake, preserving contact-time data', () => {
     record.mockReset().mockReturnValue({ isNewBest: true });
     const scene = new RunnerScene();
     const finishPlayer = vi.fn();
     const finishEvent = vi.fn();
     const snapshotEvent = vi.fn();
     const clear = vi.fn();
+    const fallTweens: { targets: typeof sprite; y: number; duration: number; onComplete(): void }[] = [];
+    const shake = vi.fn();
+    let finalize: (() => void) | undefined;
+    const sprite = { y: 474 };
     const harness = scene as unknown as {
       snapshot: ReturnType<typeof createRunnerSnapshot>;
       finishEmitted: boolean;
+      pitFallCinematicActive: boolean;
       inputBridge: { clear(): void };
       heldKeyboardActions: Set<string>;
-      player: { finish(outcome: string): void };
+      player: { gameObject: typeof sprite; beginPitFall(): void; finish(outcome: string): void; update(delta: number): void };
       eventEmitter: {
         snapshot(snapshot: unknown, now: number, force: boolean): void;
         finish(result: RunnerResult, outcome: string): void;
       };
       time: { now: number };
+      tweens: { add(config: { targets: typeof sprite; y: number; duration: number; ease: string; onComplete(): void }): unknown };
+      cameras: { main: { shake(duration: number, intensity: number): void } };
+      finalizePitFall(): void;
+      update(time: number, delta: number): void;
       handlePitFall(pit: { id: string; distanceMeters: number; widthMeters: number; tutorialWarning: boolean }): void;
     };
-    harness.snapshot = { ...startRunner(createRunnerSnapshot('player-default')),
-      distanceMeters: 845, worldDistance: 2_535, coins: 7 };
+    const contactSnapshot = { ...startRunner(createRunnerSnapshot('player-default')),
+      distanceMeters: 845, worldDistance: 2_535, coins: 7, elapsedMs: 31_000, remainingMs: 59_000 };
+    harness.snapshot = contactSnapshot;
     harness.finishEmitted = false;
     harness.inputBridge = { clear };
     harness.heldKeyboardActions = new Set(['Space']);
-    harness.player = { finish: finishPlayer };
+    harness.player = { gameObject: sprite, beginPitFall: vi.fn(), finish: finishPlayer, update: vi.fn() };
     harness.eventEmitter = { snapshot: snapshotEvent, finish: finishEvent };
     harness.time = { now: 123 };
+    harness.tweens = { add: (config) => { fallTweens.push(config); return {} as never; } };
+    harness.cameras = { main: { shake } };
+    (harness as unknown as { time: { now: number; delayedCall(delay: number, callback: () => void): unknown } }).time = {
+      now: 123,
+      delayedCall: (delay, callback) => { expect(delay).toBe(250); finalize = callback; return {} as never; },
+    };
 
     const pit = { id: 'pit-850', distanceMeters: 850, widthMeters: 30, tutorialWarning: true };
     harness.handlePitFall(pit);
     harness.handlePitFall(pit);
 
-    expect(harness.snapshot).toMatchObject({ phase: 'finished', distanceMeters: 845,
-      coins: 7, remainingMs: 0, finishReason: 'pit' });
-    expect(snapshotEvent).toHaveBeenCalledOnce();
+    expect(harness.snapshot).toBe(contactSnapshot);
+    expect(harness.snapshot).toMatchObject({ phase: 'running', distanceMeters: 845, coins: 7, remainingMs: 59_000 });
+    expect(harness.pitFallCinematicActive).toBe(true);
+    expect(fallTweens).toHaveLength(1);
+    expect(fallTweens[0]).toMatchObject({ y: 620, duration: 700, ease: 'Cubic.In' });
+    expect(snapshotEvent).not.toHaveBeenCalled();
     expect(clear).toHaveBeenCalledOnce();
     expect(harness.heldKeyboardActions.size).toBe(0);
+    expect(record).not.toHaveBeenCalled();
+    expect(finishPlayer).not.toHaveBeenCalled();
+    expect(fallTweens[0].targets).toBe(sprite);
+
+    // The normal update loop cannot advance any simulation systems during the cinematic.
+    const updatePlayer = vi.fn();
+    harness.player.update = updatePlayer;
+    harness.update(456, 16);
+    expect(harness.snapshot).toBe(contactSnapshot);
+    expect(updatePlayer).not.toHaveBeenCalled();
+
+    fallTweens[0].onComplete();
+    expect(shake).toHaveBeenCalledExactlyOnceWith(250, 0.012);
+    expect(finalize).toBeTypeOf('function');
+    expect(record).not.toHaveBeenCalled();
+    finalize?.();
+    expect(harness.snapshot).toMatchObject({ phase: 'finished', distanceMeters: 845,
+      coins: 7, remainingMs: 0, finishReason: 'pit', elapsedMs: 31_000 });
+    expect(snapshotEvent).toHaveBeenCalledOnce();
+    expect(record).toHaveBeenCalledOnce();
     expect(finishPlayer).toHaveBeenCalledExactlyOnceWith('gameOver');
     expect(finishEvent).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({ finishReason: 'pit', distanceMeters: 845, coins: 7 }), 'personal-best',
     );
+  });
+
+  it('plays Hiyori\'s brief near-fall bounce and continues without ending the run', () => {
+    const scene = new RunnerScene();
+    const sceneTweens: { y: number; duration: number; onComplete(): void }[] = [];
+    const snapshotEvent = vi.fn();
+    const triggerEvent = vi.fn();
+    const beginRescue = vi.fn();
+    const endRescue = vi.fn();
+    const setEffect = vi.fn();
+    const clear = vi.fn();
+    const sprite = { y: 474 };
+    const harness = scene as unknown as {
+      snapshot: ReturnType<typeof createRunnerSnapshot>;
+      finishEmitted: boolean;
+      inputBridge: { clear(): void };
+      heldKeyboardActions: Set<string>;
+      player: {
+        gameObject: typeof sprite;
+        setPassiveEffect(remainingMs: number): void;
+        beginPitRescue(): void;
+        endPitRescue(): void;
+        finish(outcome: string): void;
+      };
+      eventEmitter: {
+        snapshot(snapshot: unknown, now: number, force: boolean): void;
+        passiveTriggered(remainingCharges: number, trigger: 'pit' | 'obstacle'): void;
+        finish(result: RunnerResult, outcome: string): void;
+      };
+      time: { now: number };
+      tweens: { add(config: { y: number; duration: number; onComplete(): void }): unknown };
+      handlePitFall(pit: { id: string; distanceMeters: number; widthMeters: number; tutorialWarning: boolean }): void;
+    };
+    harness.snapshot = startRunner(createRunnerSnapshot('hanayo-hiyori'));
+    harness.finishEmitted = false;
+    harness.inputBridge = { clear };
+    harness.heldKeyboardActions = new Set(['Space']);
+    harness.player = { gameObject: sprite, setPassiveEffect: setEffect, beginPitRescue: beginRescue,
+      endPitRescue: endRescue, finish: vi.fn() };
+    harness.eventEmitter = { snapshot: snapshotEvent, passiveTriggered: triggerEvent, finish: vi.fn() };
+    harness.time = { now: 50 };
+    harness.tweens = { add: (config) => { sceneTweens.push(config); return {}; } };
+
+    harness.handlePitFall({ id: 'pit-850', distanceMeters: 850, widthMeters: 30, tutorialWarning: true });
+
+    expect(harness.snapshot).toMatchObject({ phase: 'running', passiveChargesRemaining: 1,
+      passiveEffectRemainingMs: 700, remainingMs: 90_000 });
+    expect(beginRescue).toHaveBeenCalledOnce();
+    expect(setEffect).toHaveBeenCalledWith(700);
+    expect(triggerEvent).toHaveBeenCalledExactlyOnceWith(1, 'pit');
+    expect(sceneTweens[0]).toMatchObject({ y: 510, duration: 180 });
+    expect(harness.heldKeyboardActions.size).toBe(0);
+    expect(clear).toHaveBeenCalledOnce();
+    expect(record).not.toHaveBeenCalled();
+
+    sceneTweens[0].onComplete();
+    expect(sceneTweens[1]).toMatchObject({ y: 474, duration: 320 });
+    sceneTweens[1].onComplete();
+    expect(endRescue).toHaveBeenCalledOnce();
+    expect(record).not.toHaveBeenCalled();
   });
 });

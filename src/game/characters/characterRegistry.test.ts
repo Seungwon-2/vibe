@@ -68,18 +68,17 @@ describe('runner character registry', () => {
 
   it('keeps balanced passive tuning centralized and mapped to the intended character', () => {
     expect(CHARACTER_PASSIVES).toEqual({
-      'time-pickup': { id: 'time-pickup', bonusMs: 1000 },
-      'slide-release-grace': { id: 'slide-release-grace', graceMs: 150 },
-      'rang-second-jump': { id: 'rang-second-jump', multiplier: 1.08 },
-      'hiyori-pickup-magnet': { id: 'hiyori-pickup-magnet', radiusPx: 20 },
-      'mary-hit-protection': { id: 'mary-hit-protection', bonusMs: 250 },
+      'rin-speed': { id: 'rin-speed', speedBonusRatio: 0.05, name: '질주의 메이드', icon: 'cloud', effectLabel: '최고 속도 +5%' },
+      'hiyori-guard': { id: 'hiyori-guard', chargesPerRun: 2, name: '유령의 수호', icon: 'pink-flame', effectLabel: '충돌·낭떠러지 방어 2회' },
+      'mary-pickup-magnet': { id: 'mary-pickup-magnet', radiusPx: 30, name: '별빛 자석', icon: 'sparkling-magnet', effectLabel: '수집 반경 +30px' },
+      unassigned: { id: 'unassigned', name: '준비 중', icon: null, effectLabel: '플레이 가능할 때 공개' },
     });
     expect(CHARACTERS.map(({ id }) => getCharacterPassive(id).id)).toEqual([
-      'time-pickup',
-      'slide-release-grace',
-      'rang-second-jump',
-      'hiyori-pickup-magnet',
-      'mary-hit-protection',
+      'rin-speed',
+      'unassigned',
+      'unassigned',
+      'hiyori-guard',
+      'mary-pickup-magnet',
     ]);
     expect(Object.isFrozen(CHARACTER_PASSIVES)).toBe(true);
   });

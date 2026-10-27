@@ -64,4 +64,14 @@ describe('runner event bridge', () => {
     expect(awards[0]).toBeLessThan(20_000);
     expect(next.state.remainingMs).toBeLessThanOrEqual(120_000);
   });
+
+  it('reports the remaining Hiyori guard charges and trigger kind', () => {
+    const events: RunnerEvent[] = [];
+    const bridge = new RunnerEventEmitter({ onSnapshot: vi.fn(), onFinished: vi.fn(),
+      onEvent: (event) => events.push(event) });
+    bridge.passiveTriggered(1, 'pit');
+    expect(events).toEqual([{
+      type: 'passive-triggered', passiveId: 'hiyori-guard', remainingCharges: 1, trigger: 'pit',
+    }]);
+  });
 });

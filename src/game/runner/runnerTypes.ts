@@ -20,6 +20,8 @@ export type RunnerSnapshot = Readonly<{
   passedGateIds: readonly RunnerGateId[];
   staggerRemainingMs: number;
   protectionRemainingMs: number;
+  passiveChargesRemaining: number;
+  passiveEffectRemainingMs: number;
   biomeId: RunnerBiomeId;
   finishedAtElapsedMs: number | null;
   finishReason: RunnerFinishReason | null;

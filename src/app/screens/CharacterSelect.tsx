@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { CharacterPreview } from '../components/CharacterPreview';
 import { CHARACTERS, getCharacter, resolveCharacterId } from '../../game/characters/characterCatalog';
 import { getCharacterPassive } from '../../game/characters/characterAbilities';
@@ -10,18 +10,7 @@ const SELECTOR_CHARACTERS = [...CHARACTERS].sort(
 
 function passiveSummary(character: CharacterDefinition): string {
   const passive = getCharacterPassive(character.id);
-  switch (passive.id) {
-    case 'time-pickup':
-      return `시간 아이템을 얻으면 ${passive.bonusMs / 1_000}초 추가`;
-    case 'slide-release-grace':
-      return `슬라이딩 입력 해제 후 ${passive.graceMs}ms 유지`;
-    case 'rang-second-jump':
-      return `2단 점프 힘 ${Math.round((passive.multiplier - 1) * 100)}% 증가`;
-    case 'hiyori-pickup-magnet':
-      return `아이템 수집 범위 +${passive.radiusPx}px`;
-    case 'mary-hit-protection':
-      return `피격 후 보호 시간 +${passive.bonusMs}ms`;
-  }
+  return `${passive.name} · ${passive.effectLabel}`;
 }
 
 export type CharacterSelectProps = {

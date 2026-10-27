@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+﻿import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getCharacter } from '../../game/characters/characterCatalog';
 import { createRunnerSnapshot, startRunner } from '../../game/runner/RunnerSimulation';
@@ -24,8 +24,8 @@ describe('RunnerHud', () => {
     expect(screen.getByText('1:30')).toBeInTheDocument();
     expect(screen.getByText('61')).toBeInTheDocument();
     expect(screen.getByLabelText('코인 2개')).toBeInTheDocument();
-    expect(screen.getByText(/새벽 도심 · 다음 보너스까지 2,439m/)).toBeInTheDocument();
-    expect(screen.getByText(/아이템 수집 범위 증가/)).toBeInTheDocument();
+    expect(screen.getByText(/새벽 도심 · 다음 보너스까지 1,939m/)).toBeInTheDocument();
+    expect(screen.getByText(/유령의 수호 · 충돌·낭떠러지 방어 2회/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '일시정지' }));
     expect(onPause).toHaveBeenCalledOnce();
   });

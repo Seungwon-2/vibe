@@ -1,13 +1,13 @@
 import Phaser from 'phaser';
 import { getCharacter } from '../characters/characterCatalog';
 import type { CharacterId } from '../characters/characterTypes';
-import { advanceRunner, collectPickup, createRunnerSnapshot, finishRunner, pauseRunner, resumeRunner, startRunner } from './RunnerSimulation';
+import { advanceRunner, collectPickup, createRunnerSnapshot, pauseRunner, resumeRunner, startRunner } from './RunnerSimulation';
 import { RunnerPlayer, RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { RunnerInputBridge } from './RunnerInput';
 import type { RunnerGateId, RunnerResult, RunnerSnapshot } from './runnerTypes';
 import { RUNNER_CONFIG } from './runnerConfig';
 import { ObstacleSpawner } from './ObstacleSpawner';
-import { tryResolveHazardHit } from './CollisionSystem';
+import { tryResolveHazardHit, tryResolvePitFall } from './CollisionSystem';
 import { CollectibleSpawner, type PickupDefinition } from './CollectibleSpawner';
 import { RunnerEventEmitter } from './runnerEvents';
 import type { RunnerEvent } from './runnerEvents';
@@ -28,8 +28,13 @@ export class RunnerScene extends Phaser.Scene {
   private spawner!: ObstacleSpawner;
   private collectibles!: CollectibleSpawner;
   private backdrop!: RunnerBackdrop;
+  private passiveEffectArt!: Phaser.GameObjects.Graphics;
   private pits!: PitSpawner;
   private finishEmitted = false;
+  private pitFallCinematicActive = false;
+  private pendingPitFinish: { state: RunnerSnapshot; result: RunnerResult } | null = null;
+  private pitFallTween: Phaser.Tweens.Tween | null = null;
+  private pitFinishTimer: Phaser.Time.TimerEvent | null = null;
 
   constructor() {
     super({ key: 'RunnerScene' });
@@ -52,6 +57,7 @@ export class RunnerScene extends Phaser.Scene {
     });
     this.snapshot = createRunnerSnapshot(characterId);
     this.backdrop = new RunnerBackdrop(this);
+    this.passiveEffectArt = this.add.graphics().setDepth(3);
 
     const animationFrames = {
       run: character.animations.run,
@@ -107,7 +113,7 @@ export class RunnerScene extends Phaser.Scene {
   }
 
   update(_time: number, deltaMs: number): void {
-    if (!this.player || this.snapshot.phase === 'finished') return;
+    if (!this.player || this.snapshot.phase === 'finished' || this.pitFallCinematicActive) return;
     if (this.snapshot.phase === 'countdown') {
       this.countdownRemainingMs -= deltaMs;
       const nextValue = Math.max(0, Math.ceil(this.countdownRemainingMs / 1_000)) as 0 | 1 | 2 | 3;
@@ -133,6 +139,8 @@ export class RunnerScene extends Phaser.Scene {
     for (const gate of gateAwards) this.eventEmitter.gate(gate.id, gate.awardedMs);
     this.player.setHurt(state.staggerRemainingMs > 0);
     this.player.setProtected(state.protectionRemainingMs);
+    this.player.setPassiveEffect(state.passiveEffectRemainingMs);
+    this.drawPassiveEffect(state.passiveEffectRemainingMs);
     this.spawner.update(state);
     this.collectibles.update(state);
     this.pits.update(state);
@@ -165,6 +173,20 @@ export class RunnerScene extends Phaser.Scene {
     this.eventEmitter.snapshot(snapshot, this.time.now, force);
   }
 
+  private drawPassiveEffect(remainingMs: number): void {
+    this.passiveEffectArt.clear();
+    if (this.snapshot.characterId !== 'hanayo-hiyori' || remainingMs <= 0) return;
+    const x = RUNNER_PLAYER_X;
+    const y = this.player.gameObject.y - 38;
+    this.passiveEffectArt.fillStyle(0xff7fbd, 0.2).fillCircle(x, y, 48);
+    this.passiveEffectArt.fillStyle(0xff68ad, 0.94)
+      .fillTriangle(x - 28, y + 14, x - 20, y - 14, x - 11, y + 14)
+      .fillTriangle(x - 10, y + 18, x, y - 22, x + 9, y + 18)
+      .fillTriangle(x + 10, y + 14, x + 20, y - 13, x + 28, y + 14);
+    this.passiveEffectArt.fillStyle(0xffe2f0, 0.9)
+      .fillCircle(x - 20, y + 5, 3).fillCircle(x, y - 2, 3).fillCircle(x + 20, y + 5, 3);
+  }
+
   private readonly handlePickup = (pickup: PickupDefinition): void => {
     const next = collectPickup(this.snapshot, pickup);
     if (next === this.snapshot) return;
@@ -174,20 +196,75 @@ export class RunnerScene extends Phaser.Scene {
   };
 
   private readonly handleHazardOverlap = (): void => {
-    const { state, hit, result } = tryResolveHazardHit(this.snapshot);
+    const { state, hit, blockedByPassive, result } = tryResolveHazardHit(this.snapshot);
     if (!hit) return;
     this.publish(state, true);
+    if (blockedByPassive) {
+      this.player.setPassiveEffect(state.passiveEffectRemainingMs);
+      this.eventEmitter.passiveTriggered(state.passiveChargesRemaining, 'obstacle');
+      return;
+    }
     this.player.setHurt(true);
     this.player.setProtected(state.protectionRemainingMs);
     if (result) this.emitFinished(result);
   };
 
   private readonly handlePitFall = (_pit: PitDefinition): void => {
-    if (this.finishEmitted || this.snapshot.phase !== 'running') return;
-    const finished = finishRunner(this.snapshot, undefined, 'pit');
-    this.publish(finished.state, true);
+    if (this.finishEmitted || this.pitFallCinematicActive || this.snapshot.phase !== 'running') return;
+    const { state, blockedByPassive, result } = tryResolvePitFall(this.snapshot);
+    if (blockedByPassive) {
+      this.publish(state, true);
+      this.heldKeyboardActions.clear();
+      this.inputBridge.clear();
+      this.player.setPassiveEffect(state.passiveEffectRemainingMs);
+      this.player.beginPitRescue();
+      this.eventEmitter.passiveTriggered(state.passiveChargesRemaining, 'pit');
+      const safeY = this.player.gameObject.y;
+      this.tweens.add({
+        targets: this.player.gameObject,
+        y: safeY + 36,
+        duration: 180,
+        ease: 'Cubic.In',
+        onComplete: () => {
+          this.tweens.add({
+            targets: this.player.gameObject,
+            y: safeY,
+            duration: 320,
+            ease: 'Back.Out',
+            onComplete: () => this.player.endPitRescue(),
+          });
+        },
+      });
+      return;
+    }
+    if (!result) return;
+    this.pitFallCinematicActive = true;
+    this.pendingPitFinish = { state, result };
     this.heldKeyboardActions.clear();
-    this.emitFinished(finished.result);
+    this.inputBridge.clear();
+    this.player.beginPitFall();
+    this.pitFallTween = this.tweens.add({
+      targets: this.player.gameObject,
+      y: 620,
+      duration: 700,
+      ease: 'Cubic.In',
+      onComplete: () => {
+        this.pitFallTween = null;
+        if (!this.pitFallCinematicActive || !this.pendingPitFinish) return;
+        this.cameras.main.shake(250, 0.012);
+        this.pitFinishTimer = this.time.delayedCall(250, this.finalizePitFall);
+      },
+    });
+  };
+
+  private readonly finalizePitFall = (): void => {
+    const pending = this.pendingPitFinish;
+    if (!this.pitFallCinematicActive || !pending || this.finishEmitted) return;
+    this.pitFinishTimer = null;
+    this.pendingPitFinish = null;
+    this.pitFallCinematicActive = false;
+    this.publish(pending.state, true);
+    this.emitFinished(pending.result);
   };
 
   private emitFinished(result: RunnerResult): void {
@@ -238,10 +315,18 @@ export class RunnerScene extends Phaser.Scene {
     this.load.off(Phaser.Loader.Events.FILE_LOAD_ERROR, this.handleLoadError, this);
     this.heldKeyboardActions.clear();
     this.inputBridge?.clear();
+    this.pitFallTween?.stop();
+    this.pitFallTween = null;
+    this.pitFinishTimer?.remove(false);
+    this.pitFinishTimer = null;
+    this.pendingPitFinish = null;
+    this.pitFallCinematicActive = false;
+    if (this.player) this.tweens.killTweensOf(this.player.gameObject);
     this.player?.destroy();
     this.spawner?.destroy();
     this.collectibles?.destroy();
     this.pits?.destroy();
     this.backdrop?.destroy();
+    this.passiveEffectArt?.destroy();
   }
 }

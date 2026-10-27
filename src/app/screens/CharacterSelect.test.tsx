@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+﻿import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CharacterSelect } from './CharacterSelect';
 
@@ -70,7 +70,7 @@ describe('CharacterSelect', () => {
     expect(screen.getByRole('button', { name: 'Hanayo Hiyori' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: 'Aokumo Rin' })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByTestId('character-preview-hanayo-hiyori-showcase')).toHaveAttribute('data-animation', 'victory');
-    expect(screen.getByText('아이템 수집 범위 +20px')).toBeInTheDocument();
+    expect(screen.getByText('유령의 수호 · 충돌·낭떠러지 방어 2회')).toBeInTheDocument();
     const preview = screen.getByTestId('character-preview-hanayo-hiyori-showcase');
     expect(previousPreview.isConnected).toBe(false);
     expect(preview).toHaveAttribute('data-frame', 'hanayo-hiyori-victory-00');

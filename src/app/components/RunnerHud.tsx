@@ -1,5 +1,5 @@
-import type { CharacterDefinition } from '../../game/characters/characterTypes';
-import { getCharacterPassiveId } from '../../game/characters/characterAbilities';
+﻿import type { CharacterDefinition } from '../../game/characters/characterTypes';
+import { getCharacterPassive } from '../../game/characters/characterAbilities';
 import { RUNNER_GATE_DISTANCES_M } from '../../game/runner/runnerConfig';
 import type { RunnerSnapshot } from '../../game/runner/runnerTypes';
 
@@ -17,14 +17,6 @@ const BIOME_LABELS = {
   'cloud-skyway': '구름 위 하늘길',
 } as const;
 
-const PASSIVE_LABELS = {
-  'time-pickup': '시간 아이템 보너스',
-  'slide-release-grace': '슬라이딩 후 회복 여유',
-  'rang-second-jump': '강화된 2단 점프',
-  'hiyori-pickup-magnet': '아이템 수집 범위 증가',
-  'mary-hit-protection': '충돌 보호 시간 증가',
-} as const;
-
 function formatTime(remainingMs: number): string {
   const seconds = Math.ceil(Math.max(0, remainingMs) / 1_000);
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
@@ -36,7 +28,7 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
     ? `${BIOME_LABELS[snapshot.biomeId]} · 다음 보너스까지 ${Math.ceil(RUNNER_GATE_DISTANCES_M[nextGateIndex] - snapshot.distanceMeters).toLocaleString()}m`
     : BIOME_LABELS[snapshot.biomeId];
   const warning = snapshot.remainingMs <= 10_000;
-  const passiveId = getCharacterPassiveId(character.id);
+  const passive = getCharacterPassive(character.id);
   const showBonus = recentBonus !== null && recentBonus.awardedMs > 0;
   const bonusSeconds = Math.max(1, Math.floor((recentBonus?.awardedMs ?? 0) / 1_000));
 
@@ -61,7 +53,7 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
       </div>
       <div className="runner-hud__details">
         <span>{landmark}</span>
-        <span className="runner-hud__passive">{character.displayName} · {PASSIVE_LABELS[passiveId]}</span>
+        <span className="runner-hud__passive">{character.displayName} · {passive.name} · {passive.effectLabel}</span>
       </div>
       {showBonus && (
         <span key={recentBonus.id} className="runner-hud__bonus" role="status">

@@ -4,6 +4,7 @@ import type { CharacterId } from '../characters/characterTypes';
 import {
   advanceRunner,
   applyCollision,
+  applyPitFall,
   collectPickup,
   createRunnerSnapshot,
   finishRunner,
@@ -61,7 +62,9 @@ describe('RunnerSimulation', () => {
     const fiveGates = { ...afterRamp, elapsedMs: 90_000,
       passedGateIds: ['gate-2000', 'gate-4000', 'gate-6000', 'gate-8000', 'gate-10000'] as const };
     const atMaxRamp = advanceRunner(fiveGates, 1).state;
-    expect(atMaxRamp.speedUnitsPerSecond).toBeCloseTo(406.25, 8);
+    expect(atMaxRamp.speedUnitsPerSecond).toBeCloseTo(422.5, 8);
+    const toaAtMaxRamp = advanceRunner({ ...fiveGates, characterId: 'goth-student' }, 1).state;
+    expect(toaAtMaxRamp.speedUnitsPerSecond).toBeCloseTo(406.25, 8);
   });
 
   it('is independent of update chunk size even across gates and time expiry', () => {
@@ -103,28 +106,53 @@ describe('RunnerSimulation', () => {
     expect(collectPickup(pauseRunner(rin), { id: 'coin-b', kind: 'coin' }).coins).toBe(0);
   });
 
-  it('uses Mary collision protection while retaining the standard penalty and stagger', () => {
+  it('keeps standard collision penalties for non-guard characters', () => {
     const rin = running();
     const mary = running('tokino-mary');
     expect(applyCollision(rin).remainingMs).toBe(85_000);
     const firstHit = applyCollision(mary);
     expect(firstHit.remainingMs).toBe(85_000);
     expect(firstHit.staggerRemainingMs).toBe(1_200);
-    expect(firstHit.protectionRemainingMs).toBe(1_450);
+    expect(firstHit.protectionRemainingMs).toBe(1_200);
     expect(applyCollision(firstHit)).toBe(firstHit);
-    expect(advanceRunner(pauseRunner(firstHit), 2_000).state.protectionRemainingMs).toBe(1_450);
+    expect(advanceRunner(pauseRunner(firstHit), 2_000).state.protectionRemainingMs).toBe(1_200);
 
     const recovered = advanceRunner(firstHit, 1_200).state;
-    expect(recovered.protectionRemainingMs).toBe(250);
+    expect(recovered.protectionRemainingMs).toBe(0);
     expect(recovered.staggerRemainingMs).toBe(0);
-    expect(applyCollision(recovered)).toBe(recovered);
-    const unprotected = advanceRunner(recovered, 250).state;
-    expect(unprotected.protectionRemainingMs).toBe(0);
-    expect(applyCollision(unprotected).remainingMs).toBe(unprotected.remainingMs - 5_000);
+    expect(applyCollision(recovered).remainingMs).toBe(recovered.remainingMs - 5_000);
     const fatal = applyCollision({ ...rin, remainingMs: 2_000 });
     expect(fatal.phase).toBe('finished');
     expect(fatal.remainingMs).toBe(0);
     expect(fatal.finishedAtElapsedMs).toBe(0);
+  });
+
+  it('gives Hiyori two mixed collision/pit guards without penalties, then restores normal outcomes', () => {
+    const initial = running('hanayo-hiyori');
+    expect(initial.passiveChargesRemaining).toBe(2);
+    const collisionRescue = applyCollision(initial);
+    expect(collisionRescue).toMatchObject({
+      remainingMs: initial.remainingMs, staggerRemainingMs: 0, protectionRemainingMs: 0,
+      passiveChargesRemaining: 1, passiveEffectRemainingMs: 700,
+    });
+    const effectHalfway = advanceRunner(collisionRescue, 300).state;
+    expect(effectHalfway.remainingMs).toBe(initial.remainingMs - 300);
+    expect(effectHalfway.distanceMeters).toBeGreaterThan(initial.distanceMeters);
+    expect(effectHalfway.passiveEffectRemainingMs).toBe(400);
+
+    const pitRescue = applyPitFall(collisionRescue);
+    expect(pitRescue.blockedByPassive).toBe(true);
+    expect(pitRescue.state).toMatchObject({
+      phase: 'running', remainingMs: initial.remainingMs, distanceMeters: initial.distanceMeters,
+      passiveChargesRemaining: 0, passiveEffectRemainingMs: 700,
+    });
+
+    const thirdCollision = applyCollision(pitRescue.state);
+    expect(thirdCollision.remainingMs).toBe(initial.remainingMs - RUNNER_CONFIG.collisionPenaltyMs);
+    expect(thirdCollision.staggerRemainingMs).toBe(RUNNER_CONFIG.staggerMs);
+    const fatalPit = applyPitFall(pitRescue.state);
+    expect(fatalPit.blockedByPassive).toBe(false);
+    expect(fatalPit.state).toMatchObject({ phase: 'finished', finishReason: 'pit', remainingMs: 0 });
   });
 
   it('freezes map distance for 1.2s after a hit while the timer continues', () => {
