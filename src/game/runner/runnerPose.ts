@@ -11,13 +11,13 @@ export const SLIDING_BODY_WIDTH = 64;
 export const SLIDING_BODY_HEIGHT = 48;
 export const SLIDE_SCALE = 0.72;
 
-// Opaque bottom edge (maxY + 1) of slide frames 01..03, measured at alpha > 20.
+// Opaque bottom edge (maxY + 1) of the active slide frames, measured at alpha > 20.
 const SLIDE_FRAME_BOTTOM: Readonly<Record<CharacterId, number>> = {
-  'player-default': 92,
+  'player-default': 90,
   'goth-student': 92,
   'cogane-rang': 92,
-  'hanayo-hiyori': 92,
-  'tokino-mary': 92,
+  'hanayo-hiyori': 89,
+  'tokino-mary': 90,
 };
 
 export function getSlidePose(characterId: CharacterId) {

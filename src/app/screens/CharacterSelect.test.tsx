@@ -25,7 +25,19 @@ describe('CharacterSelect', () => {
     expect(screen.queryByRole('button', { name: 'Akane Lize' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Aokumo Rin' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('character-preview-player-default')).toHaveAttribute('data-animation', 'run');
-    expect(screen.getByTestId('character-preview-goth-student')).toHaveAttribute('data-animation', 'idle');
+    expect(screen.getByRole('button', { name: 'Shizuki Toa' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cogane Rang' })).toBeDisabled();
+    expect(screen.getAllByText('준비 중')).toHaveLength(2);
+  });
+
+  it('keeps unfinished characters unavailable even when previously selected', () => {
+    const onConfirm = vi.fn();
+    render(<CharacterSelect selectedCharacterId="goth-student" onConfirm={onConfirm} onBack={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: 'Aokumo Rin' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Cogane Rang' }));
+    expect(screen.getByRole('button', { name: 'Aokumo Rin' })).toHaveAttribute('aria-pressed', 'true');
+    expect(onConfirm).not.toHaveBeenCalled();
   });
 
   it('changes selection and starts the selected character on a single atlas animation', () => {
@@ -43,7 +55,7 @@ describe('CharacterSelect', () => {
     expect(preview).toHaveClass('is-running');
     expect(preview).toHaveAttribute('src', expect.stringContaining('hanayo-hiyori.png'));
     expect(preview.style.animationTimingFunction).toBe('steps(12, end)');
-    expect(preview.style.animationDuration).toBe('768ms');
+    expect(preview.style.animationDuration).toBe('600ms');
   });
 
   it('confirms only the chosen character and keeps back separate from confirmation', () => {

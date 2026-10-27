@@ -37,18 +37,21 @@ export function CharacterSelect({
             const selected = character.id === candidateCharacterId;
             return (
               <button
-                className={`character-card${selected ? ' is-selected' : ''}`}
+                className={`character-card${selected ? ' is-selected' : ''}${character.available ? '' : ' is-coming-soon'}`}
                 style={{ '--character-accent': character.accentColor } as React.CSSProperties}
                 type="button"
                 key={character.id}
                 aria-label={character.displayName}
                 aria-pressed={selected}
+                disabled={!character.available}
                 onClick={() => setCandidateCharacterId(character.id)}
               >
                 <span className="character-card__art">
                   <img className="character-card__portrait" src={character.portraitUrl} alt="" />
                   <span className="character-card__shade" />
-                  <CharacterPreview character={character} selected={selected} />
+                  {character.available
+                    ? <CharacterPreview character={character} selected={selected} />
+                    : <span className="character-card__coming-soon">준비 중</span>}
                 </span>
                 <span className="character-card__name">{character.displayName}</span>
               </button>

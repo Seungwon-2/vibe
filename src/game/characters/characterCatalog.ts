@@ -2,6 +2,10 @@ import { CHARACTER_ATLASES } from './characterAtlases';
 import { getCharacterPassiveId } from './characterAbilities';
 import type { CharacterAnimationName, CharacterDefinition, CharacterId } from './characterTypes';
 
+const READY_CHARACTER_IDS: ReadonlySet<CharacterId> = new Set([
+  'player-default', 'hanayo-hiyori', 'tokino-mary',
+]);
+
 const ANIMATION_FRAME_SUFFIXES: Readonly<Record<CharacterAnimationName, string>> = {
   idle: 'idle-',
   run: 'run-',
@@ -54,6 +58,7 @@ function createCharacter(
     id,
     displayName,
     accentColor,
+    available: READY_CHARACTER_IDS.has(id),
     portraitUrl: atlas.portraitUrl,
     textureKey: id,
     atlasUrl: atlas.atlasUrl,
@@ -84,6 +89,6 @@ export function getCharacter(id: CharacterId): CharacterDefinition {
 }
 
 export function resolveCharacterId(value: string | null | undefined): CharacterId {
-  if (value && CHARACTER_BY_ID.has(value as CharacterId)) return value as CharacterId;
+  if (value && CHARACTER_BY_ID.get(value as CharacterId)?.available) return value as CharacterId;
   return 'player-default';
 }

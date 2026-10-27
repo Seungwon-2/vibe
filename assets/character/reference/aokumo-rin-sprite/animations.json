@@ -1,0 +1,124 @@
+{
+  "version": 4,
+  "character": "Aokumo Rin",
+  "frameSize": {
+    "width": 192,
+    "height": 192
+  },
+  "pivot": {
+    "x": 96,
+    "y": 180
+  },
+  "atlas": {
+    "image": "assets/rin-atlas.png",
+    "columns": 12,
+    "rows": 4
+  },
+  "notes": "Unified Rin illustration style: run/slide references, 30 redrawn hit/jump/double/victory/cry frames. Shared scale and 192x192 RGBA canvas, pivot (96,180). Jump trajectory and collision are independent of artwork.",
+  "animations": {
+    "run": {
+      "frames": [
+        "assets/run-v3-01.png",
+        "assets/run-v3-02.png",
+        "assets/run-v3-03.png",
+        "assets/run-v3-04.png",
+        "assets/run-v3-05.png",
+        "assets/run-v3-06.png",
+        "assets/run-v3-07.png",
+        "assets/run-v3-08.png",
+        "assets/run-v3-09.png",
+        "assets/run-v3-10.png",
+        "assets/run-v3-11.png",
+        "assets/run-v3-12.png"
+      ],
+      "fps": 20,
+      "loop": true,
+      "atlasStart": 0,
+      "count": 12
+    },
+    "hit": {
+      "frames": [
+        "assets/hit-v4-01.png",
+        "assets/hit-v4-02.png",
+        "assets/hit-v4-03.png",
+        "assets/hit-v4-04.png",
+        "assets/hit-v4-05.png",
+        "assets/hit-v4-06.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 12,
+      "count": 6
+    },
+    "slide": {
+      "frames": [
+        "assets/slide-01.png",
+        "assets/slide-02.png",
+        "assets/slide-03.png",
+        "assets/slide-04.png",
+        "assets/slide-05.png",
+        "assets/slide-06.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 18,
+      "count": 6
+    },
+    "jump": {
+      "frames": [
+        "assets/jump-v4-01.png",
+        "assets/jump-v4-02.png",
+        "assets/jump-v4-03.png",
+        "assets/jump-v4-04.png",
+        "assets/jump-v4-05.png",
+        "assets/jump-v4-06.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 24,
+      "count": 6
+    },
+    "double": {
+      "frames": [
+        "assets/double-v4-01.png",
+        "assets/double-v4-02.png",
+        "assets/double-v4-03.png",
+        "assets/double-v4-04.png",
+        "assets/double-v4-05.png",
+        "assets/double-v4-06.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 30,
+      "count": 6
+    },
+    "victory": {
+      "frames": [
+        "assets/victory-v4-01.png",
+        "assets/victory-v4-02.png",
+        "assets/victory-v4-03.png",
+        "assets/victory-v4-04.png",
+        "assets/victory-v4-05.png",
+        "assets/victory-v4-06.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 36,
+      "count": 6
+    },
+    "cry": {
+      "frames": [
+        "assets/cry-v4-01.png",
+        "assets/cry-v4-02.png",
+        "assets/cry-v4-03.png",
+        "assets/cry-v4-04.png",
+        "assets/cry-v4-05.png",
+        "assets/cry-v4-06.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 42,
+      "count": 6
+    }
+  }
+}

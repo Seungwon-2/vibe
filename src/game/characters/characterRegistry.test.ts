@@ -31,6 +31,9 @@ describe('runner character registry', () => {
       expect(character.atlasManifest.meta.size).toEqual({ w: 1152, h: 480 });
       expect(Object.keys(character.atlasManifest.frames)).toHaveLength(60);
     }
+    expect(CHARACTERS.filter(({ available }) => available).map(({ id }) => id)).toEqual([
+      'player-default', 'hanayo-hiyori', 'tokino-mary',
+    ]);
   });
 
   it('resolves every required animation to existing 96 by 96 atlas frames', () => {
@@ -56,6 +59,8 @@ describe('runner character registry', () => {
     expect(resolveCharacterId('akane-lize')).toBe('player-default');
     expect(resolveCharacterId('unknown')).toBe('player-default');
     expect(resolveCharacterId(null)).toBe('player-default');
+    expect(resolveCharacterId('goth-student')).toBe('player-default');
+    expect(resolveCharacterId('cogane-rang')).toBe('player-default');
     expect(getCharacter('goth-student').displayName).toBe('Shizuki Toa');
     expect(() => getCharacter('moonwing' as never)).toThrow('Unknown character: moonwing');
     expect(() => getCharacter('unknown' as never)).toThrow('Unknown character: unknown');

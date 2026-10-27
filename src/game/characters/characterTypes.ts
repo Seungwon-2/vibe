@@ -39,6 +39,7 @@ export type CharacterDefinition = {
   id: CharacterId;
   displayName: string;
   accentColor: string;
+  available: boolean;
   portraitUrl: string;
   textureKey: string;
   atlasUrl: string;

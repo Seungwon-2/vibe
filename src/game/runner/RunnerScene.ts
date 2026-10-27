@@ -60,7 +60,7 @@ export class RunnerScene extends Phaser.Scene {
       this.anims.create({
         key: `${characterId}:${name}`,
         frames: frames.map((frame) => ({ key: character.textureKey, frame })),
-        frameRate: name === 'run' ? 12 / 0.768 : name === 'slide' ? 18 : 12,
+        frameRate: name === 'run' ? 20 : name === 'slide' ? 18 : 12,
         repeat: name === 'run' ? -1 : 0,
       });
     }

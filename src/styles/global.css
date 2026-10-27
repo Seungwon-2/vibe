@@ -207,6 +207,20 @@ h1 {
   transform: translateY(-3px);
 }
 
+.character-card.is-coming-soon {
+  cursor: not-allowed;
+  border-color: #515b77;
+}
+
+.character-card.is-coming-soon:hover {
+  transform: none;
+}
+
+.character-card.is-coming-soon .character-card__portrait {
+  opacity: 0.38;
+  filter: grayscale(0.55);
+}
+
 .character-card:focus-visible,
 .selector-back:focus-visible,
 .selector-confirm:focus-visible,
@@ -246,6 +260,20 @@ h1 {
 
 .character-card__shade {
   background: linear-gradient(180deg, rgb(8 13 31 / 8%) 0%, rgb(10 15 32 / 26%) 56%, #10162e 100%);
+}
+
+.character-card__coming-soon {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+  padding: 10px 18px;
+  border: 1px solid rgb(222 231 255 / 50%);
+  border-radius: 999px;
+  background: rgb(12 18 39 / 82%);
+  color: #e7ecff;
+  font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
 .character-preview {

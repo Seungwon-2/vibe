@@ -277,6 +277,47 @@ async function makeProof(atlas) {
     .composite([{ input: atlas, left: 0, top: 0 }]).png().toBuffer();
 }
 
+const CURATED_ANIMATIONS = {
+  run: 'run', hurt: 'hit', slide: 'slide', jump: 'jump',
+  'double-jump': 'double', victory: 'victory', 'game-over': 'cry',
+  idle: 'idle', start: 'cheer',
+};
+
+/** Keep the hand-aligned 192px source canvas and pivot when fitting the 96px game frame. */
+async function loadCuratedFrames(sheet, descriptors) {
+  const directory = path.join(ROOT, sheet.spriteDir);
+  const spec = JSON.parse(await fs.readFile(path.join(directory, 'animations.json'), 'utf8'));
+  if (spec.frameSize?.width !== 192 || spec.frameSize?.height !== 192 ||
+      spec.pivot?.x !== 96 || spec.pivot?.y !== 180) {
+    throw new Error(`${sheet.slug} curated frames must use a 192x192 canvas and pivot (96,180).`);
+  }
+  return Promise.all(descriptors.map(async ({ name, animation, index }) => {
+    let references = spec.animations?.[CURATED_ANIMATIONS[animation]]?.frames;
+    let sourceIndex = index;
+    if (!references && sheet.id === 'player-default' && (animation === 'idle' || animation === 'start')) {
+      // Rin's supplied 48-frame set omits these actions. Its own victory art
+      // supplies a quiet idle pose and a matching animated start gesture.
+      references = spec.animations?.victory?.frames;
+      if (animation === 'idle') sourceIndex = 0;
+    }
+    if (!Array.isArray(references) || references.length !== (animation === 'run' ? 12 : 6)) {
+      throw new Error(`${sheet.slug} is missing curated ${animation} frames.`);
+    }
+    const filename = path.basename(references[sourceIndex]);
+    const file = path.join(directory, filename);
+    const metadata = await sharp(file).metadata();
+    if (metadata.format !== 'png' || metadata.width !== 192 || metadata.height !== 192 || !metadata.hasAlpha) {
+      throw new Error(`${sheet.slug}/${filename} must be a transparent 192x192 PNG.`);
+    }
+    const art = await sharp(file).resize(88, 88, { kernel: 'lanczos3' }).png().toBuffer();
+    const frame = await sharp({ create: { width: FRAME_SIZE, height: FRAME_SIZE,
+      channels: 4, background: TRANSPARENT } })
+      .composite([{ input: art, left: 4, top: 7 }]).png().toBuffer();
+    await validateFrame(frame, name);
+    return frame;
+  }));
+}
+
 async function validatePortrait(sheet) {
   const file = path.join(PORTRAIT_DIR, `${sheet.slug}-portrait.png`);
   let metadata;
@@ -322,25 +363,30 @@ async function validateFrame(buffer, name) {
 
 /** @param {import('./motion-study-layout.mjs').MotionSheet} sheet @param {boolean} checkOnly */
 export async function buildCharacterAtlas(sheet, checkOnly = false) {
-  const sourcePath = path.join(ROOT, sheet.sourcePath);
-  const sourceInfo = await sharp(sourcePath).metadata();
-  if (sourceInfo.format !== 'png' || sourceInfo.width !== 1536 || sourceInfo.height !== 1024) {
-    throw new Error(`${sheet.slug} source must be a 1536x1024 PNG.`);
-  }
-  const { data, info } = await sharp(sourcePath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  const source = { data, width: info.width, height: info.height };
   const descriptors = getMotionFrameDescriptors(sheet);
   if (descriptors.length !== 60 || new Set(descriptors.map(({ name }) => name)).size !== 60) {
     throw new Error(`${sheet.id} must define exactly 60 unique frames.`);
   }
-  const measured = descriptors.map(({ name, rect }) => {
-    const frame = extractMotionFrame(source, rect);
-    cutoutPaleBackground(frame, sheet.backgroundTolerance);
-    clearFloorShadow(frame, sheet.shadowRgb);
-    removeDetachedEffects(frame, sheet.keepComponents?.[name]);
-    return measure(frame, `${sheet.id}/${name}`);
-  });
-  const frames = await normalizeMotionFrames(measured);
+  let frames;
+  if (sheet.spriteDir) {
+    frames = await loadCuratedFrames(sheet, descriptors);
+  } else {
+    const sourcePath = path.join(ROOT, sheet.sourcePath);
+    const sourceInfo = await sharp(sourcePath).metadata();
+    if (sourceInfo.format !== 'png' || sourceInfo.width !== 1536 || sourceInfo.height !== 1024) {
+      throw new Error(`${sheet.slug} source must be a 1536x1024 PNG.`);
+    }
+    const { data, info } = await sharp(sourcePath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const source = { data, width: info.width, height: info.height };
+    const measured = descriptors.map(({ name, rect }) => {
+      const frame = extractMotionFrame(source, rect);
+      cutoutPaleBackground(frame, sheet.backgroundTolerance);
+      clearFloorShadow(frame, sheet.shadowRgb);
+      removeDetachedEffects(frame, sheet.keepComponents?.[name]);
+      return measure(frame, `${sheet.id}/${name}`);
+    });
+    frames = await normalizeMotionFrames(measured);
+  }
   for (let index = 0; index < frames.length; index += 1) {
     await validateFrame(frames[index], descriptors[index].name);
     await saveOrCheck(path.join(FRAME_DIR, `${descriptors[index].name}.png`), frames[index], checkOnly);

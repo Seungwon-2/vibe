@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "character": "Tokino Mary",
+  "frameSize": {
+    "width": 192,
+    "height": 192
+  },
+  "pivot": {
+    "x": 96,
+    "y": 180
+  },
+  "atlas": {
+    "image": "assets/mary-atlas.png",
+    "columns": 12,
+    "rows": 5
+  },
+  "notes": "Complete illustrated sprites regenerated from the supplied Mary motion sheet. Twelve alternating run poses guided by separate striped/white legs. White stockings and black shoes match other motions; teddy held continuously. Constant scale within source layouts, transparent common canvas, physical jump and collisions independent of images.",
+  "animations": {
+    "run": {
+      "frames": [
+        "assets/run-01.png",
+        "assets/run-02.png",
+        "assets/run-03.png",
+        "assets/run-04.png",
+        "assets/run-05.png",
+        "assets/run-06.png",
+        "assets/run-07.png",
+        "assets/run-08.png",
+        "assets/run-09.png",
+        "assets/run-10.png",
+        "assets/run-11.png",
+        "assets/run-12.png"
+      ],
+      "fps": 20,
+      "loop": true,
+      "atlasStart": 0,
+      "count": 12
+    },
+    "hit": {
+      "frames": [
+        "assets/hit-01.png",
+        "assets/hit-02.png",
+        "assets/hit-03.png",
+        "assets/hit-04.png",
+        "assets/hit-05.png",
+        "assets/hit-06.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 12,
+      "count": 6
+    },
+    "slide": {
+      "frames": [
+        "assets/slide-01.png",
+        "assets/slide-02.png",
+        "assets/slide-03.png",
+        "assets/slide-04.png",
+        "assets/slide-05.png",
+        "assets/slide-06.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 18,
+      "count": 6
+    },
+    "jump": {
+      "frames": [
+        "assets/jump-01.png",
+        "assets/jump-02.png",
+        "assets/jump-03.png",
+        "assets/jump-04.png",
+        "assets/jump-05.png",
+        "assets/jump-06.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 24,
+      "count": 6
+    },
+    "double": {
+      "frames": [
+        "assets/double-01.png",
+        "assets/double-02.png",
+        "assets/double-03.png",
+        "assets/double-04.png",
+        "assets/double-05.png",
+        "assets/double-06.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 30,
+      "count": 6
+    },
+    "victory": {
+      "frames": [
+        "assets/victory-01.png",
+        "assets/victory-02.png",
+        "assets/victory-03.png",
+        "assets/victory-04.png",
+        "assets/victory-05.png",
+        "assets/victory-06.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 36,
+      "count": 6
+    },
+    "cry": {
+      "frames": [
+        "assets/cry-01.png",
+        "assets/cry-02.png",
+        "assets/cry-03.png",
+        "assets/cry-04.png",
+        "assets/cry-05.png",
+        "assets/cry-06.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 42,
+      "count": 6
+    },
+    "idle": {
+      "frames": [
+        "assets/idle-01.png",
+        "assets/idle-02.png",
+        "assets/idle-03.png",
+        "assets/idle-04.png",
+        "assets/idle-05.png",
+        "assets/idle-06.png"
+      ],
+      "fps": 6,
+      "loop": true,
+      "atlasStart": 48,
+      "count": 6
+    },
+    "cheer": {
+      "frames": [
+        "assets/cheer-01.png",
+        "assets/cheer-02.png",
+        "assets/cheer-03.png",
+        "assets/cheer-04.png",
+        "assets/cheer-05.png",
+        "assets/cheer-06.png"
+      ],
+      "fps": 8,
+      "loop": true,
+      "atlasStart": 54,
+      "count": 6
+    }
+  }
+}
