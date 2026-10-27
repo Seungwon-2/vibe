@@ -2,7 +2,7 @@
 
 > **Roster update:** Use the current five-character catalog: Rin, Toa, Rang, Hiyori, and Mary. Only currently available characters can submit runs, but ranking labels and accent colors must resolve through the central catalog for every valid saved `CharacterId`. Use the `RunGateway` and `LocalRunGateway` created by P04-T01; do not read/write the personal-best store as the leaderboard.
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -45,15 +45,17 @@ Submit each finished run once and present the unified local ranking with charact
 
 ## Acceptance Criteria
 
-- [ ] A finished run is submitted once, including when callbacks repeat.
-- [ ] Result screen shows current distance, coins, and best distance.
-- [ ] Ranking screen contains all submitted characters in one top-ten list, ordered by distance, coins, finish time, then run ID.
-- [ ] Empty and storage-error states are understandable and do not block retry.
+- [x] A finished run is submitted once, including when callbacks repeat.
+- [x] Result screen shows current distance, coins, and personal best; it also shows submitted rank when saved.
+- [x] Ranking screen contains all submitted characters in one top-ten list, ordered by distance, coins, finish time, then run ID.
+- [x] Empty and storage-error states are understandable and do not block retry.
 
 ## Validation
 
-- `npm test -- src/App.test.tsx src/app/screens/RankingScreen.test.tsx src/app/screens/RunResult.test.tsx` — validates submission and display.
-- `npm run typecheck` — validates ranking props.
+- `npm test -- src/App.test.tsx src/app/screens/RankingScreen.test.tsx src/app/screens/RunResult.test.tsx` — passed (9 tests); validates submission deduplication, ranking display, and error handling.
+- `npm run typecheck` — passed; validates ranking props and gateway integration.
+- `npm run lint` — passed.
+- `npm run build` — passed; existing >500kB bundle-size warning remains.
 
 ## Commit Message
 
@@ -70,6 +72,6 @@ Task: T02-ranking-screen
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed
 - commit: pending

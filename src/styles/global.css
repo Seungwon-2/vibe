@@ -472,6 +472,9 @@ h1 {
   border-radius: 14px; background: rgb(19 28 58 / 72%); cursor: pointer;
 }
 .main-menu-help { margin: 26px 0 0; color: #b8c9f3; font-size: 0.9rem; }
+.main-menu-record { min-height: 1.5em; margin: 0 0 12px; color: #dce7ff; font-size: 0.95rem; font-weight: 700; }
+.record-feedback { margin: 0 0 14px; color: #dce7ff; font-size: 0.9rem; }
+.record-feedback.is-error { color: #ffb3bd; }
 .run-screen { display: grid; min-height: 100dvh; grid-template-rows: auto 1fr auto; align-items: center; gap: 10px; padding: 12px 20px; }
 .run-screen__header, .run-screen__help { display: flex; width: min(100%, 1200px); align-items: center; justify-content: space-between; gap: 12px; margin-inline: auto; }
 .run-screen__header > div { display: flex; flex-direction: column; gap: 2px; }
@@ -499,9 +502,12 @@ h1 {
 .result-actions .selector-confirm { width: 100%; max-width: 420px; }
 .rankings-card { text-align: center; }
 .rankings-list { display: grid; gap: 10px; margin: 26px 0; padding: 0; list-style: none; text-align: left; }
-.rankings-list li { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: center; padding: 14px 16px; border-left: 4px solid var(--character-accent); border-radius: 10px; background: rgb(12 19 43 / 60%); }
+.rankings-list li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px 14px; align-items: center; padding: 14px 16px; border-left: 4px solid var(--character-accent); border-radius: 10px; background: rgb(12 19 43 / 60%); }
+.ranking-record__rank { color: #c6d1f3; font-variant-numeric: tabular-nums; font-weight: 800; }
+.ranking-record__character { font-weight: 700; }
 .rankings-list strong { color: #fff0b5; font-variant-numeric: tabular-nums; }
 .rankings-list small, .rankings-empty { color: #c6d1f3; }
+.rankings-list small { grid-column: 2 / -1; }
 .rankings-card .result-actions { justify-content: center; }
 @media (max-width: 640px) {
   .run-screen { padding: 8px; gap: 6px; }
@@ -513,8 +519,8 @@ h1 {
   .result-character { display: none; }
   .result-stats, .result-actions { justify-content: center; }
   .result-actions > button { flex: 1 1 130px; }
-  .rankings-list li { grid-template-columns: 1fr auto; gap: 5px 10px; }
-  .rankings-list small { grid-column: 1 / -1; }
+  .rankings-list li { grid-template-columns: auto minmax(0, 1fr) auto; gap: 5px 8px; padding: 11px; }
+  .rankings-list small { grid-column: 2 / -1; }
 }
 
 @media (min-width: 761px) and (max-width: 1000px) and (min-height: 521px) {

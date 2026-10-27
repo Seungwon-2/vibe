@@ -1,15 +1,26 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CharacterSelect } from './app/screens/CharacterSelect';
 import { MainMenu } from './app/screens/MainMenu';
+import { RankingScreen } from './app/screens/RankingScreen';
 import { RunResult } from './app/screens/RunResult';
 import { RunScreen } from './app/screens/RunScreen';
-import { CHARACTERS } from './game/characters/characterCatalog';
 import type { CharacterId } from './game/characters/characterTypes';
 import type { RunnerFinishOutcome, RunnerResult } from './game/runner/runnerTypes';
 import { browserPersonalBestStore } from './services/PersonalBestStore';
+import { browserRunGateway } from './services/LocalRunGateway';
+import type { RankedRunRecord } from './services/RunGateway';
 
 type AppScreen = 'menu' | 'character-select' | 'run' | 'result' | 'rankings';
-type FinishedRun = { result: RunnerResult; outcome: RunnerFinishOutcome };
+type FinishedRun = {
+  runId: number;
+  result: RunnerResult;
+  outcome: RunnerFinishOutcome;
+  submittedRank: number | null;
+  submissionPending: boolean;
+  recordError: string | null;
+};
+type BestLoadState = { key: string; record: RankedRunRecord | null; error: string | null };
+type RankingLoadState = { requestId: number; rows: RankedRunRecord[]; error: string | null };
 
 function App(): React.JSX.Element {
   const [screen, setScreen] = useState<AppScreen>('menu');
@@ -17,6 +28,46 @@ function App(): React.JSX.Element {
   const [finishedRun, setFinishedRun] = useState<FinishedRun | null>(null);
   const [runId, setRunId] = useState(0);
   const latestRunId = useRef(0);
+  const submittedRunIds = useRef(new Set<number>());
+  const [bestState, setBestState] = useState<BestLoadState>({ key: '', record: null, error: null });
+  const [rankingRequestId, setRankingRequestId] = useState(0);
+  const [rankingState, setRankingState] = useState<RankingLoadState>({ requestId: -1, rows: [], error: null });
+  const bestRequestKey = screen === 'menu' ? 'menu'
+    : screen === 'result' && finishedRun ? `result:${finishedRun.runId}` : null;
+  const overallBest = bestRequestKey && bestState.key === bestRequestKey ? bestState.record : null;
+  const bestLoading = bestRequestKey !== null && bestState.key !== bestRequestKey;
+  const bestError = bestRequestKey && bestState.key === bestRequestKey ? bestState.error : null;
+  const rankingLoading = screen === 'rankings' && rankingState.requestId !== rankingRequestId;
+  const rankingRows = rankingState.requestId === rankingRequestId ? rankingState.rows : [];
+  const rankingError = rankingState.requestId === rankingRequestId ? rankingState.error : null;
+
+  useEffect(() => {
+    if (!bestRequestKey) return;
+    let current = true;
+    void browserRunGateway.getBest().then((best) => {
+      if (current) setBestState({ key: bestRequestKey, record: best, error: null });
+    }).catch(() => {
+      if (current) setBestState({ key: bestRequestKey, record: null, error: '로컬 기록을 불러오지 못했습니다.' });
+    });
+    return () => { current = false; };
+  }, [bestRequestKey]);
+
+  useEffect(() => {
+    if (screen !== 'rankings') return;
+    let current = true;
+    void browserRunGateway.getRanking().then((rows) => {
+      if (current) setRankingState({ requestId: rankingRequestId, rows, error: null });
+    }).catch(() => {
+      if (current) setRankingState({ requestId: rankingRequestId, rows: [],
+        error: '기록을 불러오지 못했습니다. 메인 메뉴로 돌아가 다시 시도해 주세요.' });
+    });
+    return () => { current = false; };
+  }, [screen, rankingRequestId]);
+
+  function openRankings(): void {
+    setRankingRequestId((requestId) => requestId + 1);
+    setScreen('rankings');
+  }
 
   function startRun(characterId = selectedCharacterId): void {
     latestRunId.current += 1;
@@ -43,9 +94,22 @@ function App(): React.JSX.Element {
           setScreen('menu');
         }}
         onFinish={(result, outcome) => {
-          if (latestRunId.current !== currentRunId) return;
-          setFinishedRun({ result, outcome });
+          if (latestRunId.current !== currentRunId || submittedRunIds.current.has(currentRunId)) return;
+          submittedRunIds.current.add(currentRunId);
+          setFinishedRun({ runId: currentRunId, result, outcome, submittedRank: null,
+            submissionPending: true, recordError: null });
           setScreen('result');
+          void browserRunGateway.submitRun(result).then((record) => {
+            if (latestRunId.current !== currentRunId) return;
+            setFinishedRun((current) => current?.runId === currentRunId
+              ? { ...current, submittedRank: record.rank, submissionPending: false }
+              : current);
+          }).catch(() => {
+            if (latestRunId.current !== currentRunId) return;
+            setFinishedRun((current) => current?.runId === currentRunId
+              ? { ...current, submissionPending: false, recordError: '기록을 저장하지 못했습니다. 이번 결과는 이 화면에서 확인할 수 있습니다.' }
+              : current);
+          });
         }} />
     );
   }
@@ -55,44 +119,23 @@ function App(): React.JSX.Element {
       Math.round(finishedRun.result.distanceMeters);
     return (
       <RunResult result={finishedRun.result} outcome={finishedRun.outcome} bestDistanceMeters={bestDistance}
+        submittedRank={finishedRun.submittedRank} recordPending={finishedRun.submissionPending}
+        recordError={finishedRun.recordError ?? bestError} overallBest={overallBest}
         onRetry={() => startRun(finishedRun.result.characterId)}
         onChooseCharacter={() => setScreen('character-select')}
-        onRankings={() => setScreen('rankings')} />
+        onRankings={openRankings} />
     );
   }
 
   if (screen === 'rankings') {
-    const records = CHARACTERS.filter((character) => character.available)
-      .map((character) => ({ character, best: browserPersonalBestStore.getBest(character.id) }))
-      .filter((entry): entry is { character: (typeof CHARACTERS)[number]; best: NonNullable<typeof entry.best> } => entry.best !== null)
-      .sort((left, right) => right.best.distanceMeters - left.best.distanceMeters || right.best.coins - left.best.coins);
     return (
-      <main className="landing-shell">
-        <section className="title-card rankings-card" aria-labelledby="rankings-title">
-          <p className="eyebrow">LOCAL RECORDS</p>
-          <h1 id="rankings-title">로컬 최고 기록</h1>
-          <p className="intro-copy">이 브라우저에 저장된 캐릭터별 최고 거리입니다.</p>
-          {records.length > 0 ? (
-            <ol className="rankings-list">
-              {records.map(({ character, best }) => (
-                <li key={character.id} style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
-                  <span>{character.displayName}</span>
-                  <strong>{best.distanceMeters.toLocaleString()}m</strong>
-                  <small>{best.coins.toLocaleString()} 코인</small>
-                </li>
-              ))}
-            </ol>
-          ) : <p className="rankings-empty">아직 기록이 없습니다. 첫 달리기를 시작해보세요!</p>}
-          <div className="result-actions">
-            <button type="button" onClick={() => setScreen('menu')}>메인 메뉴</button>
-            <button className="selector-confirm" type="button" onClick={() => setScreen('character-select')}>달리기 시작</button>
-          </div>
-        </section>
-      </main>
+      <RankingScreen rows={rankingRows} loading={rankingLoading} error={rankingError}
+        onBack={() => setScreen('menu')} />
     );
   }
 
-  return <MainMenu onStart={() => setScreen('character-select')} onRankings={() => setScreen('rankings')} />;
+  return <MainMenu onStart={() => setScreen('character-select')} onRankings={openRankings}
+    topRun={overallBest} topRunLoading={bestLoading} topRunError={bestError} />;
 }
 
 export default App;

@@ -111,7 +111,14 @@ export class LocalRunGateway implements RunGateway {
     };
     const sorted = rankRecords([...current, submitted]);
     const candidateRank = sorted.find((record) => record.id === submitted.id)!.rank;
-    this.records = sorted.slice(0, MAX_RECORDS).map(({ rank: _rank, ...record }) => record);
+    this.records = sorted.slice(0, MAX_RECORDS).map((record) => ({
+      id: record.id,
+      characterId: record.characterId,
+      distanceMeters: record.distanceMeters,
+      coins: record.coins,
+      durationMs: record.durationMs,
+      finishedAtIso: record.finishedAtIso,
+    }));
     this.persist();
     // Rank 11 means the submitted result falls outside the stored/displayed top ten.
     return { ...submitted, rank: Math.min(candidateRank, MAX_RECORDS + 1) };

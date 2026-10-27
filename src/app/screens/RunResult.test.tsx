@@ -39,4 +39,14 @@ describe('RunResult', () => {
     expect(onChooseCharacter).toHaveBeenCalledOnce();
     expect(onRankings).toHaveBeenCalledOnce();
   });
+
+  it('shows the unified rank and a non-blocking save failure alongside the finished result', () => {
+    render(<RunResult result={result} outcome="completed" bestDistanceMeters={1234}
+      submittedRank={3} recordError="기록을 저장하지 못했습니다. 이번 결과는 이 화면에서 확인할 수 있습니다."
+      onRetry={vi.fn()} onChooseCharacter={vi.fn()} onRankings={vi.fn()} />);
+    expect(screen.getByText('3위')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('기록을 저장하지 못했습니다');
+    expect(screen.getByText('1,234m')).toBeInTheDocument();
+    expect(screen.getByText('6')).toBeInTheDocument();
+  });
 });
