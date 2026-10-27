@@ -1,6 +1,6 @@
-# Task: T04 Safe-Route Pickups
+﻿# Task: T04 Safe-Route Pickups
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -47,10 +47,10 @@ Increase visible coin collecting opportunities to a predictable safe-route strea
 
 ## Acceptance Criteria
 
-- [ ] Safe-route pickup gaps remain 100–150m wherever a safe point exists; time items replace safe coins instead of stacking.
-- [ ] Optional upper coins retain their cadence and can be omitted when a hazard/pit makes a position unsafe.
-- [ ] No generated pickup overlaps a ground hazard, pit safety zone, or gate-clearance zone.
-- [ ] All IDs and distances remain deterministic and pickups can be collected at most once.
+- [x] Safe-route pickup gaps remain 100–150m wherever a safe point exists; time items replace safe coins instead of stacking.
+- [x] Optional upper coins retain their cadence and can be omitted when a hazard/pit makes a position unsafe.
+- [x] No generated pickup overlaps a ground hazard, pit safety zone, or gate-clearance zone.
+- [x] All IDs and distances remain deterministic and pickups can be collected at most once.
 
 ## Validation
 
@@ -72,6 +72,6 @@ Task: T04-safe-pickups
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] Implementation complete
+- [x] Validation passed (16 targeted tests and typecheck)
 - commit: pending

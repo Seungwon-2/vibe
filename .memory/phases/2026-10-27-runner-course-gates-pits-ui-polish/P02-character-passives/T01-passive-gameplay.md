@@ -1,6 +1,6 @@
 # Task: T01 Character Passive Gameplay
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 

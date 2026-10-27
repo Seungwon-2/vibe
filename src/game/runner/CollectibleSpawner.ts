@@ -1,11 +1,12 @@
 import type Phaser from 'phaser';
 import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterId } from '../characters/characterTypes';
-import { RUNNER_GATE_DISTANCES_M } from './runnerConfig';
+import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import type { RunnerPickupKind, RunnerSnapshot } from './runnerTypes';
 import { getHazardDistance, getPatternForDistance, getPatternStartDistance, METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import { getBiomeForDistance } from '../visuals/runnerBiomes';
+import { getPitDefinitions, isPitClearance } from './PitSpawner';
 
 export type PickupDefinition = Readonly<{
   id: string;
@@ -59,18 +60,10 @@ export function drawPickupArt(
 // ground hazards, including when future hazard patterns are added or changed.
 export const PICKUP_HAZARD_CLEARANCE_METERS = 40;
 
-// The safe row stays inside the standing body. The upper coin row is optional.
-const AUTHORED_PICKUP_SCHEDULE: readonly PickupDefinition[] = Object.freeze(
-  Array.from({ length: 24 }, (_, index): PickupDefinition[] => {
-    const start = 160 + index * 600;
-    return [
-      { id: `safe-${index}`, kind: index % 4 === 2 ? 'time' : 'coin',
-        distanceMeters: start, heightUnits: 52, optionalJump: false },
-      { id: `air-${index}`, kind: 'coin', distanceMeters: start + 320,
-        heightUnits: 116, optionalJump: true },
-    ];
-  }).flat(),
-);
+// The standing-height row is frequent and predictable; elevated coins remain
+// optional and can be skipped when the authored course has no safe placement.
+const SAFE_PICKUP_START_METERS = 160;
+const SAFE_PICKUP_SPACING_METERS = RUNNER_CONFIG.safePickupSpacingMeters;
 
 function getGroundHazardDistances(maxDistanceMeters: number): number[] {
   const distances: number[] = [];
@@ -85,43 +78,85 @@ function getGroundHazardDistances(maxDistanceMeters: number): number[] {
   return distances;
 }
 
-function movePickupPastGroundHazards(
-  pickup: PickupDefinition,
-  groundHazards: readonly number[],
-): PickupDefinition {
-  let distanceMeters = pickup.distanceMeters;
-  let conflict: number | undefined;
-  do {
-    conflict = groundHazards.find((hazardDistance) =>
-      Math.abs(distanceMeters - hazardDistance) < PICKUP_HAZARD_CLEARANCE_METERS,
-    );
-    if (conflict !== undefined) distanceMeters = conflict + PICKUP_HAZARD_CLEARANCE_METERS;
-  } while (conflict !== undefined);
-  return distanceMeters === pickup.distanceMeters ? pickup : { ...pickup, distanceMeters };
+function isPickupDistanceSafe(distanceMeters: number, groundHazards: readonly number[], maxDistanceMeters: number): boolean {
+  if (groundHazards.some((hazard) => Math.abs(distanceMeters - hazard) < PICKUP_HAZARD_CLEARANCE_METERS)) {
+    return false;
+  }
+  if (getPitDefinitions(maxDistanceMeters).some((pit) =>
+    isPitClearance(distanceMeters, pit, PICKUP_HAZARD_CLEARANCE_METERS))) return false;
+  return RUNNER_GATE_DISTANCES_M.every((gate) =>
+    Math.abs(distanceMeters - gate) >= PICKUP_HAZARD_CLEARANCE_METERS);
 }
 
-const GROUND_HAZARD_DISTANCES = getGroundHazardDistances(
-  AUTHORED_PICKUP_SCHEDULE.at(-1)!.distanceMeters + PICKUP_HAZARD_CLEARANCE_METERS,
-);
+function nearestSafeDistance(
+  targetMeters: number,
+  minimumMeters: number,
+  maximumMeters: number,
+  groundHazards: readonly number[],
+  maxDistanceMeters: number,
+): number | undefined {
+  const candidates = Array.from(
+    { length: Math.max(0, Math.floor(maximumMeters) - Math.ceil(minimumMeters) + 1) },
+    (_, index) => Math.ceil(minimumMeters) + index,
+  ).sort((left, right) => Math.abs(left - targetMeters) - Math.abs(right - targetMeters) || left - right);
+  return candidates.find((distance) => isPickupDistanceSafe(distance, groundHazards, maxDistanceMeters));
+}
 
-export const PICKUP_SCHEDULE: readonly PickupDefinition[] = Object.freeze(
-  AUTHORED_PICKUP_SCHEDULE
-    .map((pickup) => movePickupPastGroundHazards(pickup, GROUND_HAZARD_DISTANCES))
-    .map((pickup, _index, adjusted) => {
-      if (!pickup.optionalJump) return pickup;
-      const cycleId = pickup.id.slice('air-'.length);
-      const safePickup = adjusted.find((item) => item.id === `safe-${cycleId}`);
-      if (!safePickup || pickup.distanceMeters - safePickup.distanceMeters >= 320) return pickup;
-      return movePickupPastGroundHazards({
-        ...pickup, distanceMeters: safePickup.distanceMeters + 320,
-      }, GROUND_HAZARD_DISTANCES);
-    })
-    .sort((left, right) => left.distanceMeters - right.distanceMeters),
-);
+function getTimePickupSlotIndexes(maxDistanceMeters: number): Set<number> {
+  const indexes = new Set<number>();
+  for (let target = RUNNER_CONFIG.timePickupFirstDistanceMeters; target <= maxDistanceMeters;
+    target += RUNNER_CONFIG.timePickupSpacingMeters) {
+    indexes.add(Math.max(0, Math.round((target - SAFE_PICKUP_START_METERS) / SAFE_PICKUP_SPACING_METERS)));
+  }
+  return indexes;
+}
+
+/** Generate stable, absolute-distance pickups for any requested course length. */
+export function generatePickupSchedule(maxDistanceMeters: number): readonly PickupDefinition[] {
+  if (!Number.isFinite(maxDistanceMeters) || maxDistanceMeters < SAFE_PICKUP_START_METERS) return [];
+  const groundHazards = getGroundHazardDistances(maxDistanceMeters + PICKUP_HAZARD_CLEARANCE_METERS);
+  const pits = getPitDefinitions(maxDistanceMeters + PICKUP_HAZARD_CLEARANCE_METERS);
+  // isPickupDistanceSafe accepts a horizon for pit enumeration; include the
+  // clearance beyond the requested end so a pit just outside the range counts.
+  const horizon = Math.max(maxDistanceMeters, pits.at(-1)?.distanceMeters ?? 0) +
+    PICKUP_HAZARD_CLEARANCE_METERS;
+  const timeSlots = getTimePickupSlotIndexes(maxDistanceMeters);
+  const safePickups: PickupDefinition[] = [];
+  const lastIndex = Math.floor((maxDistanceMeters - SAFE_PICKUP_START_METERS) / SAFE_PICKUP_SPACING_METERS);
+  for (let index = 0; index <= lastIndex; index += 1) {
+    const target = SAFE_PICKUP_START_METERS + index * SAFE_PICKUP_SPACING_METERS;
+    const previous = safePickups.at(-1)?.distanceMeters;
+    const localMinimum = Math.max(SAFE_PICKUP_START_METERS, target - 25, previous === undefined ? target : previous + 100);
+    const localMaximum = Math.min(maxDistanceMeters, target + 25);
+    const preferredMaximum = previous === undefined ? localMaximum : Math.min(localMaximum, previous + 150);
+    // Prefer the target cadence and 100–150m gaps. If a hazard blocks that
+    // entire gap, keep searching the same local slot so later coins resume.
+    const distanceMeters = nearestSafeDistance(target, localMinimum, preferredMaximum, groundHazards, horizon) ??
+      (preferredMaximum < localMaximum
+        ? nearestSafeDistance(target, Math.max(localMinimum, preferredMaximum + 1), localMaximum, groundHazards, horizon)
+        : undefined);
+    if (distanceMeters === undefined) continue;
+    const kind = timeSlots.has(index) ? 'time' : 'coin';
+    safePickups.push({ id: kind === 'time' ? `time-${index}` : `safe-${index}`, kind,
+      distanceMeters, heightUnits: 52, optionalJump: false });
+  }
+
+  const optionalPickups: PickupDefinition[] = [];
+  for (let distanceMeters = 480; distanceMeters <= maxDistanceMeters;
+    distanceMeters += RUNNER_CONFIG.optionalJumpCoinSpacingMeters) {
+    if (!isPickupDistanceSafe(distanceMeters, groundHazards, horizon)) continue;
+    optionalPickups.push({ id: `air-${Math.round((distanceMeters - 480) / RUNNER_CONFIG.optionalJumpCoinSpacingMeters)}`,
+      kind: 'coin', distanceMeters, heightUnits: 116, optionalJump: true });
+  }
+  return Object.freeze([...safePickups, ...optionalPickups]
+    .sort((left, right) => left.distanceMeters - right.distanceMeters || left.id.localeCompare(right.id)));
+}
+
+export const PICKUP_SCHEDULE = generatePickupSchedule(15_000);
 
 export function getPickupBodySize(characterId: CharacterId): number {
   const passive = getCharacterPassive(characterId);
-  return 24 + (passive.id === 'hiyori-pickup-magnet' ? passive.radiusPx * 2 : 0);
+  return 24 + (characterId === 'tokino-mary' && 'radiusPx' in passive ? passive.radiusPx * 2 : 0);
 }
 
 type ActivePickup = {

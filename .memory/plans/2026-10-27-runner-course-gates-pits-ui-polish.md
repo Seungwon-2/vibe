@@ -10,8 +10,8 @@ Success means deterministic simulation and spawner tests cover gate/speed/timer 
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | Update runner course scheduling, gates, pickups, obstacle waves, and pit behavior. | [P01](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P01-runner-course/phase.md) |
-| P02 | `pending` | Implement the new passive definitions and their gameplay effects. | [P02](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P02-character-passives/phase.md) |
+| P01 | `done` | Update runner course scheduling, gates, pickups, obstacle waves, and pit behavior. | [P01](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P01-runner-course/phase.md) |
+| P02 | `in_progress` | Implement the new passive definitions and their gameplay effects. | [P02](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P02-character-passives/phase.md) |
 | P03 | `pending` | Show abilities clearly and refine the four agreed screens. | [P03](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P03-screen-polish/phase.md) |
 
 ## Scope and constraints
@@ -26,6 +26,6 @@ Success means deterministic simulation and spawner tests cover gate/speed/timer 
 
 ## Progress
 
-- P01: `in_progress` (3/4 tasks)
-- P02: `pending` (0/1 task)
+- P01: `done` (4/4 tasks)
+- P02: `in_progress` (0/1 task)
 - P03: `pending` (0/2 tasks)
