@@ -57,7 +57,7 @@ export class RunnerScene extends Phaser.Scene {
       // A second jump reaches its apex after about 0.47s. All six frames at
       // 12 fps fit the ascent, including the spin recovery in frames 4–5.
       doubleJump: character.animations.doubleJump,
-      'double-jump-fall': character.animations.doubleJump.slice(-1),
+      'double-jump-fall': character.animations.doubleJump.slice(4),
       // The first curated slide is a tall entry pose; start at the low pose
       // so the visible art clears the overhead hazard at its native scale.
       slide: character.available
@@ -70,11 +70,14 @@ export class RunnerScene extends Phaser.Scene {
     for (const [name, frames] of Object.entries(animationFrames)) {
       if (frames.length === 0) throw new Error(`Missing ${characterId}:${name} frames`);
       if (this.anims.exists(`${characterId}:${name}`)) continue;
+      const isFall = name === 'jump-fall' || name === 'double-jump-fall';
+      const frameRate = name === 'run' ? 20 : name === 'slide' ? 18
+        : isFall ? 6 : name === 'jump' ? 8 : 12;
       this.anims.create({
         key: `${characterId}:${name}`,
         frames: frames.map((frame) => ({ key: character.textureKey, frame })),
-        frameRate: name === 'run' ? 20 : name === 'slide' ? 18 : 12,
-        repeat: name === 'run' ? -1 : 0,
+        frameRate,
+        repeat: name === 'run' || isFall ? -1 : 0,
       });
     }
 

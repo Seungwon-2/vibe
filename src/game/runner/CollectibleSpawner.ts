@@ -15,14 +15,13 @@ export type PickupDefinition = Readonly<{
   optionalJump: boolean;
 }>;
 
-// Keep the ground-route row high enough to collect before a descending jump
-// reaches the floor, while retaining overlap with the standing body.
+// The safe row stays inside the standing body. The upper coin row is optional.
 export const PICKUP_SCHEDULE: readonly PickupDefinition[] = Object.freeze(
   Array.from({ length: 24 }, (_, index): PickupDefinition[] => {
     const start = 160 + index * 600;
     return [
       { id: `safe-${index}`, kind: index % 4 === 2 ? 'time' : 'coin',
-        distanceMeters: start, heightUnits: 78, optionalJump: false },
+        distanceMeters: start, heightUnits: 52, optionalJump: false },
       { id: `air-${index}`, kind: 'coin', distanceMeters: start + 320,
         heightUnits: 116, optionalJump: true },
     ];
