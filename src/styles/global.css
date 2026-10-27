@@ -787,31 +787,32 @@ h1 {
 .selector-footer .selector-confirm { min-height: 52px; }
 
 @media (max-width: 950px) and (orientation: landscape) {
-  .selector-shell { display: block; padding: max(8px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
-  .selector-panel { padding: 12px; border-radius: 20px; }
-  .selector-header { margin-bottom: 10px; }
+  .selector-shell { display: block; padding: max(6px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
+  .selector-panel { padding: 8px; border-radius: 16px; }
+  .selector-header { margin-bottom: 6px; }
   .selector-header .eyebrow { display: none; }
-  .selector-header h1 { font-size: 1.45rem; }
-  .selector-intro { margin-top: 4px; font-size: 0.82rem; }
-  .selector-layout { grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr); gap: 10px; }
-  .selector-showcase { min-height: 290px; }
-  .selector-showcase__art { min-height: 135px; }
-  .selector-showcase .character-preview--showcase { height: 160px; }
-  .selector-showcase .character-preview__sprite { --preview-size-scale: 0.8; }
-  .selector-showcase__details { padding: 0 8px 10px; }
-  .selector-showcase__details h2 { font-size: 1.05rem; }
-  .selector-showcase__details p { font-size: 0.72rem; }
-  .selector-panel .character-roster { --roster-gap: 6px; min-height: 280px; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); }
-  .selector-panel .character-preview--roster { height: 52px; }
-  .selector-panel .character-preview--roster .character-preview__sprite { --preview-size-scale: 0.42; }
-  .selector-panel .character-card__name { min-height: 34px; padding: 4px 2px; font-size: 0.66rem; }
+  .selector-header h1 { font-size: 1.3rem; }
+  .selector-intro { margin-top: 2px; font-size: 0.72rem; }
+  .selector-layout { grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr); gap: 8px; }
+  .selector-showcase { min-height: 210px; }
+  .selector-showcase__art { min-height: 90px; }
+  .selector-showcase .character-preview--showcase { height: 120px; }
+  .selector-showcase .character-preview__sprite { --preview-size-scale: 0.65; }
+  .selector-showcase__details { padding: 0 8px 8px; }
+  .selector-showcase__details h2 { margin: 3px 0; font-size: 0.95rem; }
+  .selector-showcase__details p { font-size: 0.68rem; }
+  .selector-panel .character-roster { --roster-gap: 6px; min-height: 210px; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); }
+  .selector-panel .character-card:nth-child(5) { grid-column: 2; grid-row: 2; }
+  .selector-panel .character-preview--roster { height: 58px; }
+  .selector-panel .character-preview--roster .character-preview__sprite { --preview-size-scale: 0.34; }
+  .selector-panel .character-card__name { min-height: 30px; padding: 3px 2px; font-size: 0.62rem; }
   .selector-panel .character-card__coming-soon,
   .selector-panel .character-card__selected-marker { top: 4px; padding: 3px 5px; font-size: 0.56rem; }
   .selector-panel .character-card__coming-soon { left: 4px; transform: none; max-width: calc(100% - 8px); }
   .selector-panel .character-card__selected-marker { right: 4px; }
-  .selector-footer { margin-top: 8px; }
-  .selector-footer p { font-size: 0.76rem; }
-  .selector-footer .selector-confirm { min-height: 46px; }
+  .selector-footer { margin-top: 6px; gap: 6px; }
+  .selector-footer p { font-size: 0.68rem; }
+  .selector-footer .selector-confirm { min-height: 40px; }
 }
 @media (max-width: 760px), (orientation: portrait) and (max-width: 900px) {
   .selector-shell { display: block; }
