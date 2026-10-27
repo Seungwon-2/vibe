@@ -108,4 +108,4 @@ Task: T02-personal-best-results
 
 - [x] Implementation complete
 - [x] Validation passed (56 tests, typecheck, build, lint; headless Edge desktop/mobile result inspection)
-- commit: pending
+- commit: `00e2a1e`

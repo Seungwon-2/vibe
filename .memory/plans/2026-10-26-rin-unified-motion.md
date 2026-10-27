@@ -25,7 +25,7 @@ Rin's +1-second time pickup and Toa's 150ms slide-release grace stay as implemen
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | P01 | `done` | Build and visually validate 60 aligned transparent frames and one runtime atlas for each of the five source sheets. | [P01](../phases/2026-10-26-rin-unified-motion/P01-motion-assets/phase.md) |
-| P02 | `in_progress` | Replace the playable roster, wire the new animations and slide pose, and show personal-best victory or crying on completion. | [P02](../phases/2026-10-26-rin-unified-motion/P02-character-runtime/phase.md) |
+| P02 | `done` | Replace the playable roster, wire the new animations and slide pose, and show personal-best victory or crying on completion. | [P02](../phases/2026-10-26-rin-unified-motion/P02-character-runtime/phase.md) |
 
 ## Execution order and boundaries
 
@@ -33,7 +33,9 @@ Rin's +1-second time pickup and Toa's 150ms slide-release grace stay as implemen
 2. P02-T01 updates the registry, passives, selector, runner animations, pose alignment, and affected tests together. Removing two `CharacterId` values in isolation would otherwise leave the runner tests and pose map broken.
 3. P02-T02 stores per-character best distance, chooses terminal victory/cry once, and presents the outcome without obscuring the sprite.
 
-The older `2026-10-26-running-action-redesign` plan is paused at P03-T01, not completed or discarded. Its P03-T04 four-card selector blueprint and P04 ranking blueprint must be reconciled with this five-character roster before those older tasks resume. P04's unified top-ten ranking is separate from this plan's per-character best-distance trigger; avoid two competing definitions of personal best.
+The older `2026-10-26-running-action-redesign` plan resumes at P03-T01 after this plan. Its P03-T04 four-card selector blueprint and P04 ranking blueprint must be reconciled with the current roster before those tasks resume. P04's unified top-ten ranking is separate from this plan's per-character best-distance trigger; avoid two competing definitions of personal best.
+
+Later sprite intake made Rin, Hiyori, and Mary the active playable set. Toa and Rang remain visible as `준비 중` until their matching sprite folders arrive. P02's runtime and per-character result flow is complete for the active set; the five-character completion evidence below remains a target for the deferred assets.
 
 ## Completion evidence
 

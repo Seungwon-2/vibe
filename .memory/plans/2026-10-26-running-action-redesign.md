@@ -1,6 +1,6 @@
 # Plan: Running Action Redesign
 
-> **Roster supersession (2026-10-26):** [Unified Runner Motions and Five-Character Roster](./2026-10-26-rin-unified-motion.md) is active before P03-T01 resumes. Its confirmed five-character roster, motion atlases, and passives replace this document's older four-character assumptions. P03-T01 is still pending; P03-T04 and P04 must be reconciled with the five-character registry when resumed.
+> **Roster supersession (2026-10-27):** [Unified Runner Motions and Five-Character Roster](./2026-10-26-rin-unified-motion.md) completed its runtime and personal-best work. Rin, Hiyori, and Mary are playable; Toa and Rang remain visible as `준비 중` pending matching sprites. P03-T01 is active. Reconcile the older four-card selector in P03-T04 and the P04 ranking blueprint with this active roster and the separate per-character best store before implementing them.
 
 ## Goal
 
