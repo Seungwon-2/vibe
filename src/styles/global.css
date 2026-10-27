@@ -652,3 +652,153 @@ h1 {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Character showcase layout overrides: the selector now has a hero and a five-card roster. */
+.selector-shell {
+  min-height: 100dvh;
+  padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+}
+.selector-panel {
+  width: min(100%, 1360px);
+  padding: clamp(18px, 2.4vw, 32px);
+  overflow: visible;
+}
+.selector-header { margin-bottom: clamp(12px, 1.5vw, 20px); }
+.selector-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.74fr) minmax(0, 1fr);
+  gap: clamp(14px, 2vw, 24px);
+  align-items: stretch;
+}
+.selector-showcase {
+  --character-accent: #2b66c0;
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: clamp(390px, 54vh, 470px);
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  isolation: isolate;
+  border: 2px solid color-mix(in srgb, var(--character-accent), transparent 18%);
+  border-radius: 22px;
+  background: #10162e;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--character-accent), transparent 78%);
+}
+.selector-showcase__portrait,
+.selector-showcase__shade {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.selector-showcase__portrait { object-fit: cover; object-position: center 14%; opacity: 0.72; }
+.selector-showcase__shade { background: linear-gradient(180deg, rgb(8 13 31 / 9%) 5%, rgb(10 15 32 / 22%) 48%, #10162e 100%); }
+.selector-showcase__art { display: grid; min-height: 210px; flex: 1; place-items: end center; }
+.selector-showcase .character-preview--showcase { height: clamp(205px, 28vh, 270px); }
+.selector-showcase .character-preview__sprite { --preview-size-scale: 1.5; }
+.selector-showcase__details { z-index: 1; padding: 0 18px 18px; text-align: center; text-shadow: 0 2px 8px #0a1025; }
+.selector-showcase__eyebrow { color: color-mix(in srgb, var(--character-accent), white 35%); font-size: 0.76rem; font-weight: 800; letter-spacing: 0.12em; }
+.selector-showcase__details h2 { margin: 5px 0; color: white; font-size: clamp(1.35rem, 2vw, 1.85rem); }
+.selector-showcase__details p { margin: 0; color: #e5ecff; font-size: clamp(0.84rem, 1.15vw, 1rem); }
+.selector-panel .character-roster {
+  --roster-gap: clamp(9px, 1vw, 14px);
+  display: grid;
+  min-width: 0;
+  min-height: clamp(390px, 54vh, 470px);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: var(--roster-gap);
+}
+.selector-panel .character-card {
+  grid-column: span 2;
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: visible;
+  border-width: 2px;
+  border-radius: 18px;
+}
+.selector-panel .character-card:nth-child(4) { grid-column: 2 / span 2; grid-row: 2; }
+.selector-panel .character-card:nth-child(5) { grid-column: 4 / span 2; grid-row: 2; justify-self: stretch; }
+.selector-panel .character-card__art {
+  height: auto;
+  min-height: 0;
+  flex: 1;
+  border-radius: 15px 15px 0 0;
+}
+.selector-panel .character-preview--roster { height: clamp(100px, 17vh, 150px); }
+.selector-panel .character-preview--roster .character-preview__sprite { --preview-size-scale: 0.82; }
+.selector-panel .character-card__name { min-height: 44px; padding: 6px 5px; font-size: clamp(0.78rem, 1vw, 0.98rem); }
+.selector-panel .character-card__coming-soon,
+.selector-panel .character-card__selected-marker { top: 8px; padding: 5px 9px; font-size: clamp(0.65rem, 0.85vw, 0.78rem); }
+.selector-panel .character-card__coming-soon { left: 8px; }
+.selector-panel .character-card__selected-marker { right: 8px; }
+.selector-footer { margin-top: clamp(12px, 1.5vw, 20px); }
+.selector-footer p { font-size: clamp(0.88rem, 1.25vw, 1rem); }
+.selector-footer .selector-confirm { min-height: 52px; }
+
+@media (max-width: 950px) and (orientation: landscape) {
+  .selector-shell { display: block; padding: max(8px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
+  .selector-panel { padding: 12px; border-radius: 20px; }
+  .selector-header { margin-bottom: 10px; }
+  .selector-header .eyebrow { display: none; }
+  .selector-header h1 { font-size: 1.45rem; }
+  .selector-intro { margin-top: 4px; font-size: 0.82rem; }
+  .selector-layout { grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr); gap: 10px; }
+  .selector-showcase { min-height: 290px; }
+  .selector-showcase__art { min-height: 135px; }
+  .selector-showcase .character-preview--showcase { height: 160px; }
+  .selector-showcase .character-preview__sprite { --preview-size-scale: 1.08; }
+  .selector-showcase__details { padding: 0 8px 10px; }
+  .selector-showcase__details h2 { font-size: 1.05rem; }
+  .selector-showcase__details p { font-size: 0.72rem; }
+  .selector-panel .character-roster { --roster-gap: 6px; min-height: 290px; }
+  .selector-panel .character-preview--roster { height: clamp(78px, 17vh, 100px); }
+  .selector-panel .character-preview--roster .character-preview__sprite { --preview-size-scale: 0.65; }
+  .selector-panel .character-card__name { min-height: 34px; padding: 4px 2px; font-size: 0.66rem; }
+  .selector-panel .character-card__coming-soon,
+  .selector-panel .character-card__selected-marker { top: 4px; padding: 3px 5px; font-size: 0.56rem; }
+  .selector-panel .character-card__coming-soon { left: 4px; }
+  .selector-panel .character-card__selected-marker { right: 4px; }
+  .selector-footer { margin-top: 8px; }
+  .selector-footer p { font-size: 0.76rem; }
+  .selector-footer .selector-confirm { min-height: 46px; }
+}
+@media (max-width: 760px), (orientation: portrait) and (max-width: 900px) {
+  .selector-shell { display: block; }
+  .selector-panel { width: 100%; padding: 16px 14px 18px; }
+  .selector-layout { grid-template-columns: minmax(0, 1fr); }
+  .selector-showcase { min-height: 300px; }
+  .selector-showcase .character-preview--showcase { height: 190px; }
+  .selector-showcase .character-preview__sprite { --preview-size-scale: 1.18; }
+  .selector-panel .character-roster { min-height: 0; grid-template-rows: repeat(2, minmax(150px, 1fr)); }
+  .selector-panel .character-card { min-height: 150px; }
+  .selector-panel .character-card:nth-child(4) { grid-column: 2 / span 2; grid-row: 2; }
+  .selector-panel .character-card:nth-child(5) { grid-column: 4 / span 2; grid-row: 2; }
+}
+@media (max-width: 420px) {
+  .selector-shell { padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
+  .selector-panel { padding: 12px; }
+  .selector-header { margin-bottom: 10px; }
+  .selector-header h1 { font-size: 1.5rem; }
+  .selector-intro { max-width: 15rem; margin-top: 6px; font-size: 0.84rem; line-height: 1.35; }
+  .selector-back { min-width: 64px; min-height: 44px; padding: 6px 10px; }
+  .selector-showcase { min-height: 270px; }
+  .selector-showcase .character-preview--showcase { height: 165px; }
+  .selector-showcase .character-preview__sprite { --preview-size-scale: 1.05; }
+  .selector-showcase__details { padding: 0 10px 12px; }
+  .selector-panel .character-roster { --roster-gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(132px, 1fr)); }
+  .selector-panel .character-card { grid-column: auto; min-height: 132px; }
+  .selector-panel .character-card:nth-child(4) { grid-column: auto; grid-row: auto; }
+  .selector-panel .character-card:nth-child(5) { grid-column: 1 / -1; grid-row: auto; width: calc((100% - var(--roster-gap)) / 2); justify-self: center; }
+  .selector-panel .character-preview--roster { height: 82px; }
+  .selector-panel .character-preview--roster .character-preview__sprite { --preview-size-scale: 0.55; }
+  .selector-panel .character-card__name { min-height: 44px; font-size: 0.72rem; }
+  .selector-panel .character-card__coming-soon,
+  .selector-panel .character-card__selected-marker { top: 4px; padding: 3px 5px; font-size: 0.54rem; }
+  .selector-footer { margin-top: 10px; gap: 8px; }
+  .selector-footer p { display: block; font-size: 0.78rem; }
+  .selector-footer .selector-confirm { min-height: 48px; padding-inline: 12px; }
+}
