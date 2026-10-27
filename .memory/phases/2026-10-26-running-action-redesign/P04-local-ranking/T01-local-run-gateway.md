@@ -2,7 +2,7 @@
 
 > **Dependency update:** The active roster after `2026-10-26-rin-unified-motion` has five characters, and that plan adds a separate `running-action:personal-best:v1` store for terminal animation. Keep this task's future unified top-ten `running-action:records:v1` gateway distinct, update its character-count assertions to five, and read the newer plan before execution.
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -34,15 +34,15 @@ Persist runner records in browser storage behind a small gateway interface that 
 
 ## Acceptance Criteria
 
-- [ ] Valid results persist across reloads and show up for all four characters in one list.
-- [ ] Only the best 10 rows remain, with deterministic distance/coin/time ordering.
-- [ ] Corrupt JSON and disabled/full storage safely fall back to an empty/in-memory gateway.
-- [ ] Invalid or NaN run results cannot enter ranking.
+- [x] Valid results persist across reloads and show up for all five catalog characters in one list.
+- [x] Only the best 10 rows remain, with deterministic distance/coin/time/ID ordering.
+- [x] Corrupt JSON and disabled/full storage safely fall back to an empty/in-memory gateway.
+- [x] Invalid or NaN run results cannot enter ranking.
 
 ## Validation
 
-- `npm test -- src/services/LocalRunGateway.test.ts` — validates storage and ordering.
-- `npm run typecheck` — validates gateway/result schema.
+- `npm test -- src/services/LocalRunGateway.test.ts` — passed (7 tests); validates storage, validation, and ordering.
+- `npm run typecheck` — passed; validates gateway/result schema.
 
 ## Commit Message
 
@@ -59,6 +59,6 @@ Task: T01-local-run-gateway
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed
 - commit: pending
