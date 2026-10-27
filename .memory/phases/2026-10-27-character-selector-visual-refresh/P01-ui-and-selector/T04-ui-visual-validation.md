@@ -66,7 +66,8 @@ Task: T04-ui-visual-validation
 - [x] Follow-up sizing correction: reduced showcase and roster sprite scales at desktop, landscape, tablet, and narrow-phone breakpoints after the user reported clipping. Shared per-character metrics remain intact so character silhouettes stay normalized.
 - [x] Restart showcase victory playback when the selected character changes by remounting the preview with the selected character ID as its key; regression coverage confirms the previous preview is replaced and the new preview starts at frame 00.
 - [x] Corrected the one-shot sprite-sheet animation stepping: the last frame is reached through five frame intervals, preventing the six-frame victory strip from sliding through fractional positions. Reduced the left showcase sprite scale slightly at each responsive breakpoint.
+- [x] Reduced the result-screen SD sprite scale after screenshot review showed it dominating the portrait stage: desktop scale 1.8 to 1.0; mobile scale 1.2 to 0.75. Added a result animation first-frame regression assertion.
 - [x] Revalidated after follow-up: full suite (86 tests), typecheck, lint, and production build passed. Build still reports the existing >500 kB JavaScript chunk warning.
 - [ ] Manual review after the fix at all required viewports remains outstanding because this session has no browser surface. The user-provided screenshot was inspected to identify the defects, but no post-fix capture is available.
-- partial commits: `44a2922`, `40de34c`, and `98d5146` on `project02`; leave T04 in progress until manual viewport review
+- partial commits: `44a2922`, `40de34c`, `98d5146`, and `40ca61a` on `project02`; leave T04 in progress until manual viewport review
 
