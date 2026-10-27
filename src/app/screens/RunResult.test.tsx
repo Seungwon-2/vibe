@@ -11,6 +11,7 @@ describe('RunResult', () => {
     coins: 6,
     durationMs: 90_000,
     finishedAtIso: '2026-10-27T00:00:00.000Z',
+    finishReason: 'timeout' as const,
   };
 
   it('shows personal best animation, rounded distance, best, and coins', () => {
@@ -52,5 +53,12 @@ describe('RunResult', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('기록을 저장하지 못했습니다');
     expect(screen.getByText('1,234m')).toBeInTheDocument();
     expect(screen.getByText('6')).toBeInTheDocument();
+  });
+
+  it('keeps the personal-best score label but shows a game-over pose after a pit fall', () => {
+    render(<RunResult result={{ ...result, finishReason: 'pit' }} outcome="personal-best"
+      bestDistanceMeters={1234} onRetry={vi.fn()} onChooseCharacter={vi.fn()} onRankings={vi.fn()} />);
+    expect(screen.getByRole('heading', { name: '새로운 최고 기록!' })).toBeInTheDocument();
+    expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-animation', 'gameOver');
   });
 });

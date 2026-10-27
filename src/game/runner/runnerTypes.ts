@@ -2,6 +2,7 @@ import type { CharacterId } from '../characters/characterTypes';
 
 export type RunnerPhase = 'countdown' | 'running' | 'paused' | 'finished';
 export type RunnerFinishOutcome = 'personal-best' | 'completed';
+export type RunnerFinishReason = 'timeout' | 'pit';
 export type RunnerPickupKind = 'coin' | 'time';
 export type RunnerBiomeId = 'dawn-city' | 'moonlit-forest' | 'crystal-mine' | 'cloud-skyway';
 export type RunnerGateId = 'gate-2000' | 'gate-4000' | 'gate-6000' | 'gate-8000' | 'gate-10000';
@@ -21,6 +22,7 @@ export type RunnerSnapshot = Readonly<{
   protectionRemainingMs: number;
   biomeId: RunnerBiomeId;
   finishedAtElapsedMs: number | null;
+  finishReason: RunnerFinishReason | null;
   // The timestamp anchor makes the pure simulation's result reproducible.
   startedAtIso: string;
   finishedAtIso: string | null;
@@ -32,4 +34,5 @@ export type RunnerResult = Readonly<{
   coins: number;
   durationMs: number;
   finishedAtIso: string;
+  finishReason: RunnerFinishReason;
 }>;

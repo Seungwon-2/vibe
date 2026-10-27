@@ -1,6 +1,6 @@
 # Task: T02 Pit Hazard
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -83,10 +83,10 @@ export class PitSpawner {
 
 ## Acceptance Criteria
 
-- [ ] Pit gaps are visible with biome-matched rims; only the first gap receives the explicit tutorial marker.
-- [ ] A normal character can jump through a pit; grounded contact immediately enters the game-over result path with the pit reason.
-- [ ] Pit failure preserves the run's reached distance and coin count and is submitted once to the existing local ranking gateway.
-- [ ] The pit schedule and 200m exclusion API are deterministic and reusable by later spawners.
+- [x] Pit gaps are visible with biome-matched rims; only the first gap receives the explicit tutorial marker.
+- [x] A normal character can jump through a pit; grounded contact immediately enters the game-over result path with the pit reason.
+- [x] Pit failure preserves the run's reached distance and coin count and is submitted once to the existing local ranking gateway.
+- [x] The pit schedule and 200m exclusion API are deterministic and reusable by later spawners.
 
 ## Validation
 
@@ -110,4 +110,4 @@ Task: T02-pit-hazard
 
 - [ ] 구현 완료
 - [ ] 검증 통과
-- commit: pending
+- commit: `feat(runner): add jumpable fatal pit hazards`

@@ -4,7 +4,7 @@ import { LocalRunGateway, RUN_RECORDS_STORAGE_KEY } from './LocalRunGateway';
 
 const first: RunnerResult = {
   characterId: 'player-default', distanceMeters: 12.4, coins: 2,
-  durationMs: 10_000, finishedAtIso: '2026-10-27T00:00:00.000Z',
+  durationMs: 10_000, finishedAtIso: '2026-10-27T00:00:00.000Z', finishReason: 'timeout',
 };
 
 function memoryStorage(initial: string | null = null) {

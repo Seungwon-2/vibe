@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { getCharacter } from '../characters/characterCatalog';
 import type { CharacterId } from '../characters/characterTypes';
-import { advanceRunner, collectPickup, createRunnerSnapshot, pauseRunner, resumeRunner, startRunner } from './RunnerSimulation';
+import { advanceRunner, collectPickup, createRunnerSnapshot, finishRunner, pauseRunner, resumeRunner, startRunner } from './RunnerSimulation';
 import { RunnerPlayer, RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { RunnerInputBridge } from './RunnerInput';
 import type { RunnerGateId, RunnerResult, RunnerSnapshot } from './runnerTypes';
@@ -15,6 +15,7 @@ import { browserPersonalBestStore } from '../../services/PersonalBestStore';
 import type { RunnerFinishOutcome } from './runnerTypes';
 import { RunnerBackdrop } from '../visuals/RunnerBackdrop';
 import { getHurtAnimationFrames } from './hurtAnimation';
+import { PitSpawner, type PitDefinition } from './PitSpawner';
 
 export class RunnerScene extends Phaser.Scene {
   private inputBridge!: RunnerInputBridge;
@@ -27,6 +28,7 @@ export class RunnerScene extends Phaser.Scene {
   private spawner!: ObstacleSpawner;
   private collectibles!: CollectibleSpawner;
   private backdrop!: RunnerBackdrop;
+  private pits!: PitSpawner;
   private finishEmitted = false;
 
   constructor() {
@@ -92,6 +94,8 @@ export class RunnerScene extends Phaser.Scene {
     this.player = new RunnerPlayer(sprite, characterId);
     this.spawner = new ObstacleSpawner(this, this.player.gameObject, this.handleHazardOverlap);
     this.collectibles = new CollectibleSpawner(this, this.player.gameObject, this.handlePickup, characterId);
+    this.pits = new PitSpawner(this, this.player.gameObject, () => this.player.isGrounded,
+      this.handlePitFall);
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
     window.addEventListener('blur', this.handleBlur);
@@ -131,6 +135,7 @@ export class RunnerScene extends Phaser.Scene {
     this.player.setProtected(state.protectionRemainingMs);
     this.spawner.update(state);
     this.collectibles.update(state);
+    this.pits.update(state);
     if (result) {
       this.inputBridge.clear();
       this.emitFinished(result);
@@ -177,13 +182,21 @@ export class RunnerScene extends Phaser.Scene {
     if (result) this.emitFinished(result);
   };
 
+  private readonly handlePitFall = (_pit: PitDefinition): void => {
+    if (this.finishEmitted || this.snapshot.phase !== 'running') return;
+    const finished = finishRunner(this.snapshot, undefined, 'pit');
+    this.publish(finished.state, true);
+    this.heldKeyboardActions.clear();
+    this.emitFinished(finished.result);
+  };
+
   private emitFinished(result: RunnerResult): void {
     if (this.finishEmitted) return;
     this.finishEmitted = true;
     this.inputBridge.clear();
     const decision = browserPersonalBestStore.record(result);
     const outcome: RunnerFinishOutcome = decision.isNewBest ? 'personal-best' : 'completed';
-    this.player.finish(decision.isNewBest ? 'victory' : 'gameOver');
+    this.player.finish(result.finishReason === 'pit' || !decision.isNewBest ? 'gameOver' : 'victory');
     this.eventEmitter.finish(result, outcome);
   }
 
@@ -228,6 +241,7 @@ export class RunnerScene extends Phaser.Scene {
     this.player?.destroy();
     this.spawner?.destroy();
     this.collectibles?.destroy();
+    this.pits?.destroy();
     this.backdrop?.destroy();
   }
 }

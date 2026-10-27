@@ -1,6 +1,6 @@
 # Task: T03 Obstacle Waves
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 

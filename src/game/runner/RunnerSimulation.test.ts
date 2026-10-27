@@ -171,9 +171,10 @@ describe('RunnerSimulation', () => {
     const finished = finishRunner(state, new Date('2026-10-26T01:00:00.000Z'));
     expect(finished.result).toEqual({
       characterId: 'player-default', distanceMeters: 13, coins: 4,
-      durationMs: 0, finishedAtIso: '2026-10-26T01:00:00.000Z',
+      durationMs: 0, finishedAtIso: '2026-10-26T01:00:00.000Z', finishReason: 'timeout',
     });
     expect(finishRunner(finished.state).result).toEqual(finished.result);
+    expect(finishRunner(state, undefined, 'pit').result.finishReason).toBe('pit');
     expect(state.phase).toBe('running');
   });
 });

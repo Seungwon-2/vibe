@@ -3,6 +3,7 @@ import type { CharacterId } from '../characters/characterTypes';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import { getBiomeForDistance } from '../visuals/runnerBiomes';
 import type {
+  RunnerFinishReason,
   RunnerGateId,
   RunnerPickupKind,
   RunnerResult,
@@ -91,6 +92,7 @@ function toResult(state: RunnerSnapshot): RunnerResult {
     coins: state.coins,
     durationMs: state.elapsedMs,
     finishedAtIso: state.finishedAtIso ?? logicalFinishIso(state),
+    finishReason: state.finishReason ?? 'timeout',
   };
 }
 
@@ -110,6 +112,7 @@ export function createRunnerSnapshot(characterId: CharacterId, now: Date = new D
     protectionRemainingMs: 0,
     biomeId: 'dawn-city',
     finishedAtElapsedMs: null,
+    finishReason: null,
     startedAtIso: now.toISOString(),
     finishedAtIso: null,
   };
@@ -130,6 +133,7 @@ export function resumeRunner(state: RunnerSnapshot): RunnerSnapshot {
 export function finishRunner(
   state: RunnerSnapshot,
   now?: Date,
+  reason: RunnerFinishReason = 'timeout',
 ): { state: RunnerSnapshot; result: RunnerResult } {
   const finished = state.phase === 'finished'
     ? state
@@ -138,6 +142,7 @@ export function finishRunner(
       phase: 'finished' as const,
       remainingMs: 0,
       finishedAtElapsedMs: state.elapsedMs,
+      finishReason: reason,
       finishedAtIso: now?.toISOString() ?? logicalFinishIso(state),
     };
   return { state: finished, result: toResult(finished) };

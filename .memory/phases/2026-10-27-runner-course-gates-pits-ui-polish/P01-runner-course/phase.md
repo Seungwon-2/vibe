@@ -5,10 +5,10 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done` | Move five gates, biome boundaries, and shared speed scaling into a consistent simulation. | [T01](./T01-gates-speed-biomes.md) |
-| T02 | `in_progress` | Add the tutorial pit, fair fall/game-over handling, and tutorial-only warning. | [T02](./T02-pit-hazard.md) |
-| T03 | `pending` | Schedule spaced tutorial obstacles and three-pattern dense waves with pit clearance. | [T03](./T03-obstacle-waves.md) |
+| T02 | `done` | Add the tutorial pit, fair fall/game-over handling, and tutorial-only warning. | [T02](./T02-pit-hazard.md) |
+| T03 | `in_progress` | Schedule spaced tutorial obstacles and three-pattern dense waves with pit clearance. | [T03](./T03-obstacle-waves.md) |
 | T04 | `pending` | Populate frequent safe-route coins without pickup/hazard/gate conflicts. | [T04](./T04-safe-pickups.md) |
 
 ## Progress
 
-- done: 1/4 (active: T02)
+- done: 2/4 (active: T03)

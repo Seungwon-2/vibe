@@ -33,7 +33,8 @@ export function RunResult({ result, outcome, bestDistanceMeters, submittedRank =
             <span className="result-character__badge" aria-hidden="true" data-testid="result-character-badge">
               {isNewBest ? 'NEW PERSONAL BEST' : 'RUN COMPLETE'}
             </span>
-            <CharacterPreview character={character} selected={false} animation={isNewBest ? 'victory' : 'gameOver'} />
+            <CharacterPreview character={character} selected={false}
+              animation={result.finishReason !== 'pit' && isNewBest ? 'victory' : 'gameOver'} />
           </div>
           <span className="result-character__name">{character.displayName}</span>
         </div>

@@ -4,7 +4,7 @@ import { PERSONAL_BEST_STORAGE_KEY, PersonalBestStore } from './PersonalBestStor
 
 const first: RunnerResult = {
   characterId: 'player-default', distanceMeters: 0, coins: 2,
-  durationMs: 1000, finishedAtIso: '2026-10-27T00:00:00.000Z',
+  durationMs: 1000, finishedAtIso: '2026-10-27T00:00:00.000Z', finishReason: 'timeout',
 };
 
 function memoryStorage(initial: string | null = null) {
