@@ -54,8 +54,10 @@ export class RunnerScene extends Phaser.Scene {
       run: character.animations.run,
       jump: character.animations.jump.slice(0, 4),
       'jump-fall': character.animations.jump.slice(4),
-      doubleJump: character.animations.doubleJump.slice(0, 4),
-      'double-jump-fall': character.animations.doubleJump.slice(4),
+      // A second jump reaches its apex after about 0.47s. All six frames at
+      // 12 fps fit the ascent, including the spin recovery in frames 4–5.
+      doubleJump: character.animations.doubleJump,
+      'double-jump-fall': character.animations.doubleJump.slice(-1),
       // The first curated slide is a tall entry pose; start at the low pose
       // so the visible art clears the overhead hazard at its native scale.
       slide: character.available
