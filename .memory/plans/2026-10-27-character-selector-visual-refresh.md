@@ -1,6 +1,6 @@
 # Plan: Character Selector and Visual Refresh
 
-> **Status: active (2026-10-27):** The `2026-10-26-running-action-redesign` plan is complete. P01 is complete with the remaining manual viewport matrix deferred by user acceptance. P02-T01 is complete; P02-T02 is active.
+> **Status: active (2026-10-27):** The `2026-10-26-running-action-redesign` plan is complete. P01 is complete with the remaining manual viewport matrix deferred by user acceptance. P02-T01 and T02 are complete; P02-T03 is active.
 
 ## Goal
 
@@ -26,7 +26,7 @@ Bring the full game presentation into one bright pastel fairytale visual system.
 ## Execution Order
 
 1. P01 UI and character selector are complete.
-2. P02-T01 four biome backdrops are complete. Continue with T02 hazards, pickups, bonus gates, and biome boundaries.
+2. P02-T01 backdrops and P02-T02 themed hazards, pickups, and gates are complete. Continue with T03 full-run and viewport validation.
 3. Keep character movement, collision geometry, item placement/rewards, distance thresholds, ranking records, and navigation behavior unchanged.
 
 ## Out of Scope

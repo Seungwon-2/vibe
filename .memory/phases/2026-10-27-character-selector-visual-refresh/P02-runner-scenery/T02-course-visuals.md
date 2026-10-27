@@ -75,5 +75,5 @@ Task: T02-course-visuals
 - [x] Implementation complete
 - [x] Targeted tests, typecheck, lint, and production build passed.
 - Manual screenshot review is deferred to P03-T03 because no browser surface is available.
-- commit: pending
+- commit: `5500344` on `project02`
 

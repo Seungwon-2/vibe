@@ -10,7 +10,7 @@
 
 ## Active Task
 
-[T02 Themed Hazards, Pickups, and Gates](./phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/T02-course-visuals.md)
+[T03 Runner Scenery Validation](./phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/T03-scenery-validation.md)
 
 ## Status
 
@@ -45,6 +45,10 @@
 - P01 completed in `4328eaf` on `project02` after the user accepted the current selector and compact runner layout. Full test suite (86), typecheck, lint, and build passed. The complete manual viewport matrix is deferred by user acceptance and recorded in T04.
 - P02-T01 completed in `16fc63a` on `project02`: retuned the four biome palettes and redrew sunrise city, moonlit forest, crystal mine, and cloud skyway with layered pastel shapes. Gameplay-lane decorations are sparse and low-opacity; parallax ratios, 750ms crossfades, biome thresholds, texture lifecycle, and ground geometry are unchanged. Four targeted tests, lint, and production build passed. No browser surface was available for the 960x540/844x390 screenshots; T03 retains the visual review. The unrelated untracked `.memory/image.png` is untouched.
 
+## Recent Completion
+
+- P02-T02 completed in `5500344` on `project02`: added four distinct low/overhead hazard skins, biome-emblem coins, clock-shaped time pickups, and themed +20s gate emblems. Renderer tests verify all four themes, strong outline palette usage, and that hazard drawing stays within configured bounds. Pickup schedules, hazard patterns, collision bodies, gate triggers, and reward values were not changed. Eleven targeted tests, typecheck, lint, and build passed. Browser screenshots were unavailable; P02-T03 retains full viewport review.
+
 ## Next Step
 
-Continue with P02-T02: harmonize hazards, pickups, bonus gates, and biome boundary transitions with the new pastel palettes.
+Continue with P02-T03: run the full visual and regression review across all four biomes, three viewport sizes, and transition boundaries.
