@@ -1,10 +1,11 @@
 import type { CSSProperties } from 'react';
 import type { CharacterAnimationName, CharacterDefinition, CharacterId } from '../../game/characters/characterTypes';
 
-type CharacterPreviewProps = {
+export type CharacterPreviewProps = {
   character: CharacterDefinition;
   selected: boolean;
   animation?: CharacterAnimationName;
+  variant?: 'showcase' | 'roster';
 };
 
 type SpriteStyle = CSSProperties & {
@@ -25,9 +26,12 @@ const PREVIEW_METRICS: Readonly<Record<CharacterId, { contentHeight: number; con
 
 const PREVIEW_CONTENT_HEIGHT = 136;
 const PREVIEW_BASELINE = 91;
+const RUN_FRAME_MS = 64;
 
-export function CharacterPreview({ character, selected, animation }: CharacterPreviewProps): React.JSX.Element {
-  const animationName = animation ?? (selected ? 'run' : character.id === 'player-default' ? 'victory' : 'idle');
+export function CharacterPreview({ character, selected, animation, variant }: CharacterPreviewProps): React.JSX.Element {
+  const animationName = animation ?? (variant === 'showcase' ? 'run'
+    : variant === 'roster' ? 'idle'
+      : selected ? 'run' : character.id === 'player-default' ? 'victory' : 'idle');
   const frames = character.animations[animationName];
   const frameName = frames[0];
   const animationStart = character.atlasManifest.frames[frameName].frame;
@@ -36,7 +40,7 @@ export function CharacterPreview({ character, selected, animation }: CharacterPr
     width: character.atlasManifest.meta.size.w,
     height: character.atlasManifest.meta.size.h,
     transform: 'translate3d(var(--sprite-start-x), var(--sprite-row-y), 0)',
-    animationDuration: `${frames.length * (animationName === 'run' ? 100 : 200)}ms`,
+    animationDuration: `${frames.length * (animationName === 'run' ? RUN_FRAME_MS : 200)}ms`,
     animationTimingFunction: `steps(${frames.length}, end)`,
     '--sprite-start-x': `${-animationStart.x}px`,
     '--sprite-end-x': `${-(animationStart.x + frames.length * character.frameWidth)}px`,
@@ -44,13 +48,14 @@ export function CharacterPreview({ character, selected, animation }: CharacterPr
     '--preview-scale': `${PREVIEW_CONTENT_HEIGHT / metrics.contentHeight}`,
     '--preview-size-scale': '1',
   };
+  const variantClass = variant ? ` character-preview--${variant}` : '';
 
   return (
-    <span className="character-preview" aria-hidden="true">
+    <span className={`character-preview${variantClass}`} aria-hidden="true">
       <span className="character-preview__sprite">
         <img
           className="character-preview__sheet is-animated"
-          data-testid={`character-preview-${character.id}`}
+          data-testid={`character-preview-${character.id}${variant ? `-${variant}` : ''}`}
           data-animation={animationName}
           data-frame={frameName}
           src={character.atlasUrl}
