@@ -1,6 +1,6 @@
 # Task: T01 Shared Pastel UI Tokens
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 

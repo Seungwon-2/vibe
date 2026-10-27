@@ -77,4 +77,4 @@ Task: T03-integration-validation
 - [x] Full automated validation passed: 85 tests, typecheck, lint, and production build
 - [x] Local Vite endpoint returned HTTP 200 with no login/network setup
 - [ ] Manual visual review at the requested viewport sizes remains unavailable: this environment exposes no browser surface, and headless Edge did not produce a screenshot
-- commit: pending
+- commit: `41423df` on `project02`

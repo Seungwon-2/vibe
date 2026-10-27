@@ -2,15 +2,15 @@
 
 ## Active Plan
 
-[Running Action Redesign](./plans/2026-10-26-running-action-redesign.md)
+[Character Selector and Visual Refresh](./plans/2026-10-27-character-selector-visual-refresh.md)
 
 ## Active Phase
 
-[P04 Local Ranking](./phases/2026-10-26-running-action-redesign/P04-local-ranking/phase.md)
+[P01 UI and Character Selector](./phases/2026-10-27-character-selector-visual-refresh/P01-ui-and-selector/phase.md)
 
 ## Active Task
 
-[T03 Integration Validation](./phases/2026-10-26-running-action-redesign/P04-local-ranking/T03-integration-validation.md)
+[T01 Shared Pastel UI Tokens](./phases/2026-10-27-character-selector-visual-refresh/P01-ui-and-selector/T01-shared-ui-tokens.md)
 
 ## Status
 
@@ -29,9 +29,10 @@
 - P03-T04 completed in `323bd2c` on `project02`: redesigned selection with a large portrait/SD showcase, passive summary from central tuning, three playable cards, and two disabled preparation cards. All 72 tests, typecheck, lint, and build passed. Screenshots for the specified viewport sizes remain unverified because no browser/device surface was available.
 - P04-T01 completed in `fd588cd` on `project02`: added the `RunGateway` contract and a local top-ten ranking store with normalized distances, deterministic sorting, validation, and in-memory fallback when browser storage fails. Seven targeted tests and typecheck passed.
 - P04-T02 completed in `463ddff` on `project02`: finished-run callbacks submit once through the local gateway; menu/result fetch the best record; the ranking screen loads a unified top-ten list with character, distance, coins, and date. Results retain personal best and show submitted rank; storage failures keep the result available. Nine targeted tests, typecheck, lint, and build passed.
-- Queued after P04: [Character Selector and Visual Refresh](./plans/2026-10-27-character-selector-visual-refresh.md). Decisions and task blueprints are prepared; activate only after P04-T03 is complete.
+- P04-T03 completed in `41423df` on `project02`: documented local setup and game rules, added a simulated offline run through pickups, all three time gates, timeout, and persisted ranking. All 85 tests, typecheck, lint, and production build passed; the Vite endpoint returned HTTP 200. Manual viewport review could not be performed because no browser surface was available in this session.
+- [Running Action Redesign](./plans/2026-10-26-running-action-redesign.md) is complete. The queued [Character Selector and Visual Refresh](./plans/2026-10-27-character-selector-visual-refresh.md) plan is now active.
 - The unrelated untracked `.memory/image.png` is untouched.
 
 ## Next Step
 
-Continue with P04-T03: verify the complete offline runner flow, document local setup and mechanics, and run the final quality gate before activating the queued visual refresh plan.
+Continue with P01-T01: add shared cloud-white and pale-sky UI tokens and global page styling while preserving current layout and interactions.
