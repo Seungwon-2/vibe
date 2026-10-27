@@ -466,6 +466,57 @@ h1 {
   margin-top: 20px;
 }
 
+.main-menu-actions, .result-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.main-menu-rankings, .result-actions > button:not(.selector-confirm) {
+  min-height: 50px; padding: 11px 22px; border: 1px solid rgb(183 202 255 / 42%);
+  border-radius: 14px; background: rgb(19 28 58 / 72%); cursor: pointer;
+}
+.main-menu-help { margin: 26px 0 0; color: #b8c9f3; font-size: 0.9rem; }
+.run-screen { display: grid; min-height: 100dvh; grid-template-rows: auto 1fr auto; align-items: center; gap: 10px; padding: 12px 20px; }
+.run-screen__header, .run-screen__help { display: flex; width: min(100%, 1200px); align-items: center; justify-content: space-between; gap: 12px; margin-inline: auto; }
+.run-screen__header > div { display: flex; flex-direction: column; gap: 2px; }
+.run-screen__header .eyebrow { margin: 0; font-size: 0.65rem; }
+.run-screen__header strong { font-size: 1.05rem; }
+.run-screen__header button { min-height: 40px; padding: 6px 16px; border: 1px solid rgb(183 202 255 / 42%); border-radius: 12px; background: #26365e; cursor: pointer; }
+.run-screen__help { justify-content: center; gap: clamp(12px, 3vw, 34px); color: #c4d1f4; font-size: 0.8rem; }
+.run-screen__help kbd { padding: 3px 7px; border: 1px solid rgb(183 202 255 / 35%); border-radius: 6px; background: #202d53; }
+.run-screen > .runner-stage { width: min(100%, calc((100dvh - 120px) * 16 / 9), 1200px); margin: auto; }
+.runner-overlay--confirm { z-index: 8; padding: 14px; background: rgb(5 10 27 / 82%); }
+.result-shell { display: grid; min-height: 100dvh; place-items: center; padding: clamp(12px, 3vw, 32px); }
+.result-panel { display: grid; width: min(100%, 960px); grid-template-columns: minmax(180px, 0.7fr) 1.3fr; gap: clamp(16px, 4vw, 42px); align-items: center; padding: clamp(18px, 4vw, 42px); border: 1px solid rgb(173 193 255 / 30%); border-radius: 28px; background: linear-gradient(145deg, #26345e, #171e3c); box-shadow: 0 24px 80px rgb(2 5 22 / 42%); }
+.result-character { display: grid; justify-items: center; gap: 12px; color: #fff; font-weight: 700; }
+.result-character .character-preview { width: min(100%, 240px); height: clamp(190px, 28vw, 280px); border: 1px solid color-mix(in srgb, var(--character-accent), transparent 40%); border-radius: 22px; }
+.result-character .character-preview__sprite { --preview-size-scale: 1.6; }
+.result-details .eyebrow { margin-bottom: 8px; }
+.result-details h1, .rankings-card h1 { font-size: clamp(1.8rem, 5vw, 3rem); }
+.result-distance { margin: 12px 0; color: #fff0b5; font-size: clamp(2.6rem, 8vw, 5rem); font-weight: 800; line-height: 1; }
+.result-distance span { margin-left: 6px; font-size: 0.48em; }
+.result-stats { display: flex; gap: 24px; margin: 18px 0 26px; }
+.result-stats div { display: grid; gap: 4px; }
+.result-stats dt { color: #b8c9f3; font-size: 0.86rem; }
+.result-stats dd { margin: 0; font-size: 1.1rem; font-weight: 700; }
+.result-actions { justify-content: flex-start; }
+.result-actions .selector-confirm { width: 100%; max-width: 420px; }
+.rankings-card { text-align: center; }
+.rankings-list { display: grid; gap: 10px; margin: 26px 0; padding: 0; list-style: none; text-align: left; }
+.rankings-list li { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: center; padding: 14px 16px; border-left: 4px solid var(--character-accent); border-radius: 10px; background: rgb(12 19 43 / 60%); }
+.rankings-list strong { color: #fff0b5; font-variant-numeric: tabular-nums; }
+.rankings-list small, .rankings-empty { color: #c6d1f3; }
+.rankings-card .result-actions { justify-content: center; }
+@media (max-width: 640px) {
+  .run-screen { padding: 8px; gap: 6px; }
+  .run-screen__header strong { font-size: 0.9rem; }
+  .run-screen__header button { min-height: 36px; }
+  .run-screen__help { gap: 8px; font-size: 0.64rem; }
+  .run-screen > .runner-stage { width: min(100%, calc((100dvh - 94px) * 16 / 9)); }
+  .result-panel { grid-template-columns: 1fr; gap: 14px; text-align: center; }
+  .result-character { display: none; }
+  .result-stats, .result-actions { justify-content: center; }
+  .result-actions > button { flex: 1 1 130px; }
+  .rankings-list li { grid-template-columns: 1fr auto; gap: 5px 10px; }
+  .rankings-list small { grid-column: 1 / -1; }
+}
+
 @media (min-width: 761px) and (max-width: 1000px) and (min-height: 521px) {
   .character-rail {
     grid-template-columns: repeat(3, minmax(0, 1fr));

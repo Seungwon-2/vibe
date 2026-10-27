@@ -1,54 +1,98 @@
-import { lazy, Suspense, useState } from 'react';
+import { useRef, useState } from 'react';
 import { CharacterSelect } from './app/screens/CharacterSelect';
+import { MainMenu } from './app/screens/MainMenu';
+import { RunResult } from './app/screens/RunResult';
+import { RunScreen } from './app/screens/RunScreen';
+import { CHARACTERS } from './game/characters/characterCatalog';
 import type { CharacterId } from './game/characters/characterTypes';
+import type { RunnerFinishOutcome, RunnerResult } from './game/runner/runnerTypes';
+import { browserPersonalBestStore } from './services/PersonalBestStore';
 
-const RunnerPreview = lazy(() => import('./app/screens/RunnerPreview').then((module) => ({ default: module.RunnerPreview })));
+type AppScreen = 'menu' | 'character-select' | 'run' | 'result' | 'rankings';
+type FinishedRun = { result: RunnerResult; outcome: RunnerFinishOutcome };
 
 function App(): React.JSX.Element {
-  const [screen, setScreen] = useState<'home' | 'characters' | 'ready'>(() =>
-    new URLSearchParams(window.location.search).get('screen') === 'characters' ? 'characters' : 'home',
-  );
+  const [screen, setScreen] = useState<AppScreen>('menu');
   const [selectedCharacterId, setSelectedCharacterId] = useState<CharacterId>('player-default');
+  const [finishedRun, setFinishedRun] = useState<FinishedRun | null>(null);
+  const [runId, setRunId] = useState(0);
+  const latestRunId = useRef(0);
 
-  if (screen === 'characters') {
+  function startRun(characterId = selectedCharacterId): void {
+    latestRunId.current += 1;
+    setSelectedCharacterId(characterId);
+    setFinishedRun(null);
+    setRunId(latestRunId.current);
+    setScreen('run');
+  }
+
+  if (screen === 'character-select') {
     return (
-      <CharacterSelect
-        key={selectedCharacterId}
-        selectedCharacterId={selectedCharacterId}
-        onConfirm={(characterId) => {
-          setSelectedCharacterId(characterId);
-          setScreen('ready');
+      <CharacterSelect selectedCharacterId={selectedCharacterId}
+        onConfirm={(characterId) => startRun(characterId)}
+        onBack={() => setScreen('menu')} />
+    );
+  }
+
+  if (screen === 'run') {
+    const currentRunId = runId;
+    return (
+      <RunScreen key={`${currentRunId}:${selectedCharacterId}`} characterId={selectedCharacterId}
+        onExit={() => {
+          latestRunId.current += 1;
+          setScreen('menu');
         }}
-        onBack={() => setScreen('home')}
-      />
+        onFinish={(result, outcome) => {
+          if (latestRunId.current !== currentRunId) return;
+          setFinishedRun({ result, outcome });
+          setScreen('result');
+        }} />
     );
   }
 
-  if (screen === 'ready') {
+  if (screen === 'result' && finishedRun) {
+    const bestDistance = browserPersonalBestStore.getBest(finishedRun.result.characterId)?.distanceMeters ??
+      Math.round(finishedRun.result.distanceMeters);
     return (
-      <Suspense fallback={<main className="landing-shell">러닝 화면을 여는 중…</main>}>
-        <RunnerPreview characterId={selectedCharacterId} onBack={() => setScreen('characters')} />
-      </Suspense>
+      <RunResult result={finishedRun.result} outcome={finishedRun.outcome} bestDistanceMeters={bestDistance}
+        onRetry={() => startRun(finishedRun.result.characterId)}
+        onChooseCharacter={() => setScreen('character-select')}
+        onRankings={() => setScreen('rankings')} />
     );
   }
 
-  return (
-    <main className="landing-shell">
-      <section className="title-card" aria-labelledby="game-title">
-        <p className="eyebrow">사내 플랫포머 프로젝트</p>
-        <h1 id="game-title">바람과 빛의 모험</h1>
-        <p className="intro-copy">
-          바람이 깃든 고대 유적과 빛나는 광산을 탐험할 준비를 하고 있어요.
-        </p>
-        <div className="status-pill" role="status">
-          모험 준비 중
-        </div>
-        <button className="selector-confirm home-start" type="button" onClick={() => setScreen('characters')}>
-          캐릭터 선택하기
-        </button>
-      </section>
-    </main>
-  );
+  if (screen === 'rankings') {
+    const records = CHARACTERS.filter((character) => character.available)
+      .map((character) => ({ character, best: browserPersonalBestStore.getBest(character.id) }))
+      .filter((entry): entry is { character: (typeof CHARACTERS)[number]; best: NonNullable<typeof entry.best> } => entry.best !== null)
+      .sort((left, right) => right.best.distanceMeters - left.best.distanceMeters || right.best.coins - left.best.coins);
+    return (
+      <main className="landing-shell">
+        <section className="title-card rankings-card" aria-labelledby="rankings-title">
+          <p className="eyebrow">LOCAL RECORDS</p>
+          <h1 id="rankings-title">로컬 최고 기록</h1>
+          <p className="intro-copy">이 브라우저에 저장된 캐릭터별 최고 거리입니다.</p>
+          {records.length > 0 ? (
+            <ol className="rankings-list">
+              {records.map(({ character, best }) => (
+                <li key={character.id} style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
+                  <span>{character.displayName}</span>
+                  <strong>{best.distanceMeters.toLocaleString()}m</strong>
+                  <small>{best.coins.toLocaleString()} 코인</small>
+                </li>
+              ))}
+            </ol>
+          ) : <p className="rankings-empty">아직 기록이 없습니다. 첫 달리기를 시작해보세요!</p>}
+          <div className="result-actions">
+            <button type="button" onClick={() => setScreen('menu')}>메인 메뉴</button>
+            <button className="selector-confirm" type="button" onClick={() => setScreen('character-select')}>달리기 시작</button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  return <MainMenu onStart={() => setScreen('character-select')} onRankings={() => setScreen('rankings')} />;
 }
 
 export default App;

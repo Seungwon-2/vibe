@@ -1,9 +1,10 @@
 import type { CSSProperties } from 'react';
-import type { CharacterDefinition, CharacterId } from '../../game/characters/characterTypes';
+import type { CharacterAnimationName, CharacterDefinition, CharacterId } from '../../game/characters/characterTypes';
 
 type CharacterPreviewProps = {
   character: CharacterDefinition;
   selected: boolean;
+  animation?: CharacterAnimationName;
 };
 
 type SpriteStyle = CSSProperties & {
@@ -25,8 +26,8 @@ const PREVIEW_METRICS: Readonly<Record<CharacterId, { contentHeight: number; con
 const PREVIEW_CONTENT_HEIGHT = 136;
 const PREVIEW_BASELINE = 91;
 
-export function CharacterPreview({ character, selected }: CharacterPreviewProps): React.JSX.Element {
-  const animationName = selected ? 'run' : character.id === 'player-default' ? 'victory' : 'idle';
+export function CharacterPreview({ character, selected, animation }: CharacterPreviewProps): React.JSX.Element {
+  const animationName = animation ?? (selected ? 'run' : character.id === 'player-default' ? 'victory' : 'idle');
   const frames = character.animations[animationName];
   const frameName = frames[0];
   const animationStart = character.atlasManifest.frames[frameName].frame;

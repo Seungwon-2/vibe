@@ -18,11 +18,11 @@ const BIOME_LABELS = {
 } as const;
 
 const PASSIVE_LABELS = {
-  'time-pickup': '시간 아이템 효과',
+  'time-pickup': '시간 아이템 보너스',
   'slide-release-grace': '슬라이딩 후 회복 여유',
   'rang-second-jump': '강화된 2단 점프',
-  'hiyori-pickup-magnet': '넓은 아이템 획득 범위',
-  'mary-hit-protection': '피격 보호 효과',
+  'hiyori-pickup-magnet': '아이템 수집 범위 증가',
+  'mary-hit-protection': '충돌 보호 시간 증가',
 } as const;
 
 function formatTime(remainingMs: number): string {
@@ -33,11 +33,12 @@ function formatTime(remainingMs: number): string {
 export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerHudProps): React.JSX.Element {
   const nextGateIndex = RUNNER_GATE_DISTANCES_M.findIndex((distance) => distance > snapshot.distanceMeters);
   const landmark = nextGateIndex >= 0
-    ? `${BIOME_LABELS[snapshot.biomeId]} · 다음 구간까지 ${Math.ceil(RUNNER_GATE_DISTANCES_M[nextGateIndex] - snapshot.distanceMeters).toLocaleString()}m`
+    ? `${BIOME_LABELS[snapshot.biomeId]} · 다음 보너스까지 ${Math.ceil(RUNNER_GATE_DISTANCES_M[nextGateIndex] - snapshot.distanceMeters).toLocaleString()}m`
     : BIOME_LABELS[snapshot.biomeId];
   const warning = snapshot.remainingMs <= 10_000;
   const passiveId = getCharacterPassiveId(character.id);
   const showBonus = recentBonus !== null && recentBonus.awardedMs > 0;
+  const bonusSeconds = Math.max(1, Math.floor((recentBonus?.awardedMs ?? 0) / 1_000));
 
   return (
     <div className="runner-hud" aria-label="게임 정보">
@@ -54,8 +55,8 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
           <strong>{Math.round(snapshot.distanceMeters).toLocaleString()}</strong><span>m</span>
         </div>
         <div className="runner-hud__actions">
-          <span className="runner-hud__coins" aria-label={`코인 ${snapshot.coins}개`}>✦ {snapshot.coins}</span>
-          <button className="runner-hud__pause" type="button" aria-label="일시 정지" onClick={onPause}>Ⅱ</button>
+          <span className="runner-hud__coins" aria-label={`코인 ${snapshot.coins}개`}>🟡 {snapshot.coins}</span>
+          <button className="runner-hud__pause" type="button" aria-label="일시정지" onClick={onPause}>Ⅱ</button>
         </div>
       </div>
       <div className="runner-hud__details">
@@ -64,10 +65,9 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
       </div>
       {showBonus && (
         <span key={recentBonus.id} className="runner-hud__bonus" role="status">
-          +{Math.floor(recentBonus.awardedMs / 1_000)}초
+          +{bonusSeconds}초
         </span>
       )}
     </div>
   );
 }
-

@@ -17,16 +17,16 @@ describe('RunnerHud', () => {
     ...overrides,
   });
 
-  it('shows live distance, coins, timer, biome landmark, and an accessible passive label', () => {
+  it('shows current run information and an accessible passive label', () => {
     const onPause = vi.fn();
     render(<RunnerHud snapshot={snapshot()} character={getCharacter('hanayo-hiyori')}
       recentBonus={null} onPause={onPause} />);
     expect(screen.getByText('1:30')).toBeInTheDocument();
     expect(screen.getByText('61')).toBeInTheDocument();
     expect(screen.getByLabelText('코인 2개')).toBeInTheDocument();
-    expect(screen.getByText(/새벽 도심 · 다음 구간까지 2,439m/)).toBeInTheDocument();
-    expect(screen.getByText(/넓은 아이템 획득 범위/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: '일시 정지' }));
+    expect(screen.getByText(/새벽 도심 · 다음 보너스까지 2,439m/)).toBeInTheDocument();
+    expect(screen.getByText(/아이템 수집 범위 증가/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '일시정지' }));
     expect(onPause).toHaveBeenCalledOnce();
   });
 

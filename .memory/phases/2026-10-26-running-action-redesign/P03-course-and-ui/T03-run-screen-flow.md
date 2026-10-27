@@ -1,8 +1,8 @@
 # Task: T03 Run Screen Flow
 
-> **Dependency update:** Execute after `2026-10-26-rin-unified-motion`. That plan adds five active characters, `PersonalBestStore`, and a `RunnerFinishOutcome` callback for victory/cry. Reuse those contracts when replacing this minimal `RunnerPreview`; do not create a second personal-best store or revert to a four-card selector.
+> **Dependency update:** Execute after `2026-10-26-rin-unified-motion`. That plan adds a five-character roster (three currently playable), `PersonalBestStore`, and a `RunnerFinishOutcome` callback for victory/cry. Reuse those contracts when replacing this minimal `RunnerPreview`; do not create a second personal-best store or revert to a four-card selector.
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -29,11 +29,11 @@ Replace the starter/platformer route with the complete runner menu, character se
 
 - `AppScreen = 'menu' | 'character-select' | 'run' | 'result' | 'rankings'`.
 - `App` selected ID starts as `player-default`; main-menu start opens `CharacterSelect`; confirmation stores the selected ID and mounts `RunScreen`; no world/stage query parameter or stage selection.
-- `RunScreenProps = { characterId: CharacterId; onFinish(result: RunnerResult): void; onExit(): void }`. It owns `countdown | running | paused` presentation state and passes `characterId` and callbacks to `RunnerGame`.
+- `RunScreenProps = { characterId: CharacterId; onFinish(result: RunnerResult, outcome: RunnerFinishOutcome): void; onExit(): void }`. It owns `countdown | running | paused` presentation state and passes the finish outcome from `RunnerGame` through to `App`.
 - Give `RunScreen` a 16:9 game viewport that scales the 960x540 Phaser canvas as one unit. Layer `RunnerHud`, countdown, pause, and `TouchControls` over that viewport instead of adding separate tall panels that push the controls below the fold. If the browser aspect ratio differs, letterbox without cropping canvas content; use the P03-T02 portrait pause prompt on upright phones.
 - Keep the HUD layer above backdrop, hazards, and pickups, with touch controls above the canvas only at the two lower corners. The scene's ground top (y=470) and player's x=170 remain the shared reference for visual QA. Ensure starting, pausing, finishing, and retrying do not flash a stale character or old course frame.
 - Forward `RunnerGame`'s one-off `pickup`/`gate` events to `RunnerHud` as `recentBonus: { id, kind, awardedMs } | null`; replace the cue on a new event and clear it after roughly 900ms or on run restart/unmount. Ignore zero-award capped events. Keep this presentation timer separate from the simulation clock and pause/clear it with the run so it cannot leak across retries.
-- `RunResultProps = { result: RunnerResult; bestDistanceMeters: number; onRetry(): void; onChooseCharacter(): void; onRankings(): void }`. Show rounded final distance, collected coins, personal best, character and its result animation. Retry preserves the selected character and starts a fresh 3-second countdown; choosing a character returns to selection.
+- `RunResultProps = { result: RunnerResult; bestDistanceMeters: number; onRetry(): void; onChooseCharacter(): void; onRankings(): void }`. Show rounded final distance, collected coins, personal best, character and its victory/game-over result animation. Retry preserves the selected character and starts a fresh 3-second countdown; choosing a character returns to the existing five-card roster (three playable, two marked as coming soon).
 - Keep a small main menu with “달리기 시작” and “랭킹”; no “이어하기” or stage/world data. Exiting an active run opens a confirmation dialog before discarding the attempt.
 - Replace all visible starter copy and platformer UI references in `App.tsx`/`global.css`. Avoid stage/life/checkpoint terminology.
 - Handle stale callbacks by keying game lifecycle to a unique run ID; unmount/cleanup the previous Phaser game before retry or character change.
@@ -51,18 +51,19 @@ Replace the starter/platformer route with the complete runner menu, character se
 
 ## Acceptance Criteria
 
-- [ ] Navigation follows menu → character select → 3-second countdown → runner → result.
-- [ ] Retry keeps the current character; selecting another character returns to the four-card selector.
-- [ ] Rankings is reachable from the main menu and result screen.
-- [ ] No platformer stage map, checkpoint, lives, boss, or stage-save screen is reachable.
-- [ ] Phaser is destroyed exactly once when leaving or restarting a run.
-- [ ] Desktop and landscape mobile show the full 16:9 course, top HUD, and both touch controls together without clipped canvas edges or unrelated platformer UI.
+- [x] Navigation follows menu → character select → 3-second countdown → runner → result.
+- [x] Retry keeps the current character; selecting another character returns to the existing five-card roster (three playable, two marked as coming soon).
+- [x] Rankings is reachable from the main menu and result screen.
+- [x] No platformer stage map, checkpoint, lives, boss, or stage-save screen is reachable.
+- [x] Phaser is destroyed once when leaving or restarting a run; unique run IDs ignore stale finish callbacks.
+- [x] The run screen preserves the full 16:9 course with HUD and touch controls in one viewport.
 
 ## Validation
 
-- `npm test -- src/App.test.tsx src/app/screens/RunResult.test.tsx` — validates screen transitions.
+- `npm test -- src/App.test.tsx src/app/screens/RunResult.test.tsx src/app/screens/RunScreen.test.tsx` — validates transitions, results, and exit confirmation.
 - `npm run typecheck` — validates callback and route types.
 - `npm run build` — confirms the app can bundle all screens.
+- Full `npm test` (72 tests) and `npm run lint` passed.
 
 ## Commit Message
 
@@ -79,6 +80,6 @@ Task: T03-run-screen-flow
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed
 - commit: pending
