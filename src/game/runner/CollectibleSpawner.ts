@@ -77,15 +77,14 @@ export class CollectibleSpawner {
       const { palette, landmark } = getBiomeForDistance(distanceMeters);
       const art = this.scene.add.graphics().setDepth(-5);
       // Landmark is a non-colliding arch aligned with the existing +20s gate.
-      art.fillStyle(palette.gate, 0.3).fillRect(-27, -164, 54, 164);
-      art.fillStyle(palette.gate).fillRect(-30, -166, 10, 166)
-        .fillRect(20, -166, 10, 166).fillRect(-30, -166, 60, 12);
-      art.fillStyle(palette.hazardContrast, 0.75).fillRect(-21, -144, 4, 130)
-        .fillRect(17, -144, 4, 130).fillRect(-17, -158, 34, 3);
-      art.fillStyle(palette.accent).fillRect(-8, -174, 16, 8);
+      art.fillStyle(palette.gate, 0.17).fillRoundedRect(-28, -168, 56, 168, 14);
+      art.lineStyle(5, palette.gate, 0.9).strokeRoundedRect(-28, -168, 56, 168, 14);
+      art.lineStyle(2, palette.hazardContrast, 0.32).lineBetween(-17, -148, -17, -4)
+        .lineBetween(17, -148, 17, -4);
+      art.fillStyle(palette.accent, 0.95).fillCircle(0, -171, 8);
       const label = this.scene.add.text(0, 0, '+20s',
-        { color: '#ffffff', fontSize: '15px', fontFamily: 'monospace',
-          backgroundColor: '#10152ddd', padding: { x: 4, y: 2 } }).setOrigin(0.5)
+        { color: '#263d73', fontSize: '15px', fontFamily: 'monospace',
+          backgroundColor: '#fffffff0', padding: { x: 4, y: 2 } }).setOrigin(0.5)
         .setDepth(5);
       label.setText(`${landmark}  +20s`);
       this.gates.push({ distanceMeters, art, label });
@@ -123,12 +122,13 @@ export class CollectibleSpawner {
     const biome = getBiomeForDistance(definition.distanceMeters);
     const { palette } = biome;
     if (definition.kind === 'coin') {
-      art.fillStyle(palette.pickupCoin).fillRect(-8, -12, 16, 24)
-        .fillRect(-12, -8, 24, 16);
-      art.fillStyle(0xffe08b).fillRect(-6, -8, 12, 16);
-      art.fillStyle(palette.pickupCoin).fillRect(-2, -5, 4, 10);
+      art.fillStyle(0xffffff, 0.64).fillCircle(0, 0, 14);
+      art.fillStyle(palette.pickupCoin).fillTriangle(0, -11, 5, 0, 0, 11)
+        .fillTriangle(-11, 0, 0, -5, 11, 0);
+      art.fillStyle(0xffe7aa).fillCircle(0, 0, 3);
     } else {
-      art.fillStyle(palette.pickupTime).fillRect(-12, -12, 24, 24);
+      art.fillStyle(palette.pickupTime, 0.88).fillRoundedRect(-12, -12, 24, 24, 5);
+      art.lineStyle(2, 0xffffff, 0.9).strokeRoundedRect(-11, -11, 22, 22, 5);
       const symbol = biome.id === 'cloud-skyway' ? 0xffffff : 0x12364f;
       art.fillStyle(symbol).fillRect(-2, -8, 4, 16).fillRect(-8, -2, 16, 4);
     }

@@ -1,6 +1,8 @@
 # Plan: Running Action Redesign
 
-> **Roster supersession (2026-10-27):** [Unified Runner Motions and Five-Character Roster](./2026-10-26-rin-unified-motion.md) completed its runtime and personal-best work. Rin, Hiyori, and Mary are playable; Toa and Rang remain visible as `준비 중` pending matching sprites. P03-T01 is active. Reconcile the older four-card selector in P03-T04 and the P04 ranking blueprint with this active roster and the separate per-character best store before implementing them.
+> **Roster supersession (2026-10-27):** [Unified Runner Motions and Five-Character Roster](./2026-10-26-rin-unified-motion.md) completed its runtime and personal-best work. Rin, Hiyori, and Mary are playable; Toa and Rang remain visible as `준비 중` pending matching sprites. P03-T02 is active. Reconcile the older four-card selector in P03-T04 and the P04 ranking blueprint with this active roster and the separate per-character best store before implementing them.
+
+> **Scenery refinement (2026-10-27):** The user provided a soft sky-garden visual reference after P03-T01. The four biome backgrounds and hazard skins now use original pastel graphics with linear filtering; the earlier pixel-art styling instruction is superseded. See [decision](../decisions/2026-10-27-runner-pastel-scenery.md). The active pointer remains P03-T02.
 
 ## Goal
 

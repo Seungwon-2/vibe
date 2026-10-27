@@ -2,6 +2,8 @@
 
 ## Status: done
 
+> Follow-up (2026-10-27): The user's sky-garden reference supersedes this task's pixel-art finish. The four themes now use soft pastel Phaser Graphics with linear filtering and themed obstacle skins. Distances, collisions, and rewards remain as specified. See [decision](../../../decisions/2026-10-27-runner-pastel-scenery.md).
+
 ## Goal
 
 Build four distinct scrolling course themes from Phaser-native pixel-art shapes and transition them smoothly at the approved distance landmarks.

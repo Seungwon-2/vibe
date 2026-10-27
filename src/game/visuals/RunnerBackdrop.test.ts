@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type Phaser from 'phaser';
 
-vi.mock('phaser', () => ({ default: { Textures: { FilterMode: { NEAREST: 0 } } } }));
+vi.mock('phaser', () => ({ default: { Textures: { FilterMode: { LINEAR: 1 } } } }));
 
 import { BIOME_CROSSFADE_MS, getParallaxOffsets, RunnerBackdrop } from './RunnerBackdrop';
 
@@ -10,11 +10,15 @@ function createScene() {
   const containers: { alpha: number; destroyed: boolean; children: unknown[] }[] = [];
   const textureKeys: string[] = [];
   const removed: string[] = [];
+  const textureFilters: number[] = [];
   const scene = {
     add: {
       graphics: vi.fn(() => {
         const graphics = {
           fillStyle: vi.fn(() => graphics), fillRect: vi.fn(() => graphics),
+          fillRoundedRect: vi.fn(() => graphics), fillEllipse: vi.fn(() => graphics),
+          fillCircle: vi.fn(() => graphics), fillTriangle: vi.fn(() => graphics),
+          lineStyle: vi.fn(() => graphics), lineBetween: vi.fn(() => graphics),
           generateTexture: vi.fn((key: string) => { textureKeys.push(key); }),
           destroy: vi.fn(),
         };
@@ -38,11 +42,12 @@ function createScene() {
       }),
     },
     textures: {
-      get: vi.fn(() => ({ setFilter: vi.fn() })),
+      get: vi.fn(() => ({ setFilter: vi.fn((filter: number) => { textureFilters.push(filter); }) })),
       remove: vi.fn((key: string) => { removed.push(key); }),
     },
   };
-  return { scene: scene as unknown as Phaser.Scene, tileSprites, containers, textureKeys, removed };
+  return { scene: scene as unknown as Phaser.Scene, tileSprites, containers, textureKeys,
+    removed, textureFilters };
 }
 
 describe('RunnerBackdrop', () => {
@@ -55,8 +60,9 @@ describe('RunnerBackdrop', () => {
       'runner-biome-dawn-city-near',
     ]);
     expect(mock.textureKeys).toHaveLength(3);
-    expect(mock.containers[0].children).toHaveLength(4); // sky and three depths
+    expect(mock.containers[0].children).toHaveLength(5); // sky detail and three depths
     expect(mock.scene.textures.get).toHaveBeenCalledTimes(3);
+    expect(mock.textureFilters).toEqual([1, 1, 1]);
     backdrop.destroy();
     expect(mock.removed).toHaveLength(3);
   });
