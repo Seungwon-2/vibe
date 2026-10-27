@@ -1,6 +1,6 @@
 # Plan: Character Selector and Visual Refresh
 
-> **Status: active (2026-10-27):** The `2026-10-26-running-action-redesign` plan is complete. P01 is complete with the remaining manual viewport matrix deferred by user acceptance. P02-T01 and T02 are complete; P02-T03 is active.
+> **Status: complete (2026-10-27):** P01 and P02 are complete. All UI, selector, biome scenery, themed course objects, automated invariants, and viewport reviews in this plan are done. The separate full uninterrupted 90-second browser timing run was not measured under headless clock throttling; the simulation/integration tests verified the full gate and timeout sequence.
 
 ## Goal
 
@@ -21,12 +21,12 @@ Bring the full game presentation into one bright pastel fairytale visual system.
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | P01 | `done` | Define shared light UI tokens, redesign the selector, and harmonize the React screens. | [P01](../phases/2026-10-27-character-selector-visual-refresh/P01-ui-and-selector/phase.md) |
-| P02 | `in_progress` | Retheme the four Phaser course biomes and verify gameplay readability and transitions. | [P02](../phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/phase.md) |
+| P02 | `done` | Rethemed four Phaser course biomes, hazards, pickups and gates; verified responsive readability and game invariants. | [P02](../phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/phase.md) |
 
 ## Execution Order
 
 1. P01 UI and character selector are complete.
-2. P02-T01 backdrops and P02-T02 themed hazards, pickups, and gates are complete. Continue with T03 full-run and viewport validation.
+2. P02 runner scenery and validation are complete.
 3. Keep character movement, collision geometry, item placement/rewards, distance thresholds, ranking records, and navigation behavior unchanged.
 
 ## Out of Scope

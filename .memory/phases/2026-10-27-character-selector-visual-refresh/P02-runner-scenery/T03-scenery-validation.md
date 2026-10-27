@@ -63,7 +63,7 @@ Task: T03-scenery-validation
 - [x] Implementation complete
 - [x] Full test suite (88), typecheck, lint, and production build passed.
 - Headless Edge viewport and transition captures reviewed; see validation notes below.
-- commit: pending
+- commit: `f330ae2` on `project02`
 
 ### Manual Review Notes
 

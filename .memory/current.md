@@ -6,11 +6,11 @@
 
 ## Active Phase
 
-[P02 Runner Scenery](./phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/phase.md)
+[P02 Runner Scenery — complete](./phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/phase.md)
 
 ## Active Task
 
-[T03 Runner Scenery Validation](./phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/T03-scenery-validation.md)
+No active task — the Character Selector and Visual Refresh plan is complete.
 
 ## Status
 
@@ -47,8 +47,9 @@
 
 ## Recent Completion
 
+- P02-T03 completed in `f330ae2` on `project02`; the Character Selector and Visual Refresh plan is complete. The four biome scenes were visually reviewed at 960x540, 844x390, and 667x375, including the three +20s gate landmarks and a 375ms midpoint crossfade capture. The full simulation and offline integration tests confirm all three gates, timer rewards, timeout, distance, and biome transitions. Full suite (88), typecheck, lint, and build passed. A natural 90-second headless run was not timed because virtual clock throttling distorted elapsed progression; this limit is recorded in T03.
 - P02-T02 completed in `5500344` on `project02`: added four distinct low/overhead hazard skins, biome-emblem coins, clock-shaped time pickups, and themed +20s gate emblems. Renderer tests verify all four themes, strong outline palette usage, and that hazard drawing stays within configured bounds. Pickup schedules, hazard patterns, collision bodies, gate triggers, and reward values were not changed. Eleven targeted tests, typecheck, lint, and build passed. Browser screenshots were unavailable; P02-T03 retains full viewport review.
 
 ## Next Step
 
-Continue with P02-T03: run the full visual and regression review across all four biomes, three viewport sizes, and transition boundaries.
+The Character Selector and Visual Refresh plan is complete. Start a new grill-me or memory-plan task when the next objective is chosen.
