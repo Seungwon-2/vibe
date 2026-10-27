@@ -7,6 +7,7 @@ import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGa
   METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import { getBiomeForDistance } from '../visuals/runnerBiomes';
+import { drawRunnerGate } from '../visuals/runnerCourseObjects';
 import { getPitDefinitions, isPitClearance } from './PitSpawner';
 import { getHazardGeometry } from './CollisionSystem';
 import type { HazardDefinition } from './hazardTypes';
@@ -51,11 +52,13 @@ export function drawPickupArt(
     return;
   }
 
-  art.fillStyle(p.pickupTime).fillRoundedRect(-11, -11, 22, 22, 6);
-  art.lineStyle(2, p.hazardContrast, 0.96).strokeRoundedRect(-11, -11, 22, 22, 6);
-  art.fillStyle(p.groundFace).fillCircle(0, 0, 7);
-  art.lineStyle(2, p.hazardContrast, 0.96).strokeCircle(0, 0, 7)
-    .lineBetween(0, -4, 0, 0).lineBetween(0, 0, 3, 2);
+  art.fillStyle(p.pickupTime).fillTriangle(0, -11, 10, 0, 0, 11)
+    .fillTriangle(0, -11, 0, 11, -10, 0);
+  art.lineStyle(2, p.hazardContrast, 0.96).lineBetween(0, -11, 10, 0)
+    .lineBetween(10, 0, 0, 11).lineBetween(0, 11, -10, 0).lineBetween(-10, 0, 0, -11);
+  art.fillStyle(p.groundFace).fillCircle(0, 0, 5);
+  art.lineStyle(1.5, p.hazardContrast, 0.96).strokeCircle(0, 0, 5)
+    .lineBetween(0, -3, 0, 0).lineBetween(0, 0, 2.5, 1.5);
   art.fillStyle(p.accent).fillCircle(7, -7, 2);
 }
 
@@ -229,36 +232,11 @@ export class CollectibleSpawner {
         this.createdGates.has(distanceMeters) ||
         snapshot.distanceMeters > distanceMeters + 100) continue;
       this.createdGates.add(distanceMeters);
-      const { palette, landmark } = getBiomeForDistance(distanceMeters);
+      const biome = getBiomeForDistance(distanceMeters);
+      const { palette, landmark } = biome;
       const art = this.scene.add.graphics().setDepth(-5);
-      // Landmark is a non-colliding arch aligned with the existing +20s gate.
-      art.fillStyle(palette.gate, 0.22).fillRoundedRect(-28, -168, 56, 168, 14);
-      art.lineStyle(5, palette.gate, 0.96).strokeRoundedRect(-28, -168, 56, 168, 14);
-      art.lineStyle(2, palette.hazardContrast, 0.56).lineBetween(-17, -148, -17, -4)
-        .lineBetween(17, -148, 17, -4);
-      art.fillStyle(palette.groundFace).fillCircle(0, -108, 19);
-      art.lineStyle(2, palette.hazardContrast, 0.92).strokeCircle(0, -108, 19);
-      switch (getBiomeForDistance(distanceMeters).id) {
-        case 'dawn-city':
-          art.fillStyle(palette.accent).fillCircle(0, -108, 8);
-          art.lineStyle(2, palette.hazardContrast).lineBetween(-11, -98, 11, -98);
-          for (const x of [-12, 12]) art.lineBetween(x, -116, x, -120);
-          break;
-        case 'moonlit-forest':
-          art.fillStyle(palette.accent).fillEllipse(0, -108, 13, 8);
-          art.lineStyle(2, palette.hazardContrast).lineBetween(-5, -103, 5, -113);
-          break;
-        case 'crystal-mine':
-          art.fillStyle(palette.accent).fillTriangle(-9, -100, 0, -117, 9, -100);
-          art.fillStyle(palette.hazardContrast).fillTriangle(-4, -101, 1, -111, 5, -101);
-          break;
-        case 'cloud-skyway':
-          art.fillStyle(palette.accent).fillTriangle(0, -119, 3, -110, 0, -107)
-            .fillTriangle(10, -108, 1, -105, 0, -108)
-            .fillTriangle(0, -97, -3, -106, 0, -108)
-            .fillTriangle(-10, -108, -1, -111, 0, -108);
-          break;
-      }
+      // Thematic landmark art remains non-colliding and aligned with +20s.
+      drawRunnerGate(art, biome);
       const label = this.scene.add.text(0, 0, '+20s',
         { color: `#${palette.hazardContrast.toString(16).padStart(6, '0')}`,
           fontSize: '15px', fontFamily: 'monospace',

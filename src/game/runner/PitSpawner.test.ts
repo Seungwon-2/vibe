@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import type Phaser from 'phaser';
 import { createRunnerSnapshot, startRunner } from './RunnerSimulation';
 import { PitSpawner, getPitDefinitions, isPitClearance } from './PitSpawner';
+import { RUNNER_GROUND_Y } from './RunnerPlayer';
+import { RUNNER_CONFIG } from './runnerConfig';
 
 function makeScene() {
   const overlaps: (() => void)[] = [];
@@ -46,6 +48,7 @@ function makeZone() {
 function makeGraphics() {
   const graphics = {
     fillStyle: vi.fn(() => graphics), fillRect: vi.fn(() => graphics), lineStyle: vi.fn(() => graphics),
+    fillTriangle: vi.fn(() => graphics), fillEllipse: vi.fn(() => graphics),
     lineBetween: vi.fn(() => graphics), setDepth: vi.fn(() => graphics),
     setPosition: vi.fn(() => graphics), destroy: vi.fn(),
   };
@@ -89,6 +92,10 @@ describe('PitSpawner', () => {
       distanceMeters: 600, worldDistance: 1_800 };
     spawner.update(running);
     expect(mock.zones).toHaveLength(1);
+    expect(mock.scene.add.rectangle).toHaveBeenCalledWith(0, RUNNER_GROUND_Y - 1,
+      RUNNER_CONFIG.pitWidthMeters / RUNNER_CONFIG.metersPerWorldUnit, 4, 0xffffff, 0);
+    expect(mock.zones[0].setOrigin).toHaveBeenCalledWith(0.5);
+    expect(mock.graphicsObjects[0].setDepth).toHaveBeenCalledWith(-1);
     expect(mock.graphicsObjects[0].fillRect).toHaveBeenCalled();
     expect(mock.textObjects).toHaveLength(1);
     expect(mock.textObjects[0].setVisible).toHaveBeenCalledWith(true);

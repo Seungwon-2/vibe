@@ -1,5 +1,6 @@
 import type Phaser from 'phaser';
 import { getBiomeForDistance } from '../visuals/runnerBiomes';
+import { drawRunnerPit } from '../visuals/runnerCourseObjects';
 import { RUNNER_CONFIG } from './runnerConfig';
 import type { RunnerSnapshot } from './runnerTypes';
 import { RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
@@ -112,16 +113,7 @@ export class PitSpawner {
 
     const biome = getBiomeForDistance(definition.distanceMeters);
     const art = this.scene.add.graphics().setDepth(-1);
-    const halfWidth = width / 2;
-    // The invisible overlap zone occupies y=467..471; all pit art starts below it.
-    art.fillStyle(biome.palette.hazardContrast, 0.96).fillRect(-halfWidth, 2, width, 34);
-    art.fillStyle(biome.palette.groundFace, 0.96).fillRect(-halfWidth, 2, width, 2);
-    art.lineStyle(3, biome.palette.accent, 1)
-      .lineBetween(-halfWidth, 4, -halfWidth, 22)
-      .lineBetween(halfWidth, 4, halfWidth, 22);
-    for (let x = -halfWidth + 8; x < halfWidth; x += 18) {
-      art.lineStyle(2, biome.palette.groundTop, 0.9).lineBetween(x, 26, x + 5, 31);
-    }
+    drawRunnerPit(art, width, biome);
 
     const warning = definition.tutorialWarning
       ? this.scene.add.text(0, RUNNER_GROUND_Y - 48, '낭떠러지! 점프하세요', {

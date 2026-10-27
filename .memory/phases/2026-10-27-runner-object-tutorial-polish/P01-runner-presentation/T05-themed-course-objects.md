@@ -1,6 +1,6 @@
 # Task: T05 Themed Pickups, Gates, and Pits
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -16,13 +16,13 @@ Replace block-like pickup, gate, and pit art with biome-specific silhouettes whi
 ### I01. Extract and draw course landmark art
 
 - Related Files:
-  - `src/game/visuals/runnerCourseObjects.ts` :: `drawRunnerGate`, `drawRunnerPit` — shared biome-specific landmark drawings; new
-  - `src/game/visuals/runnerBiomes.ts` :: `RunnerBiomeDefinition` — palette/theme identity; read-only
-  - `src/game/runner/CollectibleSpawner.ts` :: `drawPickupArt`, gate-art creation — retain pickup renderer and call gate renderer; modify
-  - `src/game/runner/PitSpawner.ts` :: pit-art creation — call pit renderer without moving the sensor; modify
-  - `src/game/visuals/runnerCourseObjects.test.ts` — new gate/pit footprint and theme tests; new
-  - `src/game/runner/CollectibleSpawner.test.ts` — update pickup art assertions; modify
-  - `src/game/runner/PitSpawner.test.ts` — assert sensor invariants; modify
+  - `src/game/visuals/runnerCourseObjects.ts` :: `drawRunnerGate`, `drawRunnerPit` ??shared biome-specific landmark drawings; new
+  - `src/game/visuals/runnerBiomes.ts` :: `RunnerBiomeDefinition` ??palette/theme identity; read-only
+  - `src/game/runner/CollectibleSpawner.ts` :: `drawPickupArt`, gate-art creation ??retain pickup renderer and call gate renderer; modify
+  - `src/game/runner/PitSpawner.ts` :: pit-art creation ??call pit renderer without moving the sensor; modify
+  - `src/game/visuals/runnerCourseObjects.test.ts` ??new gate/pit footprint and theme tests; new
+  - `src/game/runner/CollectibleSpawner.test.ts` ??update pickup art assertions; modify
+  - `src/game/runner/PitSpawner.test.ts` ??assert sensor invariants; modify
 
 #### Details
 
@@ -55,14 +55,14 @@ Replace block-like pickup, gate, and pit art with biome-specific silhouettes whi
 
 ## Acceptance Criteria
 
-- [ ] All four biomes show distinct, readable pickup, gate, and pit imagery without generic square panels.
-- [ ] Renderer art stays within its declared bounds and uses current biome palettes.
-- [ ] Pit/gate physics, rewards, schedule, and scrolling remain unchanged.
+- [x] All four biomes show distinct, readable pickup, gate, and pit imagery without generic square panels.
+- [x] Renderer art stays within its declared bounds and uses current biome palettes.
+- [x] Pit/gate physics, rewards, schedule, and scrolling remain unchanged.
 
 ## Validation
 
-- `npm run test -- src/game/visuals/runnerCourseObjects.test.ts src/game/runner/CollectibleSpawner.test.ts src/game/runner/PitSpawner.test.ts` — art, bounds, and physics invariants pass.
-- `npm run typecheck` — renderer and spawner interfaces compile.
+- `npm run test -- src/game/visuals/runnerCourseObjects.test.ts src/game/runner/CollectibleSpawner.test.ts src/game/runner/PitSpawner.test.ts` ??art, bounds, and physics invariants pass.
+- `npm run typecheck` ??renderer and spawner interfaces compile.
 
 ## Commit Message
 
@@ -79,6 +79,6 @@ Task: T05-themed-course-objects
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed
+- commit: 06ef30a

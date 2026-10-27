@@ -1,14 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
 import type Phaser from 'phaser';
 import { drawPickupArt, generatePickupSchedule, getPickupBodySize,
-  PICKUP_PIT_CLEARANCE_METERS, PICKUP_SCHEDULE } from './CollectibleSpawner';
+  CollectibleSpawner, PICKUP_PIT_CLEARANCE_METERS, PICKUP_SCHEDULE } from './CollectibleSpawner';
 import { RUNNER_GROUND_Y, STANDING_BODY_HEIGHT } from './runnerPose';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
-import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance } from './hazardPatterns';
+import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance,
+  METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { getPitDefinitions, isPitClearance } from './PitSpawner';
 import { RUNNER_BIOMES } from '../visuals/runnerBiomes';
 import { getHazardGeometry } from './CollisionSystem';
 import type { HazardDefinition } from './hazardTypes';
+import { RUNNER_PLAYER_X } from './RunnerPlayer';
+import { createRunnerSnapshot, startRunner } from './RunnerSimulation';
 
 const PICKUP_TEST_MARGIN_PX = 12;
 
@@ -38,6 +41,37 @@ function makeGraphics() {
     lineBetween: vi.fn(() => graphics),
   };
   return graphics;
+}
+
+function makeDisplayObject() {
+  const calls: Record<string, ReturnType<typeof vi.fn>> = {};
+  const body = { setAllowGravity: vi.fn(), setImmovable: vi.fn(), setSize: vi.fn() };
+  let proxy: Record<string, unknown>;
+  proxy = new Proxy({ body } as Record<string, unknown>, {
+    get: (_target, property) => {
+      if (property === 'body') return body;
+      if (typeof property !== 'string') return undefined;
+      if (!calls[property]) calls[property] = vi.fn(() => proxy);
+      return calls[property];
+    },
+  });
+  return { display: proxy, calls, body };
+}
+
+function makeSpawnerScene() {
+  const rectangles: ReturnType<typeof makeDisplayObject>[] = [];
+  const graphics: ReturnType<typeof makeDisplayObject>[] = [];
+  const texts: ReturnType<typeof makeDisplayObject>[] = [];
+  const scene = {
+    add: {
+      rectangle: vi.fn(() => { const item = makeDisplayObject(); rectangles.push(item); return item.display; }),
+      graphics: vi.fn(() => { const item = makeDisplayObject(); graphics.push(item); return item.display; }),
+      text: vi.fn(() => { const item = makeDisplayObject(); texts.push(item); return item.display; }),
+    },
+    physics: { add: { existing: vi.fn(), overlap: vi.fn() } },
+    time: { delayedCall: vi.fn((_delay: number, callback: () => void) => callback()) },
+  };
+  return { scene: scene as unknown as Phaser.Scene, rectangles, graphics, texts };
 }
 
 describe('authored collectible schedule', () => {
@@ -168,12 +202,44 @@ describe('themed pickup art', () => {
 
       const time = makeGraphics();
       drawPickupArt(time as unknown as Phaser.GameObjects.Graphics, 'time', biome);
-      expect(time.fillRoundedRect).toHaveBeenCalledWith(-11, -11, 22, 22, 6);
-      expect(time.strokeRoundedRect).toHaveBeenCalledWith(-11, -11, 22, 22, 6);
-      expect(time.lineBetween).toHaveBeenCalledWith(0, -4, 0, 0);
-      expect(time.lineBetween).toHaveBeenCalledWith(0, 0, 3, 2);
+      expect(time.fillRoundedRect).not.toHaveBeenCalled();
+      expect(time.strokeRoundedRect).not.toHaveBeenCalled();
+      expect(time.fillTriangle).toHaveBeenCalledTimes(2);
+      expect(time.lineBetween).toHaveBeenCalledWith(0, -11, 10, 0);
+      expect(time.lineBetween).toHaveBeenCalledWith(-10, 0, 0, -11);
       expect(time.fillStyle).toHaveBeenCalledWith(biome.palette.pickupTime);
       expect(time.fillStyle).not.toHaveBeenCalledWith(biome.palette.pickupCoin);
+      expect(time.lineStyle).toHaveBeenCalledWith(2, biome.palette.hazardContrast, 0.96);
     }
+  });
+
+  it('preserves pickup sensor sizes and gate/pickup scrolling positions', () => {
+    const mock = makeSpawnerScene();
+    const spawner = new CollectibleSpawner(mock.scene, {} as Phaser.Physics.Arcade.Sprite,
+      vi.fn(), 'player-default');
+    const snapshot = (distanceMeters: number) => ({
+      ...startRunner(createRunnerSnapshot('player-default')),
+      phase: 'running' as const,
+      distanceMeters,
+      worldDistance: distanceMeters * RUNNER_CONFIG.metersPerWorldUnit,
+    });
+
+    spawner.update(snapshot(0));
+    expect((mock.scene.add.rectangle as ReturnType<typeof vi.fn>)).toHaveBeenCalledWith(
+      0, 0, 24, 24, 0xffffff, 0,
+    );
+    const firstPickupX = RUNNER_PLAYER_X + PICKUP_SCHEDULE[0].distanceMeters / METERS_PER_WORLD_UNIT;
+    expect(mock.rectangles[0].calls.setPosition).toHaveBeenCalledWith(firstPickupX,
+      RUNNER_GROUND_Y - PICKUP_SCHEDULE[0].heightUnits);
+
+    spawner.update(snapshot(1_780));
+    const gateArt = mock.graphics.find(({ calls }) => calls.setDepth?.mock.calls[0]?.[0] === -5);
+    expect(gateArt).toBeDefined();
+    expect(gateArt!.calls.setPosition).toHaveBeenCalledWith(
+      RUNNER_PLAYER_X + (2_000 - 1_780) / METERS_PER_WORLD_UNIT, RUNNER_GROUND_Y,
+    );
+    expect((mock.scene.physics.add.overlap as ReturnType<typeof vi.fn>).mock.calls.length)
+      .toBe(mock.rectangles.length);
+    spawner.destroy();
   });
 });

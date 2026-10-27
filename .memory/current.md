@@ -10,7 +10,7 @@
 
 ## Active Task
 
-[T05 Themed Course Objects](./phases/2026-10-27-runner-object-tutorial-polish/P01-runner-presentation/T05-themed-course-objects.md)
+None — all tasks in the active plan are complete.
 
 ## Status
 
@@ -21,7 +21,9 @@
 - T04 completed: hazard art now uses distinct biome and lane silhouettes inside existing hitbox dimensions; collision boxes are unchanged.
 - The themed hazard silhouette/footprint tests (2) and TypeScript typecheck passed.
 - Previous Runner Course, Gates, Pits, and UI Polish plan is complete.
+- T05 completed: pickup, gate, and pit art now uses biome-specific silhouettes within fixed bounds; physics sensors and reward geometry are preserved.
+- T05 course-object, pickup, and pit tests (16) and TypeScript typecheck passed. Plan `2026-10-27-runner-object-tutorial-polish` is complete.
 
 ## Next Step
 
-Read T05's blueprint and theme coins, time pickups, gates, and pit edges for each biome without changing their collision behavior.
+No active task remains. Start a new plan when ready to continue; the runner object and tutorial polish plan is complete.

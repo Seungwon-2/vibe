@@ -8,7 +8,7 @@ Keep fatal-pit art visible through the fall result transition, prevent course ha
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | Fix pit-art lifecycle, validate safe course placement, add first-run tutorial cues, and theme the course objects. | [P01](../phases/2026-10-27-runner-object-tutorial-polish/P01-runner-presentation/phase.md) |
+| P01 | `done` | Fix pit-art lifecycle, validate safe course placement, add first-run tutorial cues, and theme the course objects. | [P01](../phases/2026-10-27-runner-object-tutorial-polish/P01-runner-presentation/phase.md) |
 
 ## Scope and constraints
 
@@ -22,4 +22,4 @@ Keep fatal-pit art visible through the fall result transition, prevent course ha
 
 ## Progress
 
-- P01: `in_progress` (4/5 tasks; active task T05)
+- P01: `done` (5/5 tasks)
