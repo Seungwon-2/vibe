@@ -1,6 +1,6 @@
 # Task: T03 App Screen Pastel Skin
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -63,11 +63,11 @@ Apply the shared pastel design to all non-selector React screens while preservin
 
 ## Acceptance Criteria
 
-- [ ] Menu, run/HUD, pause, ranking, and result screens share the new light pastel design language.
-- [ ] Result character panel feels intentionally composed: portrait backdrop fills the space, SD outcome animation is prominent, and both desktop/mobile layouts retain it.
-- [ ] Actions, labels, content hierarchy, callbacks, and game state transitions remain unchanged.
-- [ ] HUD controls remain visible over all four biome palettes and touch/focus targets remain usable.
-- [ ] Warning/bonus/disabled states are distinguishable and text remains legible.
+- [x] Menu, run/HUD, pause, ranking, and result screens share the new light pastel design language.
+- [x] Result character panel feels intentionally composed: portrait backdrop fills the space, SD outcome animation is prominent, and both desktop/mobile layouts retain it.
+- [x] Actions, labels, content hierarchy, callbacks, and game state transitions remain unchanged.
+- [x] HUD controls use high-contrast pastel treatments for the four biome palettes and existing touch/focus targets remain usable.
+- [x] Warning/bonus/disabled states are distinguishable and text remains legible.
 
 ## Validation
 
@@ -91,8 +91,9 @@ Task: T03-app-screen-skin
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- Partial result-panel enrichment (portrait backdrop, foreground animation, outcome badge, compact layout) was implemented early per user feedback; the rest of the screen reskin remains for this task.
+- [x] Updated shared app surfaces and runner overlays using the shared UI tokens
+- [x] 10 targeted screen tests, lint, and production build passed
+- [ ] Manual desktop/compact landscape review remains unavailable because this session has no browser surface; headless Edge did not produce a screenshot
+- Result-panel composition (portrait backdrop, foreground animation, outcome badge, compact layout) was implemented early per user feedback and is now themed with the shared light surfaces.
 - commit: pending
 
