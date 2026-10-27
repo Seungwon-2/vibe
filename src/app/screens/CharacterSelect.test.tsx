@@ -55,7 +55,7 @@ describe('CharacterSelect', () => {
     expect(preview).toHaveClass('is-animated');
     expect(preview).toHaveAttribute('src', expect.stringContaining('hanayo-hiyori.png'));
     expect(preview.style.animationTimingFunction).toBe('steps(12, end)');
-    expect(preview.style.animationDuration).toBe('1000ms');
+    expect(preview.style.animationDuration).toBe('1200ms');
   });
 
   it('confirms only the chosen character and keeps back separate from confirmation', () => {

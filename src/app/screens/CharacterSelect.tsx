@@ -3,6 +3,10 @@ import { CharacterPreview } from '../components/CharacterPreview';
 import { CHARACTERS, resolveCharacterId } from '../../game/characters/characterCatalog';
 import type { CharacterId } from '../../game/characters/characterTypes';
 
+const SELECTOR_CHARACTERS = [...CHARACTERS].sort(
+  (left, right) => Number(right.available) - Number(left.available),
+);
+
 export type CharacterSelectProps = {
   selectedCharacterId: CharacterId;
   onConfirm(characterId: CharacterId): void;
@@ -33,7 +37,7 @@ export function CharacterSelect({
         </header>
 
         <div className="character-rail" aria-label="플레이할 캐릭터">
-          {CHARACTERS.map((character) => {
+          {SELECTOR_CHARACTERS.map((character) => {
             const selected = character.id === candidateCharacterId;
             return (
               <button

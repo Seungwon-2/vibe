@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { CharacterDefinition } from '../../game/characters/characterTypes';
+import type { CharacterDefinition, CharacterId } from '../../game/characters/characterTypes';
 
 type CharacterPreviewProps = {
   character: CharacterDefinition;
@@ -10,23 +10,38 @@ type SpriteStyle = CSSProperties & {
   '--sprite-start-x': string;
   '--sprite-end-x': string;
   '--sprite-row-y': string;
+  '--preview-scale': string;
+  '--preview-size-scale': string;
 };
+
+const PREVIEW_METRICS: Readonly<Record<CharacterId, { contentHeight: number; contentBottom: number }>> = {
+  'player-default': { contentHeight: 70, contentBottom: 88 },
+  'goth-student': { contentHeight: 88, contentBottom: 91 },
+  'cogane-rang': { contentHeight: 83, contentBottom: 91 },
+  'hanayo-hiyori': { contentHeight: 53, contentBottom: 88 },
+  'tokino-mary': { contentHeight: 58, contentBottom: 89 },
+};
+
+const PREVIEW_CONTENT_HEIGHT = 136;
+const PREVIEW_BASELINE = 91;
 
 export function CharacterPreview({ character, selected }: CharacterPreviewProps): React.JSX.Element {
   const animationName = selected ? 'run' : character.id === 'player-default' ? 'victory' : 'idle';
   const frames = character.animations[animationName];
   const frameName = frames[0];
-  const frame = character.atlasManifest.frames[frameName].frame;
   const animationStart = character.atlasManifest.frames[frameName].frame;
+  const metrics = PREVIEW_METRICS[character.id];
   const spriteStyle: SpriteStyle = {
     width: character.atlasManifest.meta.size.w,
     height: character.atlasManifest.meta.size.h,
-    transform: `translate3d(${-frame.x}px, ${-frame.y}px, 0)`,
-    animationDuration: selected ? '1000ms' : '1200ms',
+    transform: 'translate3d(var(--sprite-start-x), var(--sprite-row-y), 0)',
+    animationDuration: `${frames.length * (animationName === 'run' ? 100 : 200)}ms`,
     animationTimingFunction: `steps(${frames.length}, end)`,
     '--sprite-start-x': `${-animationStart.x}px`,
     '--sprite-end-x': `${-(animationStart.x + frames.length * character.frameWidth)}px`,
-    '--sprite-row-y': `${-animationStart.y}px`,
+    '--sprite-row-y': `${-animationStart.y + PREVIEW_BASELINE - metrics.contentBottom}px`,
+    '--preview-scale': `${PREVIEW_CONTENT_HEIGHT / metrics.contentHeight}`,
+    '--preview-size-scale': '1',
   };
 
   return (
