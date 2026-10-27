@@ -10,7 +10,7 @@
 
 ## Active Task
 
-[T02 Ranking Screen](./phases/2026-10-26-running-action-redesign/P04-local-ranking/T02-ranking-screen.md)
+[T03 Integration Validation](./phases/2026-10-26-running-action-redesign/P04-local-ranking/T03-integration-validation.md)
 
 ## Status
 
@@ -28,9 +28,10 @@
 - P03-T03 completed in `e19261a` on `project02`: replaced the starter and obsolete preview screens with a menu, five-character selection, a 16:9 runner screen, local personal-best listing, and a result screen with victory/game-over animation. Retry preserves the selected character; exit confirmation pauses before discarding; unique run IDs reject stale finish callbacks. Full tests (72), typecheck, lint, and build passed; the existing large-chunk warning remains.
 - P03-T04 completed in `323bd2c` on `project02`: redesigned selection with a large portrait/SD showcase, passive summary from central tuning, three playable cards, and two disabled preparation cards. All 72 tests, typecheck, lint, and build passed. Screenshots for the specified viewport sizes remain unverified because no browser/device surface was available.
 - P04-T01 completed in `fd588cd` on `project02`: added the `RunGateway` contract and a local top-ten ranking store with normalized distances, deterministic sorting, validation, and in-memory fallback when browser storage fails. Seven targeted tests and typecheck passed.
+- P04-T02 completed in `463ddff` on `project02`: finished-run callbacks submit once through the local gateway; menu/result fetch the best record; the ranking screen loads a unified top-ten list with character, distance, coins, and date. Results retain personal best and show submitted rank; storage failures keep the result available. Nine targeted tests, typecheck, lint, and build passed.
 - Queued after P04: [Character Selector and Visual Refresh](./plans/2026-10-27-character-selector-visual-refresh.md). Decisions and task blueprints are prepared; activate only after P04-T03 is complete.
 - The unrelated untracked `.memory/image.png` is untouched.
 
 ## Next Step
 
-Continue with P04-T02: submit each finished run once through the local run gateway and display an accessible unified top-ten ranking, separate from personal-best result animations.
+Continue with P04-T03: verify the complete offline runner flow, document local setup and mechanics, and run the final quality gate before activating the queued visual refresh plan.
