@@ -67,7 +67,8 @@ Task: T04-ui-visual-validation
 - [x] Restart showcase victory playback when the selected character changes by remounting the preview with the selected character ID as its key; regression coverage confirms the previous preview is replaced and the new preview starts at frame 00.
 - [x] Corrected the one-shot sprite-sheet animation stepping: the last frame is reached through five frame intervals, preventing the six-frame victory strip from sliding through fractional positions. Reduced the left showcase sprite scale slightly at each responsive breakpoint.
 - [x] Reduced the result-screen SD sprite scale after screenshot review showed it dominating the portrait stage: desktop scale 1.8 to 1.0; mobile scale 1.2 to 0.75. Added a result animation first-frame regression assertion.
+- [x] Reviewed the user-provided portrait and 915×412 landscape selector screenshots. The compact-landscape 2×3 card grid compressed sprite art and pushed the confirmation button below the viewport; switched this breakpoint to a centered 3×2 roster and tightened vertical spacing so cards and CTA fit more comfortably.
 - [x] Revalidated after follow-up: full suite (86 tests), typecheck, lint, and production build passed. Build still reports the existing >500 kB JavaScript chunk warning.
-- [ ] Manual review after the fix at all required viewports remains outstanding because this session has no browser surface. The user-provided screenshot was inspected to identify the defects, but no post-fix capture is available.
-- partial commits: `44a2922`, `40de34c`, `98d5146`, and `40ca61a` on `project02`; leave T04 in progress until manual viewport review
+- [ ] Post-fix review at all required viewports and review of menu/run/pause/ranking/results remain outstanding; this session has no browser surface for captures.
+- partial commits: `44a2922`, `40de34c`, `98d5146`, `40ca61a`, and `51022b7` on `project02`; leave T04 in progress until remaining visual review
 
