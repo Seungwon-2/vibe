@@ -6,11 +6,11 @@
 
 ## Active Phase
 
-[P01 UI and Character Selector](./phases/2026-10-27-character-selector-visual-refresh/P01-ui-and-selector/phase.md)
+[P02 Runner Scenery](./phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/phase.md)
 
 ## Active Task
 
-[T04 UI Visual Validation](./phases/2026-10-27-character-selector-visual-refresh/P01-ui-and-selector/T04-ui-visual-validation.md)
+[T01 Four Pastel Biome Backdrops](./phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/T01-biome-backdrops.md)
 
 ## Status
 
@@ -42,8 +42,9 @@
 - P01-T04 screenshot review and compact-landscape fix committed as `51022b7`: the portrait selector capture shows the whole roster and CTA; the 915×412 landscape capture revealed compressed/cropped card sprites and a CTA below the visible area. Changed compact landscape to a centered 3×2 roster with tighter vertical spacing. Full suite (86), typecheck, lint, and build pass; post-fix captures and the remaining screens still need visual review.
 - P01-T04 run-screen follow-up committed as `a432e4c`: the user's 915×412 screenshot showed the playfield too small because the width calculation reserved 120px beyond the viewport height. Compact landscape now tightens header/help spacing and reclaims vertical space for a larger 16:9 playfield. Full suite (86), typecheck, lint, and build pass; verify the new size in the user's browser before closing T04.
 - P01-T04 latest follow-up committed as `4721310`: the user reported the change was not perceptible and supplied a capture that still showed clipped card art. Compact-landscape run now uses a fixed viewport-height grid, hides the redundant external help row, and grows its 16:9 board to roughly 71% of screen width at 915×412. Character preview wrappers now use a centered bottom anchor so compact roster art remains inside the card viewport. Full suite (86), typecheck, lint, and build pass; T04 remains active pending a new capture and remaining screen reviews.
+- P01 completed in `4328eaf` on `project02` after the user accepted the current selector and compact runner layout. Full test suite (86), typecheck, lint, and build passed. The complete manual viewport matrix is deferred by user acceptance and recorded in T04.
 - The unrelated untracked `.memory/image.png` is untouched.
 
 ## Next Step
 
-Continue with P01-T04: validate selector behavior, contrast, and responsive layouts across the redesigned screens; capture desktop and compact viewport review when a browser surface is available.
+Continue with P02-T01: retune the four biome palettes and redraw layered pastel scenery while preserving distance thresholds, parallax, transitions, and gameplay geometry.

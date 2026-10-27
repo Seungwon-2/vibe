@@ -1,6 +1,6 @@
 # Plan: Character Selector and Visual Refresh
 
-> **Status: active (2026-10-27):** The `2026-10-26-running-action-redesign` plan is complete. Execute this plan from P01-T01.
+> **Status: active (2026-10-27):** The `2026-10-26-running-action-redesign` plan is complete. P01 is complete with the remaining manual viewport matrix deferred by user acceptance. P02-T01 is now active.
 
 ## Goal
 
@@ -20,14 +20,14 @@ Bring the full game presentation into one bright pastel fairytale visual system.
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | Define shared light UI tokens, redesign the selector, and harmonize the React screens. | [P01](../phases/2026-10-27-character-selector-visual-refresh/P01-ui-and-selector/phase.md) |
-| P02 | `pending` | Retheme the four Phaser course biomes and verify gameplay readability and transitions. | [P02](../phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/phase.md) |
+| P01 | `done` | Define shared light UI tokens, redesign the selector, and harmonize the React screens. | [P01](../phases/2026-10-27-character-selector-visual-refresh/P01-ui-and-selector/phase.md) |
+| P02 | `in_progress` | Retheme the four Phaser course biomes and verify gameplay readability and transitions. | [P02](../phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/phase.md) |
 
 ## Execution Order
 
-1. P04 local ranking is complete; P01-T01 is now active.
-3. Complete P01 before P02 so the shared palette and screen surfaces are stable before the Phaser art is tuned against them.
-4. Keep character movement, collision geometry, item placement/rewards, distance thresholds, ranking records, and navigation behavior unchanged.
+1. P01 UI and character selector are complete.
+2. P02 runner scenery is active, beginning with T01 four biome backdrops.
+3. Keep character movement, collision geometry, item placement/rewards, distance thresholds, ranking records, and navigation behavior unchanged.
 
 ## Out of Scope
 

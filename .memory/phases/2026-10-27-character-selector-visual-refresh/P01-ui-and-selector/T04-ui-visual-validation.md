@@ -71,5 +71,5 @@ Task: T04-ui-visual-validation
 - [x] Follow-up screenshot still showed no perceptible run-screen increase and clipped selector card sprites. Locked the compact-landscape run layout to the viewport height, removed the redundant external keyboard help row there, and positioned preview wrappers from a predictable centered bottom anchor so reduced-size card sprites stay inside their art viewport.
 - [x] Revalidated after follow-up: full suite (86 tests), typecheck, lint, and production build passed. Build still reports the existing >500 kB JavaScript chunk warning.
 - [x] The user explicitly asked to close this phase after reviewing the latest compact layouts; outstanding viewport/screen captures are recorded as deferred.
-- Completion commit: pending
+- Completion commit: `4328eaf` on `project02`.
 

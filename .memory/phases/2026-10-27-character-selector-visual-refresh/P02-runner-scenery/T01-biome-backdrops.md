@@ -1,6 +1,6 @@
 # Task: T01 Four Pastel Biome Backdrops
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 
