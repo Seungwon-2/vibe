@@ -68,4 +68,4 @@ Task: T04-character-showcase-selector
 
 - [x] Implementation complete
 - [x] Automated validation passed
-- commit: pending
+- commit: `323bd2c` on `project02`
