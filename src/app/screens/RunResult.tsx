@@ -27,8 +27,15 @@ export function RunResult({ result, outcome, bestDistanceMeters, submittedRank =
     <main className="result-shell">
       <section className="result-panel" aria-labelledby="result-title">
         <div className="result-character" style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
-          <CharacterPreview character={character} selected={false} animation={isNewBest ? 'victory' : 'gameOver'} />
-          <span>{character.displayName}</span>
+          <div className="result-character__stage">
+            <img className="result-character__portrait" src={character.portraitUrl} alt="" data-testid="result-character-portrait" />
+            <span className="result-character__veil" aria-hidden="true" />
+            <span className="result-character__badge" aria-hidden="true" data-testid="result-character-badge">
+              {isNewBest ? 'NEW PERSONAL BEST' : 'RUN COMPLETE'}
+            </span>
+            <CharacterPreview character={character} selected={false} animation={isNewBest ? 'victory' : 'gameOver'} />
+          </div>
+          <span className="result-character__name">{character.displayName}</span>
         </div>
         <div className="result-details">
           <p className="eyebrow">RUN COMPLETE</p>

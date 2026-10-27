@@ -28,6 +28,7 @@ Apply the shared pastel design to all non-selector React screens while preservin
 - Change dark navy page/panel fills to shared light tokens. Use white/soft-sky panels, subtle blue/lavender borders, a low-contrast ambient background illustration/gradient, and soft shadows.
 - Keep title, menu copy, ranking fields/order, result score/stats, and all action button labels/handlers unchanged.
 - Preserve each ranking row's character accent stripe and make rank, meters, coins, and empty-state text meet at least 4.5:1 contrast against their surface.
+- The result character stage uses the selected character's local portrait as a full-panel backdrop, a larger foreground SD result animation, and a compact outcome badge. Keep both victory and game-over poses legible over the portrait; show the character stage on compact/mobile layouts as well.
 - Keep the character sprite in results unaffected by surface color and continue to distinguish personal-best and non-best outcomes.
 
 ### I02. Restyle run HUD, controls, and overlays
@@ -63,6 +64,7 @@ Apply the shared pastel design to all non-selector React screens while preservin
 ## Acceptance Criteria
 
 - [ ] Menu, run/HUD, pause, ranking, and result screens share the new light pastel design language.
+- [ ] Result character panel feels intentionally composed: portrait backdrop fills the space, SD outcome animation is prominent, and both desktop/mobile layouts retain it.
 - [ ] Actions, labels, content hierarchy, callbacks, and game state transitions remain unchanged.
 - [ ] HUD controls remain visible over all four biome palettes and touch/focus targets remain usable.
 - [ ] Warning/bonus/disabled states are distinguishable and text remains legible.
@@ -91,5 +93,6 @@ Task: T03-app-screen-skin
 
 - [ ] Implementation complete
 - [ ] Validation passed
+- Partial result-panel enrichment (portrait backdrop, foreground animation, outcome badge, compact layout) was implemented early per user feedback; the rest of the screen reskin remains for this task.
 - commit: pending
 

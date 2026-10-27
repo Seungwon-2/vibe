@@ -31,6 +31,7 @@
 - P04-T02 completed in `463ddff` on `project02`: finished-run callbacks submit once through the local gateway; menu/result fetch the best record; the ranking screen loads a unified top-ten list with character, distance, coins, and date. Results retain personal best and show submitted rank; storage failures keep the result available. Nine targeted tests, typecheck, lint, and build passed.
 - P04-T03 completed in `41423df` on `project02`: documented local setup and game rules, added a simulated offline run through pickups, all three time gates, timeout, and persisted ranking. All 85 tests, typecheck, lint, and production build passed; the Vite endpoint returned HTTP 200. Manual viewport review could not be performed because no browser surface was available in this session.
 - [Running Action Redesign](./plans/2026-10-26-running-action-redesign.md) is complete. The queued [Character Selector and Visual Refresh](./plans/2026-10-27-character-selector-visual-refresh.md) plan is now active.
+- User feedback on the result screen: its character area looked sparse. The result stage now layers the local character portrait behind a larger SD outcome animation and outcome badge, and remains visible on mobile; this is an early partial implementation of P01-T03. Full screen visual restyling remains planned.
 - The unrelated untracked `.memory/image.png` is untouched.
 
 ## Next Step

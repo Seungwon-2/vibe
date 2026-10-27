@@ -21,6 +21,8 @@ describe('RunResult', () => {
     expect(screen.getByText('1,234m')).toBeInTheDocument();
     expect(screen.getByText('6')).toBeInTheDocument();
     expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-animation', 'victory');
+    expect(screen.getByTestId('result-character-portrait')).toHaveAttribute('src', expect.stringContaining('hanayo-hiyori-portrait'));
+    expect(screen.getByTestId('result-character-badge')).toHaveTextContent('NEW PERSONAL BEST');
   });
 
   it('shows the non-record result animation and forwards all result actions', () => {
@@ -32,6 +34,7 @@ describe('RunResult', () => {
     expect(screen.getByRole('heading', { name: '달리기 종료' })).toBeInTheDocument();
     expect(screen.getByText('1,400m')).toBeInTheDocument();
     expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-animation', 'gameOver');
+    expect(screen.getByTestId('result-character-badge')).toHaveTextContent('RUN COMPLETE');
     fireEvent.click(screen.getByRole('button', { name: '같은 캐릭터로 다시 달리기' }));
     fireEvent.click(screen.getByRole('button', { name: '캐릭터 선택' }));
     fireEvent.click(screen.getByRole('button', { name: '로컬 기록 보기' }));
