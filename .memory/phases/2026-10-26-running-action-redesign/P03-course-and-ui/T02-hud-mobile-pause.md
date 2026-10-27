@@ -82,4 +82,4 @@ Task: T02-hud-mobile-pause
 
 - [x] Implementation complete
 - [x] Validation passed (`npm test` — 72 tests, `npm run typecheck`, `npm run lint`, `npm run build`)
-- commit: `398b56d` on `project02`
+- commit: `9b3d862` on `project02`

@@ -24,7 +24,7 @@
 - P03-T01 completed in `6bb4399`: four distance-synchronized code-based biomes, 0.15×/0.4×/1× parallax, 750ms palette crossfade, and themed ground/pickup/hazard/gate art. The transparent physics floor and existing reward triggers remain unchanged.
 - 60 tests, typecheck, build, and lint passed. Headless Edge inspected all four themes at 960×540 and compact 844×390, including the pre-gate view; narrow landscape now fits the entire game board.
 - Pastel scenery follow-up: all four biome backdrops and themed hazard skins were redrawn from the user's soft sky-garden direction with local Phaser Graphics. All 61 tests, typecheck, build, and lint passed; Edge inspected four game-size themes and compact skyway. P03-T02 remains active.
-- P03-T02 completed in `398b56d` on `project02`: timer/distance/coin/biome HUD, event-driven bonus cue, 3-2-1 countdown, pause/resume/exit overlay, held touch controls, keyboard help, and portrait rotation pause. All 72 tests, typecheck, lint, and build passed. Headless Edge reviewed 1366x768 and 844x390 landscape plus 390x844 portrait; live touch simulation and the 667x375 capture remain outstanding. Build reports the existing large-chunk warning.
+- P03-T02 completed in `9b3d862` on `project02`: timer/distance/coin/biome HUD, event-driven bonus cue, 3-2-1 countdown, pause/resume/exit overlay, held touch controls, keyboard help, and portrait rotation pause. All 72 tests, typecheck, lint, and build passed. Headless Edge reviewed 1366x768 and 844x390 landscape plus 390x844 portrait; live touch simulation and the 667x375 capture remain outstanding. Build reports the existing large-chunk warning.
 - The unrelated untracked `.memory/image.png` is untouched.
 
 ## Next Step
