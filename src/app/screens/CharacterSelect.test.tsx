@@ -65,12 +65,14 @@ describe('CharacterSelect', () => {
 
   it('updates showcase art, name, passive, and accent when a playable character is chosen', () => {
     render(<CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />);
+    const previousPreview = screen.getByTestId('character-preview-player-default-showcase');
     fireEvent.click(screen.getByRole('button', { name: 'Hanayo Hiyori' }));
     expect(screen.getByRole('button', { name: 'Hanayo Hiyori' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: 'Aokumo Rin' })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByTestId('character-preview-hanayo-hiyori-showcase')).toHaveAttribute('data-animation', 'victory');
     expect(screen.getByText('아이템 수집 범위 +20px')).toBeInTheDocument();
     const preview = screen.getByTestId('character-preview-hanayo-hiyori-showcase');
+    expect(previousPreview.isConnected).toBe(false);
     expect(preview).toHaveAttribute('data-frame', 'hanayo-hiyori-victory-00');
     expect(preview).toHaveClass('is-animated');
     expect(preview).toHaveAttribute('src', expect.stringContaining('hanayo-hiyori.png'));

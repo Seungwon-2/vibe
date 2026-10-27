@@ -53,7 +53,7 @@ export function CharacterSelect({ selectedCharacterId, onConfirm, onBack }: Char
             <img className="selector-showcase__portrait" src={selectedCharacter.portraitUrl} alt="" data-testid="selector-showcase-portrait" />
             <span className="selector-showcase__shade" />
             <div className="selector-showcase__art">
-              <CharacterPreview character={selectedCharacter} selected animation="victory" loop={false} variant="showcase" />
+              <CharacterPreview key={selectedCharacter.id} character={selectedCharacter} selected animation="victory" loop={false} variant="showcase" />
             </div>
             <div className="selector-showcase__details">
               <span className="selector-showcase__eyebrow">선택한 캐릭터</span>
