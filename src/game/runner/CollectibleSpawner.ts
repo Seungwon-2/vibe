@@ -37,6 +37,7 @@ type ActivePickup = {
   definition: PickupDefinition;
   box: Phaser.GameObjects.Rectangle;
   art: Phaser.GameObjects.Graphics;
+  collected: boolean;
 };
 
 type GateArt = { distanceMeters: number; art: Phaser.GameObjects.Graphics; label: Phaser.GameObjects.Text };
@@ -63,6 +64,7 @@ export class CollectibleSpawner {
       this.nextPickupIndex += 1;
     }
     for (const pickup of [...this.active]) {
+      if (pickup.collected) continue;
       const x = this.screenX(pickup.definition.distanceMeters, snapshot.distanceMeters);
       pickup.box.setPosition(x, RUNNER_GROUND_Y - pickup.definition.heightUnits);
       pickup.art.setPosition(x, RUNNER_GROUND_Y - pickup.definition.heightUnits);
@@ -132,12 +134,18 @@ export class CollectibleSpawner {
       const symbol = biome.id === 'cloud-skyway' ? 0xffffff : 0x12364f;
       art.fillStyle(symbol).fillRect(-2, -8, 4, 16).fillRect(-8, -2, 16, 4);
     }
-    const active: ActivePickup = { definition, box, art };
+    const active: ActivePickup = { definition, box, art, collected: false };
     this.active.push(active);
     this.scene.physics.add.overlap(this.player, box, () => {
-      if (!this.active.includes(active)) return;
-      this.onPickup(definition);
-      this.removePickup(active);
+      if (!this.active.includes(active) || active.collected) return;
+      active.collected = true;
+      // Do not notify React or destroy Arcade bodies while the physics world
+      // is iterating overlap pairs. Defer both until the next scene tick.
+      this.scene.time.delayedCall(0, () => {
+        if (!this.active.includes(active)) return;
+        this.onPickup(definition);
+        this.removePickup(active);
+      });
     });
   }
 
