@@ -5,6 +5,7 @@ export type CharacterPreviewProps = {
   character: CharacterDefinition;
   selected: boolean;
   animation?: CharacterAnimationName;
+  loop?: boolean;
   variant?: 'showcase' | 'roster';
 };
 
@@ -28,7 +29,7 @@ const PREVIEW_CONTENT_HEIGHT = 136;
 const PREVIEW_BASELINE = 91;
 const RUN_FRAME_MS = 64;
 
-export function CharacterPreview({ character, selected, animation, variant }: CharacterPreviewProps): React.JSX.Element {
+export function CharacterPreview({ character, selected, animation, loop = true, variant }: CharacterPreviewProps): React.JSX.Element {
   const animationName = animation ?? (variant === 'showcase' ? 'run'
     : variant === 'roster' ? 'idle'
       : selected ? 'run' : character.id === 'player-default' ? 'victory' : 'idle');
@@ -41,9 +42,11 @@ export function CharacterPreview({ character, selected, animation, variant }: Ch
     height: character.atlasManifest.meta.size.h,
     transform: 'translate3d(var(--sprite-start-x), var(--sprite-row-y), 0)',
     animationDuration: `${frames.length * (animationName === 'run' ? RUN_FRAME_MS : 200)}ms`,
+    animationIterationCount: loop ? 'infinite' : '1',
+    animationFillMode: loop ? 'none' : 'forwards',
     animationTimingFunction: `steps(${frames.length}, end)`,
     '--sprite-start-x': `${-animationStart.x}px`,
-    '--sprite-end-x': `${-(animationStart.x + frames.length * character.frameWidth)}px`,
+    '--sprite-end-x': `${-(animationStart.x + (loop ? frames.length : frames.length - 1) * character.frameWidth)}px`,
     '--sprite-row-y': `${-animationStart.y + PREVIEW_BASELINE - metrics.contentBottom}px`,
     '--preview-scale': `${PREVIEW_CONTENT_HEIGHT / metrics.contentHeight}`,
     '--preview-size-scale': '1',

@@ -21,10 +21,18 @@ describe('CharacterSelect', () => {
     expect(screen.getByRole('button', { name: 'Cogane Rang' })).toBeDisabled();
     expect(screen.getAllByText('준비 중')).toHaveLength(2);
     expect(screen.getByRole('heading', { name: '캐릭터 선택' })).toBeInTheDocument();
-    expect(screen.getByTestId('character-preview-player-default-showcase')).toHaveAttribute('data-animation', 'run');
+    expect(screen.getAllByTestId('selector-showcase-portrait')).toHaveLength(1);
+    expect(screen.getByTestId('selector-showcase-portrait')).toHaveAttribute('src', expect.stringContaining('aokumo-rin-portrait'));
+    expect(document.querySelectorAll('.character-card__portrait')).toHaveLength(0);
+    expect(screen.getByTestId('character-preview-player-default-showcase')).toHaveAttribute('data-animation', 'victory');
+    expect(screen.getByTestId('character-preview-player-default-showcase').style.animationIterationCount).toBe('1');
+    expect(screen.getByTestId('character-preview-player-default-showcase').style.animationFillMode).toBe('forwards');
+    expect(screen.getByTestId('character-preview-player-default-showcase').style.animationDuration).toBe('1200ms');
     for (const id of ['hanayo-hiyori', 'tokino-mary', 'goth-student', 'cogane-rang']) {
       expect(screen.getByTestId(`character-preview-${id}-roster`)).toHaveAttribute('data-animation', 'idle');
+      expect(screen.getByTestId(`character-preview-${id}-roster`).style.animationIterationCount).toBe('infinite');
     }
+    expect(screen.getByTestId('character-preview-hanayo-hiyori-roster').style.animationFillMode).toBe('none');
     expect(screen.queryByText(/MAX|레벨|가격|구매/)).not.toBeInTheDocument();
   });
 
@@ -42,14 +50,16 @@ describe('CharacterSelect', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Hanayo Hiyori' }));
     expect(screen.getByRole('button', { name: 'Hanayo Hiyori' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: 'Aokumo Rin' })).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByTestId('character-preview-hanayo-hiyori-showcase')).toHaveAttribute('data-animation', 'run');
+    expect(screen.getByTestId('character-preview-hanayo-hiyori-showcase')).toHaveAttribute('data-animation', 'victory');
     expect(screen.getByText('아이템 수집 범위 +20px')).toBeInTheDocument();
     const preview = screen.getByTestId('character-preview-hanayo-hiyori-showcase');
-    expect(preview).toHaveAttribute('data-frame', 'hanayo-hiyori-run-00');
+    expect(preview).toHaveAttribute('data-frame', 'hanayo-hiyori-victory-00');
     expect(preview).toHaveClass('is-animated');
     expect(preview).toHaveAttribute('src', expect.stringContaining('hanayo-hiyori.png'));
-    expect(preview.style.animationTimingFunction).toBe('steps(12, end)');
-    expect(preview.style.animationDuration).toBe('768ms');
+    expect(preview.style.animationTimingFunction).toBe('steps(6, end)');
+    expect(preview.style.animationDuration).toBe('1200ms');
+    expect(preview.style.animationIterationCount).toBe('1');
+    expect(preview.style.animationFillMode).toBe('forwards');
     expect(screen.getByText('Hanayo Hiyori 선택됨')).toBeInTheDocument();
   });
 
@@ -66,8 +76,8 @@ describe('CharacterSelect', () => {
     expect(onConfirm).toHaveBeenCalledOnce();
   });
 
-  it('uses the first running frame as the reduced-motion fallback', () => {
+  it('uses the first victory frame as the reduced-motion fallback', () => {
     render(<CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />);
-    expect(screen.getByTestId('character-preview-player-default-showcase')).toHaveAttribute('data-frame', 'run-00');
+    expect(screen.getByTestId('character-preview-player-default-showcase')).toHaveAttribute('data-frame', 'victory-00');
   });
 });

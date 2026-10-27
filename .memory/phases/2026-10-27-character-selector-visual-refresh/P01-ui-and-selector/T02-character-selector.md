@@ -1,6 +1,6 @@
 # Task: T02 Character Selector Redesign
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -51,7 +51,7 @@ Make the selector visually consistent and uncluttered: display SD-only roster ca
 
 #### Details
 
-- Keep the wide split approximately 42% showcase / 58% roster; use a 6-column roster grid with each card spanning two columns and the fifth card centered on row two.
+- Keep the wide split approximately 42% showcase / 58% roster; use a two-column, three-row roster grid with the fifth card centered in the last row.
 - On narrow portrait layouts, stack showcase first, use a two-column roster with the fifth card centered, and allow vertical document scrolling. Prevent horizontal overflow at 320px width.
 - Use the same `.character-preview--roster` height, sprite scale variable, bottom baseline, border radius, and name-row height for all five cards. Do not add per-character card scale overrides; existing `PREVIEW_METRICS` continues to normalize perceived character height.
 - Use white/soft-sky cards, muted lavender selection surface, and `--character-accent` border/glow for the selected entry. Keep disabled state visibly distinct without lowering the SD sprite opacity below legibility.
@@ -60,11 +60,11 @@ Make the selector visually consistent and uncluttered: display SD-only roster ca
 
 ## Acceptance Criteria
 
-- [ ] Roster cards contain only SD sprite and name; none uses portrait art.
-- [ ] All five roster SD sprites share equal visual sizing/baseline, with the existing metric normalization.
-- [ ] Left showcase displays the selected upper-body portrait, SD sprite, name, passive summary, and character accent.
-- [ ] Selecting a character plays victory once and holds the last frame; unselected cards continue idle loops.
-- [ ] Character order, playability, CTA/back behavior, keyboard semantics, and responsive behavior remain correct.
+- [x] Roster cards contain only SD sprite and name; none uses portrait art.
+- [x] All five roster SD sprites share equal visual sizing/baseline, with the existing metric normalization.
+- [x] Left showcase displays the selected upper-body portrait, SD sprite, name, passive summary, and character accent.
+- [x] Selecting a character plays victory once and holds the last frame; unselected cards continue idle loops.
+- [x] Character order, playability, CTA/back behavior, keyboard semantics, and responsive behavior remain correct.
 
 ## Validation
 
@@ -88,7 +88,8 @@ Task: T02-character-selector
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Markup, one-shot preview behavior, and responsive two-column cards implemented
+- [x] Selector tests (5), lint, and production build passed
+- [ ] Manual viewport review remains unavailable because this session has no browser surface; headless Edge did not produce a screenshot
 - commit: pending
 
