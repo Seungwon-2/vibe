@@ -64,5 +64,5 @@ Task: T04-ui-visual-validation
 - [x] Fixed the disabled-card badge offset that pushed “준비 중” outside card bounds and defined the missing `.sr-only` utility that exposed the live announcement visually.
 - [x] Automated validation passed: full suite (86 tests), typecheck, lint, and production build.
 - [ ] Manual review after the fix at all required viewports remains outstanding because this session has no browser surface. The user-provided screenshot was inspected to identify the defects, but no post-fix capture is available.
-- commit: pending
+- partial commit: `44a2922` on `project02`; leave T04 in progress until manual viewport review
 
