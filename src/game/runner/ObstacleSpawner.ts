@@ -1,7 +1,8 @@
 import type Phaser from 'phaser';
 import { getHazardGeometry } from './CollisionSystem';
-import { getHazardDistance, getPatternForDistance, METERS_PER_WORLD_UNIT,
-  PATTERN_SPACING_METERS, PATTERN_START_METERS } from './hazardPatterns';
+import { getHazardDistance, getPatternForDistance, getPatternStartDistance, METERS_PER_WORLD_UNIT } from './hazardPatterns';
+import { isPitClearance, getPitDefinitions } from './PitSpawner';
+import { RUNNER_CONFIG } from './runnerConfig';
 import type { HazardDefinition } from './hazardTypes';
 import { RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { RunnerSnapshot } from './runnerTypes';
@@ -30,13 +31,20 @@ export class ObstacleSpawner {
   update(snapshot: RunnerSnapshot): void {
     if (snapshot.phase !== 'running') return;
     const visibleLeadMeters = (960 - RUNNER_PLAYER_X) * METERS_PER_WORLD_UNIT;
-    while (PATTERN_START_METERS + this.nextPatternIndex * PATTERN_SPACING_METERS <=
-      snapshot.distanceMeters + visibleLeadMeters) {
-      const base = PATTERN_START_METERS + this.nextPatternIndex * PATTERN_SPACING_METERS;
+    while (getPatternStartDistance(this.nextPatternIndex) <= snapshot.distanceMeters + visibleLeadMeters) {
+      const base = getPatternStartDistance(this.nextPatternIndex);
       const pattern = getPatternForDistance(base);
-      this.pending.push(...pattern.obstacles.map((definition) => ({
+      const candidate = pattern.obstacles.map((definition) => ({
         atMeters: getHazardDistance(this.nextPatternIndex, definition), definition,
-      })));
+      }));
+      const lastHazardMeters = Math.max(base, ...candidate.map(({ atMeters }) => atMeters));
+      const nearbyPits = getPitDefinitions(lastHazardMeters + RUNNER_CONFIG.pitHazardClearanceMeters +
+        RUNNER_CONFIG.pitWidthMeters / 2);
+      const conflictsWithPit = candidate.some(({ atMeters }) => nearbyPits.some((pit) =>
+        isPitClearance(atMeters, pit, RUNNER_CONFIG.pitHazardClearanceMeters),
+      ));
+      // Skip an entire authored pattern so paired actions can never be split.
+      if (!conflictsWithPit) this.pending.push(...candidate);
       this.nextPatternIndex += 1;
     }
 

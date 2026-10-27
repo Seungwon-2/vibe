@@ -10,12 +10,12 @@
 
 ## Active Task
 
-[T03 Obstacle Waves](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P01-runner-course/T03-obstacle-waves.md)
+[T04 Safe Pickups](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P01-runner-course/T04-safe-pickups.md)
 
 ## Status
 
-- The Runner Course, Gates, Pits, and UI Polish plan is active on `project02`; P01-T01 and P01-T02 are complete, and P01-T03 is active.
-- The plan divides work into runner-course mechanics, character passives, and screen polish. P01-T03 is the active task.
+- The Runner Course, Gates, Pits, and UI Polish plan is active on `project02`; P01-T01 through P01-T03 are complete, and P01-T04 is active.
+- The plan divides work into runner-course mechanics, character passives, and screen polish. P01-T04 is the active task.
 - Earlier P02-T01 roster work is recorded in its original implementation history; this active plan's P02-T01 is the biome backdrop task completed in `16fc63a`.
 - Asset validation, 44 tests, typecheck, build, and lint passed. Headless Edge confirmed five game loads, responsive selection, Rang jump/slide, and pause/resume.
 - Rang, Hiyori, and Mary now use curated full-size transparent selector portraits based on the supplied references. `assets:prepare` preserves them and `assets:validate` checks their format and transparency.
@@ -54,4 +54,4 @@
 
 ## Next Step
 
-P01-T02 implementation: tutorial and recurring pit definitions, warning art, grounded fall handling, and pit-specific result animation are in place; 21 targeted tests and typecheck pass. Next, read [T03 Obstacle Waves](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P01-runner-course/T03-obstacle-waves.md) and implement the tuned obstacle cadence with pit clearance.
+P01-T03 implementation: shortened tutorial/practice bands, 1,150m repeating three-action waves, pit exclusion, and hazard-aware legacy pickup placement are in place; 12 targeted tests and typecheck pass. Next, read [T04 Safe Pickups](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P01-runner-course/T04-safe-pickups.md) and build the frequent safe-route coin schedule.

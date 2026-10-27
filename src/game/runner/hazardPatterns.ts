@@ -1,13 +1,20 @@
+import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import type { HazardBand, HazardDefinition, HazardKind, HazardPattern } from './hazardTypes';
 
-// The first pattern starts at 360m so the player can learn controls.
-// Later patterns are 480m apart; paired obstacles retain room for each action.
-export const PATTERN_START_METERS = 360;
-export const PATTERN_SPACING_METERS = 480;
-export const MAX_RUN_SPEED_UNITS_PER_SECOND = 325;
-export const METERS_PER_WORLD_UNIT = 1 / 3;
+export const PATTERN_START_METERS = RUNNER_CONFIG.earlyPatternStartMeters;
+// Retained for early-course callers; dense patterns use their own slot spacing.
+export const PATTERN_SPACING_METERS = RUNNER_CONFIG.earlyPatternSpacingMeters;
+export const METERS_PER_WORLD_UNIT = RUNNER_CONFIG.metersPerWorldUnit;
+// Five shared gate bonuses plus Rin's additional 5-point passive.
+export const MAX_RUN_SPEED_UNITS_PER_SECOND = RUNNER_CONFIG.maxSpeedUnitsPerSecond *
+  (1 + (RUNNER_GATE_DISTANCES_M.length + 1) * RUNNER_CONFIG.gateSpeedBonusRatio);
 
-function obstacle(id: string, kind: HazardKind, offsetMeters: number): HazardDefinition {
+const DENSE_WAVE_PERIOD_METERS =
+  (RUNNER_CONFIG.densePatternsPerSection - 1) * RUNNER_CONFIG.densePatternSpacingMeters +
+  RUNNER_CONFIG.denseRecoveryGapMeters;
+const DENSE_WAVE_FIRST_METERS = RUNNER_CONFIG.denseSectionStartMeters;
+
+function obstacle(id: string, kind: HazardKind, offsetMeters = 0): HazardDefinition {
   return {
     id, kind, offsetMeters,
     // Arcade overlap uses these boxes, independent of the decorative pixels.
@@ -17,47 +24,92 @@ function obstacle(id: string, kind: HazardKind, offsetMeters: number): HazardDef
   };
 }
 
+function singleActionPattern(id: string, kind: HazardKind, min: number, max: number | null): HazardPattern {
+  return { id, minDistanceMeters: min, maxDistanceMeters: max,
+    obstacles: [obstacle(kind === 'ground' ? 'low-crate' : 'high-bar', kind)] };
+}
+
 export const HAZARD_BANDS: readonly HazardBand[] = Object.freeze([
-  { id: 'tutorial', minDistanceMeters: 0, maxDistanceMeters: 2500,
+  { id: 'tutorial', minDistanceMeters: 0, maxDistanceMeters: RUNNER_CONFIG.tutorialEndMeters,
     patternIds: ['tutorial-jump', 'tutorial-slide'] },
-  { id: 'practice', minDistanceMeters: 2500, maxDistanceMeters: 5000,
-    patternIds: ['practice-pair', 'practice-slide'] },
-  { id: 'combination', minDistanceMeters: 5000, maxDistanceMeters: 7500,
-    patternIds: ['combo-jump-slide', 'combo-slide-jump'] },
-  { id: 'advanced', minDistanceMeters: 7500, maxDistanceMeters: null,
-    patternIds: ['advanced-jump-slide', 'advanced-slide-jump'] },
+  { id: 'practice', minDistanceMeters: RUNNER_CONFIG.tutorialEndMeters,
+    maxDistanceMeters: RUNNER_CONFIG.practiceEndMeters, patternIds: ['practice-jump', 'practice-slide'] },
+  { id: 'combination', minDistanceMeters: RUNNER_CONFIG.denseSectionStartMeters,
+    maxDistanceMeters: 6_000, patternIds: ['combo-jump', 'combo-slide'] },
+  { id: 'advanced', minDistanceMeters: 6_000, maxDistanceMeters: null,
+    patternIds: ['advanced-jump', 'advanced-slide'] },
 ]);
 
 export const HAZARD_PATTERNS: readonly HazardPattern[] = Object.freeze([
-  { id: 'tutorial-jump', minDistanceMeters: 0, maxDistanceMeters: 2500,
-    obstacles: [obstacle('low-crate', 'ground', 0)] },
-  { id: 'tutorial-slide', minDistanceMeters: 0, maxDistanceMeters: 2500,
-    obstacles: [obstacle('high-bar', 'overhead', 0)] },
-  { id: 'practice-pair', minDistanceMeters: 2500, maxDistanceMeters: 5000,
-    obstacles: [obstacle('crate', 'ground', 0), obstacle('arch', 'overhead', 280)] },
-  { id: 'practice-slide', minDistanceMeters: 2500, maxDistanceMeters: 5000,
-    obstacles: [obstacle('low-arch', 'overhead', 0)] },
-  { id: 'combo-jump-slide', minDistanceMeters: 5000, maxDistanceMeters: 7500,
-    obstacles: [obstacle('crystal', 'ground', 0), obstacle('beam', 'overhead', 240)] },
-  { id: 'combo-slide-jump', minDistanceMeters: 5000, maxDistanceMeters: 7500,
-    obstacles: [obstacle('beam', 'overhead', 0), obstacle('crystal', 'ground', 240)] },
-  { id: 'advanced-jump-slide', minDistanceMeters: 7500, maxDistanceMeters: null,
-    obstacles: [obstacle('cloud-pillar', 'ground', 0), obstacle('sky-rail', 'overhead', 220)] },
-  { id: 'advanced-slide-jump', minDistanceMeters: 7500, maxDistanceMeters: null,
-    obstacles: [obstacle('sky-rail', 'overhead', 0), obstacle('cloud-pillar', 'ground', 220)] },
+  singleActionPattern('tutorial-jump', 'ground', 0, RUNNER_CONFIG.tutorialEndMeters),
+  singleActionPattern('tutorial-slide', 'overhead', 0, RUNNER_CONFIG.tutorialEndMeters),
+  singleActionPattern('practice-jump', 'ground', RUNNER_CONFIG.tutorialEndMeters,
+    RUNNER_CONFIG.practiceEndMeters),
+  singleActionPattern('practice-slide', 'overhead', RUNNER_CONFIG.tutorialEndMeters,
+    RUNNER_CONFIG.practiceEndMeters),
+  singleActionPattern('combo-jump', 'ground', RUNNER_CONFIG.denseSectionStartMeters, 6_000),
+  singleActionPattern('combo-slide', 'overhead', RUNNER_CONFIG.denseSectionStartMeters, 6_000),
+  singleActionPattern('advanced-jump', 'ground', 6_000, null),
+  singleActionPattern('advanced-slide', 'overhead', 6_000, null),
 ]);
 
-export function getPatternForDistance(distanceMeters: number): HazardPattern {
-  const band = HAZARD_BANDS.find(({ minDistanceMeters, maxDistanceMeters }) =>
+function getBandForDistance(distanceMeters: number): HazardBand {
+  return HAZARD_BANDS.find(({ minDistanceMeters, maxDistanceMeters }) =>
     distanceMeters >= minDistanceMeters && (maxDistanceMeters === null || distanceMeters < maxDistanceMeters),
   ) ?? HAZARD_BANDS[0];
-  const cycle = Math.max(0, Math.floor((distanceMeters - PATTERN_START_METERS) / PATTERN_SPACING_METERS));
-  const id = band.patternIds[cycle % band.patternIds.length];
+}
+
+function getScheduledKind(distanceMeters: number): HazardKind {
+  if (distanceMeters < DENSE_WAVE_FIRST_METERS) {
+    const earlyIndex = Math.max(0, Math.floor(
+      (distanceMeters - RUNNER_CONFIG.earlyPatternStartMeters) / RUNNER_CONFIG.earlyPatternSpacingMeters,
+    ));
+    return earlyIndex % 2 === 0 ? 'ground' : 'overhead';
+  }
+
+  let waveIndex = Math.floor((distanceMeters - DENSE_WAVE_FIRST_METERS) / DENSE_WAVE_PERIOD_METERS);
+  const waveStart = DENSE_WAVE_FIRST_METERS + waveIndex * DENSE_WAVE_PERIOD_METERS;
+  let slotIndex = Math.floor((distanceMeters - waveStart) / RUNNER_CONFIG.densePatternSpacingMeters);
+  if (slotIndex >= RUNNER_CONFIG.densePatternsPerSection) {
+    waveIndex += 1;
+    slotIndex = 0;
+  }
+  return (waveIndex + slotIndex) % 2 === 0 ? 'ground' : 'overhead';
+}
+
+function getPatternId(band: HazardBand, kind: HazardKind): string {
+  return band.patternIds[kind === 'ground' ? 0 : 1];
+}
+
+export function getPatternForDistance(distanceMeters: number): HazardPattern {
+  const band = getBandForDistance(distanceMeters);
+  const kind = getScheduledKind(distanceMeters);
+  const id = getPatternId(band, kind);
   const pattern = HAZARD_PATTERNS.find((item) => item.id === id);
   if (!pattern) throw new Error(`Unknown hazard pattern: ${id}`);
   return pattern;
 }
 
+export function getPatternStartDistance(patternIndex: number): number {
+  if (!Number.isInteger(patternIndex) || patternIndex < 0) {
+    throw new RangeError('Pattern index must be a non-negative integer');
+  }
+  const earlyCount = Math.floor(
+    (RUNNER_CONFIG.denseSectionStartMeters - RUNNER_CONFIG.earlyPatternStartMeters) /
+      RUNNER_CONFIG.earlyPatternSpacingMeters,
+  );
+  if (patternIndex < earlyCount) {
+    return RUNNER_CONFIG.earlyPatternStartMeters + patternIndex * RUNNER_CONFIG.earlyPatternSpacingMeters;
+  }
+  const denseSlotIndex = patternIndex - earlyCount;
+  const waveIndex = Math.floor(denseSlotIndex / RUNNER_CONFIG.densePatternsPerSection);
+  const slotIndex = denseSlotIndex % RUNNER_CONFIG.densePatternsPerSection;
+  // Recovery starts after slot three; from first slot to next wave this is
+  // two 300m gaps plus the configured 550m clear interval (1,150m total).
+  return DENSE_WAVE_FIRST_METERS + waveIndex * DENSE_WAVE_PERIOD_METERS +
+    slotIndex * RUNNER_CONFIG.densePatternSpacingMeters;
+}
+
 export function getHazardDistance(patternIndex: number, hazard: HazardDefinition): number {
-  return PATTERN_START_METERS + patternIndex * PATTERN_SPACING_METERS + hazard.offsetMeters;
+  return getPatternStartDistance(patternIndex) + hazard.offsetMeters;
 }

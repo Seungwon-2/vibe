@@ -1,22 +1,37 @@
 import { describe, expect, it } from 'vitest';
-import { getHazardDistance, getPatternForDistance, HAZARD_BANDS, HAZARD_PATTERNS,
-  MAX_RUN_SPEED_UNITS_PER_SECOND, METERS_PER_WORLD_UNIT,
-  PATTERN_SPACING_METERS, PATTERN_START_METERS } from './hazardPatterns';
+import { getPitDefinitions, isPitClearance } from './PitSpawner';
+import { RUNNER_CONFIG } from './runnerConfig';
+import { getHazardDistance, getPatternForDistance, getPatternStartDistance,
+  HAZARD_BANDS, HAZARD_PATTERNS, MAX_RUN_SPEED_UNITS_PER_SECOND, METERS_PER_WORLD_UNIT } from './hazardPatterns';
 
 describe('authored hazard patterns', () => {
-  it('progresses deterministically through all four distance bands', () => {
-    expect(HAZARD_BANDS).toHaveLength(4);
+  it('uses the shortened tutorial and practice bands and deterministic early starts', () => {
+    expect(HAZARD_BANDS.map(({ id, minDistanceMeters, maxDistanceMeters }) =>
+      [id, minDistanceMeters, maxDistanceMeters])).toEqual([
+      ['tutorial', 0, 1_000], ['practice', 1_000, 2_000],
+      ['combination', 2_000, 6_000], ['advanced', 6_000, null],
+    ]);
+    expect([0, 1, 2, 3, 4, 5, 6, 7, 8].map(getPatternStartDistance))
+      .toEqual([360, 900, 1_440, 2_000, 2_300, 2_600, 3_150, 3_450, 3_750]);
     expect(getPatternForDistance(360).id).toBe('tutorial-jump');
-    expect(getPatternForDistance(960).id).toBe('tutorial-slide');
-    expect(getPatternForDistance(2760).id).toBe('practice-slide');
-    expect(getPatternForDistance(5160).id).toBe('combo-jump-slide');
-    expect(getPatternForDistance(7560).id).toBe('advanced-slide-jump');
-    expect(getPatternForDistance(7560)).toBe(getPatternForDistance(7560));
+    expect(getPatternForDistance(900).id).toBe('tutorial-slide');
+    expect(getPatternForDistance(1_440).id).toBe('practice-jump');
+    expect(getPatternForDistance(1_999).maxDistanceMeters).toBe(2_000);
+    expect(getPatternForDistance(2_000).id).toBe('combo-jump');
+    expect(getPatternForDistance(2_300).id).toBe('combo-slide');
+    expect(getPatternForDistance(2_600).id).toBe('combo-jump');
+    expect(getPatternForDistance(3_150).id).toBe('combo-slide');
+    expect(getPatternForDistance(5_999).maxDistanceMeters).toBe(6_000);
+    expect(getPatternForDistance(6_000).id).toBe('advanced-jump');
+    expect(getPatternForDistance(6_000)).toBe(getPatternForDistance(6_000));
+    expect(() => getPatternStartDistance(-1)).toThrow(RangeError);
   });
 
-  it('gives every hazard an accurate box and at least 1.25 seconds of visible warning', () => {
-    const leadSeconds = (960 - 170) / MAX_RUN_SPEED_UNITS_PER_SECOND;
-    expect(leadSeconds).toBeGreaterThanOrEqual(1.25);
+  it('keeps every authored slot to one jump or slide action and preserves warning lead', () => {
+    expect(HAZARD_PATTERNS.every((pattern) => pattern.obstacles.length === 1)).toBe(true);
+    const visibleLeadMeters = (960 - 170) * METERS_PER_WORLD_UNIT;
+    const fastestMetersPerSecond = MAX_RUN_SPEED_UNITS_PER_SECOND * METERS_PER_WORLD_UNIT;
+    expect(visibleLeadMeters / fastestMetersPerSecond).toBeGreaterThanOrEqual(1.25);
     for (const pattern of HAZARD_PATTERNS) {
       for (const hazard of pattern.obstacles) {
         expect(hazard.width).toBeGreaterThan(0);
@@ -26,14 +41,48 @@ describe('authored hazard patterns', () => {
     }
   });
 
-  it('leaves one second of recovery after each action at top speed', () => {
-    expect(PATTERN_SPACING_METERS).toBe(480);
-    const scheduled = Array.from({ length: 32 }, (_, index) => {
-      const pattern = getPatternForDistance(PATTERN_START_METERS + index * PATTERN_SPACING_METERS);
-      return pattern.obstacles.map((hazard) => ({
+  it('alternates three-action waves and leaves a 550m recovery span', () => {
+    expect(RUNNER_CONFIG.densePatternsPerSection).toBe(3);
+    expect(RUNNER_CONFIG.densePatternSpacingMeters).toBe(300);
+    expect(RUNNER_CONFIG.denseRecoveryGapMeters).toBe(550);
+    const period = (RUNNER_CONFIG.densePatternsPerSection - 1) *
+      RUNNER_CONFIG.densePatternSpacingMeters + RUNNER_CONFIG.denseRecoveryGapMeters;
+    expect(period).toBe(1_150);
+    const starts = Array.from({ length: 18 }, (_, index) => getPatternStartDistance(index + 3));
+    for (let wave = 0; wave < 6; wave += 1) {
+      const start = wave * 3;
+      expect(starts.slice(start, start + 3)).toEqual([
+        2_000 + wave * period,
+        2_000 + wave * period + 300,
+        2_000 + wave * period + 600,
+      ]);
+      if (wave < 5) expect(starts[start + 3] - starts[start + 2]).toBe(550);
+      const kinds = starts.slice(start, start + 3).map((distance) =>
+        getPatternForDistance(distance).obstacles[0].kind,
+      );
+      expect(kinds).toEqual(wave % 2 === 0
+        ? ['ground', 'overhead', 'ground'] : ['overhead', 'ground', 'overhead']);
+    }
+    expect(starts[3] - starts[0]).toBe(1_150);
+  });
+
+  it('keeps generated hazards outside pit zones and preserves one second of action recovery at fastest speed', () => {
+    const scheduled: { at: number; kind: string }[] = [];
+    for (let index = 0; ; index += 1) {
+      const start = getPatternStartDistance(index);
+      if (start > 12_500) break;
+      const pattern = getPatternForDistance(start);
+      const candidate = pattern.obstacles.map((hazard) => ({
         at: getHazardDistance(index, hazard), kind: hazard.kind,
       }));
-    }).flat().sort((left, right) => left.at - right.at);
+      const pits = getPitDefinitions(Math.max(...candidate.map(({ at }) => at)) + 215);
+      if (candidate.some(({ at }) => pits.some((pit) => isPitClearance(at, pit)))) continue;
+      scheduled.push(...candidate);
+    }
+
+    for (const hazard of scheduled) {
+      for (const pit of getPitDefinitions(12_500)) expect(isPitClearance(hazard.at, pit)).toBe(false);
+    }
     for (let index = 1; index < scheduled.length; index += 1) {
       const gapSeconds = (scheduled[index].at - scheduled[index - 1].at) /
         METERS_PER_WORLD_UNIT / MAX_RUN_SPEED_UNITS_PER_SECOND;

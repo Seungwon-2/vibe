@@ -1,6 +1,6 @@
 # Task: T04 Safe-Route Pickups
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 

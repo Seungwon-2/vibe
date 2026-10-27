@@ -26,6 +26,6 @@ Success means deterministic simulation and spawner tests cover gate/speed/timer 
 
 ## Progress
 
-- P01: `in_progress` (1/4 tasks)
+- P01: `in_progress` (3/4 tasks)
 - P02: `pending` (0/1 task)
 - P03: `pending` (0/2 tasks)

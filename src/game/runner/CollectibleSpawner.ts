@@ -3,8 +3,7 @@ import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterId } from '../characters/characterTypes';
 import { RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import type { RunnerPickupKind, RunnerSnapshot } from './runnerTypes';
-import { getHazardDistance, getPatternForDistance, METERS_PER_WORLD_UNIT,
-  PATTERN_SPACING_METERS, PATTERN_START_METERS } from './hazardPatterns';
+import { getHazardDistance, getPatternForDistance, getPatternStartDistance, METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import { getBiomeForDistance } from '../visuals/runnerBiomes';
 
@@ -74,10 +73,10 @@ const AUTHORED_PICKUP_SCHEDULE: readonly PickupDefinition[] = Object.freeze(
 );
 
 function getGroundHazardDistances(maxDistanceMeters: number): number[] {
-  const patternCount = Math.ceil((maxDistanceMeters - PATTERN_START_METERS) / PATTERN_SPACING_METERS) + 2;
   const distances: number[] = [];
-  for (let patternIndex = 0; patternIndex < patternCount; patternIndex += 1) {
-    const patternStart = PATTERN_START_METERS + patternIndex * PATTERN_SPACING_METERS;
+  for (let patternIndex = 0; ; patternIndex += 1) {
+    const patternStart = getPatternStartDistance(patternIndex);
+    if (patternStart > maxDistanceMeters) break;
     const pattern = getPatternForDistance(patternStart);
     for (const hazard of pattern.obstacles) {
       if (hazard.kind === 'ground') distances.push(getHazardDistance(patternIndex, hazard));
@@ -90,7 +89,6 @@ function movePickupPastGroundHazards(
   pickup: PickupDefinition,
   groundHazards: readonly number[],
 ): PickupDefinition {
-  if (!pickup.optionalJump) return pickup;
   let distanceMeters = pickup.distanceMeters;
   let conflict: number | undefined;
   do {
@@ -109,6 +107,15 @@ const GROUND_HAZARD_DISTANCES = getGroundHazardDistances(
 export const PICKUP_SCHEDULE: readonly PickupDefinition[] = Object.freeze(
   AUTHORED_PICKUP_SCHEDULE
     .map((pickup) => movePickupPastGroundHazards(pickup, GROUND_HAZARD_DISTANCES))
+    .map((pickup, _index, adjusted) => {
+      if (!pickup.optionalJump) return pickup;
+      const cycleId = pickup.id.slice('air-'.length);
+      const safePickup = adjusted.find((item) => item.id === `safe-${cycleId}`);
+      if (!safePickup || pickup.distanceMeters - safePickup.distanceMeters >= 320) return pickup;
+      return movePickupPastGroundHazards({
+        ...pickup, distanceMeters: safePickup.distanceMeters + 320,
+      }, GROUND_HAZARD_DISTANCES);
+    })
     .sort((left, right) => left.distanceMeters - right.distanceMeters),
 );
 
