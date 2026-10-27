@@ -76,7 +76,7 @@ describe('CharacterSelect', () => {
     expect(preview).toHaveAttribute('data-frame', 'hanayo-hiyori-victory-00');
     expect(preview).toHaveClass('is-animated');
     expect(preview).toHaveAttribute('src', expect.stringContaining('hanayo-hiyori.png'));
-    expect(preview.style.animationTimingFunction).toBe('steps(6, end)');
+    expect(preview.style.animationTimingFunction).toBe('steps(5, end)');
     expect(preview.style.animationDuration).toBe('1200ms');
     expect(preview.style.animationIterationCount).toBe('1');
     expect(preview.style.animationFillMode).toBe('forwards');

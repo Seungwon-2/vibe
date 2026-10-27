@@ -37,6 +37,7 @@ export function CharacterPreview({ character, selected, animation, loop = true, 
   const frameName = frames[0];
   const animationStart = character.atlasManifest.frames[frameName].frame;
   const metrics = PREVIEW_METRICS[character.id];
+  const frameSteps = loop ? frames.length : Math.max(1, frames.length - 1);
   const previewScaleStyle: PreviewScaleStyle = {
     '--preview-scale': `${PREVIEW_CONTENT_HEIGHT / metrics.contentHeight}`,
   };
@@ -47,7 +48,7 @@ export function CharacterPreview({ character, selected, animation, loop = true, 
     animationDuration: `${frames.length * (animationName === 'run' ? RUN_FRAME_MS : 200)}ms`,
     animationIterationCount: loop ? 'infinite' : '1',
     animationFillMode: loop ? 'none' : 'forwards',
-    animationTimingFunction: `steps(${frames.length}, end)`,
+    animationTimingFunction: `steps(${frameSteps}, end)`,
     '--sprite-start-x': `${-animationStart.x}px`,
     '--sprite-end-x': `${-(animationStart.x + (loop ? frames.length : frames.length - 1) * character.frameWidth)}px`,
     '--sprite-row-y': `${-animationStart.y + PREVIEW_BASELINE - metrics.contentBottom}px`,
