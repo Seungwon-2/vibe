@@ -301,8 +301,11 @@ h1 {
 }
 
 .character-card__coming-soon {
-  position: relative;
-  z-index: 1;
+  position: absolute;
+  z-index: 2;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
   align-self: center;
   padding: 10px 18px;
   border: 1px solid rgb(222 231 255 / 50%);
@@ -342,15 +345,15 @@ h1 {
   image-rendering: auto;
 }
 
-.character-preview__sheet.is-running {
-  animation-name: character-preview-run;
+.character-preview__sheet.is-animated {
+  animation-name: character-preview-frames;
   animation-iteration-count: infinite;
   will-change: transform;
 }
 
-@keyframes character-preview-run {
-  from { transform: translate3d(var(--run-start-x), var(--run-row-y), 0); }
-  to { transform: translate3d(var(--run-end-x), var(--run-row-y), 0); }
+@keyframes character-preview-frames {
+  from { transform: translate3d(var(--sprite-start-x), var(--sprite-row-y), 0); }
+  to { transform: translate3d(var(--sprite-end-x), var(--sprite-row-y), 0); }
 }
 
 .character-card__name {
@@ -522,7 +525,7 @@ h1 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .character-preview__sheet.is-running {
+  .character-preview__sheet.is-animated {
     animation: none;
   }
 

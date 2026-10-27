@@ -49,9 +49,9 @@ export function CharacterSelect({
                 <span className="character-card__art">
                   <img className="character-card__portrait" src={character.portraitUrl} alt="" />
                   <span className="character-card__shade" />
-                  {character.available
-                    ? <CharacterPreview character={character} selected={selected} />
-                    : <span className="character-card__coming-soon">준비 중</span>}
+                  <CharacterPreview character={character} selected={selected} />
+                  {!character.available &&
+                    <span className="character-card__coming-soon">준비 중</span>}
                 </span>
                 <span className="character-card__name">{character.displayName}</span>
               </button>

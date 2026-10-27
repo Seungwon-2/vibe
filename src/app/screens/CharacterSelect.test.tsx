@@ -52,10 +52,10 @@ describe('CharacterSelect', () => {
     expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-frame', 'hanayo-hiyori-run-00');
 
     const preview = screen.getByTestId('character-preview-hanayo-hiyori');
-    expect(preview).toHaveClass('is-running');
+    expect(preview).toHaveClass('is-animated');
     expect(preview).toHaveAttribute('src', expect.stringContaining('hanayo-hiyori.png'));
     expect(preview.style.animationTimingFunction).toBe('steps(12, end)');
-    expect(preview.style.animationDuration).toBe('600ms');
+    expect(preview.style.animationDuration).toBe('1000ms');
   });
 
   it('confirms only the chosen character and keeps back separate from confirmation', () => {
