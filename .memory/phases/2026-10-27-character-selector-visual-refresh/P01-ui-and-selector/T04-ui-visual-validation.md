@@ -1,6 +1,6 @@
 # Task: T04 UI Visual Validation
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -31,11 +31,10 @@ Verify the redesigned React screen flow at desktop, compact landscape, and narro
 
 ## Acceptance Criteria
 
-- [ ] Selector has no clipped showcase, cards, names, disabled labels, or CTA at target widths.
-- [ ] SD card sprites appear at equal perceived height and a shared baseline.
-- [ ] No horizontal page overflow at 320px portrait; vertical scroll reaches CTA.
-- [ ] Menu, HUD, pause, ranking, and results are legible across reviewed viewports.
-- [ ] Existing interactions and reduced-motion/accessibility behavior pass regression tests.
+- [x] User-reviewed selector screenshots at portrait and compact landscape, plus the 915×412 runner screen; the latest compact layout was accepted for this phase.
+- [x] Fixed observed sprite clipping/scale issues and kept selector actions visible in reviewed captures.
+- [x] Existing interaction, sprite animation, and reduced-motion regression tests pass.
+- [ ] Full manual matrix (all four selector sizes and menu/run/pause/ranking/result at both target sizes) was not captured in this session; user accepted closing P01 without that additional review.
 
 ## Validation
 
@@ -71,6 +70,6 @@ Task: T04-ui-visual-validation
 - [x] Reviewed the user-provided 915×412 landscape run screenshot. The game board was capped by a conservative 120px height reservation; compact-landscape rules now compress the outer header/help and use the recovered vertical space to enlarge the 16:9 playfield.
 - [x] Follow-up screenshot still showed no perceptible run-screen increase and clipped selector card sprites. Locked the compact-landscape run layout to the viewport height, removed the redundant external keyboard help row there, and positioned preview wrappers from a predictable centered bottom anchor so reduced-size card sprites stay inside their art viewport.
 - [x] Revalidated after follow-up: full suite (86 tests), typecheck, lint, and production build passed. Build still reports the existing >500 kB JavaScript chunk warning.
-- [ ] Post-fix review at all required viewports and review of menu/run/pause/ranking/results remain outstanding; this session has no browser surface for captures.
-- partial commits: `44a2922`, `40de34c`, `98d5146`, `40ca61a`, `51022b7`, `a432e4c`, and `4721310` on `project02`; leave T04 in progress until a post-fix capture and remaining screen review
+- [x] The user explicitly asked to close this phase after reviewing the latest compact layouts; outstanding viewport/screen captures are recorded as deferred.
+- Completion commit: pending
 
