@@ -95,5 +95,5 @@ Task: T03-app-screen-skin
 - [x] 10 targeted screen tests, lint, and production build passed
 - [ ] Manual desktop/compact landscape review remains unavailable because this session has no browser surface; headless Edge did not produce a screenshot
 - Result-panel composition (portrait backdrop, foreground animation, outcome badge, compact layout) was implemented early per user feedback and is now themed with the shared light surfaces.
-- commit: pending
+- commit: `fa948c1` on `project02`
 
