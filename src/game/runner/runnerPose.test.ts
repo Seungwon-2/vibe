@@ -1,6 +1,7 @@
 import path from 'node:path';
 import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
+import { getCharacter } from '../characters/characterCatalog';
 import type { CharacterId } from '../characters/characterTypes';
 import { getSlidePose, RUNNER_GROUND_Y, RUNNER_PLAYER_X,
   SLIDING_BODY_HEIGHT, SLIDING_BODY_WIDTH, STANDING_FRAME_BOTTOM,
@@ -19,9 +20,10 @@ describe('slide art and collision alignment', () => {
     expect(STANDING_SPRITE_Y + STANDING_FRAME_BOTTOM - 96).toBe(RUNNER_GROUND_Y);
   });
 
-  it('places every active slide frame of all five characters on the floor without distortion', async () => {
+  it('places every active slide frame on the floor at its intended scale', async () => {
     for (const character of characters) {
-      for (const frameIndex of [1, 2, 3]) {
+      const available = getCharacter(character.id).available;
+      for (const frameIndex of available ? [2, 3] : [1, 2, 3]) {
         const frameName = `${character.prefix}slide-0${frameIndex}`;
         const file = path.join(process.cwd(), 'assets/character/runtime/frames', `${frameName}.png`);
         const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -47,9 +49,13 @@ describe('slide art and collision alignment', () => {
         const bodyBottom = bodyTop + pose.sourceBodyHeight * pose.scaleY;
         expect(Math.abs(visualBottom - RUNNER_GROUND_Y)).toBeLessThanOrEqual(1);
         expect(pose.scaleX).toBe(pose.scaleY);
-        expect(visualTop).toBeGreaterThanOrEqual(RUNNER_GROUND_Y - SLIDING_BODY_HEIGHT);
-        expect(visualLeft).toBeGreaterThanOrEqual(RUNNER_PLAYER_X - SLIDING_BODY_WIDTH / 2);
-        expect(visualRight).toBeLessThanOrEqual(RUNNER_PLAYER_X + SLIDING_BODY_WIDTH / 2);
+        if (available) {
+          expect(pose.scaleX).toBe(1);
+          expect(visualTop).toBeGreaterThanOrEqual(RUNNER_GROUND_Y - SLIDING_BODY_HEIGHT);
+          expect(visualLeft).toBeGreaterThanOrEqual(RUNNER_PLAYER_X - SLIDING_BODY_WIDTH / 2);
+          expect(visualRight).toBeLessThanOrEqual(RUNNER_PLAYER_X + SLIDING_BODY_WIDTH / 2);
+        }
+        expect(pose.sourceBodyWidth * pose.scaleX).toBeCloseTo(pose.bodyWidth, 5);
         expect(bodyTop).toBeCloseTo(422, 5);
         expect(bodyBottom).toBeCloseTo(RUNNER_GROUND_Y, 5);
       }

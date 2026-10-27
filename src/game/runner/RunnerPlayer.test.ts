@@ -119,6 +119,9 @@ describe('RunnerPlayer and input bridge', () => {
   it('holds one slide pose without switching frames while the button stays down', () => {
     const { player, body, sprite } = createPlayer('player-default');
     player.setSliding(true);
+    expect(sprite.scaleX).toBe(1);
+    expect(sprite.scaleY).toBe(1);
+    expect(body.width).toBe(80);
     const firstY = sprite.y;
     const slideCalls = sprite.anims.play.mock.calls.length;
     player.update(16);

@@ -49,7 +49,11 @@ export class RunnerScene extends Phaser.Scene {
       'jump-fall': character.animations.jump.slice(4),
       doubleJump: character.animations.doubleJump.slice(0, 4),
       'double-jump-fall': character.animations.doubleJump.slice(4),
-      slide: character.animations.slide.slice(1, 4),
+      // The first curated slide is a tall entry pose; start at the low pose
+      // so the visible art clears the overhead hazard at its native scale.
+      slide: character.available
+        ? character.animations.slide.slice(2, 4)
+        : character.animations.slide.slice(1, 4),
       hurt: character.animations.hurt,
       victory: character.animations.victory,
       gameOver: character.animations.gameOver,
