@@ -104,6 +104,13 @@ button {
 }
 .runner-controls button { min-width: 100px; touch-action: none; user-select: none; }
 .runner-controls span { text-align: center; }
+@media (max-height: 450px) and (min-width: 650px) {
+  .runner-shell { min-height: 100vh; padding: 6px; }
+  .runner-panel { width: min(100%, calc((100vh - 112px) * 16 / 9)); }
+  .runner-header, .runner-controls { padding: 4px 8px; border-radius: 8px; }
+  .runner-header button, .runner-controls button { padding: 5px 8px; }
+  .runner-stage { margin: 4px 0; }
+}
 @media (max-width: 650px) {
   .runner-header { flex-wrap: wrap; }
   .runner-controls span { font-size: 0.8rem; }

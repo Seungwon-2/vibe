@@ -5,6 +5,7 @@ import { RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import type { RunnerPickupKind, RunnerSnapshot } from './runnerTypes';
 import { METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
+import { getBiomeForDistance } from '../visuals/runnerBiomes';
 
 export type PickupDefinition = Readonly<{
   id: string;
@@ -73,17 +74,26 @@ export class CollectibleSpawner {
         this.createdGates.has(distanceMeters) ||
         snapshot.distanceMeters > distanceMeters + 100) continue;
       this.createdGates.add(distanceMeters);
-      const art = this.scene.add.graphics();
-      art.lineStyle(5, 0xf5cf72).strokeRect(-18, -122, 36, 122);
-      art.fillStyle(0xffdb8a, 0.2).fillRect(-15, -119, 30, 116);
+      const { palette, landmark } = getBiomeForDistance(distanceMeters);
+      const art = this.scene.add.graphics().setDepth(-5);
+      // Landmark is a non-colliding arch aligned with the existing +20s gate.
+      art.fillStyle(palette.gate, 0.3).fillRect(-27, -164, 54, 164);
+      art.fillStyle(palette.gate).fillRect(-30, -166, 10, 166)
+        .fillRect(20, -166, 10, 166).fillRect(-30, -166, 60, 12);
+      art.fillStyle(palette.hazardContrast, 0.75).fillRect(-21, -144, 4, 130)
+        .fillRect(17, -144, 4, 130).fillRect(-17, -158, 34, 3);
+      art.fillStyle(palette.accent).fillRect(-8, -174, 16, 8);
       const label = this.scene.add.text(0, 0, '+20s',
-        { color: '#ffe6a7', fontSize: '15px', fontFamily: 'monospace' }).setOrigin(0.5);
+        { color: '#ffffff', fontSize: '15px', fontFamily: 'monospace',
+          backgroundColor: '#10152ddd', padding: { x: 4, y: 2 } }).setOrigin(0.5)
+        .setDepth(5);
+      label.setText(`${landmark}  +20s`);
       this.gates.push({ distanceMeters, art, label });
     }
     for (const gate of [...this.gates]) {
       const x = this.screenX(gate.distanceMeters, snapshot.distanceMeters);
       gate.art.setPosition(x, RUNNER_GROUND_Y);
-      gate.label.setPosition(x, RUNNER_GROUND_Y - 138);
+      gate.label.setPosition(x, RUNNER_GROUND_Y - 190);
       if (x < -30) {
         gate.art.destroy();
         gate.label.destroy();
@@ -110,14 +120,17 @@ export class CollectibleSpawner {
     body.setAllowGravity(false);
     body.setImmovable(true);
     const art = this.scene.add.graphics();
+    const biome = getBiomeForDistance(definition.distanceMeters);
+    const { palette } = biome;
     if (definition.kind === 'coin') {
-      art.fillStyle(0xf4c95b).fillCircle(0, 0, 12);
-      art.lineStyle(3, 0xffeeac).strokeCircle(0, 0, 10);
-      art.fillStyle(0x9b6b23).fillRect(-2, -6, 4, 12);
+      art.fillStyle(palette.pickupCoin).fillRect(-8, -12, 16, 24)
+        .fillRect(-12, -8, 24, 16);
+      art.fillStyle(0xffe08b).fillRect(-6, -8, 12, 16);
+      art.fillStyle(palette.pickupCoin).fillRect(-2, -5, 4, 10);
     } else {
-      art.fillStyle(0x55deec).fillRect(-12, -12, 24, 24);
-      art.lineStyle(3, 0xc8f8f8).strokeRect(-11, -11, 22, 22);
-      art.fillStyle(0xffffff).fillRect(-2, -7, 4, 14).fillRect(-7, -2, 14, 4);
+      art.fillStyle(palette.pickupTime).fillRect(-12, -12, 24, 24);
+      const symbol = biome.id === 'cloud-skyway' ? 0xffffff : 0x12364f;
+      art.fillStyle(symbol).fillRect(-2, -8, 4, 16).fillRect(-8, -2, 16, 4);
     }
     const active: ActivePickup = { definition, box, art };
     this.active.push(active);

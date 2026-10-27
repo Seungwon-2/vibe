@@ -1,6 +1,6 @@
 # Task: T01 Biome Pixel Art
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -47,11 +47,11 @@ Build four distinct scrolling course themes from Phaser-native pixel-art shapes 
 
 ## Acceptance Criteria
 
-- [ ] All four themes transition at exactly the configured thresholds and remain in sync with their gate landmarks.
-- [ ] Three scenery depths move at the specified parallax ratios.
-- [ ] Ground and decorations do not create accidental collisions or obscure hazards/pickups.
-- [ ] At 960x540 and scaled 844x390, hazards and pickups remain distinguishable against all four backdrops, the floor reads as one continuous running surface, and each +20s landmark is visible before it is crossed.
-- [ ] All scenery is local, code-based, pixel-aligned, and editable.
+- [x] All four themes transition at exactly the configured thresholds and remain in sync with their gate landmarks.
+- [x] Three scenery depths move at the specified parallax ratios.
+- [x] Ground and decorations do not create accidental collisions or obscure hazards/pickups.
+- [x] At 960x540 and scaled 844x390, hazards and pickups remain distinguishable against all four backdrops, the floor reads as one continuous running surface, and each +20s landmark is visible before it is crossed.
+- [x] All scenery is local, code-based, pixel-aligned, and editable.
 
 ## Validation
 
@@ -75,6 +75,6 @@ Task: T01-biome-pixel-art
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed (60 tests, typecheck, build, lint; local Edge desktop/compact screenshots for all four biomes and a pre-gate view)
 - commit: pending

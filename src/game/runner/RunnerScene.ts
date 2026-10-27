@@ -13,6 +13,7 @@ import { RunnerEventEmitter } from './runnerEvents';
 import type { RunnerEvent } from './runnerEvents';
 import { browserPersonalBestStore } from '../../services/PersonalBestStore';
 import type { RunnerFinishOutcome } from './runnerTypes';
+import { RunnerBackdrop } from '../visuals/RunnerBackdrop';
 
 export class RunnerScene extends Phaser.Scene {
   private inputBridge!: RunnerInputBridge;
@@ -23,6 +24,7 @@ export class RunnerScene extends Phaser.Scene {
   private heldKeyboardActions = new Set<string>();
   private spawner!: ObstacleSpawner;
   private collectibles!: CollectibleSpawner;
+  private backdrop!: RunnerBackdrop;
   private finishEmitted = false;
 
   constructor() {
@@ -45,6 +47,7 @@ export class RunnerScene extends Phaser.Scene {
       onEvent: this.registry.get('onEvent') as ((event: RunnerEvent) => void) | undefined,
     });
     this.snapshot = createRunnerSnapshot(characterId);
+    this.backdrop = new RunnerBackdrop(this);
 
     const animationFrames = {
       run: character.animations.run,
@@ -72,7 +75,8 @@ export class RunnerScene extends Phaser.Scene {
       });
     }
 
-    const floor = this.add.rectangle(0, RUNNER_GROUND_Y, 960, 70, 0x243451).setOrigin(0, 0);
+    // The backdrop paints the ground; this transparent rectangle only supports physics.
+    const floor = this.add.rectangle(0, RUNNER_GROUND_Y, 960, 70, 0xffffff, 0).setOrigin(0, 0);
     this.physics.add.existing(floor, true);
     const sprite = this.physics.add.sprite(
       RUNNER_PLAYER_X, RUNNER_GROUND_Y, character.textureKey, character.animations.run[0],
@@ -107,6 +111,7 @@ export class RunnerScene extends Phaser.Scene {
     const gateAwards: { id: RunnerGateId; awardedMs: number }[] = [];
     const { state, result } = advanceRunner(this.snapshot, deltaMs,
       (id, awardedMs) => gateAwards.push({ id, awardedMs }));
+    this.backdrop.update(state, deltaMs);
     this.publish(state, gateAwards.length > 0 || result !== null);
     for (const gate of gateAwards) this.eventEmitter.gate(gate.id, gate.awardedMs);
     this.player.setHurt(state.staggerRemainingMs > 0);
@@ -210,5 +215,6 @@ export class RunnerScene extends Phaser.Scene {
     this.player?.destroy();
     this.spawner?.destroy();
     this.collectibles?.destroy();
+    this.backdrop?.destroy();
   }
 }

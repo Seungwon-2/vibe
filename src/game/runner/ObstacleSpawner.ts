@@ -5,6 +5,7 @@ import { getHazardDistance, getPatternForDistance, METERS_PER_WORLD_UNIT,
 import type { HazardDefinition } from './hazardTypes';
 import { RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { RunnerSnapshot } from './runnerTypes';
+import { getBiomeForDistance } from '../visuals/runnerBiomes';
 
 type ActiveHazard = {
   box: Phaser.GameObjects.Rectangle;
@@ -69,12 +70,15 @@ export class ObstacleSpawner {
     body.setImmovable(true);
     body.setSize(geometry.width, geometry.height);
     const art = this.scene.add.graphics();
-    const color = definition.kind === 'ground' ? 0xf7a64c : 0x70d8e9;
+    const palette = getBiomeForDistance(atMeters).palette;
+    const color = definition.kind === 'ground' ? 0xffa64d : 0x47d5f2;
     art.fillStyle(0x10152d).fillRect(0, 0, geometry.width, geometry.height);
-    art.lineStyle(4, color).strokeRect(2, 2, geometry.width - 4, geometry.height - 4);
+    art.fillStyle(palette.hazardContrast).fillRect(0, 0, geometry.width, 4)
+      .fillRect(0, geometry.height - 4, geometry.width, 4)
+      .fillRect(0, 0, 4, geometry.height).fillRect(geometry.width - 4, 0, 4, geometry.height);
     if (definition.kind === 'ground') {
-      art.fillStyle(color).fillTriangle(5, 19, 16, 5, 27, 19);
-      art.fillTriangle(21, 19, 32, 5, 43, 19);
+      art.fillStyle(color).fillRect(7, 25, 12, 11).fillRect(10, 17, 6, 8)
+        .fillRect(27, 25, 12, 11).fillRect(30, 17, 6, 8);
     } else {
       art.fillStyle(color).fillRect(6, 10, geometry.width - 12, 5);
       art.fillRect(6, 23, geometry.width - 12, 5);
