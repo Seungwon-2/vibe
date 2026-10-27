@@ -48,6 +48,10 @@ function expectPrimitivesInside(graphics: ReturnType<typeof makeGraphics>, width
   for (const [x1, y1, x2, y2] of calls(graphics, 'lineBetween')) {
     expect(x1).toBeGreaterThanOrEqual(0);
     expect(y1).toBeGreaterThanOrEqual(0);
+    expect(x1).toBeLessThanOrEqual(width);
+    expect(y1).toBeLessThanOrEqual(height);
+    expect(x2).toBeGreaterThanOrEqual(0);
+    expect(y2).toBeGreaterThanOrEqual(0);
     expect(x2).toBeLessThanOrEqual(width);
     expect(y2).toBeLessThanOrEqual(height);
   }
@@ -60,7 +64,7 @@ function expectPrimitivesInside(graphics: ReturnType<typeof makeGraphics>, width
 }
 
 describe('themed hazard art', () => {
-  it('covers the unchanged visible collision footprint in every biome', () => {
+  it('keeps every decorative primitive inside the unchanged collision footprint', () => {
     for (const biome of RUNNER_BIOMES) {
       for (const kind of ['ground', 'overhead'] as const) {
         const definition: HazardDefinition = {
@@ -71,35 +75,44 @@ describe('themed hazard art', () => {
         };
         const graphics = makeGraphics();
         drawRunnerHazard(graphics as unknown as Phaser.GameObjects.Graphics, definition, biome);
-        expect(graphics.fillRoundedRect).toHaveBeenCalledWith(
-          1, 1, definition.width - 2, definition.height - 2, 7,
-        );
-        expect(graphics.strokeRoundedRect).toHaveBeenCalledWith(
-          1, 1, definition.width - 2, definition.height - 2, 7,
-        );
-        expect(graphics.fillStyle).toHaveBeenCalledWith(biome.palette.groundFace, 0.97);
-        expect(graphics.lineStyle).toHaveBeenCalledWith(2, biome.palette.hazardContrast, 0.9);
         expectPrimitivesInside(graphics, definition.width, definition.height);
+
+        for (const method of ['fillRect', 'fillRoundedRect', 'strokeRoundedRect'] as const) {
+          const fullFootprintDrawn = calls(graphics, method).some(([x, y, w, h]) =>
+            x <= 0 && y <= 0 && x + w >= definition.width && y + h >= definition.height,
+          );
+          expect(fullFootprintDrawn, `${biome.id}/${kind} draws a full hitbox panel`).toBe(false);
+        }
       }
     }
   });
 
-  it('uses a distinct low-obstacle silhouette for every biome and hazard lane', () => {
-    for (const biome of RUNNER_BIOMES) {
-      const signatures = (['ground', 'overhead'] as const).map((kind) => {
-        const graphics = makeGraphics();
-        const definition: HazardDefinition = {
-          id: `${biome.id}-${kind}`, kind, offsetMeters: 0,
-          width: kind === 'ground' ? 46 : 64,
-          height: kind === 'ground' ? 48 : 36,
-          warningColor: '#ffffff',
-        };
-        drawRunnerHazard(graphics as unknown as Phaser.GameObjects.Graphics, definition, biome);
-        return [graphics.fillCircle.mock.calls.length, graphics.fillEllipse.mock.calls.length,
-          graphics.fillTriangle.mock.calls.length, graphics.fillRect.mock.calls.length,
-          graphics.fillRoundedRect.mock.calls.length];
+  it('uses different silhouettes for both lanes and all four biomes', () => {
+    const signature = (biomeId: (typeof RUNNER_BIOMES)[number]['id'], kind: HazardDefinition['kind']) => {
+      const biome = RUNNER_BIOMES.find((candidate) => candidate.id === biomeId)!;
+      const graphics = makeGraphics();
+      const definition: HazardDefinition = {
+        id: `${biome.id}-${kind}`, kind, offsetMeters: 0,
+        width: kind === 'ground' ? 46 : 64,
+        height: kind === 'ground' ? 48 : 36,
+        warningColor: '#ffffff',
+      };
+      drawRunnerHazard(graphics as unknown as Phaser.GameObjects.Graphics, definition, biome);
+      return JSON.stringify({
+        rectangles: graphics.fillRect.mock.calls,
+        rounded: graphics.fillRoundedRect.mock.calls,
+        circles: graphics.fillCircle.mock.calls,
+        ellipses: graphics.fillEllipse.mock.calls,
+        triangles: graphics.fillTriangle.mock.calls,
+        lines: graphics.lineBetween.mock.calls,
       });
-      expect(signatures[0]).not.toEqual(signatures[1]);
+    };
+
+    for (const biome of RUNNER_BIOMES) {
+      expect(signature(biome.id, 'ground')).not.toBe(signature(biome.id, 'overhead'));
+    }
+    for (const kind of ['ground', 'overhead'] as const) {
+      expect(new Set(RUNNER_BIOMES.map(({ id }) => signature(id, kind))).size).toBe(RUNNER_BIOMES.length);
     }
   });
 });

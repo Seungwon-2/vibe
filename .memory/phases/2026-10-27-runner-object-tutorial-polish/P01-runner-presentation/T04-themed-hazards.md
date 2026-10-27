@@ -1,6 +1,6 @@
 # Task: T04 Themed Hazard Silhouettes
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -51,9 +51,9 @@ Replace the shared rounded-rectangle body behind low and overhead obstacles with
 
 ## Acceptance Criteria
 
-- [ ] Low and overhead hazards read as different, biome-appropriate objects instead of generic blocks.
-- [ ] All decorative primitives stay within the previous footprint.
-- [ ] Physics size, collisions, spacing, and warning behavior are unchanged.
+- [x] Low and overhead hazards read as different, biome-appropriate objects instead of generic blocks.
+- [x] All decorative primitives stay within the previous footprint.
+- [x] Physics size, collisions, spacing, and warning behavior are unchanged.
 
 ## Validation
 
@@ -75,6 +75,6 @@ Task: T04-themed-hazards
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed
+- commit: see Git history
