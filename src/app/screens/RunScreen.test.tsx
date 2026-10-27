@@ -1,18 +1,19 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRunnerSnapshot, startRunner } from '../../game/runner/RunnerSimulation';
 import type { RunnerEvent } from '../../game/runner/runnerEvents';
 
 const runMock = vi.hoisted(() => ({ paused: false }));
 
 vi.mock('../../game/runner/RunnerGame', () => ({
-  RunnerGame: ({ paused, onSnapshot, onEvent }: {
+  RunnerGame: ({ paused, tutorialEnabled, onSnapshot, onEvent }: {
     paused: boolean;
+    tutorialEnabled: boolean;
     onSnapshot(snapshot: ReturnType<typeof startRunner>): void;
     onEvent(event: RunnerEvent): void;
   }) => {
     runMock.paused = paused;
-    return <div data-testid="run-game" data-paused={paused}>
+    return <div data-testid="run-game" data-paused={paused} data-tutorial-enabled={tutorialEnabled}>
       <button type="button" onClick={() => {
         onSnapshot(startRunner(createRunnerSnapshot('player-default')));
         onEvent({ type: 'countdown', value: 0 });
@@ -32,7 +33,22 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+beforeEach(() => localStorage.removeItem('runner-action:tutorial:v1:seen'));
+
 describe('RunScreen', () => {
+  it('shows control help on the first run and hides it after persistence on the next run', () => {
+    const firstRun = render(<RunScreen characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
+    expect(screen.getByTestId('run-game')).toHaveAttribute('data-tutorial-enabled', 'true');
+    expect(document.querySelector('.run-screen__help')).toBeInTheDocument();
+    expect(localStorage.getItem('runner-action:tutorial:v1:seen')).toBe('1');
+    firstRun.unmount();
+
+    render(<RunScreen characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
+    expect(screen.getByTestId('run-game')).toHaveAttribute('data-tutorial-enabled', 'false');
+    expect(document.querySelector('.run-screen__help')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /점프/ })).toBeInTheDocument();
+  });
+
   it('pauses, confirms exit without losing the run prematurely, resumes, then exits', () => {
     const onExit = vi.fn();
     render(<RunScreen characterId="player-default" onFinish={vi.fn()} onExit={onExit} />);
@@ -77,9 +93,11 @@ describe('RunScreen', () => {
   it('clears a pending passive cue timeout when the run screen unmounts', () => {
     vi.useFakeTimers();
     const view = render(<RunScreen characterId="hanayo-hiyori" onFinish={vi.fn()} onExit={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'begin mock run' }));
+    const timersBeforePassive = vi.getTimerCount();
     fireEvent.click(screen.getByRole('button', { name: 'trigger passive' }));
-    expect(vi.getTimerCount()).toBe(1);
+    expect(vi.getTimerCount()).toBe(timersBeforePassive + 1);
     view.unmount();
-    expect(vi.getTimerCount()).toBe(0);
+    expect(vi.getTimerCount()).toBe(timersBeforePassive);
   });
 });

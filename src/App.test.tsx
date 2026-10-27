@@ -22,8 +22,9 @@ vi.mock('./services/LocalRunGateway', () => ({ browserRunGateway: runGatewayMock
 vi.mock('./game/runner/RunnerGame', async () => {
   const React = await import('react');
   return {
-    RunnerGame: ({ characterId, onFinished }: {
+    RunnerGame: ({ characterId, tutorialEnabled, onFinished }: {
       characterId: string;
+      tutorialEnabled: boolean;
       onFinished(result: { characterId: string; distanceMeters: number; coins: number; durationMs: number; finishedAtIso: string }, outcome: 'personal-best' | 'completed'): void;
     }) => {
       React.useEffect(() => {
@@ -32,7 +33,8 @@ vi.mock('./game/runner/RunnerGame', async () => {
       }, []);
       runnerMock.finish = (id, outcome) => onFinished({ characterId: id, distanceMeters: 1250,
         coins: 4, durationMs: 90_000, finishedAtIso: '2026-10-27T00:00:00.000Z' }, outcome);
-      return <div data-testid="runner-mock" data-character={characterId}>
+      return <div data-testid="runner-mock" data-character={characterId}
+        data-tutorial-enabled={tutorialEnabled}>
         <button type="button" onClick={() => runnerMock.finish?.(characterId, 'personal-best')}>mock time out</button>
       </div>;
     },
@@ -43,6 +45,7 @@ import App from './App';
 
 afterEach(cleanup);
 beforeEach(() => {
+  localStorage.removeItem('runner-action:tutorial:v1:seen');
   runnerMock.finish = null;
   runnerMock.mounts = 0;
   runnerMock.destroys = 0;
@@ -57,6 +60,22 @@ beforeEach(() => {
 });
 
 describe('App flow', () => {
+  it('shows menu controls before the first run and hides them after returning', () => {
+    render(<App />);
+    expect(document.querySelector('.main-menu-help')).toBeInTheDocument();
+    fireEvent.click(document.querySelector('.home-start')!);
+    fireEvent.click(screen.getByRole('button', { name: 'Hanayo Hiyori' }));
+    fireEvent.click(document.querySelector('.selector-footer .selector-confirm')!);
+    expect(screen.getByTestId('runner-mock')).toHaveAttribute('data-tutorial-enabled', 'true');
+    expect(localStorage.getItem('runner-action:tutorial:v1:seen')).toBe('1');
+
+    const header = screen.getByRole('banner');
+    fireEvent.click(header.querySelector('button')!);
+    const confirmation = screen.getByRole('alertdialog');
+    fireEvent.click(confirmation.querySelector('button')!);
+    expect(document.querySelector('.main-menu-help')).not.toBeInTheDocument();
+  });
+
   it('connects menu, character selection, results, one submitted run, and a same-character retry', async () => {
     render(<App />);
     expect(screen.getByRole('heading', { name: '바람과 빛의 러너' })).toBeInTheDocument();

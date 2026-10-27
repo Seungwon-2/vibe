@@ -11,13 +11,14 @@ export type RunnerGameProps = {
   characterId: CharacterId;
   inputBridge: RunnerInputBridge;
   paused: boolean;
+  tutorialEnabled: boolean;
   onSnapshot(snapshot: RunnerSnapshot): void;
   onFinished(result: RunnerResult, outcome: RunnerFinishOutcome): void;
   onEvent?(event: RunnerEvent): void;
 };
 
 export function RunnerGame({
-  characterId, inputBridge, paused, onSnapshot, onFinished, onEvent,
+  characterId, inputBridge, paused, tutorialEnabled, onSnapshot, onFinished, onEvent,
 }: RunnerGameProps): React.JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -42,7 +43,7 @@ export function RunnerGame({
           callbacksRef.current.onEvent?.({ type: 'fatal-error', message: failure.message });
           setError(failure.message);
         },
-      }));
+      }, tutorialEnabled));
       game.registry.set('paused', initialPaused.current);
       gameRef.current = game;
     } catch (failure) {
@@ -54,7 +55,7 @@ export function RunnerGame({
       gameRef.current = null;
       game?.destroy(true);
     };
-  }, [characterId, inputBridge, attempt]);
+  }, [characterId, inputBridge, tutorialEnabled, attempt]);
 
   useEffect(() => {
     const game = gameRef.current;

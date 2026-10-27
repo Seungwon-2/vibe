@@ -99,7 +99,8 @@ export class RunnerScene extends Phaser.Scene {
     );
     this.physics.add.collider(sprite, floor);
     this.player = new RunnerPlayer(sprite, characterId);
-    this.spawner = new ObstacleSpawner(this, this.player.gameObject, this.handleHazardOverlap);
+    this.spawner = new ObstacleSpawner(this, this.player.gameObject, this.handleHazardOverlap,
+      this.registry.get('runnerTutorialEnabled') === true);
     this.collectibles = new CollectibleSpawner(this, this.player.gameObject, this.handlePickup, characterId);
     this.pits = new PitSpawner(this, this.player.gameObject, () => this.player.isGrounded,
       this.handlePitFall);

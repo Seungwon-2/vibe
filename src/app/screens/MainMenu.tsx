@@ -7,9 +7,11 @@ export type MainMenuProps = {
   topRun: RankedRunRecord | null;
   topRunLoading: boolean;
   topRunError: string | null;
+  showControlsHelp: boolean;
 };
 
-export function MainMenu({ onStart, onRankings, topRun, topRunLoading, topRunError }: MainMenuProps): React.JSX.Element {
+export function MainMenu({ onStart, onRankings, topRun, topRunLoading, topRunError,
+  showControlsHelp }: MainMenuProps): React.JSX.Element {
   const topCharacter = topRun ? getCharacter(topRun.characterId) : null;
   return (
     <main className="landing-shell">
@@ -34,7 +36,7 @@ export function MainMenu({ onStart, onRankings, topRun, topRunLoading, topRunErr
             로컬 기록 보기
           </button>
         </div>
-        <p className="main-menu-help">Space / ↑ 점프 · ↓ 슬라이딩 · P 일시정지</p>
+        {showControlsHelp && <p className="main-menu-help">Space / ↑ 점프 · ↓ 슬라이딩 · P 일시정지</p>}
       </section>
     </main>
   );

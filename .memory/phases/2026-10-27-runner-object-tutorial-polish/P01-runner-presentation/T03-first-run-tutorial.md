@@ -1,6 +1,6 @@
 # Task: T03 First-Run Tutorial
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -71,10 +71,10 @@ Show jump and slide guidance only during the first browser run, with contextual 
 
 ## Acceptance Criteria
 
-- [ ] First browser run shows actionable jump and slide cues at their first respective obstacles only.
-- [ ] Later runs and later obstacles have no repeated movement instructions; touch buttons remain functional.
-- [ ] Menu and run key hints disappear after the first tutorial run.
-- [ ] Storage restrictions do not prevent the game from starting.
+- [x] First browser run shows actionable jump and slide cues at their first respective obstacles only.
+- [x] Later runs and later obstacles have no repeated movement instructions; touch buttons remain functional.
+- [x] Menu and run key hints disappear after the first tutorial run.
+- [x] Storage restrictions do not prevent the game from starting.
 
 ## Validation
 
@@ -96,6 +96,6 @@ Task: T03-first-run-tutorial
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed
+- commit: see Git history

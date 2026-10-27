@@ -22,4 +22,4 @@ Keep fatal-pit art visible through the fall result transition, prevent course ha
 
 ## Progress
 
-- P01: `in_progress` (2/5 tasks; active task T03)
+- P01: `in_progress` (3/5 tasks; active task T04)

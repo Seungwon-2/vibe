@@ -13,7 +13,7 @@ import { drawRunnerHazard } from '../visuals/runnerHazards';
 type ActiveHazard = {
   box: Phaser.GameObjects.Rectangle;
   art: Phaser.GameObjects.Graphics;
-  warning: Phaser.GameObjects.Text;
+  warning: Phaser.GameObjects.Text | null;
   atMeters: number;
   definition: HazardDefinition;
 };
@@ -22,11 +22,13 @@ export class ObstacleSpawner {
   private nextPatternIndex = 0;
   private pending: { atMeters: number; definition: HazardDefinition }[] = [];
   private active: ActiveHazard[] = [];
+  private warnedKinds = new Set<HazardDefinition['kind']>();
 
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly player: Phaser.Physics.Arcade.Sprite,
     private readonly onOverlap: () => void,
+    private readonly tutorialEnabled: boolean,
   ) {}
 
   update(snapshot: RunnerSnapshot): void {
@@ -67,7 +69,7 @@ export class ObstacleSpawner {
       const geometry = getHazardGeometry(hazard.definition, centerX - hazard.definition.width / 2);
       hazard.box.setPosition(centerX, geometry.y + geometry.height / 2);
       hazard.art.setPosition(geometry.x, geometry.y);
-      hazard.warning.setPosition(centerX, geometry.y - 34);
+      hazard.warning?.setPosition(centerX, geometry.y - 34);
       if (geometry.x + geometry.width < 0) this.remove(hazard);
     }
   }
@@ -88,12 +90,14 @@ export class ObstacleSpawner {
     const art = this.scene.add.graphics();
     const biome = getBiomeForDistance(atMeters);
     drawRunnerHazard(art, definition, biome);
-    const warning = this.scene.add.text(0, 0,
+    const showWarning = this.tutorialEnabled && !this.warnedKinds.has(definition.kind);
+    const warning = showWarning ? this.scene.add.text(0, 0,
       definition.kind === 'ground' ? '↑ JUMP' : '↓ SLIDE',
       { color: `#${biome.palette.hazardContrast.toString(16).padStart(6, '0')}`,
         fontSize: '15px', fontFamily: 'monospace',
         backgroundColor: '#fffffff0', padding: { x: 5, y: 2 } },
-    ).setOrigin(0.5, 1);
+    ).setOrigin(0.5, 1) : null;
+    if (showWarning) this.warnedKinds.add(definition.kind);
     const hazard: ActiveHazard = { box, art, warning, atMeters, definition };
     this.active.push(hazard);
     this.scene.physics.add.overlap(this.player, box, () => {
@@ -107,6 +111,6 @@ export class ObstacleSpawner {
     this.active = this.active.filter((item) => item !== hazard);
     hazard.box.destroy();
     hazard.art.destroy();
-    hazard.warning.destroy();
+    hazard.warning?.destroy();
   }
 }

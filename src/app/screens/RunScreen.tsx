@@ -11,6 +11,7 @@ import { PauseOverlay } from '../components/PauseOverlay';
 import { RunnerHud } from '../components/RunnerHud';
 import type { RunnerHudCue } from '../components/RunnerHud';
 import { TouchControls } from '../components/TouchControls';
+import { markRunnerTutorialSeen, shouldShowRunnerTutorial } from '../../game/runner/runnerTutorial';
 
 function isPortrait(): boolean {
   return window.matchMedia?.('(orientation: portrait)').matches ?? window.innerHeight > window.innerWidth;
@@ -31,8 +32,13 @@ export function RunScreen({ characterId, onFinish, onExit }: RunScreenProps): Re
   const [recentBonus, setRecentBonus] = useState<RunnerHudCue | null>(null);
   const [exitConfirmation, setExitConfirmation] = useState(false);
   const [inputBridge] = useState(() => new RunnerInputBridge());
+  const [tutorialEnabled] = useState(() => shouldShowRunnerTutorial());
   const bonusTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const passiveCueSequence = useRef(0);
+
+  useEffect(() => {
+    if (tutorialEnabled) markRunnerTutorialSeen();
+  }, [tutorialEnabled]);
 
   function clearBonus(): void {
     if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
@@ -129,6 +135,7 @@ export function RunScreen({ characterId, onFinish, onExit }: RunScreenProps): Re
       </header>
       <div className="runner-stage" role="region" aria-label="러닝 게임 화면">
         <RunnerGame characterId={characterId} inputBridge={inputBridge} paused={paused}
+          tutorialEnabled={tutorialEnabled}
           onSnapshot={(next) => {
             setSnapshot(next);
             if (next.phase === 'paused') setPaused(true);
@@ -157,11 +164,11 @@ export function RunScreen({ characterId, onFinish, onExit }: RunScreenProps): Re
           </div>
         )}
       </div>
-      <footer className="run-screen__help">
+      {tutorialEnabled && <footer className="run-screen__help">
         <span><kbd>Space</kbd> / <kbd>↑</kbd> 점프</span>
         <span><kbd>↓</kbd> 누르고 있기: 슬라이딩</span>
         <span><kbd>P</kbd> 일시정지</span>
-      </footer>
+      </footer>}
     </main>
   );
 }

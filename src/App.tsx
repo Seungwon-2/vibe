@@ -9,6 +9,7 @@ import type { RunnerFinishOutcome, RunnerResult } from './game/runner/runnerType
 import { browserPersonalBestStore } from './services/PersonalBestStore';
 import { browserRunGateway } from './services/LocalRunGateway';
 import type { RankedRunRecord } from './services/RunGateway';
+import { shouldShowRunnerTutorial } from './game/runner/runnerTutorial';
 
 type AppScreen = 'menu' | 'character-select' | 'run' | 'result' | 'rankings';
 type FinishedRun = {
@@ -135,7 +136,8 @@ function App(): React.JSX.Element {
   }
 
   return <MainMenu onStart={() => setScreen('character-select')} onRankings={openRankings}
-    topRun={overallBest} topRunLoading={bestLoading} topRunError={bestError} />;
+    topRun={overallBest} topRunLoading={bestLoading} topRunError={bestError}
+    showControlsHelp={shouldShowRunnerTutorial()} />;
 }
 
 export default App;

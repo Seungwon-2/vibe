@@ -37,10 +37,10 @@ describe('RunnerGame', () => {
     const bridge = new RunnerInputBridge();
     const onSnapshot = vi.fn();
     const onFinished = vi.fn();
-    const view = render(<RunnerGame characterId="player-default" inputBridge={bridge} paused={false}
+    const view = render(<RunnerGame characterId="player-default" inputBridge={bridge} paused={false} tutorialEnabled
       onSnapshot={onSnapshot} onFinished={onFinished} />);
     expect(mocks.construct).toHaveBeenCalledTimes(1);
-    view.rerender(<RunnerGame characterId="player-default" inputBridge={bridge} paused
+    view.rerender(<RunnerGame characterId="player-default" inputBridge={bridge} paused tutorialEnabled
       onSnapshot={vi.fn()} onFinished={onFinished} />);
     expect(mocks.construct).toHaveBeenCalledTimes(1);
     view.unmount();
@@ -49,7 +49,7 @@ describe('RunnerGame', () => {
 
   it('shows a retry path when Phaser construction fails', async () => {
     mocks.shouldThrow = true;
-    render(<RunnerGame characterId="cogane-rang" inputBridge={new RunnerInputBridge()} paused={false}
+    render(<RunnerGame characterId="cogane-rang" inputBridge={new RunnerInputBridge()} paused={false} tutorialEnabled={false}
       onSnapshot={vi.fn()} onFinished={vi.fn()} />);
     expect(await screen.findByRole('alert')).toHaveTextContent('WebGL unavailable');
     expect(screen.getByRole('button', { name: '다시 시도' })).toBeInTheDocument();
@@ -58,7 +58,7 @@ describe('RunnerGame', () => {
 
   it('forwards the result outcome through the stable callback bridge', () => {
     const onFinished = vi.fn();
-    render(<RunnerGame characterId="player-default" inputBridge={new RunnerInputBridge()} paused={false}
+    render(<RunnerGame characterId="player-default" inputBridge={new RunnerInputBridge()} paused={false} tutorialEnabled
       onSnapshot={vi.fn()} onFinished={onFinished} />);
     const callbacks = mocks.configArgs[3] as {
       onFinished(result: object, outcome: string): void;
@@ -66,5 +66,11 @@ describe('RunnerGame', () => {
     const result = { characterId: 'player-default', distanceMeters: 100 };
     callbacks.onFinished(result, 'personal-best');
     expect(onFinished).toHaveBeenCalledWith(result, 'personal-best');
+  });
+
+  it('passes the captured tutorial setting into Phaser configuration', () => {
+    render(<RunnerGame characterId="player-default" inputBridge={new RunnerInputBridge()} paused={false}
+      tutorialEnabled onSnapshot={vi.fn()} onFinished={vi.fn()} />);
+    expect(mocks.configArgs[4]).toBe(true);
   });
 });

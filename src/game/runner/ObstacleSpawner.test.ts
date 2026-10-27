@@ -88,7 +88,7 @@ describe('ObstacleSpawner schedule', () => {
 
   it('skips whole patterns in pit zones, freezes while paused, and cleans up spawned objects', () => {
     const mock = makeScene();
-    const spawner = new ObstacleSpawner(mock.scene, {} as Phaser.Physics.Arcade.Sprite, vi.fn());
+    const spawner = new ObstacleSpawner(mock.scene, {} as Phaser.Physics.Arcade.Sprite, vi.fn(), false);
 
     spawner.update(snapshotAt(1_000));
     // 360m jump and 600m slide both clear pit-850's exclusion radius.
@@ -112,5 +112,25 @@ describe('ObstacleSpawner schedule', () => {
       .toBe(true);
     expect(mock.texts.every((item) => item.destroy.mock.calls.length === 1))
       .toBe(true);
+  });
+
+  it('shows one first-run warning per hazard kind and keeps colliders without tutorial labels', () => {
+    const tutorialMock = makeScene();
+    const tutorialSpawner = new ObstacleSpawner(tutorialMock.scene,
+      {} as Phaser.Physics.Arcade.Sprite, vi.fn(), true);
+    tutorialSpawner.update(snapshotAt(1_000));
+    expect(tutorialMock.texts).toHaveLength(2);
+    tutorialSpawner.update(snapshotAt(6_000));
+    expect(tutorialMock.texts).toHaveLength(2);
+    expect(tutorialMock.overlaps.length).toBeGreaterThan(2);
+    tutorialSpawner.destroy();
+
+    const regularMock = makeScene();
+    const regularSpawner = new ObstacleSpawner(regularMock.scene,
+      {} as Phaser.Physics.Arcade.Sprite, vi.fn(), false);
+    regularSpawner.update(snapshotAt(1_000));
+    expect(regularMock.texts).toHaveLength(0);
+    expect(regularMock.overlaps).toHaveLength(2);
+    regularSpawner.destroy();
   });
 });

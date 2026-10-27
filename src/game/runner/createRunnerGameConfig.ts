@@ -17,6 +17,7 @@ export function createRunnerGameConfig(
   characterId: CharacterId,
   inputBridge: RunnerInputBridge,
   callbacks: RunnerGameCallbacks,
+  tutorialEnabled: boolean,
 ): Phaser.Types.Core.GameConfig {
   return {
     type: Phaser.AUTO,
@@ -38,6 +39,7 @@ export function createRunnerGameConfig(
         game.registry.set('onFinished', callbacks.onFinished);
         game.registry.set('onEvent', callbacks.onEvent);
         game.registry.set('onError', callbacks.onError);
+        game.registry.set('runnerTutorialEnabled', tutorialEnabled);
       },
     },
   };
