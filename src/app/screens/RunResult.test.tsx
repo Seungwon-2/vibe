@@ -59,6 +59,8 @@ describe('RunResult', () => {
     render(<RunResult result={{ ...result, finishReason: 'pit' }} outcome="personal-best"
       bestDistanceMeters={1234} onRetry={vi.fn()} onChooseCharacter={vi.fn()} onRankings={vi.fn()} />);
     expect(screen.getByRole('heading', { name: '새로운 최고 기록!' })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('낭떠러지에 빠져 달리기가 종료되었습니다');
+    expect(screen.getByText('1,234')).toBeInTheDocument();
     expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-animation', 'gameOver');
   });
 });

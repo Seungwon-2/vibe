@@ -27,11 +27,12 @@ export function RankingScreen({ rows, loading, error, onBack }: RankingScreenPro
                 {rows.map((row) => {
                   const character = getCharacter(row.characterId);
                   return (
-                    <li key={row.id} style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
+                    <li key={row.id} className={`ranking-record${row.rank <= 3 ? ` is-podium is-podium-${row.rank}` : ''}`}
+                      style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
                       <span className="ranking-record__rank">{row.rank}위</span>
                       <span className="ranking-record__character">{character.displayName}</span>
-                      <strong>{row.distanceMeters.toLocaleString()}m</strong>
-                      <small>{row.coins.toLocaleString()} 코인 · <time dateTime={row.finishedAtIso}>{formatRunDate(row.finishedAtIso)}</time></small>
+                      <strong className="ranking-record__distance">{row.distanceMeters.toLocaleString()}m</strong>
+                      <small className="ranking-record__meta">{row.coins.toLocaleString()} 코인 <span aria-hidden="true">·</span> <time dateTime={row.finishedAtIso}>{formatRunDate(row.finishedAtIso)}</time></small>
                     </li>
                   );
                 })}

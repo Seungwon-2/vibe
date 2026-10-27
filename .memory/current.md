@@ -6,16 +6,16 @@
 
 ## Active Phase
 
-[P03 Screen Polish](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P03-screen-polish/phase.md)
+[Complete — P03 Screen Polish](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P03-screen-polish/phase.md)
 
 ## Active Task
 
-[T02 Primary Screen Polish](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P03-screen-polish/T02-primary-screen-polish.md)
+None — all plan tasks are complete.
 
 ## Status
 
-- The Runner Course, Gates, Pits, and UI Polish plan is active on `project02`; P01 and P02 are complete, and P03-T02 is active.
-- The plan divides work into runner-course mechanics, character passives, and screen polish. The fatal-pit cinematic and P03-T01 ability visibility are complete; Hiyori's near-fall guard rescue remains in place.
+- The Runner Course, Gates, Pits, and UI Polish plan is complete on `project02`; all three phases are done.
+- The plan covered runner-course mechanics, character passives, and screen polish. The fatal-pit cinematic and ability visibility are complete; Hiyori's near-fall guard rescue remains in place.
 - Earlier P02-T01 roster work is recorded in its original implementation history; this active plan's P02-T01 is the biome backdrop task completed in `16fc63a`.
 - Asset validation, 44 tests, typecheck, build, and lint passed. Headless Edge confirmed five game loads, responsive selection, Rang jump/slide, and pause/resume.
 - Rang, Hiyori, and Mary now use curated full-size transparent selector portraits based on the supplied references. `assets:prepare` preserves them and `assets:validate` checks their format and transparency.
@@ -54,7 +54,8 @@
 - P01-T04 completed on `project02`: pickup generation now creates a deterministic ground-safe coin stream around every 125m, keeps time items in nearby safe slots, retains optional upper coins when clear, and excludes hazard, pit-clearance, and gate zones. Mary's pickup-body logic is ready to use her centrally defined `radiusPx`; no passive tuning changed in this task. Three targeted files (16 tests) and typecheck passed.
 - P02-T01/T02 completed: centrally tuned Rin's +5% maximum speed, Hiyori's two mixed-use guards, and Mary's +30px pickup radius; Hiyori's guard performs a pink-flame 180ms dip/320ms bounce rescue. Unguarded pit falls now freeze the run at contact, descend for 700ms, shake the game camera for 250ms, then publish the preserved pit result once. 56 passive tests and 29 pit/runner tests plus typecheck passed.
 - P03-T01 completed: inline character-themed SVG icons and exact passive labels appear in the selector and runner HUD. Hiyori's HUD shows two/one/zero defense pips; each defense cue names the blocked obstacle or pit and remaining charges for 1,200ms. Pause, orientation change, timeout, and unmount clear the cue. 15 targeted tests, typecheck, and lint passed.
+- P03-T02 completed: polished selector, HUD, result, and ranking surfaces; pit results now name the fall cause without changing best-distance eligibility, and ranking rows use accent-aware podium chips and wrapping metadata. Edge reviewed the selector and result at desktop, compact landscape, and portrait sizes, the HUD at compact landscape, and rankings at all three viewports. 18 targeted tests, typecheck, lint, and build passed; the existing large-chunk warning remains.
 
 ## Next Step
 
-Read [P03-T02 Primary Screen Polish](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P03-screen-polish/T02-primary-screen-polish.md) and refine selector, runner HUD, result, and ranking details while preserving behavior and responsive layouts.
+The Runner Course, Gates, Pits, and UI Polish plan is complete. Start a new plan for the next feature.

@@ -1,6 +1,6 @@
 # Task: T02 Primary Screen Polish
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -49,18 +49,16 @@ Refine the visual hierarchy and detail of the character selector, runner HUD, ru
 
 ## Acceptance Criteria
 
-- [ ] Four named screens have a consistent, polished pastel visual hierarchy without function/flow changes.
-- [ ] Desktop, compact landscape, and portrait layouts retain complete text, character art, buttons, and usable controls.
-- [ ] Pit-fall result is clearly identified while record submission and best-distance behavior remain intact.
-- [ ] Ranking sort, loading/error/empty states, and all result actions remain unchanged.
+- [x] Four named screens have a consistent, polished pastel visual hierarchy without function/flow changes.
+- [x] Desktop, compact landscape, and portrait layouts retain complete text, character art, buttons, and usable controls.
+- [x] Pit-fall result is clearly identified while record submission and best-distance behavior remain intact.
+- [x] Ranking sort, loading/error/empty states, and all result actions remain unchanged.
 
 ## Validation
 
-- `npm run test -- src/app/screens/CharacterSelect.test.tsx src/app/components/RunnerHud.test.tsx src/app/screens/RunResult.test.tsx src/app/screens/RankingScreen.test.tsx` — screen behavior and pit result messaging assertions pass.
-- `npm run typecheck` — result reason and screen props compile.
-- `npm run lint` — screen/accessibility rules pass.
-- `npm run build` — production styles and application compile.
-- Manual browser review at 1366×768, 915×412 landscape, and 390×844 portrait — verify art, labels, buttons, and row content are not clipped or horizontally overflowing.
+- `npm run test -- src/app/screens/CharacterSelect.test.tsx src/app/components/RunnerHud.test.tsx src/app/screens/RunResult.test.tsx src/app/screens/RankingScreen.test.tsx` — 18 tests pass.
+- `npm run typecheck`, `npm run lint`, `npm run build` — pass; the existing large JavaScript chunk warning remains.
+- Manual Edge review: selector/result at 1366×768, 915×412 landscape, and 390×844 portrait; HUD at 915×412; ranking at all three sizes. No horizontal overflow or clipped text, art, or actions; compact landscape can scroll vertically to the complete result/ranking content.
 
 ## Commit Message
 
@@ -77,6 +75,6 @@ Task: T02-primary-screen-polish
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: included in the P03 completion commit

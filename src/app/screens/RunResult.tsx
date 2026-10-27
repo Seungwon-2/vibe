@@ -41,6 +41,9 @@ export function RunResult({ result, outcome, bestDistanceMeters, submittedRank =
         <div className="result-details">
           <p className="eyebrow">RUN COMPLETE</p>
           <h1 id="result-title">{isNewBest ? '새로운 최고 기록!' : '달리기 종료'}</h1>
+          {result.finishReason === 'pit' && (
+            <p className="result-cause" role="status"><span aria-hidden="true">✦</span> 낭떠러지에 빠져 달리기가 종료되었습니다.</p>
+          )}
           <p className="result-distance">{Math.round(result.distanceMeters).toLocaleString()}<span>m</span></p>
           <dl className="result-stats">
             <div><dt>최고 거리</dt><dd>{bestDistanceMeters.toLocaleString()}m</dd></div>

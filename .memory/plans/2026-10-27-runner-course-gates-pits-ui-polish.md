@@ -12,7 +12,7 @@ Success means deterministic simulation and spawner tests cover gate/speed/timer 
 | :--- | :--- | :--- | :--- |
 | P01 | `done` | Update runner course scheduling, gates, pickups, obstacle waves, and pit behavior. | [P01](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P01-runner-course/phase.md) |
 | P02 | `done` | Implement character passives, then stage a cinematic for fatal pit falls. | [P02](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P02-character-passives/phase.md) |
-| P03 | `in_progress` | Show abilities clearly and refine the four agreed screens. | [P03](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P03-screen-polish/phase.md) |
+| P03 | `done` | Show abilities clearly and refine the four agreed screens. | [P03](../phases/2026-10-27-runner-course-gates-pits-ui-polish/P03-screen-polish/phase.md) |
 
 ## Scope and constraints
 
@@ -29,4 +29,4 @@ Success means deterministic simulation and spawner tests cover gate/speed/timer 
 
 - P01: `done` (4/4 tasks)
 - P02: `done` (2/2 tasks)
-- P03: `in_progress` (0/2 tasks)
+- P03: `done` (2/2 tasks)

@@ -23,6 +23,11 @@ describe('RankingScreen', () => {
     expect(screen.getByText('1,900m')).toBeInTheDocument();
     expect(screen.getByText(/8 코인/)).toBeInTheDocument();
     expect(screen.getAllByText('2026. 10. 27.').length).toBe(1);
+    const topRecord = screen.getByText('1위').closest('li');
+    expect(topRecord).toHaveClass('ranking-record', 'is-podium', 'is-podium-1');
+    expect(topRecord?.style.getPropertyValue('--character-accent')).toBeTruthy();
+    expect(screen.getByText('2,500m')).toHaveClass('ranking-record__distance');
+    expect(screen.getByText(/8 코인/)).toHaveClass('ranking-record__meta');
   });
 
   it('shows empty, loading, and read-error states without hiding the back action', () => {
