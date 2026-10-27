@@ -21,6 +21,7 @@ describe('RunResult', () => {
     expect(screen.getByText('1,234m')).toBeInTheDocument();
     expect(screen.getByText('6')).toBeInTheDocument();
     expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-animation', 'victory');
+    expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-frame', 'hanayo-hiyori-victory-00');
     expect(screen.getByTestId('result-character-portrait')).toHaveAttribute('src', expect.stringContaining('hanayo-hiyori-portrait'));
     expect(screen.getByTestId('result-character-badge')).toHaveTextContent('NEW PERSONAL BEST');
   });
