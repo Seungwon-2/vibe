@@ -1,8 +1,9 @@
 import type Phaser from 'phaser';
 import { getHazardGeometry } from './CollisionSystem';
-import { getHazardDistance, getPatternForDistance, getPatternStartDistance, METERS_PER_WORLD_UNIT } from './hazardPatterns';
+import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance,
+  METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { isPitClearance, getPitDefinitions } from './PitSpawner';
-import { RUNNER_CONFIG } from './runnerConfig';
+import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import type { HazardDefinition } from './hazardTypes';
 import { RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { RunnerSnapshot } from './runnerTypes';
@@ -40,11 +41,17 @@ export class ObstacleSpawner {
       const lastHazardMeters = Math.max(base, ...candidate.map(({ atMeters }) => atMeters));
       const nearbyPits = getPitDefinitions(lastHazardMeters + RUNNER_CONFIG.pitHazardClearanceMeters +
         RUNNER_CONFIG.pitWidthMeters / 2);
-      const conflictsWithPit = candidate.some(({ atMeters }) => nearbyPits.some((pit) =>
-        isPitClearance(atMeters, pit, RUNNER_CONFIG.pitHazardClearanceMeters),
+      const conflictsWithPit = candidate.some(({ atMeters, definition }) => nearbyPits.some((pit) =>
+        isPitClearance(atMeters, pit, RUNNER_CONFIG.pitHazardClearanceMeters +
+          definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit),
       ));
-      // Skip an entire authored pattern so paired actions can never be split.
-      if (!conflictsWithPit) this.pending.push(...candidate);
+      const conflictsWithGate = candidate.some(({ atMeters, definition }) =>
+        RUNNER_GATE_DISTANCES_M.some((gate) => isGateClearance(
+          atMeters, gate, definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit,
+        )),
+      );
+      // Skip an entire authored pattern so action groups cannot be split.
+      if (!conflictsWithPit && !conflictsWithGate) this.pending.push(...candidate);
       this.nextPatternIndex += 1;
     }
 

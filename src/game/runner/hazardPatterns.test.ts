@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { getPitDefinitions, isPitClearance } from './PitSpawner';
 import { RUNNER_CONFIG } from './runnerConfig';
 import { getHazardDistance, getPatternForDistance, getPatternStartDistance,
-  HAZARD_BANDS, HAZARD_PATTERNS, MAX_RUN_SPEED_UNITS_PER_SECOND, METERS_PER_WORLD_UNIT } from './hazardPatterns';
+  HAZARD_BANDS, HAZARD_PATTERNS, isGateClearance, MAX_RUN_SPEED_UNITS_PER_SECOND,
+  METERS_PER_WORLD_UNIT } from './hazardPatterns';
+import { RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 
 describe('authored hazard patterns', () => {
   it('uses the shortened tutorial and practice bands and deterministic early starts', () => {
@@ -12,9 +14,9 @@ describe('authored hazard patterns', () => {
       ['combination', 2_000, 6_000], ['advanced', 6_000, null],
     ]);
     expect([0, 1, 2, 3, 4, 5, 6, 7, 8].map(getPatternStartDistance))
-      .toEqual([360, 900, 1_440, 2_000, 2_300, 2_600, 3_150, 3_450, 3_750]);
+      .toEqual([360, 600, 1_440, 2_000, 2_300, 2_600, 3_150, 3_450, 3_750]);
     expect(getPatternForDistance(360).id).toBe('tutorial-jump');
-    expect(getPatternForDistance(900).id).toBe('tutorial-slide');
+    expect(getPatternForDistance(600).id).toBe('tutorial-slide');
     expect(getPatternForDistance(1_440).id).toBe('practice-jump');
     expect(getPatternForDistance(1_999).maxDistanceMeters).toBe(2_000);
     expect(getPatternForDistance(2_000).id).toBe('combo-jump');
@@ -76,18 +78,41 @@ describe('authored hazard patterns', () => {
         at: getHazardDistance(index, hazard), kind: hazard.kind,
       }));
       const pits = getPitDefinitions(Math.max(...candidate.map(({ at }) => at)) + 215);
-      if (candidate.some(({ at }) => pits.some((pit) => isPitClearance(at, pit)))) continue;
+      if (candidate.some(({ at, kind }) => pits.some((pit) =>
+        isPitClearance(at, pit, RUNNER_CONFIG.pitHazardClearanceMeters +
+          (kind === 'ground' ? 46 : 64) / 2 * METERS_PER_WORLD_UNIT)))) continue;
+      if (candidate.some(({ at, kind }) => RUNNER_GATE_DISTANCES_M.some((gate) =>
+        isGateClearance(at, gate, (kind === 'ground' ? 46 : 64) / 2 * METERS_PER_WORLD_UNIT)))) continue;
       scheduled.push(...candidate);
     }
 
     for (const hazard of scheduled) {
-      for (const pit of getPitDefinitions(12_500)) expect(isPitClearance(hazard.at, pit)).toBe(false);
+      for (const pit of getPitDefinitions(12_500)) {
+        const width = hazard.kind === 'ground' ? 46 : 64;
+        expect(isPitClearance(hazard.at, pit,
+          RUNNER_CONFIG.pitHazardClearanceMeters + width / 2 * METERS_PER_WORLD_UNIT)).toBe(false);
+      }
+      for (const gate of RUNNER_GATE_DISTANCES_M) {
+        const width = hazard.kind === 'ground' ? 46 : 64;
+        expect(isGateClearance(hazard.at, gate, width / 2 * METERS_PER_WORLD_UNIT)).toBe(false);
+      }
     }
     for (let index = 1; index < scheduled.length; index += 1) {
       const gapSeconds = (scheduled[index].at - scheduled[index - 1].at) /
         METERS_PER_WORLD_UNIT / MAX_RUN_SPEED_UNITS_PER_SECOND;
       const precedingActionSeconds = scheduled[index - 1].kind === 'ground' ? 0.95 : 0.6;
-      expect(gapSeconds - precedingActionSeconds).toBeGreaterThanOrEqual(1);
+      const minimumRecoverySeconds = scheduled[index - 1].at === 360 && scheduled[index].at === 600
+        ? 0.75 // the first tutorial jump is intentionally followed by the slide lesson at 600m
+        : 1;
+      expect(gapSeconds - precedingActionSeconds).toBeGreaterThanOrEqual(minimumRecoverySeconds);
     }
+  });
+
+  it('treats gate clearance boundaries inclusively and includes the object footprint', () => {
+    const gate = 2_000;
+    const halfWidth = 10;
+    expect(isGateClearance(gate + RUNNER_CONFIG.gateClearanceMeters + halfWidth, gate, halfWidth)).toBe(true);
+    expect(isGateClearance(gate + RUNNER_CONFIG.gateClearanceMeters + halfWidth + 0.01, gate, halfWidth)).toBe(false);
+    expect(isGateClearance(gate, gate, 0)).toBe(true);
   });
 });

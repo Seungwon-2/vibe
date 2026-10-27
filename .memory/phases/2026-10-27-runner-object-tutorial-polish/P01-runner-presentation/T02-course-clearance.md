@@ -1,6 +1,6 @@
 # Task: T02 Course Object Clearance
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -35,7 +35,7 @@ Keep hazards and pickups out of pit and gate safety zones and prevent pickup art
   ): boolean;
   ```
   Export the predicate from `hazardPatterns.ts`; it returns `Math.abs(distanceMeters - gateDistanceMeters) <= RUNNER_CONFIG.gateClearanceMeters + Math.max(0, objectHalfWidthMeters)` so the whole object footprint stays outside the zone.
-- Keep `getPatternStartDistance(0) === 360`; make index 1 start at 600m; for index >= 2 return the existing cadence formula unchanged. Keep action kinds alternating by index. Verify subsequent starts remain 1,440m, 1,980m, 2,000m, and 2,300m.
+- Keep `getPatternStartDistance(0) === 360`; make index 1 start at 600m; for index >= 2 return the existing cadence formula unchanged. Keep action kinds alternating by index. Verify subsequent starts remain 1,440m, 2,000m, 2,300m, and 2,600m.
 - In `ObstacleSpawner.update`, build each entire candidate pattern before enqueueing. Skip the whole pattern when any member's full horizontal footprint falls in the inclusive gate interval `[gate - 200, gate + 200]`; account for half the hazard width in meters at each boundary. Also skip pit clearances; never split a multi-obstacle pattern.
 - Do not change dense-section spacing, pit clearance, physics boxes, warnings, or obstacle kind selection beyond moving the first slide.
 
@@ -66,14 +66,14 @@ Keep hazards and pickups out of pit and gate safety zones and prevent pickup art
 - Test generated hazards through 15,000m and assert no hazard's full horizontal footprint lies in pit exclusions or gate +/- 200m.
 - Test all pickups, including optional coins, against all generated low/overhead hazard bounds, pits, and gate zones using the maximum visual/collision footprint.
 - Assert schedules remain sorted and IDs unique; any larger-than-target pickup gap must be caused by a real excluded hazard or landmark.
-- Assert starts begin `[360, 600, 1_440, 1_980, 2_000, 2_300]` for the relevant early/dense transition, updating index-based expectations if required by the established cadence formula.
+- Assert starts begin `[360, 600, 1_440, 2_000, 2_300, 2_600]` for the relevant early/dense transition. The existing cadence formula begins the dense section at 2,000m; preserve it.
 
 ## Acceptance Criteria
 
-- [ ] Hazards and pickups are absent from gate safety zones.
-- [ ] Pickups do not intersect low or overhead hazard art/collision bounds, including Mary's largest pickup body.
-- [ ] First jump remains at 360m, first slide is at 600m, and later cadence remains stable.
-- [ ] Pit exclusions, dense recovery spacing, IDs, and reward values remain intact.
+- [x] Hazards and pickups are absent from gate safety zones, including their full horizontal footprints.
+- [x] Pickups do not intersect low or overhead hazard art/collision bounds, including Mary's largest pickup body.
+- [x] First jump remains at 360m, first slide is at 600m, and later cadence remains stable.
+- [x] Pit exclusions, dense recovery spacing, IDs, and reward values remain intact.
 
 ## Validation
 
@@ -95,6 +95,6 @@ Task: T02-course-clearance
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed
+- commit: see Git history

@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import type Phaser from 'phaser';
 import { createRunnerSnapshot, startRunner } from './RunnerSimulation';
 import { ObstacleSpawner } from './ObstacleSpawner';
+import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance,
+  METERS_PER_WORLD_UNIT } from './hazardPatterns';
+import { getPitDefinitions, isPitClearance } from './PitSpawner';
+import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 
 type MockChainObject = Record<string, unknown> & {
   destroy: ReturnType<typeof vi.fn>;
@@ -50,18 +54,56 @@ function snapshotAt(distanceMeters: number, phase: 'running' | 'paused' = 'runni
 }
 
 describe('ObstacleSpawner schedule', () => {
+  it('keeps complete hazard footprints outside pit and gate clearance zones', () => {
+    for (let patternIndex = 0; ; patternIndex += 1) {
+      const start = getPatternStartDistance(patternIndex);
+      if (start > 12_500) break;
+      const definitions = getPatternForDistance(start).obstacles;
+      const candidate = definitions.map((definition) => ({
+        atMeters: getHazardDistance(patternIndex, definition), definition,
+      }));
+      const pits = getPitDefinitions(Math.max(...candidate.map(({ atMeters }) => atMeters)) + 250);
+      const conflictsWithPit = candidate.some(({ atMeters, definition }) => pits.some((pit) =>
+        isPitClearance(atMeters, pit, RUNNER_CONFIG.pitHazardClearanceMeters +
+          definition.width / 2 * METERS_PER_WORLD_UNIT),
+      ));
+      const conflictsWithGate = candidate.some(({ atMeters, definition }) =>
+        RUNNER_GATE_DISTANCES_M.some((gate) => isGateClearance(
+          atMeters, gate, definition.width / 2 * METERS_PER_WORLD_UNIT,
+        )),
+      );
+      if (conflictsWithPit || conflictsWithGate) continue;
+
+      for (const { atMeters, definition } of candidate) {
+        for (const pit of pits) {
+          expect(isPitClearance(atMeters, pit, RUNNER_CONFIG.pitHazardClearanceMeters +
+            definition.width / 2 * METERS_PER_WORLD_UNIT)).toBe(false);
+        }
+        for (const gate of RUNNER_GATE_DISTANCES_M) {
+          expect(isGateClearance(atMeters, gate, definition.width / 2 * METERS_PER_WORLD_UNIT)).toBe(false);
+        }
+      }
+    }
+  });
+
   it('skips whole patterns in pit zones, freezes while paused, and cleans up spawned objects', () => {
     const mock = makeScene();
     const spawner = new ObstacleSpawner(mock.scene, {} as Phaser.Physics.Arcade.Sprite, vi.fn());
 
     spawner.update(snapshotAt(1_000));
-    // 360m is safe; 900m is skipped because it falls within pit-850's exclusion zone.
-    expect(mock.overlaps).toHaveLength(1);
+    // 360m jump and 600m slide both clear pit-850's exclusion radius.
+    expect(mock.overlaps).toHaveLength(2);
     spawner.update(snapshotAt(1_500));
-    expect(mock.overlaps).toHaveLength(2); // the 1,440m pattern is outside the pit zone
+    expect(mock.overlaps).toHaveLength(3); // the 1,440m pattern is outside the pit zone
+
+    spawner.update(snapshotAt(1_750));
+    expect(mock.overlaps).toHaveLength(3); // the 2,000m gate pattern is skipped whole.
+
+    spawner.update(snapshotAt(2_300));
+    expect(mock.overlaps).toHaveLength(4); // 2,300m is outside the gate clear zone.
 
     spawner.update(snapshotAt(4_000, 'paused'));
-    expect(mock.overlaps).toHaveLength(2);
+    expect(mock.overlaps).toHaveLength(4);
 
     spawner.destroy();
     expect(mock.rectangles.every((item) => item.destroy.mock.calls.length === 1))

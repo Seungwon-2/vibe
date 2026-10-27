@@ -53,6 +53,15 @@ export const HAZARD_PATTERNS: readonly HazardPattern[] = Object.freeze([
   singleActionPattern('advanced-slide', 'overhead', 6_000, null),
 ]);
 
+export function isGateClearance(
+  distanceMeters: number,
+  gateDistanceMeters: number,
+  objectHalfWidthMeters: number,
+): boolean {
+  return Math.abs(distanceMeters - gateDistanceMeters) <=
+    RUNNER_CONFIG.gateClearanceMeters + Math.max(0, objectHalfWidthMeters);
+}
+
 function getBandForDistance(distanceMeters: number): HazardBand {
   return HAZARD_BANDS.find(({ minDistanceMeters, maxDistanceMeters }) =>
     distanceMeters >= minDistanceMeters && (maxDistanceMeters === null || distanceMeters < maxDistanceMeters),
@@ -60,6 +69,7 @@ function getBandForDistance(distanceMeters: number): HazardBand {
 }
 
 function getScheduledKind(distanceMeters: number): HazardKind {
+  if (distanceMeters === RUNNER_CONFIG.tutorialSlideDistanceMeters) return 'overhead';
   if (distanceMeters < DENSE_WAVE_FIRST_METERS) {
     const earlyIndex = Math.max(0, Math.floor(
       (distanceMeters - RUNNER_CONFIG.earlyPatternStartMeters) / RUNNER_CONFIG.earlyPatternSpacingMeters,
@@ -94,6 +104,7 @@ export function getPatternStartDistance(patternIndex: number): number {
   if (!Number.isInteger(patternIndex) || patternIndex < 0) {
     throw new RangeError('Pattern index must be a non-negative integer');
   }
+  if (patternIndex === 1) return RUNNER_CONFIG.tutorialSlideDistanceMeters;
   const earlyCount = Math.floor(
     (RUNNER_CONFIG.denseSectionStartMeters - RUNNER_CONFIG.earlyPatternStartMeters) /
       RUNNER_CONFIG.earlyPatternSpacingMeters,

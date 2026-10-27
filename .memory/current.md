@@ -10,14 +10,15 @@
 
 ## Active Task
 
-[T02 Course Object Clearance](./phases/2026-10-27-runner-object-tutorial-polish/P01-runner-presentation/T02-course-clearance.md)
+[T03 First-Run Tutorial](./phases/2026-10-27-runner-object-tutorial-polish/P01-runner-presentation/T03-first-run-tutorial.md)
 
 ## Status
 
 - T01 completed: fatal pit art remains stationary through the fall and camera shake; its overlap sensor is removed independently.
-- Focused PitSpawner and RunnerScene tests (10) and TypeScript typecheck passed.
+- T02 completed: hazard and pickup footprints clear pit/gate zones; pickups avoid both hazard lanes; first slide cue is at 600m.
+- Focused hazard-pattern, obstacle-spawner, and collectible-spawner tests (14) and TypeScript typecheck passed.
 - Previous Runner Course, Gates, Pits, and UI Polish plan is complete.
 
 ## Next Step
 
-Read T02's blueprint and implement gate/pit exclusion rules, pickup bounds checks, and the first slide placement at 600m.
+Read T03's blueprint and implement browser-local first-run tutorial state for jump/slide help and obstacle cues.

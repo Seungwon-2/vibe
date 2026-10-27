@@ -1,11 +1,33 @@
 import { describe, expect, it, vi } from 'vitest';
 import type Phaser from 'phaser';
-import { drawPickupArt, generatePickupSchedule, getPickupBodySize, PICKUP_HAZARD_CLEARANCE_METERS, PICKUP_SCHEDULE } from './CollectibleSpawner';
+import { drawPickupArt, generatePickupSchedule, getPickupBodySize,
+  PICKUP_PIT_CLEARANCE_METERS, PICKUP_SCHEDULE } from './CollectibleSpawner';
 import { RUNNER_GROUND_Y, STANDING_BODY_HEIGHT } from './runnerPose';
-import { RUNNER_GATE_DISTANCES_M } from './runnerConfig';
-import { getHazardDistance, getPatternForDistance, getPatternStartDistance } from './hazardPatterns';
+import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
+import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance } from './hazardPatterns';
 import { getPitDefinitions, isPitClearance } from './PitSpawner';
 import { RUNNER_BIOMES } from '../visuals/runnerBiomes';
+import { getHazardGeometry } from './CollisionSystem';
+import type { HazardDefinition } from './hazardTypes';
+
+const PICKUP_TEST_MARGIN_PX = 12;
+
+function pickupOverlapsHazard(
+  pickup: { distanceMeters: number; heightUnits: number },
+  hazard: { distanceMeters: number; definition: HazardDefinition },
+): boolean {
+  const halfExtent = Math.max(getPickupBodySize('tokino-mary') / 2, 11);
+  const centerY = RUNNER_GROUND_Y - pickup.heightUnits;
+  const pickupTop = centerY - halfExtent - PICKUP_TEST_MARGIN_PX;
+  const pickupBottom = centerY + halfExtent + PICKUP_TEST_MARGIN_PX;
+  const geometry = getHazardGeometry(hazard.definition, 0);
+  const hazardTop = geometry.y - PICKUP_TEST_MARGIN_PX;
+  const hazardBottom = geometry.y + geometry.height + PICKUP_TEST_MARGIN_PX;
+  if (pickupTop > hazardBottom || pickupBottom < hazardTop) return false;
+  const halfWidthMeters = (halfExtent + hazard.definition.width / 2 + 2 * PICKUP_TEST_MARGIN_PX) *
+    RUNNER_CONFIG.metersPerWorldUnit;
+  return Math.abs(pickup.distanceMeters - hazard.distanceMeters) <= halfWidthMeters;
+}
 
 function makeGraphics() {
   const graphics = {
@@ -28,17 +50,17 @@ describe('authored collectible schedule', () => {
     expect(PICKUP_SCHEDULE.length).toBeGreaterThan(70);
   });
 
-  it('generates a stable safe-route stream with 100–150m spacing and time items replacing coins', () => {
+  it('generates a stable safe-route stream with 100–150m cadence and time items replacing coins', () => {
     const generated = generatePickupSchedule(15_000);
     expect(generated).toEqual(PICKUP_SCHEDULE);
     const safe = generated.filter((item) => !item.optionalJump);
     expect(safe[0]).toMatchObject({ distanceMeters: 160, heightUnits: 52, optionalJump: false });
-    const knownHazards: number[] = [];
+    const knownHazards: { distanceMeters: number; definition: HazardDefinition }[] = [];
     for (let patternIndex = 0; ; patternIndex += 1) {
       const start = getPatternStartDistance(patternIndex);
       if (start > 15_000) break;
       for (const hazard of getPatternForDistance(start).obstacles) {
-        if (hazard.kind === 'ground') knownHazards.push(getHazardDistance(patternIndex, hazard));
+        knownHazards.push({ distanceMeters: getHazardDistance(patternIndex, hazard), definition: hazard });
       }
     }
     const knownPits = getPitDefinitions(15_000);
@@ -48,18 +70,24 @@ describe('authored collectible schedule', () => {
       const gap = current - previous;
       expect(gap).toBeGreaterThanOrEqual(100);
       if (gap > 150) {
-        const blocked = knownHazards.some((hazard) => hazard >= previous + 100 && hazard <= current - 100) ||
-          knownPits.some((pit) => pit.distanceMeters >= previous + 100 && pit.distanceMeters <= current - 100) ||
-          RUNNER_GATE_DISTANCES_M.some((gate) => gate >= previous + 100 && gate <= current - 100);
+        const pickupHalfWidthMeters = (getPickupBodySize('tokino-mary') / 2 + PICKUP_TEST_MARGIN_PX) *
+          RUNNER_CONFIG.metersPerWorldUnit;
+        const nearestDistance = (distance: number) => Math.max(previous, Math.min(current, distance));
+        const blocked = knownHazards.some((hazard) => pickupOverlapsHazard({
+          distanceMeters: nearestDistance(hazard.distanceMeters), heightUnits: 52,
+        }, hazard)) || knownPits.some((pit) => isPitClearance(nearestDistance(pit.distanceMeters), pit,
+          PICKUP_PIT_CLEARANCE_METERS + pickupHalfWidthMeters)) ||
+          RUNNER_GATE_DISTANCES_M.some((gate) => isGateClearance(nearestDistance(gate), gate, pickupHalfWidthMeters));
         expect(blocked, `the ${gap}m safe-pickup gap has no hazard or course landmark`).toBe(true);
       }
     }
     expect(Math.max(...safe.slice(1).map((item, index) => item.distanceMeters - safe[index].distanceMeters)))
-      .toBeLessThanOrEqual(250); // larger gaps are allowed only when the intervening slot is blocked.
+      .toBeLessThanOrEqual(700); // nearby pit and gate clear zones can remove several safe-route slots.
     const timeItems = safe.filter((item) => item.kind === 'time');
     expect(timeItems.length).toBeGreaterThan(0);
-    for (const [index, item] of timeItems.entries()) {
-      const target = 1_360 + index * 2_400;
+    for (const item of timeItems) {
+      const slotIndex = Number(item.id.slice('time-'.length));
+      const target = 160 + slotIndex * RUNNER_CONFIG.safePickupSpacingMeters;
       expect(Math.abs(item.distanceMeters - target)).toBeLessThanOrEqual(75);
     }
   });
@@ -71,31 +99,36 @@ describe('authored collectible schedule', () => {
     expect(optional.length).toBeLessThan(25); // unsafe authored slots are omitted
   });
 
-  it('keeps pickups outside the collision window of every ground hazard', () => {
+  it('keeps every pickup outside low and overhead hazard art and collision bounds', () => {
     const maxDistance = PICKUP_SCHEDULE.at(-1)!.distanceMeters;
-    const groundHazards: number[] = [];
+    const hazards: { distanceMeters: number; definition: HazardDefinition }[] = [];
     for (let patternIndex = 0; ; patternIndex += 1) {
       const start = getPatternStartDistance(patternIndex);
       if (start > maxDistance) break;
       for (const hazard of getPatternForDistance(start).obstacles) {
-        if (hazard.kind === 'ground') groundHazards.push(getHazardDistance(patternIndex, hazard));
+        hazards.push({ distanceMeters: getHazardDistance(patternIndex, hazard), definition: hazard });
       }
     }
 
-    const pits = getPitDefinitions(maxDistance + PICKUP_HAZARD_CLEARANCE_METERS);
+    const pits = getPitDefinitions(maxDistance + PICKUP_PIT_CLEARANCE_METERS);
     for (const pickup of PICKUP_SCHEDULE) {
-      for (const hazardDistance of groundHazards) {
-        expect(Math.abs(pickup.distanceMeters - hazardDistance),
-          `${pickup.id} overlaps a ground hazard at ${hazardDistance}m`,
-        ).toBeGreaterThanOrEqual(PICKUP_HAZARD_CLEARANCE_METERS);
+      for (const hazard of hazards) {
+        expect(pickupOverlapsHazard(pickup, hazard),
+          `${pickup.id} overlaps a ${hazard.definition.kind} hazard at ${hazard.distanceMeters}m`,
+        ).toBe(false);
       }
       for (const pit of pits) {
-        expect(isPitClearance(pickup.distanceMeters, pit, PICKUP_HAZARD_CLEARANCE_METERS),
+        const pickupHalfWidthMeters = (getPickupBodySize('tokino-mary') / 2 + PICKUP_TEST_MARGIN_PX) *
+          RUNNER_CONFIG.metersPerWorldUnit;
+        expect(isPitClearance(pickup.distanceMeters, pit,
+          PICKUP_PIT_CLEARANCE_METERS + pickupHalfWidthMeters),
           `${pickup.id} overlaps pit clearance at ${pit.distanceMeters}m`).toBe(false);
       }
       for (const gate of RUNNER_GATE_DISTANCES_M) {
-        expect(Math.abs(pickup.distanceMeters - gate), `${pickup.id} overlaps gate at ${gate}m`)
-          .toBeGreaterThanOrEqual(PICKUP_HAZARD_CLEARANCE_METERS);
+        const halfWidthMeters = (getPickupBodySize('tokino-mary') / 2 + PICKUP_TEST_MARGIN_PX) *
+          RUNNER_CONFIG.metersPerWorldUnit;
+        expect(isGateClearance(pickup.distanceMeters, gate, halfWidthMeters),
+          `${pickup.id} overlaps gate at ${gate}m`).toBe(false);
       }
     }
   });
@@ -103,8 +136,10 @@ describe('authored collectible schedule', () => {
   it('keeps five milestone gates separate from pickups', () => {
     expect(RUNNER_GATE_DISTANCES_M).toEqual([2000, 4000, 6000, 8000, 10000]);
     for (const distance of RUNNER_GATE_DISTANCES_M) {
+      const halfWidthMeters = (getPickupBodySize('tokino-mary') / 2 + PICKUP_TEST_MARGIN_PX) *
+        RUNNER_CONFIG.metersPerWorldUnit;
       expect(PICKUP_SCHEDULE.every((pickup) =>
-        Math.abs(pickup.distanceMeters - distance) >= PICKUP_HAZARD_CLEARANCE_METERS)).toBe(true);
+        !isGateClearance(pickup.distanceMeters, distance, halfWidthMeters))).toBe(true);
     }
   });
 });

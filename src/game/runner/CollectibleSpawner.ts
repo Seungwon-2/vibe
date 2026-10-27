@@ -3,10 +3,13 @@ import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterId } from '../characters/characterTypes';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import type { RunnerPickupKind, RunnerSnapshot } from './runnerTypes';
-import { getHazardDistance, getPatternForDistance, getPatternStartDistance, METERS_PER_WORLD_UNIT } from './hazardPatterns';
+import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance,
+  METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import { getBiomeForDistance } from '../visuals/runnerBiomes';
 import { getPitDefinitions, isPitClearance } from './PitSpawner';
+import { getHazardGeometry } from './CollisionSystem';
+import type { HazardDefinition } from './hazardTypes';
 
 export type PickupDefinition = Readonly<{
   id: string;
@@ -56,50 +59,74 @@ export function drawPickupArt(
   art.fillStyle(p.accent).fillCircle(7, -7, 2);
 }
 
-// Keep authored pickup positions out of the player's collision window around
-// ground hazards, including when future hazard patterns are added or changed.
-export const PICKUP_HAZARD_CLEARANCE_METERS = 40;
+// Keep pickups away from the physical edge of each pit in addition to its width.
+export const PICKUP_PIT_CLEARANCE_METERS = 40;
+const PICKUP_VISUAL_MARGIN_PX = 12;
+const PICKUP_ART_RADIUS_PX = 11;
 
 // The standing-height row is frequent and predictable; elevated coins remain
 // optional and can be skipped when the authored course has no safe placement.
 const SAFE_PICKUP_START_METERS = 160;
 const SAFE_PICKUP_SPACING_METERS = RUNNER_CONFIG.safePickupSpacingMeters;
 
-function getGroundHazardDistances(maxDistanceMeters: number): number[] {
-  const distances: number[] = [];
+type ScheduledHazard = Readonly<{ distanceMeters: number; definition: HazardDefinition }>;
+
+function getScheduledHazards(maxDistanceMeters: number): ScheduledHazard[] {
+  const hazards: ScheduledHazard[] = [];
   for (let patternIndex = 0; ; patternIndex += 1) {
     const patternStart = getPatternStartDistance(patternIndex);
     if (patternStart > maxDistanceMeters) break;
     const pattern = getPatternForDistance(patternStart);
     for (const hazard of pattern.obstacles) {
-      if (hazard.kind === 'ground') distances.push(getHazardDistance(patternIndex, hazard));
+      hazards.push({ distanceMeters: getHazardDistance(patternIndex, hazard), definition: hazard });
     }
   }
-  return distances;
+  return hazards;
 }
 
-function isPickupDistanceSafe(distanceMeters: number, groundHazards: readonly number[], maxDistanceMeters: number): boolean {
-  if (groundHazards.some((hazard) => Math.abs(distanceMeters - hazard) < PICKUP_HAZARD_CLEARANCE_METERS)) {
-    return false;
+function isPickupDistanceSafe(
+  distanceMeters: number,
+  heightUnits: number,
+  hazards: readonly ScheduledHazard[],
+  maxDistanceMeters: number,
+): boolean {
+  const pickupHalfExtentPx = Math.max(getPickupBodySize('tokino-mary') / 2, PICKUP_ART_RADIUS_PX);
+  const pickupCenterY = RUNNER_GROUND_Y - heightUnits;
+  const pickupTop = pickupCenterY - pickupHalfExtentPx - PICKUP_VISUAL_MARGIN_PX;
+  const pickupBottom = pickupCenterY + pickupHalfExtentPx + PICKUP_VISUAL_MARGIN_PX;
+  const pickupHalfWidthMeters = (pickupHalfExtentPx + PICKUP_VISUAL_MARGIN_PX) *
+    RUNNER_CONFIG.metersPerWorldUnit;
+
+  for (const hazard of hazards) {
+    const geometry = getHazardGeometry(hazard.definition, 0);
+    const hazardTop = geometry.y - PICKUP_VISUAL_MARGIN_PX;
+    const hazardBottom = geometry.y + geometry.height + PICKUP_VISUAL_MARGIN_PX;
+    const verticalOverlap = pickupTop <= hazardBottom && pickupBottom >= hazardTop;
+    if (!verticalOverlap) continue;
+    const hazardHalfWidthMeters = (hazard.definition.width / 2 + PICKUP_VISUAL_MARGIN_PX) *
+      RUNNER_CONFIG.metersPerWorldUnit;
+    if (Math.abs(distanceMeters - hazard.distanceMeters) <=
+      pickupHalfWidthMeters + hazardHalfWidthMeters) return false;
   }
+
   if (getPitDefinitions(maxDistanceMeters).some((pit) =>
-    isPitClearance(distanceMeters, pit, PICKUP_HAZARD_CLEARANCE_METERS))) return false;
+    isPitClearance(distanceMeters, pit, PICKUP_PIT_CLEARANCE_METERS + pickupHalfWidthMeters))) return false;
   return RUNNER_GATE_DISTANCES_M.every((gate) =>
-    Math.abs(distanceMeters - gate) >= PICKUP_HAZARD_CLEARANCE_METERS);
+    !isGateClearance(distanceMeters, gate, pickupHalfWidthMeters));
 }
 
 function nearestSafeDistance(
   targetMeters: number,
   minimumMeters: number,
   maximumMeters: number,
-  groundHazards: readonly number[],
+  hazards: readonly ScheduledHazard[],
   maxDistanceMeters: number,
 ): number | undefined {
   const candidates = Array.from(
     { length: Math.max(0, Math.floor(maximumMeters) - Math.ceil(minimumMeters) + 1) },
     (_, index) => Math.ceil(minimumMeters) + index,
   ).sort((left, right) => Math.abs(left - targetMeters) - Math.abs(right - targetMeters) || left - right);
-  return candidates.find((distance) => isPickupDistanceSafe(distance, groundHazards, maxDistanceMeters));
+  return candidates.find((distance) => isPickupDistanceSafe(distance, 52, hazards, maxDistanceMeters));
 }
 
 function getTimePickupSlotIndexes(maxDistanceMeters: number): Set<number> {
@@ -114,12 +141,12 @@ function getTimePickupSlotIndexes(maxDistanceMeters: number): Set<number> {
 /** Generate stable, absolute-distance pickups for any requested course length. */
 export function generatePickupSchedule(maxDistanceMeters: number): readonly PickupDefinition[] {
   if (!Number.isFinite(maxDistanceMeters) || maxDistanceMeters < SAFE_PICKUP_START_METERS) return [];
-  const groundHazards = getGroundHazardDistances(maxDistanceMeters + PICKUP_HAZARD_CLEARANCE_METERS);
-  const pits = getPitDefinitions(maxDistanceMeters + PICKUP_HAZARD_CLEARANCE_METERS);
+  const hazards = getScheduledHazards(maxDistanceMeters + PICKUP_PIT_CLEARANCE_METERS);
+  const pits = getPitDefinitions(maxDistanceMeters + PICKUP_PIT_CLEARANCE_METERS);
   // isPickupDistanceSafe accepts a horizon for pit enumeration; include the
   // clearance beyond the requested end so a pit just outside the range counts.
   const horizon = Math.max(maxDistanceMeters, pits.at(-1)?.distanceMeters ?? 0) +
-    PICKUP_HAZARD_CLEARANCE_METERS;
+    PICKUP_PIT_CLEARANCE_METERS;
   const timeSlots = getTimePickupSlotIndexes(maxDistanceMeters);
   const safePickups: PickupDefinition[] = [];
   const lastIndex = Math.floor((maxDistanceMeters - SAFE_PICKUP_START_METERS) / SAFE_PICKUP_SPACING_METERS);
@@ -131,9 +158,9 @@ export function generatePickupSchedule(maxDistanceMeters: number): readonly Pick
     const preferredMaximum = previous === undefined ? localMaximum : Math.min(localMaximum, previous + 150);
     // Prefer the target cadence and 100–150m gaps. If a hazard blocks that
     // entire gap, keep searching the same local slot so later coins resume.
-    const distanceMeters = nearestSafeDistance(target, localMinimum, preferredMaximum, groundHazards, horizon) ??
+    const distanceMeters = nearestSafeDistance(target, localMinimum, preferredMaximum, hazards, horizon) ??
       (preferredMaximum < localMaximum
-        ? nearestSafeDistance(target, Math.max(localMinimum, preferredMaximum + 1), localMaximum, groundHazards, horizon)
+        ? nearestSafeDistance(target, Math.max(localMinimum, preferredMaximum + 1), localMaximum, hazards, horizon)
         : undefined);
     if (distanceMeters === undefined) continue;
     const kind = timeSlots.has(index) ? 'time' : 'coin';
@@ -144,7 +171,7 @@ export function generatePickupSchedule(maxDistanceMeters: number): readonly Pick
   const optionalPickups: PickupDefinition[] = [];
   for (let distanceMeters = 480; distanceMeters <= maxDistanceMeters;
     distanceMeters += RUNNER_CONFIG.optionalJumpCoinSpacingMeters) {
-    if (!isPickupDistanceSafe(distanceMeters, groundHazards, horizon)) continue;
+    if (!isPickupDistanceSafe(distanceMeters, 116, hazards, horizon)) continue;
     optionalPickups.push({ id: `air-${Math.round((distanceMeters - 480) / RUNNER_CONFIG.optionalJumpCoinSpacingMeters)}`,
       kind: 'coin', distanceMeters, heightUnits: 116, optionalJump: true });
   }
