@@ -10,7 +10,7 @@
 
 ## Active Task
 
-[T02 Character Selector Redesign](./phases/2026-10-27-character-selector-visual-refresh/P01-ui-and-selector/T02-character-selector.md)
+[T03 App Screen Pastel Skin](./phases/2026-10-27-character-selector-visual-refresh/P01-ui-and-selector/T03-app-screen-skin.md)
 
 ## Status
 
@@ -33,8 +33,9 @@
 - [Running Action Redesign](./plans/2026-10-26-running-action-redesign.md) is complete. The queued [Character Selector and Visual Refresh](./plans/2026-10-27-character-selector-visual-refresh.md) plan is now active.
 - User feedback on the result screen: its character area looked sparse. The result stage now layers the local character portrait behind a larger SD outcome animation and outcome badge, and remains visible on mobile; this is an early partial implementation of P01-T03. Full screen visual restyling remains planned.
 - P01-T01 completed in `a6e5018` on `project02`: added the shared pastel palette, pale-sky global background, and a visible blue focus ring. Lint and build passed; all 12 token declarations are unique. Manual screen review remains unavailable without a browser surface.
+- P01-T02 completed in `39afa47` on `project02`: roster cards now show only matched-size SD idle sprites and names in a two-column grid; selected character portrait stays in the showcase, where victory plays once and holds its final frame. Five selector tests, lint, and build passed. Manual viewport review remains unavailable without a browser surface.
 - The unrelated untracked `.memory/image.png` is untouched.
 
 ## Next Step
 
-Continue with P01-T02: redesign the character selector with SD-only roster cards and a selected-character portrait showcase while preserving its current behavior.
+Continue with P01-T03: apply the shared pastel visual system to menu, runner HUD/controls/overlays, ranking, and result screens without changing their behavior.

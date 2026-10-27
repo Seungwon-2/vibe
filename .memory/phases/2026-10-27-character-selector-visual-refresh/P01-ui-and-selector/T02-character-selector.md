@@ -91,5 +91,5 @@ Task: T02-character-selector
 - [x] Markup, one-shot preview behavior, and responsive two-column cards implemented
 - [x] Selector tests (5), lint, and production build passed
 - [ ] Manual viewport review remains unavailable because this session has no browser surface; headless Edge did not produce a screenshot
-- commit: pending
+- commit: `39afa47` on `project02`
 

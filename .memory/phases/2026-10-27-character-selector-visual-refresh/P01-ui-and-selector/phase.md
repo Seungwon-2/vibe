@@ -5,11 +5,11 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done` ✅ | Add shared pastel UI tokens and global page/surface styling. | [T01](./T01-shared-ui-tokens.md) |
-| T02 | `in_progress` 🔄 | Replace roster portraits with standardized SD cards and add selected one-shot victory showcase. | [T02](./T02-character-selector.md) |
-| T03 | `pending` | Apply the shared visual system to menu, run overlays/HUD/controls, ranking, and result screens. | [T03](./T03-app-screen-skin.md) |
+| T02 | `done` ✅ | Replace roster portraits with standardized SD cards and add selected one-shot victory showcase. | [T02](./T02-character-selector.md) |
+| T03 | `in_progress` 🔄 | Apply the shared visual system to menu, run overlays/HUD/controls, ranking, and result screens. | [T03](./T03-app-screen-skin.md) |
 | T04 | `pending` | Validate selection behavior, contrast, and responsive layouts across screens. | [T04](./T04-ui-visual-validation.md) |
 
 ## Progress
 
-- done: 1/4 (active: T02)
+- done: 2/4 (active: T03)
 
