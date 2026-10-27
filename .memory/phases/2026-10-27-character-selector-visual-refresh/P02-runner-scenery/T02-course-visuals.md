@@ -1,6 +1,6 @@
 # Task: T02 Themed Hazards, Pickups, and Gates
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 

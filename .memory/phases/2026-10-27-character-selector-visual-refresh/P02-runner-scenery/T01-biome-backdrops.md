@@ -73,5 +73,5 @@ Task: T01-biome-backdrops
 - [x] Implementation complete
 - [x] Targeted tests, lint, and production build passed.
 - Manual screenshots at 960x540 and 844x390 are deferred because this session has no browser surface; T03 retains the cross-viewport visual review.
-- commit: pending
+- commit: `16fc63a` on `project02`
 

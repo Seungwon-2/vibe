@@ -10,11 +10,11 @@
 
 ## Active Task
 
-[T01 Four Pastel Biome Backdrops](./phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/T01-biome-backdrops.md)
+[T02 Themed Hazards, Pickups, and Gates](./phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/T02-course-visuals.md)
 
 ## Status
 
-- P02-T01 completed in `ff2db77` on `project02`: the five-character roster, motion playback, selector layout, and three new passives are connected.
+- Earlier P02-T01 roster work is recorded in its original implementation history; this active plan's P02-T01 is the biome backdrop task completed in `16fc63a`.
 - Asset validation, 44 tests, typecheck, build, and lint passed. Headless Edge confirmed five game loads, responsive selection, Rang jump/slide, and pause/resume.
 - Rang, Hiyori, and Mary now use curated full-size transparent selector portraits based on the supplied references. `assets:prepare` preserves them and `assets:validate` checks their format and transparency.
 - Rin, Hiyori, and Mary now use their supplied 192×192 sprite frames, converted to 96×96 runtime atlases. Toa and Rang appear as unavailable in character selection until matching sprite sets arrive. Rin's missing idle/start actions temporarily reuse her victory art. This sprite integration did not advance the P02-T02 pointer.
@@ -43,8 +43,8 @@
 - P01-T04 run-screen follow-up committed as `a432e4c`: the user's 915×412 screenshot showed the playfield too small because the width calculation reserved 120px beyond the viewport height. Compact landscape now tightens header/help spacing and reclaims vertical space for a larger 16:9 playfield. Full suite (86), typecheck, lint, and build pass; verify the new size in the user's browser before closing T04.
 - P01-T04 latest follow-up committed as `4721310`: the user reported the change was not perceptible and supplied a capture that still showed clipped card art. Compact-landscape run now uses a fixed viewport-height grid, hides the redundant external help row, and grows its 16:9 board to roughly 71% of screen width at 915×412. Character preview wrappers now use a centered bottom anchor so compact roster art remains inside the card viewport. Full suite (86), typecheck, lint, and build pass; T04 remains active pending a new capture and remaining screen reviews.
 - P01 completed in `4328eaf` on `project02` after the user accepted the current selector and compact runner layout. Full test suite (86), typecheck, lint, and build passed. The complete manual viewport matrix is deferred by user acceptance and recorded in T04.
-- The unrelated untracked `.memory/image.png` is untouched.
+- P02-T01 completed in `16fc63a` on `project02`: retuned the four biome palettes and redrew sunrise city, moonlit forest, crystal mine, and cloud skyway with layered pastel shapes. Gameplay-lane decorations are sparse and low-opacity; parallax ratios, 750ms crossfades, biome thresholds, texture lifecycle, and ground geometry are unchanged. Four targeted tests, lint, and production build passed. No browser surface was available for the 960x540/844x390 screenshots; T03 retains the visual review. The unrelated untracked `.memory/image.png` is untouched.
 
 ## Next Step
 
-Continue with P02-T01: retune the four biome palettes and redraw layered pastel scenery while preserving distance thresholds, parallax, transitions, and gameplay geometry.
+Continue with P02-T02: harmonize hazards, pickups, bonus gates, and biome boundary transitions with the new pastel palettes.
