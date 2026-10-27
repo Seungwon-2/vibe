@@ -68,5 +68,5 @@ Task: T01-shared-ui-tokens
 - [x] Added all shared light UI tokens and layered the global page background
 - [x] Lint and production build passed; token declarations and accent/focus rules were reviewed in source
 - [ ] Manual screen-by-screen visual review remains unavailable because this session has no browser surface; headless Edge did not produce a screenshot
-- commit: pending
+- commit: `a6e5018` on `project02`
 

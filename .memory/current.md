@@ -10,7 +10,7 @@
 
 ## Active Task
 
-[T01 Shared Pastel UI Tokens](./phases/2026-10-27-character-selector-visual-refresh/P01-ui-and-selector/T01-shared-ui-tokens.md)
+[T02 Character Selector Redesign](./phases/2026-10-27-character-selector-visual-refresh/P01-ui-and-selector/T02-character-selector.md)
 
 ## Status
 
@@ -32,8 +32,9 @@
 - P04-T03 completed in `41423df` on `project02`: documented local setup and game rules, added a simulated offline run through pickups, all three time gates, timeout, and persisted ranking. All 85 tests, typecheck, lint, and production build passed; the Vite endpoint returned HTTP 200. Manual viewport review could not be performed because no browser surface was available in this session.
 - [Running Action Redesign](./plans/2026-10-26-running-action-redesign.md) is complete. The queued [Character Selector and Visual Refresh](./plans/2026-10-27-character-selector-visual-refresh.md) plan is now active.
 - User feedback on the result screen: its character area looked sparse. The result stage now layers the local character portrait behind a larger SD outcome animation and outcome badge, and remains visible on mobile; this is an early partial implementation of P01-T03. Full screen visual restyling remains planned.
+- P01-T01 completed in `a6e5018` on `project02`: added the shared pastel palette, pale-sky global background, and a visible blue focus ring. Lint and build passed; all 12 token declarations are unique. Manual screen review remains unavailable without a browser surface.
 - The unrelated untracked `.memory/image.png` is untouched.
 
 ## Next Step
 
-Continue with P01-T01: add shared cloud-white and pale-sky UI tokens and global page styling while preserving current layout and interactions.
+Continue with P01-T02: redesign the character selector with SD-only roster cards and a selected-character portrait showcase while preserving its current behavior.
