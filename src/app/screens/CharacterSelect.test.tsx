@@ -28,12 +28,30 @@ describe('CharacterSelect', () => {
     expect(screen.getByTestId('character-preview-player-default-showcase').style.animationIterationCount).toBe('1');
     expect(screen.getByTestId('character-preview-player-default-showcase').style.animationFillMode).toBe('forwards');
     expect(screen.getByTestId('character-preview-player-default-showcase').style.animationDuration).toBe('1200ms');
+    expect(screen.getByText('Aokumo Rin 선택됨')).toHaveClass('sr-only');
     for (const id of ['hanayo-hiyori', 'tokino-mary', 'goth-student', 'cogane-rang']) {
       expect(screen.getByTestId(`character-preview-${id}-roster`)).toHaveAttribute('data-animation', 'idle');
       expect(screen.getByTestId(`character-preview-${id}-roster`).style.animationIterationCount).toBe('infinite');
     }
     expect(screen.getByTestId('character-preview-hanayo-hiyori-roster').style.animationFillMode).toBe('none');
     expect(screen.queryByText(/MAX|레벨|가격|구매/)).not.toBeInTheDocument();
+  });
+
+  it('applies perceived-height normalization on the sprite wrapper for the whole roster', () => {
+    render(<CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />);
+    const contentHeights: Record<string, number> = {
+      'player-default': 70,
+      'hanayo-hiyori': 53,
+      'tokino-mary': 58,
+      'goth-student': 88,
+      'cogane-rang': 83,
+    };
+    for (const [id, contentHeight] of Object.entries(contentHeights)) {
+      const frame = screen.getByTestId(`character-preview-frame-${id}-roster`);
+      expect(Number.parseFloat(frame.style.getPropertyValue('--preview-scale')))
+        .toBeCloseTo(136 / contentHeight, 4);
+      expect(screen.getByTestId(`character-preview-${id}-roster`).style.getPropertyValue('--preview-scale')).toBe('');
+    }
   });
 
   it('does not allow an unavailable character to become the candidate or start the run', () => {

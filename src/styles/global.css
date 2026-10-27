@@ -25,6 +25,18 @@
   box-sizing: border-box;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 body {
   min-width: 320px;
   min-height: 100vh;
@@ -768,7 +780,7 @@ h1 {
 .selector-panel .character-card__name { min-height: 44px; padding: 6px 5px; font-size: clamp(0.78rem, 1vw, 0.98rem); }
 .selector-panel .character-card__coming-soon,
 .selector-panel .character-card__selected-marker { top: 8px; padding: 5px 9px; font-size: clamp(0.65rem, 0.85vw, 0.78rem); }
-.selector-panel .character-card__coming-soon { left: 8px; }
+.selector-panel .character-card__coming-soon { left: 8px; transform: none; max-width: calc(100% - 16px); white-space: nowrap; }
 .selector-panel .character-card__selected-marker { right: 8px; }
 .selector-footer { margin-top: clamp(12px, 1.5vw, 20px); }
 .selector-footer p { font-size: clamp(0.88rem, 1.25vw, 1rem); }
@@ -795,7 +807,7 @@ h1 {
   .selector-panel .character-card__name { min-height: 34px; padding: 4px 2px; font-size: 0.66rem; }
   .selector-panel .character-card__coming-soon,
   .selector-panel .character-card__selected-marker { top: 4px; padding: 3px 5px; font-size: 0.56rem; }
-  .selector-panel .character-card__coming-soon { left: 4px; }
+  .selector-panel .character-card__coming-soon { left: 4px; transform: none; max-width: calc(100% - 8px); }
   .selector-panel .character-card__selected-marker { right: 4px; }
   .selector-footer { margin-top: 8px; }
   .selector-footer p { font-size: 0.76rem; }

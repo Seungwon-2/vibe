@@ -35,6 +35,7 @@
 - P01-T01 completed in `a6e5018` on `project02`: added the shared pastel palette, pale-sky global background, and a visible blue focus ring. Lint and build passed; all 12 token declarations are unique. Manual screen review remains unavailable without a browser surface.
 - P01-T02 completed in `39afa47` on `project02`: roster cards now show only matched-size SD idle sprites and names in a two-column grid; selected character portrait stays in the showcase, where victory plays once and holds its final frame. Five selector tests, lint, and build passed. Manual viewport review remains unavailable without a browser surface.
 - P01-T03 completed in `fa948c1` on `project02`: rethemed menu, runner HUD/touch controls, countdown, pause/exit overlays, ranking, and result surfaces with the shared pastel tokens. Ten targeted tests, lint, and build passed; no game logic changed. Manual screen review remains outstanding because this session has no browser surface. The known large-bundle warning remains.
+- P01-T04 review found a selector sizing defect: preview scale variables were placed on the child image, while CSS reads them on the sprite wrapper. The screenshot also exposed the disabled badge's leftover center transform and a visible `.sr-only` announcement due to the missing utility. Fixes and automated checks are committed; post-fix viewport review remains pending because no browser surface is available.
 - The unrelated untracked `.memory/image.png` is untouched.
 
 ## Next Step
