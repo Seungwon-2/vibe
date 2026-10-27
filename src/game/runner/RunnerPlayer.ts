@@ -2,7 +2,7 @@ import type Phaser from 'phaser';
 import { getCharacter } from '../characters/characterCatalog';
 import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterAnimationName, CharacterId } from '../characters/characterTypes';
-import { getSlidePose, RUNNER_GROUND_Y, RUNNER_PLAYER_X,
+import { getSlidePose, getTerminalSpriteY, RUNNER_GROUND_Y, RUNNER_PLAYER_X,
   STANDING_BODY_HEIGHT, STANDING_BODY_OFFSET_Y, STANDING_BODY_WIDTH,
   STANDING_SPRITE_Y } from './runnerPose';
 
@@ -93,7 +93,7 @@ export class RunnerPlayer {
     }
   }
 
-  finish(outcome: 'victory' | 'gameOver' = 'gameOver'): void {
+  finish(outcome: 'victory' | 'gameOver'): void {
     if (this.finished) return;
     this.finished = true;
     this.slidingHeld = false;
@@ -101,9 +101,9 @@ export class RunnerPlayer {
     this.hurt = false;
     this.grounded = true;
     this.sprite.setAlpha(1);
-    this.sprite.y = STANDING_SPRITE_Y;
     this.play(outcome);
     this.applyPose();
+    this.sprite.y = getTerminalSpriteY(this.characterId);
     this.body.setVelocity(0, 0);
     this.body.updateFromGameObject();
     this.body.prev.copy(this.body.position);

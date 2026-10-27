@@ -7,6 +7,19 @@ export const STANDING_BODY_HEIGHT = 76;
 export const STANDING_FRAME_BOTTOM = 92;
 export const STANDING_SPRITE_Y = RUNNER_GROUND_Y + (96 - STANDING_FRAME_BOTTOM);
 export const STANDING_BODY_OFFSET_Y = STANDING_FRAME_BOTTOM - STANDING_BODY_HEIGHT;
+
+// Opaque bottom edge of the final victory/cry frame in each runtime atlas.
+const TERMINAL_FRAME_BOTTOM: Readonly<Record<CharacterId, number>> = {
+  'player-default': 89,
+  'goth-student': 92,
+  'cogane-rang': 92,
+  'hanayo-hiyori': 89,
+  'tokino-mary': 90,
+};
+
+export function getTerminalSpriteY(characterId: CharacterId): number {
+  return RUNNER_GROUND_Y + (96 - TERMINAL_FRAME_BOTTOM[characterId]);
+}
 export const SLIDING_BODY_WIDTH = 80;
 export const SLIDING_BODY_HEIGHT = 48;
 

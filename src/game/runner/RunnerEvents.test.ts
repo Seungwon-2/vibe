@@ -29,10 +29,12 @@ describe('runner event bridge', () => {
     bridge.pickup('coin-a', 'coin', 0);
     bridge.gate('gate-2500', 20_000);
     bridge.gate('gate-2500', 20_000);
-    bridge.finish(result);
-    bridge.finish(result);
+    bridge.finish(result, 'personal-best');
+    bridge.finish(result, 'completed');
     expect(events.map((event) => event.type)).toEqual(['pickup', 'gate', 'run-finished']);
     expect(onFinished).toHaveBeenCalledTimes(1);
+    expect(onFinished).toHaveBeenCalledWith(result, 'personal-best');
+    expect(events[2]).toMatchObject({ type: 'run-finished', outcome: 'personal-best' });
   });
 
   it('reports the actual capped gate bonus from the simulation', () => {

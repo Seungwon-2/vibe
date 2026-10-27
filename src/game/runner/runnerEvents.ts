@@ -1,15 +1,15 @@
-import type { RunnerGateId, RunnerPickupKind, RunnerResult, RunnerSnapshot } from './runnerTypes';
+import type { RunnerFinishOutcome, RunnerGateId, RunnerPickupKind, RunnerResult, RunnerSnapshot } from './runnerTypes';
 
 export type RunnerEvent =
   | Readonly<{ type: 'snapshot'; snapshot: RunnerSnapshot }>
   | Readonly<{ type: 'pickup'; pickupId: string; kind: RunnerPickupKind; awardedMs: number }>
   | Readonly<{ type: 'gate'; gateId: RunnerGateId; awardedMs: number }>
-  | Readonly<{ type: 'run-finished'; result: RunnerResult }>
+  | Readonly<{ type: 'run-finished'; result: RunnerResult; outcome: RunnerFinishOutcome }>
   | Readonly<{ type: 'fatal-error'; message: string }>;
 
 export type RunnerCallbacks = {
   onSnapshot(snapshot: RunnerSnapshot): void;
-  onFinished(result: RunnerResult): void;
+  onFinished(result: RunnerResult, outcome: RunnerFinishOutcome): void;
   onEvent?(event: RunnerEvent): void;
 };
 
@@ -40,11 +40,11 @@ export class RunnerEventEmitter {
     this.callbacks.onEvent?.({ type: 'gate', gateId, awardedMs });
   }
 
-  finish(result: RunnerResult): void {
+  finish(result: RunnerResult, outcome: RunnerFinishOutcome): void {
     if (this.finished) return;
     this.finished = true;
-    this.callbacks.onFinished(result);
-    this.callbacks.onEvent?.({ type: 'run-finished', result });
+    this.callbacks.onFinished(result, outcome);
+    this.callbacks.onEvent?.({ type: 'run-finished', result, outcome });
   }
 
   fatalError(message: string): void {

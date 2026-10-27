@@ -1,6 +1,6 @@
 # Task: T02 Personal-Best Results
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -80,10 +80,10 @@ At the one-time end of a local run, record the selected character's best distanc
 
 ## Acceptance Criteria
 
-- [ ] First valid run plays VICTORY; a later strictly farther run plays VICTORY; equal/shorter runs play CRY for the selected character.
-- [ ] Personal best survives reload when storage works and remains session-usable when storage is denied/corrupt; no duplicate record or finish event occurs.
-- [ ] Time-out and collision-ending paths both settle the terminal character on the floor, stop running, and keep their six-frame action visible behind a readable, non-obscuring result panel.
-- [ ] Restart uses the same selected character and stored best; changing characters uses that character's own best. Unified top-ten ranking and Azure remain untouched.
+- [x] First valid run plays VICTORY; a later strictly farther run plays VICTORY; equal/shorter runs play CRY for the selected character.
+- [x] Personal best survives reload when storage works and remains session-usable when storage is denied/corrupt; no duplicate record or finish event occurs.
+- [x] Time-out and collision-ending paths both settle the terminal character on the floor, stop running, and keep their six-frame action visible behind a readable, non-obscuring result panel.
+- [x] Restart uses the same selected character and stored best; changing characters uses that character's own best. Unified top-ten ranking and Azure remain untouched.
 
 ## Validation
 
@@ -106,6 +106,6 @@ Task: T02-personal-best-results
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed (56 tests, typecheck, build, lint; headless Edge desktop/mobile result inspection)
 - commit: pending

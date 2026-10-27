@@ -56,7 +56,7 @@ button {
   background: #314878;
   cursor: pointer;
 }
-.runner-stage { position: relative; margin: 12px 0; aspect-ratio: 16 / 9; }
+.runner-stage { position: relative; margin: 12px 0; aspect-ratio: 16 / 9; container-type: inline-size; }
 .runner-game, .runner-game__canvas, .runner-game__canvas canvas { width: 100%; height: 100%; }
 .runner-game__canvas canvas { display: block; }
 .runner-overlay {
@@ -70,6 +70,37 @@ button {
   background: rgb(8 15 39 / 58%);
   font-size: clamp(1.5rem, 4vw, 3rem);
   text-align: center;
+}
+.runner-overlay--result {
+  align-items: flex-end;
+  padding: clamp(6px, 2.5cqw, 24px);
+  background: linear-gradient(90deg, transparent 0 38%, rgb(8 15 39 / 78%) 62%, rgb(8 15 39 / 91%));
+  text-align: left;
+}
+.runner-result-panel {
+  display: flex;
+  width: 48%;
+  flex-direction: column;
+  align-items: stretch;
+  gap: clamp(3px, 1.2cqw, 12px);
+  padding: clamp(8px, 2cqw, 20px);
+  border: 1px solid rgb(189 211 255 / 52%);
+  border-radius: 14px;
+  background: rgb(17 27 57 / 94%);
+  font-size: clamp(0.7rem, 2.2cqw, 1.3rem);
+}
+.runner-result-panel strong { color: #fff; font-size: 1.25em; }
+.runner-result-panel small { font-size: 0.75em; }
+.runner-result-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.runner-result-actions button { padding: clamp(4px, 0.8cqw, 10px); font-size: 0.8em; }
+@container (max-width: 500px) {
+  .runner-result-panel {
+    width: 58%;
+    gap: 5px;
+    padding: 9px;
+    font-size: 0.82rem;
+  }
+  .runner-result-actions button { padding: 5px 7px; font-size: 0.72rem; }
 }
 .runner-controls button { min-width: 100px; touch-action: none; user-select: none; }
 .runner-controls span { text-align: center; }

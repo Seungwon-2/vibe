@@ -11,6 +11,8 @@ import { tryResolveHazardHit } from './CollisionSystem';
 import { CollectibleSpawner, type PickupDefinition } from './CollectibleSpawner';
 import { RunnerEventEmitter } from './runnerEvents';
 import type { RunnerEvent } from './runnerEvents';
+import { browserPersonalBestStore } from '../../services/PersonalBestStore';
+import type { RunnerFinishOutcome } from './runnerTypes';
 
 export class RunnerScene extends Phaser.Scene {
   private inputBridge!: RunnerInputBridge;
@@ -21,6 +23,7 @@ export class RunnerScene extends Phaser.Scene {
   private heldKeyboardActions = new Set<string>();
   private spawner!: ObstacleSpawner;
   private collectibles!: CollectibleSpawner;
+  private finishEmitted = false;
 
   constructor() {
     super({ key: 'RunnerScene' });
@@ -38,7 +41,7 @@ export class RunnerScene extends Phaser.Scene {
     this.inputBridge = this.registry.get('inputBridge') as RunnerInputBridge;
     this.eventEmitter = new RunnerEventEmitter({
       onSnapshot: this.registry.get('onSnapshot') as (snapshot: RunnerSnapshot) => void,
-      onFinished: this.registry.get('onFinished') as (result: RunnerResult) => void,
+      onFinished: this.registry.get('onFinished') as (result: RunnerResult, outcome: RunnerFinishOutcome) => void,
       onEvent: this.registry.get('onEvent') as ((event: RunnerEvent) => void) | undefined,
     });
     this.snapshot = createRunnerSnapshot(characterId);
@@ -157,9 +160,13 @@ export class RunnerScene extends Phaser.Scene {
   };
 
   private emitFinished(result: RunnerResult): void {
+    if (this.finishEmitted) return;
+    this.finishEmitted = true;
     this.inputBridge.clear();
-    this.player.finish();
-    this.eventEmitter.finish(result);
+    const decision = browserPersonalBestStore.record(result);
+    const outcome: RunnerFinishOutcome = decision.isNewBest ? 'personal-best' : 'completed';
+    this.player.finish(decision.isNewBest ? 'victory' : 'gameOver');
+    this.eventEmitter.finish(result, outcome);
   }
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {

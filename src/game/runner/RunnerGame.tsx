@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 import type { CharacterId } from '../characters/characterTypes';
 import { createRunnerGameConfig } from './createRunnerGameConfig';
 import type { RunnerInputBridge } from './RunnerInput';
-import type { RunnerResult, RunnerSnapshot } from './runnerTypes';
+import type { RunnerFinishOutcome, RunnerResult, RunnerSnapshot } from './runnerTypes';
 import { RunnerScene } from './RunnerScene';
 import type { RunnerEvent } from './runnerEvents';
 
@@ -12,7 +12,7 @@ export type RunnerGameProps = {
   inputBridge: RunnerInputBridge;
   paused: boolean;
   onSnapshot(snapshot: RunnerSnapshot): void;
-  onFinished(result: RunnerResult): void;
+  onFinished(result: RunnerResult, outcome: RunnerFinishOutcome): void;
   onEvent?(event: RunnerEvent): void;
 };
 
@@ -36,7 +36,7 @@ export function RunnerGame({
     try {
       game = new Phaser.Game(createRunnerGameConfig(hostRef.current, characterId, inputBridge, {
         onSnapshot: (snapshot) => callbacksRef.current.onSnapshot(snapshot),
-        onFinished: (result) => callbacksRef.current.onFinished(result),
+        onFinished: (result, outcome) => callbacksRef.current.onFinished(result, outcome),
         onEvent: (event) => callbacksRef.current.onEvent?.(event),
         onError: (failure) => {
           callbacksRef.current.onEvent?.({ type: 'fatal-error', message: failure.message });

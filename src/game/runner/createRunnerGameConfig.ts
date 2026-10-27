@@ -1,13 +1,13 @@
 import Phaser from 'phaser';
 import type { CharacterId } from '../characters/characterTypes';
-import type { RunnerResult, RunnerSnapshot } from './runnerTypes';
+import type { RunnerFinishOutcome, RunnerResult, RunnerSnapshot } from './runnerTypes';
 import type { RunnerInputBridge } from './RunnerInput';
 import { RunnerScene } from './RunnerScene';
 import type { RunnerEvent } from './runnerEvents';
 
 export type RunnerGameCallbacks = {
   onSnapshot(snapshot: RunnerSnapshot): void;
-  onFinished(result: RunnerResult): void;
+  onFinished(result: RunnerResult, outcome: RunnerFinishOutcome): void;
   onEvent?(event: RunnerEvent): void;
   onError(error: Error): void;
 };

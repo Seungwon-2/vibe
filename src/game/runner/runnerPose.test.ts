@@ -3,7 +3,7 @@ import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 import { getCharacter } from '../characters/characterCatalog';
 import type { CharacterId } from '../characters/characterTypes';
-import { getSlidePose, RUNNER_GROUND_Y, RUNNER_PLAYER_X,
+import { getSlidePose, getTerminalSpriteY, RUNNER_GROUND_Y, RUNNER_PLAYER_X,
   SLIDING_BODY_HEIGHT, SLIDING_BODY_WIDTH, STANDING_FRAME_BOTTOM,
   STANDING_SPRITE_Y } from './runnerPose';
 
@@ -18,6 +18,23 @@ const characters: readonly { id: CharacterId; prefix: string }[] = [
 describe('slide art and collision alignment', () => {
   it('places the padded standing art on the physical floor', () => {
     expect(STANDING_SPRITE_Y + STANDING_FRAME_BOTTOM - 96).toBe(RUNNER_GROUND_Y);
+  });
+
+  it('places the final victory and crying poses on the physical floor', async () => {
+    for (const character of characters) {
+      for (const action of ['victory', 'game-over']) {
+        const file = path.join(process.cwd(), 'assets/character/runtime/frames',
+          `${character.prefix}${action}-05.png`);
+        const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+        let bottom = -1;
+        for (let y = 0; y < info.height; y += 1) {
+          for (let x = 0; x < info.width; x += 1) {
+            if (data[(y * info.width + x) * 4 + 3] > 20) bottom = Math.max(bottom, y + 1);
+          }
+        }
+        expect(getTerminalSpriteY(character.id) + bottom - 96).toBe(RUNNER_GROUND_Y);
+      }
+    }
   });
 
   it('places every active slide frame on the floor at its intended scale', async () => {

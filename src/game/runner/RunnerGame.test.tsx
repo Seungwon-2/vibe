@@ -5,6 +5,7 @@ import { RunnerInputBridge } from './RunnerInput';
 const mocks = vi.hoisted(() => ({
   destroy: vi.fn(),
   construct: vi.fn(),
+  configArgs: [] as unknown[],
   shouldThrow: false,
 }));
 
@@ -21,7 +22,10 @@ vi.mock('phaser', () => ({
     },
   },
 }));
-vi.mock('./createRunnerGameConfig', () => ({ createRunnerGameConfig: vi.fn(() => ({ mocked: true })) }));
+vi.mock('./createRunnerGameConfig', () => ({ createRunnerGameConfig: vi.fn((...args: unknown[]) => {
+  mocks.configArgs = args;
+  return { mocked: true };
+}) }));
 vi.mock('./RunnerScene', () => ({ RunnerScene: class {} }));
 
 import { RunnerGame } from './RunnerGame';
@@ -50,5 +54,17 @@ describe('RunnerGame', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('WebGL unavailable');
     expect(screen.getByRole('button', { name: '다시 시도' })).toBeInTheDocument();
     mocks.shouldThrow = false;
+  });
+
+  it('forwards the result outcome through the stable callback bridge', () => {
+    const onFinished = vi.fn();
+    render(<RunnerGame characterId="player-default" inputBridge={new RunnerInputBridge()} paused={false}
+      onSnapshot={vi.fn()} onFinished={onFinished} />);
+    const callbacks = mocks.configArgs[3] as {
+      onFinished(result: object, outcome: string): void;
+    };
+    const result = { characterId: 'player-default', distanceMeters: 100 };
+    callbacks.onFinished(result, 'personal-best');
+    expect(onFinished).toHaveBeenCalledWith(result, 'personal-best');
   });
 });

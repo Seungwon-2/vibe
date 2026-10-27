@@ -164,12 +164,12 @@ describe('RunnerPlayer and input bridge', () => {
     const { player, body, sprite } = createPlayer('player-default');
     sprite.y = 360;
     body.velocity.y = -100;
-    player.finish();
-    player.finish();
+    player.finish('gameOver');
+    player.finish('victory');
     expect(body.enable).toBe(false);
     expect(body.setAllowGravity).toHaveBeenCalledWith(false);
-    expect(sprite.y).toBe(474);
-    expect(body.position.y).toBe(394);
+    expect(sprite.y).toBe(477);
+    expect(body.position.y).toBe(397);
     expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:gameOver', true);
     expect(sprite.anims.play).toHaveBeenCalledTimes(2); // run, then game-over
     expect(player.jump()).toBe(false);
