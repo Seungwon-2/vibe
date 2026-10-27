@@ -1,6 +1,6 @@
 # Task: T01 Shared Pastel UI Tokens
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -39,10 +39,10 @@ Define a consistent light pastel design foundation for all React screens without
 
 ## Acceptance Criteria
 
-- [ ] Global page background is light and uses the agreed cloud-white/pale-sky palette.
-- [ ] Shared tokens exist with the names and initial values above.
-- [ ] Focus rings remain visible and character accent colors remain data-driven.
-- [ ] No UI component or game interaction changes in this task.
+- [x] Global page background is light and uses the agreed cloud-white/pale-sky palette.
+- [x] Shared tokens exist with the names and initial values above.
+- [x] Focus rings remain visible and character accent colors remain data-driven.
+- [x] No UI component or game interaction changes in this task.
 
 ## Validation
 
@@ -65,7 +65,8 @@ Task: T01-shared-ui-tokens
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Added all shared light UI tokens and layered the global page background
+- [x] Lint and production build passed; token declarations and accent/focus rules were reviewed in source
+- [ ] Manual screen-by-screen visual review remains unavailable because this session has no browser surface; headless Edge did not produce a screenshot
 - commit: pending
 
