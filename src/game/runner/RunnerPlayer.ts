@@ -118,8 +118,11 @@ export class RunnerPlayer {
 
   update(deltaMs: number): void {
     if (this.finished) return;
-    const onFloor = this.body.blocked.down || this.body.touching.down ||
-      this.body.bottom >= RUNNER_GROUND_Y - 0.5;
+    // Use Arcade's floor-contact flags for normal landings. The former 0.5px
+    // bottom fallback could mark an airborne frame as grounded and switch to run.
+    const floorContact = this.body.blocked.down || this.body.touching.down;
+    const recoveredPastFloor = this.body.bottom >= RUNNER_GROUND_Y + 8;
+    const onFloor = floorContact || recoveredPastFloor;
     if (onFloor && this.body.velocity.y >= 0) {
       this.grounded = true;
       this.jumpsUsed = 0;
