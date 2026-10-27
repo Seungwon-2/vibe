@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { RunnerResult } from './runnerTypes';
+import type { PitDefinition, PitFallContactResult } from './PitSpawner';
 import { createRunnerSnapshot, startRunner } from './RunnerSimulation';
 
 const record = vi.hoisted(() => vi.fn());
@@ -86,7 +87,7 @@ describe('RunnerScene finish boundary', () => {
       cameras: { main: { shake(duration: number, intensity: number): void } };
       finalizePitFall(): void;
       update(time: number, delta: number): void;
-      handlePitFall(pit: { id: string; distanceMeters: number; widthMeters: number; tutorialWarning: boolean }): void;
+      handlePitFall(pit: PitDefinition): PitFallContactResult;
     };
     const contactSnapshot = { ...startRunner(createRunnerSnapshot('player-default')),
       distanceMeters: 845, worldDistance: 2_535, coins: 7, elapsedMs: 31_000, remainingMs: 59_000 };
@@ -105,8 +106,8 @@ describe('RunnerScene finish boundary', () => {
     };
 
     const pit = { id: 'pit-850', distanceMeters: 850, widthMeters: 30, tutorialWarning: true };
-    harness.handlePitFall(pit);
-    harness.handlePitFall(pit);
+    expect(harness.handlePitFall(pit)).toBe('fatal');
+    expect(harness.handlePitFall(pit)).toBe('ignored');
 
     expect(harness.snapshot).toBe(contactSnapshot);
     expect(harness.snapshot).toMatchObject({ phase: 'running', distanceMeters: 845, coins: 7, remainingMs: 59_000 });
@@ -171,7 +172,7 @@ describe('RunnerScene finish boundary', () => {
       };
       time: { now: number };
       tweens: { add(config: { y: number; duration: number; onComplete(): void }): unknown };
-      handlePitFall(pit: { id: string; distanceMeters: number; widthMeters: number; tutorialWarning: boolean }): void;
+      handlePitFall(pit: PitDefinition): PitFallContactResult;
     };
     harness.snapshot = startRunner(createRunnerSnapshot('hanayo-hiyori'));
     harness.finishEmitted = false;
@@ -183,7 +184,8 @@ describe('RunnerScene finish boundary', () => {
     harness.time = { now: 50 };
     harness.tweens = { add: (config) => { sceneTweens.push(config); return {}; } };
 
-    harness.handlePitFall({ id: 'pit-850', distanceMeters: 850, widthMeters: 30, tutorialWarning: true });
+    expect(harness.handlePitFall({ id: 'pit-850', distanceMeters: 850, widthMeters: 30,
+      tutorialWarning: true })).toBe('rescued');
 
     expect(harness.snapshot).toMatchObject({ phase: 'running', passiveChargesRemaining: 1,
       passiveEffectRemainingMs: 700, remainingMs: 90_000 });

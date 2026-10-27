@@ -9,11 +9,14 @@ export type { PitDefinition } from './pitTypes';
 
 type ActivePit = {
   definition: PitDefinition;
-  zone: Phaser.GameObjects.Rectangle;
+  zone: Phaser.GameObjects.Rectangle | null;
   art: Phaser.GameObjects.Graphics;
   warning: Phaser.GameObjects.Text | null;
   resolved: boolean;
+  retainArtUntilDestroy: boolean;
 };
+
+export type PitFallContactResult = 'fatal' | 'rescued' | 'ignored';
 
 const ZONE_HEIGHT = 4;
 const WARNING_DEPTH = 12;
@@ -53,7 +56,7 @@ export class PitSpawner {
     private readonly scene: Phaser.Scene,
     private readonly player: Phaser.Physics.Arcade.Sprite,
     private readonly isGrounded: () => boolean,
-    private readonly onPitFall: (pit: PitDefinition) => void,
+    private readonly onPitFall: (pit: PitDefinition) => PitFallContactResult,
   ) {}
 
   update(snapshot: RunnerSnapshot): void {
@@ -68,7 +71,12 @@ export class PitSpawner {
     }
 
     for (const pit of [...this.active]) {
-      if (pit.resolved) continue;
+      if (pit.resolved && pit.retainArtUntilDestroy) continue;
+      if (pit.resolved) {
+        this.remove(pit);
+        continue;
+      }
+      if (!pit.zone) continue;
       const x = this.screenX(pit.definition.distanceMeters, snapshot.distanceMeters);
       pit.zone.setPosition(x, RUNNER_GROUND_Y - 1);
       pit.art.setPosition(x, RUNNER_GROUND_Y);
@@ -123,7 +131,9 @@ export class PitSpawner {
       }).setOrigin(0.5).setDepth(WARNING_DEPTH).setVisible(false)
       : null;
 
-    const active: ActivePit = { definition, zone, art, warning, resolved: false };
+    const active: ActivePit = {
+      definition, zone, art, warning, resolved: false, retainArtUntilDestroy: false,
+    };
     this.active.push(active);
     this.scene.physics.add.overlap(this.player, zone, () => {
       if (active.resolved || !this.active.includes(active)) return;
@@ -131,16 +141,29 @@ export class PitSpawner {
       const groundedAtContact = this.isGrounded();
       this.scene.time.delayedCall(0, () => {
         if (!this.active.includes(active)) return;
-        if (groundedAtContact) this.onPitFall(definition);
+        if (groundedAtContact) {
+          this.removeSensor(active);
+          const result = this.onPitFall(definition);
+          if (result === 'fatal') {
+            active.retainArtUntilDestroy = true;
+            return;
+          }
+        }
         this.remove(active);
       });
     });
   }
 
+  private removeSensor(pit: ActivePit): void {
+    pit.zone?.destroy();
+    pit.zone = null;
+    pit.warning?.destroy();
+    pit.warning = null;
+  }
+
   private remove(pit: ActivePit): void {
     this.active = this.active.filter((item) => item !== pit);
-    pit.zone.destroy();
+    this.removeSensor(pit);
     pit.art.destroy();
-    pit.warning?.destroy();
   }
 }

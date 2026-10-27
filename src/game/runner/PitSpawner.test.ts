@@ -83,7 +83,8 @@ describe('pit schedule and clearance', () => {
 describe('PitSpawner', () => {
   it('draws a biome-aware gap and shows a warning only for the first pit near its lead distance', () => {
     const mock = makeScene();
-    const spawner = new PitSpawner(mock.scene, {} as Phaser.Physics.Arcade.Sprite, () => true, vi.fn());
+    const spawner = new PitSpawner(mock.scene, {} as Phaser.Physics.Arcade.Sprite, () => true,
+      vi.fn(() => 'ignored' as const));
     const running = { ...startRunner(createRunnerSnapshot('player-default')),
       distanceMeters: 600, worldDistance: 1_800 };
     spawner.update(running);
@@ -102,7 +103,7 @@ describe('PitSpawner', () => {
 
   it('ends only grounded contacts and ignores duplicate overlap callbacks', () => {
     const mock = makeScene();
-    const onPitFall = vi.fn();
+    const onPitFall = vi.fn(() => 'fatal' as const);
     const spawner = new PitSpawner(mock.scene, {} as Phaser.Physics.Arcade.Sprite, () => true, onPitFall);
     const running = { ...startRunner(createRunnerSnapshot('player-default')),
       distanceMeters: 600, worldDistance: 1_800 };
@@ -112,11 +113,22 @@ describe('PitSpawner', () => {
     mock.overlaps[0]();
     expect(onPitFall).toHaveBeenCalledTimes(1);
     expect(onPitFall).toHaveBeenCalledWith(expect.objectContaining({ id: 'pit-850' }));
+    expect(mock.zones[0].destroy).toHaveBeenCalledOnce();
+    expect(mock.graphicsObjects[0].destroy).not.toHaveBeenCalled();
+    const artPositionCalls = mock.graphicsObjects[0].setPosition.mock.calls.length;
+
+    spawner.update({ ...running, distanceMeters: 900, worldDistance: 2_700 });
+    expect(mock.graphicsObjects[0].setPosition).toHaveBeenCalledTimes(artPositionCalls);
+    expect(mock.graphicsObjects[0].destroy).not.toHaveBeenCalled();
+
+    spawner.destroy();
+    expect(mock.graphicsObjects[0].destroy).toHaveBeenCalledOnce();
+    expect(mock.zones[0].destroy).toHaveBeenCalledOnce();
   });
 
   it('removes an airborne pit overlap without calling the fall handler', () => {
     const mock = makeScene();
-    const onPitFall = vi.fn();
+    const onPitFall = vi.fn(() => 'fatal' as const);
     const spawner = new PitSpawner(mock.scene, {} as Phaser.Physics.Arcade.Sprite, () => false, onPitFall);
     const running = { ...startRunner(createRunnerSnapshot('player-default')),
       distanceMeters: 600, worldDistance: 1_800 };
@@ -125,5 +137,22 @@ describe('PitSpawner', () => {
     mock.overlaps[0]();
     expect(onPitFall).not.toHaveBeenCalled();
     expect(mock.zones[0].destroy).toHaveBeenCalledOnce();
+  });
+
+  it('removes pit art after a guarded contact instead of retaining it for a fatal fall', () => {
+    const mock = makeScene();
+    const onPitFall = vi.fn(() => 'rescued' as const);
+    const spawner = new PitSpawner(mock.scene, {} as Phaser.Physics.Arcade.Sprite, () => true, onPitFall);
+    const running = { ...startRunner(createRunnerSnapshot('hanayo-hiyori')),
+      distanceMeters: 600, worldDistance: 1_800 };
+    spawner.update(running);
+    spawner.update({ ...running, distanceMeters: 850, worldDistance: 2_550 });
+
+    mock.overlaps[0]();
+
+    expect(onPitFall).toHaveBeenCalledOnce();
+    expect(mock.zones[0].destroy).toHaveBeenCalledOnce();
+    expect(mock.graphicsObjects[0].destroy).toHaveBeenCalledOnce();
+    expect(mock.textObjects[0].destroy).toHaveBeenCalledOnce();
   });
 });

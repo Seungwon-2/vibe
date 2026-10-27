@@ -16,6 +16,7 @@ import type { RunnerFinishOutcome } from './runnerTypes';
 import { RunnerBackdrop } from '../visuals/RunnerBackdrop';
 import { getHurtAnimationFrames } from './hurtAnimation';
 import { PitSpawner } from './PitSpawner';
+import type { PitFallContactResult, PitDefinition } from './PitSpawner';
 
 export class RunnerScene extends Phaser.Scene {
   private inputBridge!: RunnerInputBridge;
@@ -209,8 +210,8 @@ export class RunnerScene extends Phaser.Scene {
     if (result) this.emitFinished(result);
   };
 
-  private readonly handlePitFall = (): void => {
-    if (this.finishEmitted || this.pitFallCinematicActive || this.snapshot.phase !== 'running') return;
+  private readonly handlePitFall = (_pit: PitDefinition): PitFallContactResult => {
+    if (this.finishEmitted || this.pitFallCinematicActive || this.snapshot.phase !== 'running') return 'ignored';
     const { state, blockedByPassive, result } = tryResolvePitFall(this.snapshot);
     if (blockedByPassive) {
       this.publish(state, true);
@@ -235,9 +236,9 @@ export class RunnerScene extends Phaser.Scene {
           });
         },
       });
-      return;
+      return 'rescued';
     }
-    if (!result) return;
+    if (!result) return 'ignored';
     this.pitFallCinematicActive = true;
     this.pendingPitFinish = { state, result };
     this.heldKeyboardActions.clear();
@@ -255,6 +256,7 @@ export class RunnerScene extends Phaser.Scene {
         this.pitFinishTimer = this.time.delayedCall(250, this.finalizePitFall);
       },
     });
+    return 'fatal';
   };
 
   private readonly finalizePitFall = (): void => {
