@@ -120,7 +120,12 @@ export class RunnerPlayer {
     if (this.finished) return;
     // Use Arcade's floor-contact flags for normal landings. The former 0.5px
     // bottom fallback could mark an airborne frame as grounded and switch to run.
-    const floorContact = this.body.blocked.down || this.body.touching.down;
+    const floorContactFlag = this.body.blocked.down || this.body.touching.down;
+    // Arcade contact flags can remain set from the previous floor step during
+    // a jump. Trust them only while the collision body is physically at floor
+    // height; otherwise a stale flag can snap an airborne player straight into
+    // the running pose, which is easy to mistake for a pickup animation bug.
+    const floorContact = floorContactFlag && this.body.bottom >= RUNNER_GROUND_Y - 2;
     const recoveredPastFloor = this.body.bottom >= RUNNER_GROUND_Y + 8;
     const onFloor = floorContact || recoveredPastFloor;
     if (onFloor && this.body.velocity.y >= 0) {

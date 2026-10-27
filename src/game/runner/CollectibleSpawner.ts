@@ -3,7 +3,8 @@ import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterId } from '../characters/characterTypes';
 import { RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import type { RunnerPickupKind, RunnerSnapshot } from './runnerTypes';
-import { METERS_PER_WORLD_UNIT } from './hazardPatterns';
+import { getHazardDistance, getPatternForDistance, METERS_PER_WORLD_UNIT,
+  PATTERN_SPACING_METERS, PATTERN_START_METERS } from './hazardPatterns';
 import { RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import { getBiomeForDistance } from '../visuals/runnerBiomes';
 
@@ -15,8 +16,12 @@ export type PickupDefinition = Readonly<{
   optionalJump: boolean;
 }>;
 
+// Keep authored pickup positions out of the player's collision window around
+// ground hazards, including when future hazard patterns are added or changed.
+export const PICKUP_HAZARD_CLEARANCE_METERS = 40;
+
 // The safe row stays inside the standing body. The upper coin row is optional.
-export const PICKUP_SCHEDULE: readonly PickupDefinition[] = Object.freeze(
+const AUTHORED_PICKUP_SCHEDULE: readonly PickupDefinition[] = Object.freeze(
   Array.from({ length: 24 }, (_, index): PickupDefinition[] => {
     const start = 160 + index * 600;
     return [
@@ -26,6 +31,45 @@ export const PICKUP_SCHEDULE: readonly PickupDefinition[] = Object.freeze(
         heightUnits: 116, optionalJump: true },
     ];
   }).flat(),
+);
+
+function getGroundHazardDistances(maxDistanceMeters: number): number[] {
+  const patternCount = Math.ceil((maxDistanceMeters - PATTERN_START_METERS) / PATTERN_SPACING_METERS) + 2;
+  const distances: number[] = [];
+  for (let patternIndex = 0; patternIndex < patternCount; patternIndex += 1) {
+    const patternStart = PATTERN_START_METERS + patternIndex * PATTERN_SPACING_METERS;
+    const pattern = getPatternForDistance(patternStart);
+    for (const hazard of pattern.obstacles) {
+      if (hazard.kind === 'ground') distances.push(getHazardDistance(patternIndex, hazard));
+    }
+  }
+  return distances;
+}
+
+function movePickupPastGroundHazards(
+  pickup: PickupDefinition,
+  groundHazards: readonly number[],
+): PickupDefinition {
+  if (!pickup.optionalJump) return pickup;
+  let distanceMeters = pickup.distanceMeters;
+  let conflict: number | undefined;
+  do {
+    conflict = groundHazards.find((hazardDistance) =>
+      Math.abs(distanceMeters - hazardDistance) < PICKUP_HAZARD_CLEARANCE_METERS,
+    );
+    if (conflict !== undefined) distanceMeters = conflict + PICKUP_HAZARD_CLEARANCE_METERS;
+  } while (conflict !== undefined);
+  return distanceMeters === pickup.distanceMeters ? pickup : { ...pickup, distanceMeters };
+}
+
+const GROUND_HAZARD_DISTANCES = getGroundHazardDistances(
+  AUTHORED_PICKUP_SCHEDULE.at(-1)!.distanceMeters + PICKUP_HAZARD_CLEARANCE_METERS,
+);
+
+export const PICKUP_SCHEDULE: readonly PickupDefinition[] = Object.freeze(
+  AUTHORED_PICKUP_SCHEDULE
+    .map((pickup) => movePickupPastGroundHazards(pickup, GROUND_HAZARD_DISTANCES))
+    .sort((left, right) => left.distanceMeters - right.distanceMeters),
 );
 
 export function getPickupBodySize(characterId: CharacterId): number {

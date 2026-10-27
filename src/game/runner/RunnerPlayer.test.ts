@@ -97,6 +97,22 @@ describe('RunnerPlayer and input bridge', () => {
     expect(sprite.anims.play.mock.calls.filter(([key]) => key === 'player-default:jump-fall')).toHaveLength(1);
   });
 
+  it('does not snap a descending jump to the floor when a stale floor flag is set', () => {
+    const { player, body, sprite } = createPlayer('player-default');
+    player.jump();
+    body.position.y = 360;
+    sprite.y = 436;
+    body.velocity.y = 180;
+    body.blocked.down = true;
+
+    player.update(16);
+
+    expect(player.isGrounded).toBe(false);
+    expect(body.velocity.y).toBe(180);
+    expect(sprite.y).toBe(436);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:jump-fall', true);
+  });
+
   it('keeps the body bottom aligned while sliding and gives Toa release grace', () => {
     const { player, body, sprite } = createPlayer('goth-student');
     player.setSliding(true);
