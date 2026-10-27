@@ -1,9 +1,22 @@
-import { describe, expect, it } from 'vitest';
-import { getPickupBodySize, PICKUP_HAZARD_CLEARANCE_METERS, PICKUP_SCHEDULE } from './CollectibleSpawner';
+import { describe, expect, it, vi } from 'vitest';
+import type Phaser from 'phaser';
+import { drawPickupArt, getPickupBodySize, PICKUP_HAZARD_CLEARANCE_METERS, PICKUP_SCHEDULE } from './CollectibleSpawner';
 import { RUNNER_GROUND_Y, STANDING_BODY_HEIGHT } from './runnerPose';
 import { RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import { getHazardDistance, getPatternForDistance, PATTERN_SPACING_METERS,
   PATTERN_START_METERS } from './hazardPatterns';
+import { RUNNER_BIOMES } from '../visuals/runnerBiomes';
+
+function makeGraphics() {
+  const graphics = {
+    fillStyle: vi.fn(() => graphics), lineStyle: vi.fn(() => graphics),
+    fillCircle: vi.fn(() => graphics), strokeCircle: vi.fn(() => graphics),
+    fillRoundedRect: vi.fn(() => graphics), strokeRoundedRect: vi.fn(() => graphics),
+    fillEllipse: vi.fn(() => graphics), fillTriangle: vi.fn(() => graphics),
+    lineBetween: vi.fn(() => graphics),
+  };
+  return graphics;
+}
 
 describe('authored collectible schedule', () => {
   it('uses unique stable IDs and increasing absolute distances', () => {
@@ -65,5 +78,26 @@ describe('pickup collision radius', () => {
     const upperBottom = RUNNER_GROUND_Y - upper!.heightUnits + getPickupBodySize('hanayo-hiyori') / 2;
     const standingTop = RUNNER_GROUND_Y - STANDING_BODY_HEIGHT;
     expect(upperBottom).toBeLessThan(standingTop);
+  });
+});
+
+describe('themed pickup art', () => {
+  it('keeps coin and clock silhouettes distinct and outlined in every biome', () => {
+    for (const biome of RUNNER_BIOMES) {
+      const coin = makeGraphics();
+      drawPickupArt(coin as unknown as Phaser.GameObjects.Graphics, 'coin', biome);
+      expect(coin.fillCircle).toHaveBeenCalledWith(0, 0, 11);
+      expect(coin.strokeCircle).toHaveBeenCalledWith(0, 0, 11);
+      expect(coin.lineStyle).toHaveBeenCalledWith(2, biome.palette.hazardContrast, 0.96);
+
+      const time = makeGraphics();
+      drawPickupArt(time as unknown as Phaser.GameObjects.Graphics, 'time', biome);
+      expect(time.fillRoundedRect).toHaveBeenCalledWith(-11, -11, 22, 22, 6);
+      expect(time.strokeRoundedRect).toHaveBeenCalledWith(-11, -11, 22, 22, 6);
+      expect(time.lineBetween).toHaveBeenCalledWith(0, -4, 0, 0);
+      expect(time.lineBetween).toHaveBeenCalledWith(0, 0, 3, 2);
+      expect(time.fillStyle).toHaveBeenCalledWith(biome.palette.pickupTime);
+      expect(time.fillStyle).not.toHaveBeenCalledWith(biome.palette.pickupCoin);
+    }
   });
 });

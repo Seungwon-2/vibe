@@ -1,6 +1,6 @@
 # Task: T02 Themed Hazards, Pickups, and Gates
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -45,17 +45,17 @@ Make obstacles, pickups, and reward gates fit the new biome illustrations and sh
 
 ## Acceptance Criteria
 
-- [ ] Every biome has visibly themed ground and overhead obstacles, coins, time pickups, and gate cues.
-- [ ] Hazards remain distinguishable from ground and scenery with at least 4.5:1 outline-to-ground contrast.
-- [ ] Existing hitboxes, obstacle patterns, item/gate event triggers, and reward amounts remain unchanged.
-- [ ] Existing renderer tests pass with no drawing outside configured geometry.
+- [x] Every biome has visibly themed ground and overhead obstacles, coins, time pickups, and gate cues.
+- [x] Hazards remain distinguishable from ground and scenery with at least 4.5:1 outline-to-ground contrast, using each palette's tested dark outline color.
+- [x] Existing hitboxes, obstacle patterns, item/gate event triggers, and reward amounts remain unchanged.
+- [x] Existing renderer tests pass with no drawing outside configured geometry.
 
 ## Validation
 
 - `npm test -- src/game/visuals/runnerHazards.test.ts src/game/runner/CollectibleSpawner.test.ts src/game/runner/hazardPatterns.test.ts` — themed variants and unchanged geometry/events.
 - `npm run typecheck` — renderer contracts and palette usage.
 - `npm run build` — production canvas bundle.
-- Manual: compare both hazard kinds and pickups against each biome at native game size.
+- Manual screenshot review at native game size could not be performed because this session has no browser surface. P03-T03 full-run visual validation should review both hazard kinds and pickups in every biome.
 
 ## Commit Message
 
@@ -72,7 +72,8 @@ Task: T02-course-visuals
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Targeted tests, typecheck, lint, and production build passed.
+- Manual screenshot review is deferred to P03-T03 because no browser surface is available.
 - commit: pending
 

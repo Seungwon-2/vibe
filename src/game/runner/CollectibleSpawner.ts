@@ -16,6 +16,46 @@ export type PickupDefinition = Readonly<{
   optionalJump: boolean;
 }>;
 
+export function drawPickupArt(
+  art: Phaser.GameObjects.Graphics,
+  kind: RunnerPickupKind,
+  biome: ReturnType<typeof getBiomeForDistance>,
+): void {
+  const { palette: p } = biome;
+  if (kind === 'coin') {
+    art.fillStyle(p.pickupCoin).fillCircle(0, 0, 11);
+    art.lineStyle(2, p.hazardContrast, 0.96).strokeCircle(0, 0, 11);
+    art.fillStyle(p.accent).fillCircle(0, 0, 7);
+    art.lineStyle(1.5, p.hazardContrast, 0.9);
+    switch (biome.id) {
+      case 'dawn-city':
+        art.lineBetween(-4, 2, 4, 2).lineBetween(-2, -1, 0, -4).lineBetween(0, -4, 2, -1);
+        break;
+      case 'moonlit-forest':
+        art.fillStyle(p.hazardContrast).fillEllipse(0, 0, 8, 5);
+        art.lineStyle(1, p.groundFace).lineBetween(-3, 2, 3, -2);
+        break;
+      case 'crystal-mine':
+        art.fillStyle(p.hazardContrast).fillTriangle(-4, 3, 0, -4, 4, 3);
+        art.fillStyle(p.accent).fillTriangle(-1, 2, 0, -2, 2, 2);
+        break;
+      case 'cloud-skyway':
+        art.fillStyle(p.hazardContrast).fillTriangle(-1, -4, 1, -1, 0, 0)
+          .fillTriangle(4, -1, 1, 1, 0, 0).fillTriangle(1, 4, -1, 1, 0, 0)
+          .fillTriangle(-4, 1, -1, -1, 0, 0);
+        break;
+    }
+    return;
+  }
+
+  art.fillStyle(p.pickupTime).fillRoundedRect(-11, -11, 22, 22, 6);
+  art.lineStyle(2, p.hazardContrast, 0.96).strokeRoundedRect(-11, -11, 22, 22, 6);
+  art.fillStyle(p.groundFace).fillCircle(0, 0, 7);
+  art.lineStyle(2, p.hazardContrast, 0.96).strokeCircle(0, 0, 7)
+    .lineBetween(0, -4, 0, 0).lineBetween(0, 0, 3, 2);
+  art.fillStyle(p.accent).fillCircle(7, -7, 2);
+}
+
 // Keep authored pickup positions out of the player's collision window around
 // ground hazards, including when future hazard patterns are added or changed.
 export const PICKUP_HAZARD_CLEARANCE_METERS = 40;
@@ -123,14 +163,37 @@ export class CollectibleSpawner {
       const { palette, landmark } = getBiomeForDistance(distanceMeters);
       const art = this.scene.add.graphics().setDepth(-5);
       // Landmark is a non-colliding arch aligned with the existing +20s gate.
-      art.fillStyle(palette.gate, 0.17).fillRoundedRect(-28, -168, 56, 168, 14);
-      art.lineStyle(5, palette.gate, 0.9).strokeRoundedRect(-28, -168, 56, 168, 14);
-      art.lineStyle(2, palette.hazardContrast, 0.32).lineBetween(-17, -148, -17, -4)
+      art.fillStyle(palette.gate, 0.22).fillRoundedRect(-28, -168, 56, 168, 14);
+      art.lineStyle(5, palette.gate, 0.96).strokeRoundedRect(-28, -168, 56, 168, 14);
+      art.lineStyle(2, palette.hazardContrast, 0.56).lineBetween(-17, -148, -17, -4)
         .lineBetween(17, -148, 17, -4);
-      art.fillStyle(palette.accent, 0.95).fillCircle(0, -171, 8);
+      art.fillStyle(palette.groundFace).fillCircle(0, -108, 19);
+      art.lineStyle(2, palette.hazardContrast, 0.92).strokeCircle(0, -108, 19);
+      switch (getBiomeForDistance(distanceMeters).id) {
+        case 'dawn-city':
+          art.fillStyle(palette.accent).fillCircle(0, -108, 8);
+          art.lineStyle(2, palette.hazardContrast).lineBetween(-11, -98, 11, -98);
+          for (const x of [-12, 12]) art.lineBetween(x, -116, x, -120);
+          break;
+        case 'moonlit-forest':
+          art.fillStyle(palette.accent).fillEllipse(0, -108, 13, 8);
+          art.lineStyle(2, palette.hazardContrast).lineBetween(-5, -103, 5, -113);
+          break;
+        case 'crystal-mine':
+          art.fillStyle(palette.accent).fillTriangle(-9, -100, 0, -117, 9, -100);
+          art.fillStyle(palette.hazardContrast).fillTriangle(-4, -101, 1, -111, 5, -101);
+          break;
+        case 'cloud-skyway':
+          art.fillStyle(palette.accent).fillTriangle(0, -119, 3, -110, 0, -107)
+            .fillTriangle(10, -108, 1, -105, 0, -108)
+            .fillTriangle(0, -97, -3, -106, 0, -108)
+            .fillTriangle(-10, -108, -1, -111, 0, -108);
+          break;
+      }
       const label = this.scene.add.text(0, 0, '+20s',
-        { color: '#263d73', fontSize: '15px', fontFamily: 'monospace',
-          backgroundColor: '#fffffff0', padding: { x: 4, y: 2 } }).setOrigin(0.5)
+        { color: `#${palette.hazardContrast.toString(16).padStart(6, '0')}`,
+          fontSize: '15px', fontFamily: 'monospace',
+          backgroundColor: '#fffffff0', padding: { x: 5, y: 3 } }).setOrigin(0.5)
         .setDepth(5);
       label.setText(`${landmark}  +20s`);
       this.gates.push({ distanceMeters, art, label });
@@ -166,18 +229,7 @@ export class CollectibleSpawner {
     body.setImmovable(true);
     const art = this.scene.add.graphics();
     const biome = getBiomeForDistance(definition.distanceMeters);
-    const { palette } = biome;
-    if (definition.kind === 'coin') {
-      art.fillStyle(0xffffff, 0.64).fillCircle(0, 0, 14);
-      art.fillStyle(palette.pickupCoin).fillTriangle(0, -11, 5, 0, 0, 11)
-        .fillTriangle(-11, 0, 0, -5, 11, 0);
-      art.fillStyle(0xffe7aa).fillCircle(0, 0, 3);
-    } else {
-      art.fillStyle(palette.pickupTime, 0.88).fillRoundedRect(-12, -12, 24, 24, 5);
-      art.lineStyle(2, 0xffffff, 0.9).strokeRoundedRect(-11, -11, 22, 22, 5);
-      const symbol = biome.id === 'cloud-skyway' ? 0xffffff : 0x12364f;
-      art.fillStyle(symbol).fillRect(-2, -8, 4, 16).fillRect(-8, -2, 16, 4);
-    }
+    drawPickupArt(art, definition.kind, biome);
     const active: ActivePickup = { definition, box, art, collected: false };
     this.active.push(active);
     this.scene.physics.add.overlap(this.player, box, () => {

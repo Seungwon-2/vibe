@@ -10,8 +10,53 @@ function makeGraphics() {
     fillRoundedRect: vi.fn(() => graphics), strokeRoundedRect: vi.fn(() => graphics),
     fillRect: vi.fn(() => graphics), fillCircle: vi.fn(() => graphics),
     fillEllipse: vi.fn(() => graphics), fillTriangle: vi.fn(() => graphics),
+    lineBetween: vi.fn(() => graphics),
   };
   return graphics;
+}
+
+function calls(graphics: ReturnType<typeof makeGraphics>, method: keyof ReturnType<typeof makeGraphics>) {
+  return (graphics[method] as unknown as { mock: { calls: number[][] } }).mock.calls;
+}
+
+function expectPrimitivesInside(graphics: ReturnType<typeof makeGraphics>, width: number, height: number) {
+  for (const [x, y, w, h] of calls(graphics, 'fillRect')) {
+    expect(x).toBeGreaterThanOrEqual(0);
+    expect(y).toBeGreaterThanOrEqual(0);
+    expect(x + w).toBeLessThanOrEqual(width);
+    expect(y + h).toBeLessThanOrEqual(height);
+  }
+  for (const [x, y, w, h] of [...calls(graphics, 'fillRoundedRect'),
+    ...calls(graphics, 'strokeRoundedRect')]) {
+    expect(x).toBeGreaterThanOrEqual(0);
+    expect(y).toBeGreaterThanOrEqual(0);
+    expect(x + w).toBeLessThanOrEqual(width);
+    expect(y + h).toBeLessThanOrEqual(height);
+  }
+  for (const [x, y, radius] of calls(graphics, 'fillCircle')) {
+    expect(x - radius).toBeGreaterThanOrEqual(0);
+    expect(y - radius).toBeGreaterThanOrEqual(0);
+    expect(x + radius).toBeLessThanOrEqual(width);
+    expect(y + radius).toBeLessThanOrEqual(height);
+  }
+  for (const [x, y, w, h] of calls(graphics, 'fillEllipse')) {
+    expect(x - w / 2).toBeGreaterThanOrEqual(0);
+    expect(y - h / 2).toBeGreaterThanOrEqual(0);
+    expect(x + w / 2).toBeLessThanOrEqual(width);
+    expect(y + h / 2).toBeLessThanOrEqual(height);
+  }
+  for (const [x1, y1, x2, y2] of calls(graphics, 'lineBetween')) {
+    expect(x1).toBeGreaterThanOrEqual(0);
+    expect(y1).toBeGreaterThanOrEqual(0);
+    expect(x2).toBeLessThanOrEqual(width);
+    expect(y2).toBeLessThanOrEqual(height);
+  }
+  for (const [x1, y1, x2, y2, x3, y3] of calls(graphics, 'fillTriangle')) {
+    for (const x of [x1, x2, x3]) expect(x).toBeGreaterThanOrEqual(0);
+    for (const y of [y1, y2, y3]) expect(y).toBeGreaterThanOrEqual(0);
+    for (const x of [x1, x2, x3]) expect(x).toBeLessThanOrEqual(width);
+    for (const y of [y1, y2, y3]) expect(y).toBeLessThanOrEqual(height);
+  }
 }
 
 describe('themed hazard art', () => {
@@ -33,7 +78,28 @@ describe('themed hazard art', () => {
           1, 1, definition.width - 2, definition.height - 2, 7,
         );
         expect(graphics.fillStyle).toHaveBeenCalledWith(biome.palette.groundFace, 0.97);
+        expect(graphics.lineStyle).toHaveBeenCalledWith(2, biome.palette.hazardContrast, 0.9);
+        expectPrimitivesInside(graphics, definition.width, definition.height);
       }
+    }
+  });
+
+  it('uses a distinct low-obstacle silhouette for every biome and hazard lane', () => {
+    for (const biome of RUNNER_BIOMES) {
+      const signatures = (['ground', 'overhead'] as const).map((kind) => {
+        const graphics = makeGraphics();
+        const definition: HazardDefinition = {
+          id: `${biome.id}-${kind}`, kind, offsetMeters: 0,
+          width: kind === 'ground' ? 46 : 64,
+          height: kind === 'ground' ? 48 : 36,
+          warningColor: '#ffffff',
+        };
+        drawRunnerHazard(graphics as unknown as Phaser.GameObjects.Graphics, definition, biome);
+        return [graphics.fillCircle.mock.calls.length, graphics.fillEllipse.mock.calls.length,
+          graphics.fillTriangle.mock.calls.length, graphics.fillRect.mock.calls.length,
+          graphics.fillRoundedRect.mock.calls.length];
+      });
+      expect(signatures[0]).not.toEqual(signatures[1]);
     }
   });
 });
