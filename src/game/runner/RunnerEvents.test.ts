@@ -3,6 +3,22 @@ import { advanceRunner, createRunnerSnapshot, startRunner } from './RunnerSimula
 import { RunnerEventEmitter, type RunnerEvent } from './runnerEvents';
 
 describe('runner event bridge', () => {
+  it('forwards countdown ticks including the start transition', () => {
+    const events: RunnerEvent[] = [];
+    const bridge = new RunnerEventEmitter({ onSnapshot: vi.fn(), onFinished: vi.fn(),
+      onEvent: (event) => events.push(event) });
+    bridge.countdown(3);
+    bridge.countdown(2);
+    bridge.countdown(1);
+    bridge.countdown(0);
+    expect(events).toEqual([
+      { type: 'countdown', value: 3 },
+      { type: 'countdown', value: 2 },
+      { type: 'countdown', value: 1 },
+      { type: 'countdown', value: 0 },
+    ]);
+  });
+
   it('bounds snapshots to 10Hz and forces state changes immediately', () => {
     const events: RunnerEvent[] = [];
     const onSnapshot = vi.fn();

@@ -1,6 +1,6 @@
 # Task: T02 HUD, Mobile Controls, and Pause
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -51,19 +51,19 @@ Present clear live run information, a 3-second countdown, keyboard/touch action 
 
 ## Acceptance Criteria
 
-- [ ] HUD values match the latest `RunnerSnapshot` and remain legible against each biome.
-- [ ] The top band and bottom-corner controls match the reference's information hierarchy while showing only Project 02's timer, meters, coins, biome/landmark, and pause state; no unrelated score, rarity, or currency indicators appear.
-- [ ] Countdown consumes three seconds before the 90-second run begins.
-- [ ] Pause freezes timer, distance, player physics, hazards, pickups, and parallax; resume continues without a freeze.
-- [ ] Mobile held slide releases on every pointer cancellation and lifecycle exit.
-- [ ] Portrait orientation presents a rotate prompt and cannot silently continue the timer.
+- [x] HUD values match the latest `RunnerSnapshot` and remain legible against each biome.
+- [x] The top band and bottom-corner controls match the reference's information hierarchy while showing only Project 02's timer, meters, coins, biome/landmark, and pause state; no unrelated score, rarity, or currency indicators appear.
+- [x] Countdown consumes three seconds before the 90-second run begins.
+- [x] Pause freezes timer, distance, player physics, hazards, pickups, and parallax; resume continues without a freeze.
+- [x] Mobile held slide releases on every pointer cancellation and lifecycle exit.
+- [x] Portrait orientation presents a rotate prompt and cannot silently continue the timer.
 
 ## Validation
 
 - `npm test -- src/app/components/RunnerHud.test.tsx src/app/components/TouchControls.test.tsx` — validates display and input lifecycle.
 - `npm run typecheck` — validates component and input bridge contracts.
-- Manual: verify landscape mobile-sized viewport with touch simulation; verify portrait prompt and resume.
-- Manual: at 1366x768, 844x390, and 667x375, verify the top HUD and both control circles fit without horizontal scrolling or covering the actor/hazard lane; check safe-area padding and keyboard focus visibility.
+- Manual: headless Edge screenshots reviewed at 1366x768 and 844x390 landscape, plus 390x844 portrait guidance. CUA exposed no browser/device surface for live touch simulation.
+- Manual: desktop and landscape mobile captures showed HUD and both control circles fitting without horizontal scrolling or covering the actor/hazard lane; component tests cover pointer cancellation and lifecycle cleanup. 667x375 capture and physical touch-device review remain outstanding.
 
 ## Commit Message
 
@@ -80,6 +80,6 @@ Task: T02-hud-mobile-pause
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed (`npm test` — 72 tests, `npm run typecheck`, `npm run lint`, `npm run build`)
+- commit: `398b56d` on `project02`

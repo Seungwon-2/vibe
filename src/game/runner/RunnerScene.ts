@@ -21,6 +21,7 @@ export class RunnerScene extends Phaser.Scene {
   private player!: RunnerPlayer;
   private snapshot!: RunnerSnapshot;
   private countdownRemainingMs = RUNNER_CONFIG.countdownMs;
+  private countdownValue: 0 | 1 | 2 | 3 = 3;
   private eventEmitter!: RunnerEventEmitter;
   private heldKeyboardActions = new Set<string>();
   private spawner!: ObstacleSpawner;
@@ -97,6 +98,7 @@ export class RunnerScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.cleanup, this);
     this.events.once(Phaser.Scenes.Events.DESTROY, this.cleanup, this);
     this.publish(this.snapshot, true);
+    this.eventEmitter.countdown(3);
     if (this.registry.get('paused')) this.setPaused(true);
   }
 
@@ -104,6 +106,11 @@ export class RunnerScene extends Phaser.Scene {
     if (!this.player || this.snapshot.phase === 'finished') return;
     if (this.snapshot.phase === 'countdown') {
       this.countdownRemainingMs -= deltaMs;
+      const nextValue = Math.max(0, Math.ceil(this.countdownRemainingMs / 1_000)) as 0 | 1 | 2 | 3;
+      while (this.countdownValue > nextValue) {
+        this.countdownValue = (this.countdownValue - 1) as 0 | 1 | 2 | 3;
+        this.eventEmitter.countdown(this.countdownValue);
+      }
       if (this.countdownRemainingMs <= 0) {
         this.inputBridge.clear();
         this.publish(startRunner(this.snapshot), true);

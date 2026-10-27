@@ -2,6 +2,7 @@ import type { RunnerFinishOutcome, RunnerGateId, RunnerPickupKind, RunnerResult,
 
 export type RunnerEvent =
   | Readonly<{ type: 'snapshot'; snapshot: RunnerSnapshot }>
+  | Readonly<{ type: 'countdown'; value: 0 | 1 | 2 | 3 }>
   | Readonly<{ type: 'pickup'; pickupId: string; kind: RunnerPickupKind; awardedMs: number }>
   | Readonly<{ type: 'gate'; gateId: RunnerGateId; awardedMs: number }>
   | Readonly<{ type: 'run-finished'; result: RunnerResult; outcome: RunnerFinishOutcome }>
@@ -26,6 +27,10 @@ export class RunnerEventEmitter {
     this.lastSnapshotMs = nowMs;
     this.callbacks.onSnapshot(snapshot);
     this.callbacks.onEvent?.({ type: 'snapshot', snapshot });
+  }
+
+  countdown(value: 0 | 1 | 2 | 3): void {
+    this.callbacks.onEvent?.({ type: 'countdown', value });
   }
 
   pickup(pickupId: string, kind: RunnerPickupKind, awardedMs: number): void {
