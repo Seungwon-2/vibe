@@ -31,9 +31,11 @@ describe('runner biome catalog', () => {
 
   it('provides distinct editable colors with legible hazard outlines', () => {
     expect(new Set(RUNNER_BIOMES.map((biome) => biome.palette.sky)).size).toBe(4);
+    expect(new Set(RUNNER_BIOMES.map((biome) => biome.palette.accent)).size).toBe(4);
     for (const { palette } of RUNNER_BIOMES) {
       expect(contrastRatio(palette.hazardContrast, palette.ground)).toBeGreaterThanOrEqual(4.5);
       expect(palette.groundTop).not.toBe(palette.pickupCoin);
+      expect(palette.groundTop).not.toBe(palette.pickupTime);
       expect(palette.pickupTime).not.toBe(palette.pickupCoin);
       for (const color of Object.values(palette)) {
         expect(Number.isInteger(color) && color >= 0 && color <= 0xffffff).toBe(true);

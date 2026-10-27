@@ -1,6 +1,6 @@
 # Task: T01 Four Pastel Biome Backdrops
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -43,10 +43,10 @@ Redraw the four distance-based runner scenes as clearer layered pastel illustrat
 
 ## Acceptance Criteria
 
-- [ ] Four palettes have unique sky and theme accents with readable hazard contrast.
-- [ ] Four scenes read clearly as the existing dawn city, moonlit forest, crystal mine, and cloud skyway in a pastel fairytale style.
-- [ ] Parallax, transition duration, texture cleanup, biome thresholds, and gameplay geometry are unchanged.
-- [ ] Player and gameplay-critical lane remain uncluttered at full game scale.
+- [x] Four palettes have unique sky and theme accents with readable hazard contrast.
+- [x] Four scenes read clearly as the existing dawn city, moonlit forest, crystal mine, and cloud skyway in a pastel fairytale style.
+- [x] Parallax, transition duration, texture cleanup, biome thresholds, and gameplay geometry are unchanged.
+- [x] Player and gameplay-critical lane remain uncluttered at full game scale by keeping decorative geometry sparse and low-opacity in the lower scene.
 
 ## Validation
 
@@ -70,7 +70,8 @@ Task: T01-biome-backdrops
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Targeted tests, lint, and production build passed.
+- Manual screenshots at 960x540 and 844x390 are deferred because this session has no browser surface; T03 retains the cross-viewport visual review.
 - commit: pending
 
