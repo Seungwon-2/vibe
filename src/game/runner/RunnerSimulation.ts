@@ -1,51 +1,42 @@
 import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterId } from '../characters/characterTypes';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
+import { getBiomeForDistance } from '../visuals/runnerBiomes';
 import type {
-  RunnerBiomeId,
   RunnerGateId,
   RunnerPickupKind,
   RunnerResult,
   RunnerSnapshot,
 } from './runnerTypes';
 
-const GATE_IDS: readonly RunnerGateId[] = ['gate-2500', 'gate-5000', 'gate-7500'];
-const BIOME_IDS: readonly RunnerBiomeId[] = [
-  'dawn-city',
-  'moonlit-forest',
-  'crystal-mine',
-  'cloud-skyway',
-];
+const GATE_IDS: readonly RunnerGateId[] = RUNNER_GATE_DISTANCES_M.map(
+  (distance) => `gate-${distance}` as RunnerGateId,
+);
 const EPSILON = 1e-7;
 
-function getSpeed(elapsedMs: number): number {
+function getSpeed(elapsedMs: number, gateCount: number): number {
   const { initialSpeedUnitsPerSecond, maxSpeedUnitsPerSecond, speedRampMs } = RUNNER_CONFIG;
   const progress = Math.min(1, Math.max(0, elapsedMs / speedRampMs));
+  const targetSpeed = maxSpeedUnitsPerSecond *
+    (1 + gateCount * RUNNER_CONFIG.gateSpeedBonusRatio);
   return initialSpeedUnitsPerSecond +
-    (maxSpeedUnitsPerSecond - initialSpeedUnitsPerSecond) * progress;
+    (targetSpeed - initialSpeedUnitsPerSecond) * progress;
 }
 
-function getBiome(distanceMeters: number): RunnerBiomeId {
-  let index = 0;
-  for (const gateDistance of RUNNER_GATE_DISTANCES_M) {
-    if (distanceMeters < gateDistance - EPSILON) break;
-    index += 1;
-  }
-  return BIOME_IDS[index];
-}
-
-function traveledWorldUnits(elapsedMs: number, deltaMs: number): number {
+function traveledWorldUnits(elapsedMs: number, deltaMs: number, gateCount: number): number {
   const rampEnd = RUNNER_CONFIG.speedRampMs;
   const firstEnd = Math.min(elapsedMs + deltaMs, rampEnd);
   const rampDeltaMs = Math.max(0, firstEnd - elapsedMs);
-  const rampUnits = (getSpeed(elapsedMs) + getSpeed(firstEnd)) / 2 * rampDeltaMs / 1_000;
+  const rampUnits = (getSpeed(elapsedMs, gateCount) + getSpeed(firstEnd, gateCount)) / 2 * rampDeltaMs / 1_000;
   const cappedDeltaMs = Math.max(0, elapsedMs + deltaMs - Math.max(elapsedMs, rampEnd));
-  return rampUnits + RUNNER_CONFIG.maxSpeedUnitsPerSecond * cappedDeltaMs / 1_000;
+  const targetSpeed = RUNNER_CONFIG.maxSpeedUnitsPerSecond *
+    (1 + gateCount * RUNNER_CONFIG.gateSpeedBonusRatio);
+  return rampUnits + targetSpeed * cappedDeltaMs / 1_000;
 }
 
-function advanceSegment(state: RunnerSnapshot, deltaMs: number): RunnerSnapshot {
+function advanceSegment(state: RunnerSnapshot, deltaMs: number, gateCount = state.passedGateIds.length): RunnerSnapshot {
   const elapsedMs = state.elapsedMs + deltaMs;
-  const worldDistance = state.worldDistance + traveledWorldUnits(state.elapsedMs, deltaMs);
+  const worldDistance = state.worldDistance + traveledWorldUnits(state.elapsedMs, deltaMs, gateCount);
   const distanceMeters = worldDistance * RUNNER_CONFIG.metersPerWorldUnit;
   return {
     ...state,
@@ -53,10 +44,10 @@ function advanceSegment(state: RunnerSnapshot, deltaMs: number): RunnerSnapshot 
     remainingMs: Math.max(0, state.remainingMs - deltaMs),
     worldDistance,
     distanceMeters,
-    speedUnitsPerSecond: getSpeed(elapsedMs),
+    speedUnitsPerSecond: getSpeed(elapsedMs, gateCount),
     staggerRemainingMs: Math.max(0, state.staggerRemainingMs - deltaMs),
     protectionRemainingMs: Math.max(0, state.protectionRemainingMs - deltaMs),
-    biomeId: getBiome(distanceMeters),
+    biomeId: getBiomeForDistance(distanceMeters).id,
   };
 }
 
@@ -64,6 +55,7 @@ function millisecondsToReach(
   state: RunnerSnapshot,
   gateDistanceMeters: number,
   availableMs: number,
+  gateCount: number,
 ): number {
   if (state.distanceMeters >= gateDistanceMeters - EPSILON) return 0;
   let low = 0;
@@ -71,7 +63,7 @@ function millisecondsToReach(
   for (let index = 0; index < 48; index += 1) {
     const middle = (low + high) / 2;
     const distance = state.distanceMeters +
-      traveledWorldUnits(state.elapsedMs, middle) * RUNNER_CONFIG.metersPerWorldUnit;
+      traveledWorldUnits(state.elapsedMs, middle, gateCount) * RUNNER_CONFIG.metersPerWorldUnit;
     if (distance >= gateDistanceMeters) high = middle;
     else low = middle;
   }
@@ -169,7 +161,7 @@ export function advanceRunner(
         ...current,
         elapsedMs: current.elapsedMs + frozenMs,
         remainingMs: Math.max(0, current.remainingMs - frozenMs),
-        speedUnitsPerSecond: getSpeed(current.elapsedMs + frozenMs),
+        speedUnitsPerSecond: getSpeed(current.elapsedMs + frozenMs, current.passedGateIds.length),
         staggerRemainingMs: Math.max(0, current.staggerRemainingMs - frozenMs),
         protectionRemainingMs: Math.max(0, current.protectionRemainingMs - frozenMs),
       };
@@ -179,17 +171,19 @@ export function advanceRunner(
     }
     const availableMs = Math.min(unspentMs, current.remainingMs);
     const nextGate = getNextGate(current);
-    const segmentMeters = traveledWorldUnits(current.elapsedMs, availableMs) *
+    const gateCount = current.passedGateIds.length;
+    const segmentMeters = traveledWorldUnits(current.elapsedMs, availableMs, gateCount) *
       RUNNER_CONFIG.metersPerWorldUnit;
 
     if (nextGate && current.distanceMeters + segmentMeters >= nextGate.distance - EPSILON) {
-      const segmentMs = millisecondsToReach(current, nextGate.distance, availableMs);
-      const atGate = advanceSegment(current, segmentMs);
+      const segmentMs = millisecondsToReach(current, nextGate.distance, availableMs, gateCount);
+      const atGate = advanceSegment(current, segmentMs, gateCount);
       current = {
         ...atGate,
         distanceMeters: nextGate.distance,
         worldDistance: nextGate.distance / RUNNER_CONFIG.metersPerWorldUnit,
-        biomeId: getBiome(nextGate.distance),
+        speedUnitsPerSecond: getSpeed(atGate.elapsedMs, gateCount + 1),
+        biomeId: getBiomeForDistance(nextGate.distance).id,
         remainingMs: Math.min(
           RUNNER_CONFIG.maxTimerMs,
           atGate.remainingMs + RUNNER_CONFIG.gateBonusMs,

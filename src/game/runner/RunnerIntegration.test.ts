@@ -42,7 +42,7 @@ describe('offline runner integration', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(passedGates).toEqual(['gate-2500', 'gate-5000', 'gate-7500']);
+    expect(passedGates).toEqual(['gate-2000', 'gate-4000', 'gate-6000', 'gate-8000', 'gate-10000']);
     expect(state.phase).toBe('finished');
     expect(state.remainingMs).toBe(0);
     expect(state.biomeId).toBe('cloud-skyway');

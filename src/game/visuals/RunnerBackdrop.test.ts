@@ -71,27 +71,27 @@ describe('RunnerBackdrop', () => {
     const mock = createScene();
     const backdrop = new RunnerBackdrop(mock.scene);
     expect(getParallaxOffsets(1000)).toEqual({ far: 150, middle: 400, near: 1000 });
-    backdrop.update({ distanceMeters: 2499, worldDistance: 7497 }, 16);
+    backdrop.update({ distanceMeters: 1999, worldDistance: 5997 }, 16);
     expect(backdrop.biomeId).toBe('dawn-city');
-    expect(mock.tileSprites.map((sprite) => sprite.tilePositionX)).toEqual([1124, 2998, 7497]);
+    expect(mock.tileSprites.map((sprite) => sprite.tilePositionX)).toEqual([899, 2398, 5997]);
 
-    backdrop.update({ distanceMeters: 2500, worldDistance: 7500 }, 0);
+    backdrop.update({ distanceMeters: 2000, worldDistance: 6000 }, 0);
     expect(backdrop.biomeId).toBe('moonlit-forest');
     expect(mock.containers[0].alpha).toBe(1);
     expect(mock.containers[1].alpha).toBe(0);
     expect(mock.tileSprites.slice(3).map((sprite) => sprite.tilePositionX))
-      .toEqual([1125, 3000, 7500]);
-    backdrop.update({ distanceMeters: 2600, worldDistance: 7800 }, BIOME_CROSSFADE_MS / 2);
+      .toEqual([900, 2400, 6000]);
+    backdrop.update({ distanceMeters: 2100, worldDistance: 6300 }, BIOME_CROSSFADE_MS / 2);
     expect(mock.containers[0].alpha).toBe(0.5);
     expect(mock.containers[1].alpha).toBe(0.5);
-    backdrop.update({ distanceMeters: 2600, worldDistance: 7800 }, BIOME_CROSSFADE_MS / 2);
+    backdrop.update({ distanceMeters: 2100, worldDistance: 6300 }, BIOME_CROSSFADE_MS / 2);
     expect(mock.containers[0].destroyed).toBe(true);
     expect(mock.containers[1].alpha).toBe(1);
     expect(mock.removed).toHaveLength(3);
 
-    backdrop.update({ distanceMeters: 5000, worldDistance: 15000 }, BIOME_CROSSFADE_MS);
+    backdrop.update({ distanceMeters: 4000, worldDistance: 12000 }, BIOME_CROSSFADE_MS);
     expect(backdrop.biomeId).toBe('crystal-mine');
-    backdrop.update({ distanceMeters: 7500, worldDistance: 22500 }, BIOME_CROSSFADE_MS);
+    backdrop.update({ distanceMeters: 6000, worldDistance: 18000 }, BIOME_CROSSFADE_MS);
     expect(backdrop.biomeId).toBe('cloud-skyway');
     backdrop.destroy();
     expect(mock.removed).toHaveLength(12);

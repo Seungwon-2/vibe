@@ -4,6 +4,7 @@ export const RUNNER_CONFIG = Object.freeze({
   maxTimerMs: 120_000,
   timePickupMs: 3_000,
   gateBonusMs: 20_000,
+  gateSpeedBonusRatio: 0.05,
   initialSpeedUnitsPerSecond: 250,
   maxSpeedUnitsPerSecond: 325,
   speedRampMs: 90_000,
@@ -13,4 +14,4 @@ export const RUNNER_CONFIG = Object.freeze({
   protectionMs: 1_200,
 } as const);
 
-export const RUNNER_GATE_DISTANCES_M = Object.freeze([2_500, 5_000, 7_500] as const);
+export const RUNNER_GATE_DISTANCES_M = Object.freeze([2_000, 4_000, 6_000, 8_000, 10_000] as const);

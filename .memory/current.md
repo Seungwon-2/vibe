@@ -2,18 +2,20 @@
 
 ## Active Plan
 
-[Character Selector and Visual Refresh](./plans/2026-10-27-character-selector-visual-refresh.md)
+[Runner Course, Gates, Pits, and UI Polish](./plans/2026-10-27-runner-course-gates-pits-ui-polish.md)
 
 ## Active Phase
 
-[P02 Runner Scenery — complete](./phases/2026-10-27-character-selector-visual-refresh/P02-runner-scenery/phase.md)
+[P01 Runner Course](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P01-runner-course/phase.md)
 
 ## Active Task
 
-No active task — the Character Selector and Visual Refresh plan is complete.
+[T02 Pit Hazard](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P01-runner-course/T02-pit-hazard.md)
 
 ## Status
 
+- The Runner Course, Gates, Pits, and UI Polish plan is active on `project02`; P01-T01 is complete and P01-T02 is active.
+- The plan divides work into runner-course mechanics, character passives, and screen polish. P01-T02 is the active task.
 - Earlier P02-T01 roster work is recorded in its original implementation history; this active plan's P02-T01 is the biome backdrop task completed in `16fc63a`.
 - Asset validation, 44 tests, typecheck, build, and lint passed. Headless Edge confirmed five game loads, responsive selection, Rang jump/slide, and pause/resume.
 - Rang, Hiyori, and Mary now use curated full-size transparent selector portraits based on the supplied references. `assets:prepare` preserves them and `assets:validate` checks their format and transparency.
@@ -52,4 +54,4 @@ No active task — the Character Selector and Visual Refresh plan is complete.
 
 ## Next Step
 
-The Character Selector and Visual Refresh plan is complete. Start a new grill-me or memory-plan task when the next objective is chosen.
+P01-T01 implementation: five gate distances and additive speed progression are in place; six targeted test files (23 tests) and typecheck pass. Next, read [T02 Pit Hazard](./phases/2026-10-27-runner-course-gates-pits-ui-polish/P01-runner-course/T02-pit-hazard.md) and implement tutorial and recurring pit behavior.

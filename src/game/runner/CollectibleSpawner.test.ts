@@ -61,8 +61,8 @@ describe('authored collectible schedule', () => {
     }
   });
 
-  it('keeps the three milestone gates separate from pickups', () => {
-    expect(RUNNER_GATE_DISTANCES_M).toEqual([2500, 5000, 7500]);
+  it('keeps five milestone gates separate from pickups', () => {
+    expect(RUNNER_GATE_DISTANCES_M).toEqual([2000, 4000, 6000, 8000, 10000]);
     for (const distance of RUNNER_GATE_DISTANCES_M) {
       expect(PICKUP_SCHEDULE.every((pickup) => pickup.distanceMeters !== distance)).toBe(true);
     }

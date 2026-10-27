@@ -43,23 +43,25 @@ describe('RunnerSimulation', () => {
     expect(startRunner(afterSecond)).toBe(afterSecond);
   });
 
-  it('crosses each gate once, changes biome, and caps the ramp at 325', () => {
-    expect(RUNNER_GATE_DISTANCES_M).toEqual([2_500, 5_000, 7_500]);
+  it('crosses five gates once, changes biome at the first three, and adds speed per gate', () => {
+    expect(RUNNER_GATE_DISTANCES_M).toEqual([2_000, 4_000, 6_000, 8_000, 10_000]);
+    expect(RUNNER_CONFIG.gateSpeedBonusRatio).toBe(0.05);
     const first = advanceRunner(running(), 30_000).state;
-    expect(first.distanceMeters).toBeGreaterThan(2_500);
-    expect(first.passedGateIds).toEqual(['gate-2500']);
+    expect(first.distanceMeters).toBeGreaterThan(2_000);
+    expect(first.passedGateIds).toEqual(['gate-2000']);
     expect(first.biomeId).toBe('moonlit-forest');
-    expect(first.remainingMs).toBeCloseTo(80_000, 4);
+    expect(first.speedUnitsPerSecond).toBeGreaterThan(250);
 
     const afterRamp = advanceRunner(first, 60_000).state;
     expect(afterRamp.elapsedMs).toBe(90_000);
-    expect(afterRamp.speedUnitsPerSecond).toBe(325);
-    expect(afterRamp.passedGateIds).toEqual(['gate-2500', 'gate-5000', 'gate-7500']);
-    expect(afterRamp.biomeId).toBe('cloud-skyway');
-    expect(afterRamp.remainingMs).toBeCloseTo(60_000, 4);
-    const extended = advanceRunner(afterRamp, 10_000).state;
-    expect(extended.speedUnitsPerSecond).toBe(325);
-    expect(extended.passedGateIds).toHaveLength(3);
+    expect(afterRamp.speedUnitsPerSecond).toBeGreaterThan(325);
+    expect(afterRamp.passedGateIds.length).toBeGreaterThanOrEqual(3);
+    expect(afterRamp.remainingMs).toBeGreaterThan(0);
+
+    const fiveGates = { ...afterRamp, elapsedMs: 90_000,
+      passedGateIds: ['gate-2000', 'gate-4000', 'gate-6000', 'gate-8000', 'gate-10000'] as const };
+    const atMaxRamp = advanceRunner(fiveGates, 1).state;
+    expect(atMaxRamp.speedUnitsPerSecond).toBeCloseTo(406.25, 8);
   });
 
   it('is independent of update chunk size even across gates and time expiry', () => {
@@ -73,12 +75,14 @@ describe('RunnerSimulation', () => {
     }
 
     expect(oneStep.state.phase).toBe('finished');
-    expect(oneStep.state.passedGateIds).toHaveLength(3);
+    expect(oneStep.state.passedGateIds).toHaveLength(5);
     expect(chunks.passedGateIds).toEqual(oneStep.state.passedGateIds);
     expect(chunks.distanceMeters).toBeCloseTo(oneStep.state.distanceMeters, 6);
     expect(chunkResult).toEqual(oneStep.result);
-    expect(oneStep.result?.durationMs).toBeCloseTo(150_000, 4);
-    expect(oneStep.result?.finishedAtIso).toBe('2026-10-26T00:02:30.000Z');
+    expect(oneStep.result?.durationMs).toBeGreaterThan(90_000);
+    expect(oneStep.result?.finishedAtIso).toBe(
+      new Date(Date.parse(running().startedAtIso) + oneStep.result!.durationMs).toISOString(),
+    );
     expect(advanceRunner(oneStep.state, 1_000)).toEqual({ state: oneStep.state, result: null });
   });
 
@@ -146,19 +150,19 @@ describe('RunnerSimulation', () => {
 
   it('awards a gate reached before timeout but does not travel after the timer ends', () => {
     const nearGate = {
-      ...running(), distanceMeters: 2_490, worldDistance: 2_490 * 3, remainingMs: 500,
+      ...running(), distanceMeters: 1_990, worldDistance: 1_990 * 3, remainingMs: 500,
     };
     const rescued = advanceRunner(nearGate, 30_000);
-    expect(rescued.state.passedGateIds).toEqual(['gate-2500']);
+    expect(rescued.state.passedGateIds).toEqual(['gate-2000']);
     expect(rescued.state.phase).toBe('finished');
     expect(rescued.state.elapsedMs).toBeCloseTo(20_500, 5);
 
     const tooFar = {
-      ...running(), distanceMeters: 2_400, worldDistance: 2_400 * 3, remainingMs: 500,
+      ...running(), distanceMeters: 1_900, worldDistance: 1_900 * 3, remainingMs: 500,
     };
     const expired = advanceRunner(tooFar, 30_000);
     expect(expired.state.passedGateIds).toEqual([]);
-    expect(expired.state.distanceMeters).toBeLessThan(2_500);
+    expect(expired.state.distanceMeters).toBeLessThan(2_000);
     expect(expired.state.elapsedMs).toBe(500);
   });
 

@@ -17,16 +17,18 @@ function contrastRatio(left: number, right: number): number {
 }
 
 describe('runner biome catalog', () => {
-  it('uses the three gate thresholds as exact scenery transitions', () => {
+  it('uses the first three gates as exact scenery transitions', () => {
     expect(RUNNER_BIOMES.map((biome) => biome.startDistanceMeters))
-      .toEqual([0, ...RUNNER_GATE_DISTANCES_M]);
+      .toEqual([0, ...RUNNER_GATE_DISTANCES_M.slice(0, 3)]);
     expect(RUNNER_BIOMES.map((biome) => biome.landmark))
       .toEqual(['새벽 도심', '달빛 숲길', '수정 광산', '구름 위 하늘길']);
     expect(getBiomeForDistance(-10).id).toBe('dawn-city');
-    for (const [index, distance] of RUNNER_GATE_DISTANCES_M.entries()) {
+    for (const [index, distance] of RUNNER_GATE_DISTANCES_M.slice(0, 3).entries()) {
       expect(getBiomeForDistance(distance - 0.01).id).toBe(RUNNER_BIOMES[index].id);
       expect(getBiomeForDistance(distance).id).toBe(RUNNER_BIOMES[index + 1].id);
     }
+    expect(getBiomeForDistance(8_000).id).toBe('cloud-skyway');
+    expect(getBiomeForDistance(10_000).id).toBe('cloud-skyway');
   });
 
   it('provides distinct editable colors with legible hazard outlines', () => {

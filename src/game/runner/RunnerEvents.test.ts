@@ -43,8 +43,8 @@ describe('runner event bridge', () => {
       coins: 2, durationMs: 3000, finishedAtIso: '2026-10-26T00:00:03.000Z' };
     bridge.pickup('coin-a', 'coin', 0);
     bridge.pickup('coin-a', 'coin', 0);
-    bridge.gate('gate-2500', 20_000);
-    bridge.gate('gate-2500', 20_000);
+    bridge.gate('gate-2000', 20_000);
+    bridge.gate('gate-2000', 20_000);
     bridge.finish(result, 'personal-best');
     bridge.finish(result, 'completed');
     expect(events.map((event) => event.type)).toEqual(['pickup', 'gate', 'run-finished']);
@@ -56,9 +56,9 @@ describe('runner event bridge', () => {
   it('reports the actual capped gate bonus from the simulation', () => {
     const awards: number[] = [];
     const state = { ...startRunner(createRunnerSnapshot('player-default')),
-      distanceMeters: 2490, worldDistance: 7470, remainingMs: 119_900 };
+      distanceMeters: 1990, worldDistance: 5970, remainingMs: 119_900 };
     const next = advanceRunner(state, 200, (_id, awardedMs) => awards.push(awardedMs));
-    expect(next.state.passedGateIds).toEqual(['gate-2500']);
+    expect(next.state.passedGateIds).toEqual(['gate-2000']);
     expect(awards).toHaveLength(1);
     expect(awards[0]).toBeGreaterThan(0);
     expect(awards[0]).toBeLessThan(20_000);

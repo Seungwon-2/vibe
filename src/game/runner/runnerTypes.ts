@@ -4,7 +4,7 @@ export type RunnerPhase = 'countdown' | 'running' | 'paused' | 'finished';
 export type RunnerFinishOutcome = 'personal-best' | 'completed';
 export type RunnerPickupKind = 'coin' | 'time';
 export type RunnerBiomeId = 'dawn-city' | 'moonlit-forest' | 'crystal-mine' | 'cloud-skyway';
-export type RunnerGateId = 'gate-2500' | 'gate-5000' | 'gate-7500';
+export type RunnerGateId = 'gate-2000' | 'gate-4000' | 'gate-6000' | 'gate-8000' | 'gate-10000';
 
 export type RunnerSnapshot = Readonly<{
   phase: RunnerPhase;
