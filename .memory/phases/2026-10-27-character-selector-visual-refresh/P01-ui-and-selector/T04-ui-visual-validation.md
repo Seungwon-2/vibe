@@ -1,6 +1,6 @@
 # Task: T04 UI Visual Validation
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 
@@ -63,6 +63,9 @@ Task: T04-ui-visual-validation
 - [x] Fixed roster scaling: the perceptual scale custom property now lives on the wrapper that applies the transform; added coverage for all five character metrics.
 - [x] Fixed the disabled-card badge offset that pushed “준비 중” outside card bounds and defined the missing `.sr-only` utility that exposed the live announcement visually.
 - [x] Automated validation passed: full suite (86 tests), typecheck, lint, and production build.
+- [x] Follow-up sizing correction: reduced showcase and roster sprite scales at desktop, landscape, tablet, and narrow-phone breakpoints after the user reported clipping. Shared per-character metrics remain intact so character silhouettes stay normalized.
+- [x] Restart showcase victory playback when the selected character changes by remounting the preview with the selected character ID as its key; regression coverage confirms the previous preview is replaced and the new preview starts at frame 00.
+- [x] Revalidated after follow-up: full suite (86 tests), typecheck, lint, and production build passed. Build still reports the existing >500 kB JavaScript chunk warning.
 - [ ] Manual review after the fix at all required viewports remains outstanding because this session has no browser surface. The user-provided screenshot was inspected to identify the defects, but no post-fix capture is available.
-- partial commit: `44a2922` on `project02`; leave T04 in progress until manual viewport review
+- partial commits: `44a2922` and `40de34c` on `project02`; leave T04 in progress until manual viewport review
 
