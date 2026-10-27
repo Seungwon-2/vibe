@@ -41,7 +41,7 @@ Replace the Project 02 platformer starter with a locally playable, landscape 2D 
 | P01 | `done` | Port character artwork, finish runner poses, centralize character data/passives, and animate selection previews. | [P01](../phases/2026-10-26-running-action-redesign/P01-characters-and-entry/phase.md) |
 | P02 | `done` | Build the deterministic run model, Phaser runner, controls, hazards, pickups, and collision rules. | [P02](../phases/2026-10-26-running-action-redesign/P02-runner-engine/phase.md) |
 | P03 | `in_progress` | Add four pixel-art course biomes, reference-led run HUD/touch controls, complete screen flow, and a showcase-style four-character selector. | [P03](../phases/2026-10-26-running-action-redesign/P03-course-and-ui/phase.md) |
-| P04 | `pending` | Persist local results, show the unified distance ranking, and verify local landscape play. | [P04](../phases/2026-10-26-running-action-redesign/P04-local-ranking/phase.md) |
+| P04 | `in_progress` | Persist local results, show the unified distance ranking, and verify local landscape play. | [P04](../phases/2026-10-26-running-action-redesign/P04-local-ranking/phase.md) |
 
 ## Execution order
 

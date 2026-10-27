@@ -10,7 +10,7 @@
 
 ## Active Task
 
-[T01 Local Run Gateway](./phases/2026-10-26-running-action-redesign/P04-local-ranking/T01-local-run-gateway.md)
+[T02 Ranking Screen](./phases/2026-10-26-running-action-redesign/P04-local-ranking/T02-ranking-screen.md)
 
 ## Status
 
@@ -27,8 +27,10 @@
 - P03-T02 completed in `9b3d862` on `project02`: timer/distance/coin/biome HUD, event-driven bonus cue, 3-2-1 countdown, pause/resume/exit overlay, held touch controls, keyboard help, and portrait rotation pause. All 72 tests, typecheck, lint, and build passed. Headless Edge reviewed 1366x768 and 844x390 landscape plus 390x844 portrait; live touch simulation and the 667x375 capture remain outstanding. Build reports the existing large-chunk warning.
 - P03-T03 completed in `e19261a` on `project02`: replaced the starter and obsolete preview screens with a menu, five-character selection, a 16:9 runner screen, local personal-best listing, and a result screen with victory/game-over animation. Retry preserves the selected character; exit confirmation pauses before discarding; unique run IDs reject stale finish callbacks. Full tests (72), typecheck, lint, and build passed; the existing large-chunk warning remains.
 - P03-T04 completed in `323bd2c` on `project02`: redesigned selection with a large portrait/SD showcase, passive summary from central tuning, three playable cards, and two disabled preparation cards. All 72 tests, typecheck, lint, and build passed. Screenshots for the specified viewport sizes remain unverified because no browser/device surface was available.
+- P04-T01 completed in `fd588cd` on `project02`: added the `RunGateway` contract and a local top-ten ranking store with normalized distances, deterministic sorting, validation, and in-memory fallback when browser storage fails. Seven targeted tests and typecheck passed.
+- Queued after P04: [Character Selector and Visual Refresh](./plans/2026-10-27-character-selector-visual-refresh.md). Decisions and task blueprints are prepared; activate only after P04-T03 is complete.
 - The unrelated untracked `.memory/image.png` is untouched.
 
 ## Next Step
 
-Continue with P04-T01: define a replaceable local-run-record gateway, keeping it separate from the per-character personal-best store used for result animations.
+Continue with P04-T02: submit each finished run once through the local run gateway and display an accessible unified top-ten ranking, separate from personal-best result animations.

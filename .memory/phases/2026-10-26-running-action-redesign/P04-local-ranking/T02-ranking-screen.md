@@ -1,5 +1,7 @@
 # Task: T02 Ranking Screen
 
+> **Roster update:** Use the current five-character catalog: Rin, Toa, Rang, Hiyori, and Mary. Only currently available characters can submit runs, but ranking labels and accent colors must resolve through the central catalog for every valid saved `CharacterId`. Use the `RunGateway` and `LocalRunGateway` created by P04-T01; do not read/write the personal-best store as the leaderboard.
+
 ## Status: pending
 
 ## Goal
@@ -8,7 +10,7 @@ Submit each finished run once and present the unified local ranking with charact
 
 ## Decision Summary
 
-- Distance is the primary ranking value; coins break ties. The same ranking includes Rin, Toa, Yuni, and Lize.
+- Distance is the primary ranking value; coins break ties, followed by earlier finish time and stable run ID. The same ranking may contain records for any of the five catalog characters.
 - The result screen shows personal best; a separate ranking screen shows up to 10 local runs.
 
 ## Implementation
@@ -45,7 +47,7 @@ Submit each finished run once and present the unified local ranking with charact
 
 - [ ] A finished run is submitted once, including when callbacks repeat.
 - [ ] Result screen shows current distance, coins, and best distance.
-- [ ] Ranking screen contains all characters in one top-ten list, ordered by distance then coins.
+- [ ] Ranking screen contains all submitted characters in one top-ten list, ordered by distance, coins, finish time, then run ID.
 - [ ] Empty and storage-error states are understandable and do not block retry.
 
 ## Validation
