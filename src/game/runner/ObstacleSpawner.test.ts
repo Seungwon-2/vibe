@@ -13,8 +13,7 @@ function makeChainObject(): MockChainObject {
     body: { setAllowGravity: vi.fn(), setImmovable: vi.fn(), setSize: vi.fn() },
     destroy: vi.fn(),
   };
-  let proxy: MockChainObject;
-  proxy = new Proxy(target, {
+  const proxy: MockChainObject = new Proxy(target, {
     get: (object, property) => {
       if (typeof property !== 'string') return undefined;
       if (property in object) return object[property];

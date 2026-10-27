@@ -1,14 +1,19 @@
 ﻿import type { CharacterDefinition } from '../../game/characters/characterTypes';
 import { getCharacterPassive } from '../../game/characters/characterAbilities';
+import { CharacterAbilityIcon } from './CharacterAbilityIcon';
 import { RUNNER_GATE_DISTANCES_M } from '../../game/runner/runnerConfig';
 import type { RunnerSnapshot } from '../../game/runner/runnerTypes';
 
 export type RunnerHudProps = {
   snapshot: RunnerSnapshot;
   character: CharacterDefinition;
-  recentBonus: { id: string; kind: 'pickup' | 'gate'; awardedMs: number } | null;
+  recentBonus: RunnerHudCue | null;
   onPause(): void;
 };
+
+export type RunnerHudCue =
+  | Readonly<{ id: string; kind: 'pickup' | 'gate'; awardedMs: number }>
+  | Readonly<{ id: string; kind: 'passive-triggered'; passiveId: 'hiyori-guard'; remainingCharges: number; trigger: 'obstacle' | 'pit' }>;
 
 const BIOME_LABELS = {
   'dawn-city': '새벽 도심',
@@ -29,8 +34,12 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
     : BIOME_LABELS[snapshot.biomeId];
   const warning = snapshot.remainingMs <= 10_000;
   const passive = getCharacterPassive(character.id);
-  const showBonus = recentBonus !== null && recentBonus.awardedMs > 0;
-  const bonusSeconds = Math.max(1, Math.floor((recentBonus?.awardedMs ?? 0) / 1_000));
+  const showBonus = recentBonus !== null && (recentBonus.kind === 'passive-triggered' || recentBonus.awardedMs > 0);
+  const bonusSeconds = recentBonus && recentBonus.kind !== 'passive-triggered'
+    ? Math.max(1, Math.floor(recentBonus.awardedMs / 1_000)) : 0;
+  const passiveCue = recentBonus?.kind === 'passive-triggered'
+    ? `${passive.name} · ${recentBonus.trigger === 'pit' ? '낭떠러지' : '장애물'} 방어 · 남은 ${recentBonus.remainingCharges}회`
+    : null;
 
   return (
     <div className="runner-hud" aria-label="게임 정보">
@@ -53,11 +62,18 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
       </div>
       <div className="runner-hud__details">
         <span>{landmark}</span>
-        <span className="runner-hud__passive">{character.displayName} · {passive.name} · {passive.effectLabel}</span>
+        <span className="runner-hud__passive" style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
+          {passive.icon && <CharacterAbilityIcon icon={passive.icon} accentColor={character.accentColor} size={18} />}
+          <span><strong>{passive.name}</strong><small>{passive.effectLabel}</small></span>
+          {passive.id === 'hiyori-guard' && <span className="runner-hud__charges"
+            role="img" aria-label={`남은 방어 ${snapshot.passiveChargesRemaining}회`}>
+            {[0, 1].map((charge) => <i key={charge} className={charge < snapshot.passiveChargesRemaining ? 'is-ready' : ''} />)}
+          </span>}
+        </span>
       </div>
       {showBonus && (
-        <span key={recentBonus.id} className="runner-hud__bonus" role="status">
-          +{bonusSeconds}초
+        <span key={recentBonus.id} className={`runner-hud__bonus${passiveCue ? ' is-passive-cue' : ''}`} role="status">
+          {passiveCue ?? `+${bonusSeconds}초`}
         </span>
       )}
     </div>

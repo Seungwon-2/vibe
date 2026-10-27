@@ -15,7 +15,7 @@ import { browserPersonalBestStore } from '../../services/PersonalBestStore';
 import type { RunnerFinishOutcome } from './runnerTypes';
 import { RunnerBackdrop } from '../visuals/RunnerBackdrop';
 import { getHurtAnimationFrames } from './hurtAnimation';
-import { PitSpawner, type PitDefinition } from './PitSpawner';
+import { PitSpawner } from './PitSpawner';
 
 export class RunnerScene extends Phaser.Scene {
   private inputBridge!: RunnerInputBridge;
@@ -209,7 +209,7 @@ export class RunnerScene extends Phaser.Scene {
     if (result) this.emitFinished(result);
   };
 
-  private readonly handlePitFall = (_pit: PitDefinition): void => {
+  private readonly handlePitFall = (): void => {
     if (this.finishEmitted || this.pitFallCinematicActive || this.snapshot.phase !== 'running') return;
     const { state, blockedByPassive, result } = tryResolvePitFall(this.snapshot);
     if (blockedByPassive) {

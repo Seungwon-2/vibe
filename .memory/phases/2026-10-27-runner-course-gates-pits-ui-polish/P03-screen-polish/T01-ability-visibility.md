@@ -1,6 +1,6 @@
 # Task: T01 Ability Visibility
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -76,6 +76,6 @@ Task: T01-ability-visibility
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과 (15 targeted tests, typecheck, lint)
 - commit: pending

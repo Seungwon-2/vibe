@@ -1,6 +1,6 @@
 # Task: T02 Primary Screen Polish
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 

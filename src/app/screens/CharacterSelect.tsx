@@ -1,17 +1,13 @@
 ﻿import { useState } from 'react';
 import { CharacterPreview } from '../components/CharacterPreview';
+import { CharacterAbilityIcon } from '../components/CharacterAbilityIcon';
 import { CHARACTERS, getCharacter, resolveCharacterId } from '../../game/characters/characterCatalog';
 import { getCharacterPassive } from '../../game/characters/characterAbilities';
-import type { CharacterDefinition, CharacterId } from '../../game/characters/characterTypes';
+import type { CharacterId } from '../../game/characters/characterTypes';
 
 const SELECTOR_CHARACTERS = [...CHARACTERS].sort(
   (left, right) => Number(right.available) - Number(left.available),
 );
-
-function passiveSummary(character: CharacterDefinition): string {
-  const passive = getCharacterPassive(character.id);
-  return `${passive.name} · ${passive.effectLabel}`;
-}
 
 export type CharacterSelectProps = {
   selectedCharacterId: CharacterId;
@@ -22,6 +18,7 @@ export type CharacterSelectProps = {
 export function CharacterSelect({ selectedCharacterId, onConfirm, onBack }: CharacterSelectProps): React.JSX.Element {
   const [candidateCharacterId, setCandidateCharacterId] = useState(() => resolveCharacterId(selectedCharacterId));
   const selectedCharacter = getCharacter(candidateCharacterId);
+  const selectedPassive = getCharacterPassive(selectedCharacter.id);
 
   return (
     <main className="selector-shell">
@@ -47,7 +44,11 @@ export function CharacterSelect({ selectedCharacterId, onConfirm, onBack }: Char
             <div className="selector-showcase__details">
               <span className="selector-showcase__eyebrow">선택한 캐릭터</span>
               <h2>{selectedCharacter.displayName}</h2>
-              <p>{passiveSummary(selectedCharacter)}</p>
+              <div className="selector-showcase__ability" data-testid="selector-passive">
+                {selectedPassive.icon && <CharacterAbilityIcon icon={selectedPassive.icon}
+                  accentColor={selectedCharacter.accentColor} size={22} />}
+                <span><strong>{selectedPassive.name}</strong><small>{selectedPassive.effectLabel}</small></span>
+              </div>
             </div>
             <span className="sr-only" aria-live="polite">{selectedCharacter.displayName} 선택됨</span>
           </section>

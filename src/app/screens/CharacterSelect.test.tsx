@@ -27,6 +27,10 @@ describe('CharacterSelect', () => {
     expect(screen.getByTestId('character-preview-player-default-showcase')).toHaveAttribute('data-animation', 'victory');
     expect(screen.getByTestId('character-preview-player-default-showcase').style.animationIterationCount).toBe('1');
     expect(screen.getByTestId('character-preview-player-default-showcase').style.animationFillMode).toBe('forwards');
+    expect(screen.getByTestId('selector-passive')).toHaveTextContent('질주의 메이드');
+    expect(screen.getByTestId('selector-passive')).toHaveTextContent('최고 속도 +5%');
+    expect(screen.getByTestId('selector-passive').querySelector('svg')).toHaveAttribute('data-icon', 'cloud');
+    expect(screen.getByTestId('selector-passive').querySelector('svg')).toHaveAttribute('viewBox', '0 0 24 24');
     expect(screen.getByTestId('character-preview-player-default-showcase').style.animationDuration).toBe('1200ms');
     expect(screen.getByText('Aokumo Rin 선택됨')).toHaveClass('sr-only');
     for (const id of ['hanayo-hiyori', 'tokino-mary', 'goth-student', 'cogane-rang']) {
@@ -70,7 +74,9 @@ describe('CharacterSelect', () => {
     expect(screen.getByRole('button', { name: 'Hanayo Hiyori' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: 'Aokumo Rin' })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByTestId('character-preview-hanayo-hiyori-showcase')).toHaveAttribute('data-animation', 'victory');
-    expect(screen.getByText('유령의 수호 · 충돌·낭떠러지 방어 2회')).toBeInTheDocument();
+    expect(screen.getByTestId('selector-passive')).toHaveTextContent('유령의 수호');
+    expect(screen.getByTestId('selector-passive')).toHaveTextContent('충돌·낭떠러지 방어 2회');
+    expect(screen.getByTestId('selector-passive').querySelector('svg')).toHaveAttribute('data-icon', 'pink-flame');
     const preview = screen.getByTestId('character-preview-hanayo-hiyori-showcase');
     expect(previousPreview.isConnected).toBe(false);
     expect(preview).toHaveAttribute('data-frame', 'hanayo-hiyori-victory-00');
@@ -81,6 +87,18 @@ describe('CharacterSelect', () => {
     expect(preview.style.animationIterationCount).toBe('1');
     expect(preview.style.animationFillMode).toBe('forwards');
     expect(screen.getByText('Hanayo Hiyori 선택됨')).toBeInTheDocument();
+  });
+
+  it('shows no ability icon for an unassigned character', () => {
+    render(<CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Tokino Mary' }));
+    expect(screen.getByTestId('selector-passive')).toHaveTextContent('별빛 자석');
+    expect(screen.getByTestId('selector-passive')).toHaveTextContent('수집 반경 +30px');
+    expect(screen.getByTestId('selector-passive').querySelector('svg')).toHaveAttribute('data-icon', 'sparkling-magnet');
+    fireEvent.click(screen.getByRole('button', { name: 'Aokumo Rin' }));
+    const toaCard = screen.getByRole('button', { name: 'Shizuki Toa' });
+    expect(toaCard).toBeDisabled();
+    expect(toaCard.querySelector('.character-ability-icon')).toBeNull();
   });
 
   it('confirms only the chosen character and keeps back separate from confirmation', () => {

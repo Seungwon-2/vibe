@@ -158,8 +158,14 @@ button {
 .runner-hud__coins { min-width: 46px; padding: 5px 8px; border: 1px solid #e8d59a; border-radius: 12px; background: #fff5d7; color: #634b10; font-weight: 800; }
 .runner-hud__pause { width: 40px; height: 40px; border: 1px solid var(--ui-border); border-radius: 12px; color: var(--ui-primary-strong); background: var(--ui-surface); font-size: 1.25rem; cursor: pointer; pointer-events: auto; }
 .runner-hud__details { display: flex; justify-content: space-between; gap: 10px; color: var(--ui-muted); font-size: 0.78em; }
-.runner-hud__passive { text-align: right; }
+.runner-hud__passive { display: inline-flex; align-items: center; gap: 6px; text-align: right; color: var(--character-accent, var(--ui-primary-strong)); }
+.runner-hud__passive > span:nth-child(2) { display: grid; line-height: 1.15; }
+.runner-hud__passive small { color: var(--ui-muted); font-size: 0.9em; }
+.runner-hud__charges { display: inline-flex; gap: 3px; margin-left: 2px; }
+.runner-hud__charges i { width: 9px; height: 9px; border: 1px solid #dc7aab; border-radius: 50%; background: transparent; }
+.runner-hud__charges i.is-ready { background: #ed8db9; box-shadow: 0 0 5px rgb(237 141 185 / 40%); }
 .runner-hud__bonus { position: absolute; top: 6cqw; right: 7cqw; padding: 2px 8px; border: 1px solid #e8d59a; border-radius: 999px; background: #fff2c6; color: #634b10; font-weight: 800; animation: runner-bonus-cue 1.8s ease-out forwards; }
+.runner-hud__bonus.is-passive-cue { max-width: min(72%, 360px); border-color: #ec91bd; background: #fff0f7; color: #77324f; text-align: center; }
 .runner-touch-controls { position: absolute; z-index: 4; inset: 0; display: flex; align-items: end; justify-content: space-between; padding: 0 12px 4px; pointer-events: none; }
 .runner-touch-control { display: flex; width: clamp(64px, 8cqw, 80px); aspect-ratio: 1; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border: 2px solid rgb(255 255 255 / 92%); border-radius: 50%; color: white; background: var(--ui-primary-strong); box-shadow: 0 4px 14px rgb(37 57 93 / 28%); touch-action: none; user-select: none; -webkit-user-select: none; cursor: pointer; pointer-events: auto; }
 .runner-touch-control--slide { border-color: #fff; color: #382c61; background: #e6def8; }
@@ -751,6 +757,10 @@ h1 {
 .selector-showcase__eyebrow { color: color-mix(in srgb, var(--character-accent), white 35%); font-size: 0.76rem; font-weight: 800; letter-spacing: 0.12em; }
 .selector-showcase__details h2 { margin: 5px 0; color: white; font-size: clamp(1.35rem, 2vw, 1.85rem); }
 .selector-showcase__details p { margin: 0; color: #e5ecff; font-size: clamp(0.84rem, 1.15vw, 1rem); }
+.selector-showcase__ability { display: inline-flex; align-items: center; justify-content: center; gap: 9px; margin-top: 7px; padding: 7px 12px; border: 1px solid color-mix(in srgb, var(--character-accent), transparent 48%); border-radius: 999px; background: rgb(10 16 37 / 60%); color: var(--character-accent); text-align: left; }
+.selector-showcase__ability > span { display: grid; gap: 2px; }
+.selector-showcase__ability strong { color: white; font-size: 0.9rem; }
+.selector-showcase__ability small { color: #e5ecff; font-size: 0.76rem; }
 .selector-panel .character-roster {
   --roster-gap: clamp(9px, 1vw, 14px);
   display: grid;
@@ -812,6 +822,10 @@ h1 {
   .selector-showcase__details { padding: 0 8px 8px; }
   .selector-showcase__details h2 { margin: 3px 0; font-size: 0.95rem; }
   .selector-showcase__details p { font-size: 0.68rem; }
+  .selector-showcase__ability { gap: 5px; margin-top: 4px; padding: 4px 8px; }
+  .selector-showcase__ability svg { width: 17px; height: 17px; }
+  .selector-showcase__ability strong { font-size: 0.72rem; }
+  .selector-showcase__ability small { font-size: 0.62rem; }
   .selector-panel .character-roster { --roster-gap: 6px; min-height: 210px; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); }
   .selector-panel .character-card:nth-child(5) { grid-column: 2; grid-row: 2; }
   .selector-panel .character-preview--roster { height: 58px; }

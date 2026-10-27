@@ -162,7 +162,8 @@ export class RunnerPlayer {
     this.sprite.setAlpha(remainingMs > 0 && Math.floor(remainingMs / 100) % 2 === 0 ? 0.4 : 1);
   }
 
-  update(_deltaMs: number): void {
+  update(deltaMs: number): void {
+    void deltaMs;
     if (this.finished || this.passiveRescuing || this.pitFalling) return;
     // Use Arcade's floor-contact flags for normal landings. The former 0.5px
     // bottom fallback could mark an airborne frame as grounded and switch to run.

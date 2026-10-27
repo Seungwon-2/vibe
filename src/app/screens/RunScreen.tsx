@@ -9,9 +9,8 @@ import type { RunnerEvent } from '../../game/runner/runnerEvents';
 import { CountdownOverlay } from '../components/CountdownOverlay';
 import { PauseOverlay } from '../components/PauseOverlay';
 import { RunnerHud } from '../components/RunnerHud';
+import type { RunnerHudCue } from '../components/RunnerHud';
 import { TouchControls } from '../components/TouchControls';
-
-type RecentBonus = { id: string; kind: 'pickup' | 'gate'; awardedMs: number } | null;
 
 function isPortrait(): boolean {
   return window.matchMedia?.('(orientation: portrait)').matches ?? window.innerHeight > window.innerWidth;
@@ -29,10 +28,11 @@ export function RunScreen({ characterId, onFinish, onExit }: RunScreenProps): Re
   const [paused, setPaused] = useState(isPortrait);
   const [snapshot, setSnapshot] = useState<RunnerSnapshot>(() => createRunnerSnapshot(characterId));
   const [countdownValue, setCountdownValue] = useState<number | null>(3);
-  const [recentBonus, setRecentBonus] = useState<RecentBonus>(null);
+  const [recentBonus, setRecentBonus] = useState<RunnerHudCue | null>(null);
   const [exitConfirmation, setExitConfirmation] = useState(false);
   const [inputBridge] = useState(() => new RunnerInputBridge());
   const bonusTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const passiveCueSequence = useRef(0);
 
   function clearBonus(): void {
     if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
@@ -89,6 +89,19 @@ export function RunScreen({ characterId, onFinish, onExit }: RunScreenProps): Re
   function handleEvent(event: RunnerEvent): void {
     if (event.type === 'countdown') {
       setCountdownValue(event.value > 0 ? event.value : null);
+    } else if (event.type === 'passive-triggered') {
+      if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
+      setRecentBonus({
+        id: `passive-${++passiveCueSequence.current}`,
+        kind: 'passive-triggered',
+        passiveId: event.passiveId,
+        remainingCharges: event.remainingCharges,
+        trigger: event.trigger,
+      });
+      bonusTimeout.current = setTimeout(() => {
+        bonusTimeout.current = null;
+        setRecentBonus(null);
+      }, 1_200);
     } else if ((event.type === 'pickup' || event.type === 'gate') && event.awardedMs > 0) {
       if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
       setRecentBonus({
@@ -99,7 +112,7 @@ export function RunScreen({ characterId, onFinish, onExit }: RunScreenProps): Re
       bonusTimeout.current = setTimeout(() => {
         bonusTimeout.current = null;
         setRecentBonus(null);
-      }, 900);
+      }, 1_200);
     }
   }
 

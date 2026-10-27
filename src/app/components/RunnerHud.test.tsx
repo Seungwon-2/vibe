@@ -25,7 +25,9 @@ describe('RunnerHud', () => {
     expect(screen.getByText('61')).toBeInTheDocument();
     expect(screen.getByLabelText('코인 2개')).toBeInTheDocument();
     expect(screen.getByText(/새벽 도심 · 다음 보너스까지 1,939m/)).toBeInTheDocument();
-    expect(screen.getByText(/유령의 수호 · 충돌·낭떠러지 방어 2회/)).toBeInTheDocument();
+    expect(screen.getByText('유령의 수호')).toBeInTheDocument();
+    expect(screen.getByText('충돌·낭떠러지 방어 2회')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '남은 방어 2회' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '일시정지' }));
     expect(onPause).toHaveBeenCalledOnce();
   });
@@ -40,6 +42,17 @@ describe('RunnerHud', () => {
       recentBonus={{ id: 'time-coin', kind: 'pickup', awardedMs: 4_000 }} onPause={vi.fn()} />);
     expect(screen.getByRole('status')).toHaveTextContent('+4초');
     expect(screen.getByText('1:30')).toBeInTheDocument();
+  });
+
+  it('shows Hiyori defense charges and a trigger-specific cue', () => {
+    const base = snapshot({ passiveChargesRemaining: 1 });
+    const { rerender } = render(<RunnerHud snapshot={base} character={getCharacter('hanayo-hiyori')}
+      recentBonus={null} onPause={vi.fn()} />);
+    expect(screen.getByRole('img', { name: '남은 방어 1회' })).toBeInTheDocument();
+    rerender(<RunnerHud snapshot={base} character={getCharacter('hanayo-hiyori')}
+      recentBonus={{ id: 'passive-1', kind: 'passive-triggered', passiveId: 'hiyori-guard',
+        remainingCharges: 1, trigger: 'pit' }} onPause={vi.fn()} />);
+    expect(screen.getByRole('status')).toHaveTextContent('유령의 수호 · 낭떠러지 방어 · 남은 1회');
   });
 });
 
