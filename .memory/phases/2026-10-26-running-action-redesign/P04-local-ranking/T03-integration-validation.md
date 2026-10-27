@@ -1,6 +1,6 @@
 # Task: T03 Integration Validation
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -73,6 +73,8 @@ Task: T03-integration-validation
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] README and automated end-to-end runner integration coverage complete
+- [x] Full automated validation passed: 85 tests, typecheck, lint, and production build
+- [x] Local Vite endpoint returned HTTP 200 with no login/network setup
+- [ ] Manual visual review at the requested viewport sizes remains unavailable: this environment exposes no browser surface, and headless Edge did not produce a screenshot
 - commit: pending
