@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { getHazardDistance, getPatternForDistance, HAZARD_BANDS, HAZARD_PATTERNS,
-  MAX_RUN_SPEED_UNITS_PER_SECOND, METERS_PER_WORLD_UNIT } from './hazardPatterns';
+  MAX_RUN_SPEED_UNITS_PER_SECOND, METERS_PER_WORLD_UNIT,
+  PATTERN_SPACING_METERS, PATTERN_START_METERS } from './hazardPatterns';
 
 describe('authored hazard patterns', () => {
   it('progresses deterministically through all four distance bands', () => {
     expect(HAZARD_BANDS).toHaveLength(4);
     expect(getPatternForDistance(360).id).toBe('tutorial-jump');
     expect(getPatternForDistance(960).id).toBe('tutorial-slide');
-    expect(getPatternForDistance(2760).id).toBe('practice-pair');
+    expect(getPatternForDistance(2760).id).toBe('practice-slide');
     expect(getPatternForDistance(5160).id).toBe('combo-jump-slide');
-    expect(getPatternForDistance(7560).id).toBe('advanced-jump-slide');
+    expect(getPatternForDistance(7560).id).toBe('advanced-slide-jump');
     expect(getPatternForDistance(7560)).toBe(getPatternForDistance(7560));
   });
 
@@ -26,8 +27,9 @@ describe('authored hazard patterns', () => {
   });
 
   it('leaves one second of recovery after each action at top speed', () => {
-    const scheduled = Array.from({ length: 20 }, (_, index) => {
-      const pattern = getPatternForDistance(360 + index * 600);
+    expect(PATTERN_SPACING_METERS).toBe(480);
+    const scheduled = Array.from({ length: 32 }, (_, index) => {
+      const pattern = getPatternForDistance(PATTERN_START_METERS + index * PATTERN_SPACING_METERS);
       return pattern.obstacles.map((hazard) => ({
         at: getHazardDistance(index, hazard), kind: hazard.kind,
       }));

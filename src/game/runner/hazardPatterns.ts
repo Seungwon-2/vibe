@@ -1,8 +1,9 @@
 import type { HazardBand, HazardDefinition, HazardKind, HazardPattern } from './hazardTypes';
 
-// One pattern starts every 600m. The first starts at 360m so the player can learn controls.
+// The first pattern starts at 360m so the player can learn controls.
+// Later patterns are 480m apart; paired obstacles retain room for each action.
 export const PATTERN_START_METERS = 360;
-export const PATTERN_SPACING_METERS = 600;
+export const PATTERN_SPACING_METERS = 480;
 export const MAX_RUN_SPEED_UNITS_PER_SECOND = 325;
 export const METERS_PER_WORLD_UNIT = 1 / 3;
 

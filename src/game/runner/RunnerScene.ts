@@ -14,6 +14,7 @@ import type { RunnerEvent } from './runnerEvents';
 import { browserPersonalBestStore } from '../../services/PersonalBestStore';
 import type { RunnerFinishOutcome } from './runnerTypes';
 import { RunnerBackdrop } from '../visuals/RunnerBackdrop';
+import { getHurtAnimationFrames } from './hurtAnimation';
 
 export class RunnerScene extends Phaser.Scene {
   private inputBridge!: RunnerInputBridge;
@@ -60,7 +61,7 @@ export class RunnerScene extends Phaser.Scene {
       slide: character.available
         ? character.animations.slide.slice(2, 4)
         : character.animations.slide.slice(1, 4),
-      hurt: character.animations.hurt,
+      hurt: getHurtAnimationFrames(character.animations.hurt),
       victory: character.animations.victory,
       gameOver: character.animations.gameOver,
     } as const;

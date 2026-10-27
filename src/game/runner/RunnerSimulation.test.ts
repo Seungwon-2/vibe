@@ -105,12 +105,12 @@ describe('RunnerSimulation', () => {
     expect(applyCollision(rin).remainingMs).toBe(85_000);
     const firstHit = applyCollision(mary);
     expect(firstHit.remainingMs).toBe(85_000);
-    expect(firstHit.staggerRemainingMs).toBe(800);
-    expect(firstHit.protectionRemainingMs).toBe(1_050);
+    expect(firstHit.staggerRemainingMs).toBe(1_200);
+    expect(firstHit.protectionRemainingMs).toBe(1_450);
     expect(applyCollision(firstHit)).toBe(firstHit);
-    expect(advanceRunner(pauseRunner(firstHit), 2_000).state.protectionRemainingMs).toBe(1_050);
+    expect(advanceRunner(pauseRunner(firstHit), 2_000).state.protectionRemainingMs).toBe(1_450);
 
-    const recovered = advanceRunner(firstHit, 800).state;
+    const recovered = advanceRunner(firstHit, 1_200).state;
     expect(recovered.protectionRemainingMs).toBe(250);
     expect(recovered.staggerRemainingMs).toBe(0);
     expect(applyCollision(recovered)).toBe(recovered);
@@ -123,19 +123,19 @@ describe('RunnerSimulation', () => {
     expect(fatal.finishedAtElapsedMs).toBe(0);
   });
 
-  it('freezes map distance for 800ms after a hit while the timer continues', () => {
+  it('freezes map distance for 1.2s after a hit while the timer continues', () => {
     const hit = applyCollision(running());
-    const halfway = advanceRunner(hit, 400).state;
+    const halfway = advanceRunner(hit, 600).state;
     expect(halfway.distanceMeters).toBe(hit.distanceMeters);
-    expect(halfway.remainingMs).toBe(84_600);
-    expect(halfway.staggerRemainingMs).toBe(400);
-    const recovered = advanceRunner(halfway, 400).state;
+    expect(halfway.remainingMs).toBe(84_400);
+    expect(halfway.staggerRemainingMs).toBe(600);
+    const recovered = advanceRunner(halfway, 600).state;
     expect(recovered.distanceMeters).toBe(hit.distanceMeters);
     expect(recovered.staggerRemainingMs).toBe(0);
     expect(recovered.protectionRemainingMs).toBe(0);
     const moving = advanceRunner(recovered, 100).state;
     expect(moving.distanceMeters).toBeGreaterThan(hit.distanceMeters);
-    expect(advanceRunner(hit, 900).state.distanceMeters).toBeCloseTo(moving.distanceMeters, 7);
+    expect(advanceRunner(hit, 1_300).state.distanceMeters).toBeCloseTo(moving.distanceMeters, 7);
 
     const nearlyExpired = { ...hit, remainingMs: 100 };
     const expiredDuringFreeze = advanceRunner(nearlyExpired, 1_000);

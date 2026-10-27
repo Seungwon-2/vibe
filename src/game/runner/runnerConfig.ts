@@ -9,8 +9,8 @@ export const RUNNER_CONFIG = Object.freeze({
   speedRampMs: 90_000,
   metersPerWorldUnit: 1 / 3,
   collisionPenaltyMs: 5_000,
-  staggerMs: 800,
-  protectionMs: 800,
+  staggerMs: 1_200,
+  protectionMs: 1_200,
 } as const);
 
 export const RUNNER_GATE_DISTANCES_M = Object.freeze([2_500, 5_000, 7_500] as const);
