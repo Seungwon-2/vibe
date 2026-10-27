@@ -10,7 +10,7 @@
 
 ## Active Task
 
-[T01 Biome Pixel Art](./phases/2026-10-26-running-action-redesign/P03-course-and-ui/T01-biome-pixel-art.md)
+[T02 HUD, Mobile Controls, and Pause](./phases/2026-10-26-running-action-redesign/P03-course-and-ui/T02-hud-mobile-pause.md)
 
 ## Status
 
@@ -20,9 +20,11 @@
 - Rin, Hiyori, and Mary now use their supplied 192×192 sprite frames, converted to 96×96 runtime atlases. Toa and Rang appear as unavailable in character selection until matching sprite sets arrive. Rin's missing idle/start actions temporarily reuse her victory art. This sprite integration did not advance the P02-T02 pointer.
 - P02-T02 completed in `00e2a1e`: a local per-character best chooses victory for a strictly new distance or crying otherwise. The result panel keeps the character visible and includes restart and character-selection actions.
 - 56 tests, typecheck, build, and lint passed. Headless Edge confirmed the first-best victory pose, grounded final art, and readable desktop/mobile result layouts. The full time-out length and every character's terminal animation still need interactive visual review.
-- [Running Action Redesign](./plans/2026-10-26-running-action-redesign.md) resumes at P03-T01. Its later four-card selector and unified ranking blueprints need roster reconciliation before execution.
+- [Running Action Redesign](./plans/2026-10-26-running-action-redesign.md) is active in P03. Its later four-card selector and unified ranking blueprints need roster reconciliation before execution.
+- P03-T01 completed in `6bb4399`: four distance-synchronized code-based biomes, 0.15×/0.4×/1× parallax, 750ms palette crossfade, and themed ground/pickup/hazard/gate art. The transparent physics floor and existing reward triggers remain unchanged.
+- 60 tests, typecheck, build, and lint passed. Headless Edge inspected all four themes at 960×540 and compact 844×390, including the pre-gate view; narrow landscape now fits the entire game board.
 - The unrelated untracked `.memory/image.png` is untouched.
 
 ## Next Step
 
-Read P03-T01 and implement the four biome backgrounds plus ground, pickup, hazard, and gate presentation without changing runner physics.
+Read P03-T02 and build the compact HUD, corner touch controls, countdown/pause presentation, and landscape behavior against the new biome backgrounds.

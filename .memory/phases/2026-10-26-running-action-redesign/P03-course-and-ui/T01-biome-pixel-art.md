@@ -77,4 +77,4 @@ Task: T01-biome-pixel-art
 
 - [x] Implementation complete
 - [x] Validation passed (60 tests, typecheck, build, lint; local Edge desktop/compact screenshots for all four biomes and a pre-gate view)
-- commit: pending
+- commit: `6bb4399`
