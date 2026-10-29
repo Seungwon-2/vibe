@@ -914,6 +914,7 @@ h1 {
 .selector-panel .selector-header h1 { color: var(--ui-text); }
 .selector-panel .selector-intro, .selector-panel .selector-footer p { color: var(--ui-muted); }
 .selector-panel .selector-back { color: #fff; }
+.selector-panel .character-preview__sheet { image-rendering: pixelated; }
 .selector-showcase__ability { box-shadow: 0 6px 18px rgb(5 9 25 / 16%); }
 .selector-panel .character-card { transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease; }
 .selector-panel .character-card:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 14px 28px rgb(45 71 119 / 17%); }
