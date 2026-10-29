@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "character": "Aokumo Rin",
   "frameSize": {
     "width": 192,
@@ -12,9 +12,9 @@
   "atlas": {
     "image": "assets/rin-atlas.png",
     "columns": 12,
-    "rows": 4
+    "rows": 5
   },
-  "notes": "Unified Rin illustration style: run/slide references, 30 redrawn hit/jump/double/victory/cry frames. Shared scale and 192x192 RGBA canvas, pivot (96,180). Jump trajectory and collision are independent of artwork.",
+  "notes": "Original48 run/hit/slide/jump/double/victory/cry PNGs preserved byte-for-byte. Added6 idle and6 cheer frames matching existing Rin model. Shared192x192 RGBA canvas, pivot96,180. Original atlas indices0-47 preserved; idle48-53, cheer54-59. Physics independent of artwork.",
   "animations": {
     "run": {
       "frames": [
@@ -118,6 +118,34 @@
       "fps": 10,
       "loop": false,
       "atlasStart": 42,
+      "count": 6
+    },
+    "idle": {
+      "frames": [
+        "assets/idle-v5-01.png",
+        "assets/idle-v5-02.png",
+        "assets/idle-v5-03.png",
+        "assets/idle-v5-04.png",
+        "assets/idle-v5-05.png",
+        "assets/idle-v5-06.png"
+      ],
+      "fps": 6,
+      "loop": true,
+      "atlasStart": 48,
+      "count": 6
+    },
+    "cheer": {
+      "frames": [
+        "assets/cheer-v5-01.png",
+        "assets/cheer-v5-02.png",
+        "assets/cheer-v5-03.png",
+        "assets/cheer-v5-04.png",
+        "assets/cheer-v5-05.png",
+        "assets/cheer-v5-06.png"
+      ],
+      "fps": 8,
+      "loop": true,
+      "atlasStart": 54,
       "count": 6
     }
   }
