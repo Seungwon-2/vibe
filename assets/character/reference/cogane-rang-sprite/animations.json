@@ -1,0 +1,162 @@
+{
+  "character": "Kogane Rang",
+  "version": 1,
+  "frameWidth": 384,
+  "frameHeight": 384,
+  "pivot": {
+    "x": 192,
+    "y": 360
+  },
+  "atlas": {
+    "file": "assets/rang-atlas.png",
+    "columns": 12,
+    "rows": 5
+  },
+  "physics": {
+    "independentOfSprite": true,
+    "note": "Manage jump velocity, gravity and collider in game code, not sprite bounds."
+  },
+  "animations": {
+    "run": {
+      "name": "달리기",
+      "frames": [
+        "assets/run-01.png",
+        "assets/run-02.png",
+        "assets/run-03.png",
+        "assets/run-04.png",
+        "assets/run-05.png",
+        "assets/run-06.png",
+        "assets/run-07.png",
+        "assets/run-08.png",
+        "assets/run-09.png",
+        "assets/run-10.png",
+        "assets/run-11.png",
+        "assets/run-12.png"
+      ],
+      "count": 12,
+      "fps": 18,
+      "loop": true,
+      "atlasStart": 0
+    },
+    "hit": {
+      "name": "충돌",
+      "frames": [
+        "assets/hit-01.png",
+        "assets/hit-02.png",
+        "assets/hit-03.png",
+        "assets/hit-04.png",
+        "assets/hit-05.png",
+        "assets/hit-06.png"
+      ],
+      "count": 6,
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 12
+    },
+    "slide": {
+      "name": "슬라이딩",
+      "frames": [
+        "assets/slide-01.png",
+        "assets/slide-02.png",
+        "assets/slide-03.png",
+        "assets/slide-04.png",
+        "assets/slide-05.png",
+        "assets/slide-06.png"
+      ],
+      "count": 6,
+      "fps": 12,
+      "loop": false,
+      "atlasStart": 18
+    },
+    "jump": {
+      "name": "점프",
+      "frames": [
+        "assets/jump-01.png",
+        "assets/jump-02.png",
+        "assets/jump-03.png",
+        "assets/jump-04.png",
+        "assets/jump-05.png",
+        "assets/jump-06.png"
+      ],
+      "count": 6,
+      "fps": 12,
+      "loop": false,
+      "atlasStart": 24
+    },
+    "double": {
+      "name": "2단 점프",
+      "frames": [
+        "assets/double-01.png",
+        "assets/double-02.png",
+        "assets/double-03.png",
+        "assets/double-04.png",
+        "assets/double-05.png",
+        "assets/double-06.png"
+      ],
+      "count": 6,
+      "fps": 12,
+      "loop": false,
+      "atlasStart": 30
+    },
+    "victory": {
+      "name": "승리",
+      "frames": [
+        "assets/victory-01.png",
+        "assets/victory-02.png",
+        "assets/victory-03.png",
+        "assets/victory-04.png",
+        "assets/victory-05.png",
+        "assets/victory-06.png"
+      ],
+      "count": 6,
+      "fps": 8,
+      "loop": false,
+      "atlasStart": 36
+    },
+    "cry": {
+      "name": "울기",
+      "frames": [
+        "assets/cry-01.png",
+        "assets/cry-02.png",
+        "assets/cry-03.png",
+        "assets/cry-04.png",
+        "assets/cry-05.png",
+        "assets/cry-06.png"
+      ],
+      "count": 6,
+      "fps": 6,
+      "loop": true,
+      "atlasStart": 42
+    },
+    "idle": {
+      "name": "대기",
+      "frames": [
+        "assets/idle-01.png",
+        "assets/idle-02.png",
+        "assets/idle-03.png",
+        "assets/idle-04.png",
+        "assets/idle-05.png",
+        "assets/idle-06.png"
+      ],
+      "count": 6,
+      "fps": 6,
+      "loop": true,
+      "atlasStart": 48
+    },
+    "cheer": {
+      "name": "응원",
+      "frames": [
+        "assets/cheer-01.png",
+        "assets/cheer-02.png",
+        "assets/cheer-03.png",
+        "assets/cheer-04.png",
+        "assets/cheer-05.png",
+        "assets/cheer-06.png"
+      ],
+      "count": 6,
+      "fps": 8,
+      "loop": true,
+      "atlasStart": 54
+    }
+  }
+}

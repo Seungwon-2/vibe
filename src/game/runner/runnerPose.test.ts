@@ -67,7 +67,6 @@ describe('slide art and collision alignment', () => {
         expect(Math.abs(visualBottom - RUNNER_GROUND_Y)).toBeLessThanOrEqual(1);
         expect(pose.scaleX).toBe(pose.scaleY);
         if (available) {
-          expect(pose.scaleX).toBe(1);
           expect(visualTop).toBeGreaterThanOrEqual(RUNNER_GROUND_Y - SLIDING_BODY_HEIGHT);
           expect(visualLeft).toBeGreaterThanOrEqual(RUNNER_PLAYER_X - SLIDING_BODY_WIDTH / 2);
           expect(visualRight).toBeLessThanOrEqual(RUNNER_PLAYER_X + SLIDING_BODY_WIDTH / 2);

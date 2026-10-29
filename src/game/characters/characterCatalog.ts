@@ -3,7 +3,7 @@ import { getCharacterPassiveId } from './characterAbilities';
 import type { CharacterAnimationName, CharacterDefinition, CharacterId } from './characterTypes';
 
 const READY_CHARACTER_IDS: ReadonlySet<CharacterId> = new Set([
-  'player-default', 'hanayo-hiyori', 'tokino-mary',
+  'player-default', 'goth-student', 'cogane-rang', 'hanayo-hiyori', 'tokino-mary',
 ]);
 
 const ANIMATION_FRAME_SUFFIXES: Readonly<Record<CharacterAnimationName, string>> = {

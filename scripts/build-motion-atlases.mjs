@@ -287,9 +287,10 @@ const CURATED_ANIMATIONS = {
 async function loadCuratedFrames(sheet, descriptors) {
   const directory = path.join(ROOT, sheet.spriteDir);
   const spec = JSON.parse(await fs.readFile(path.join(directory, 'animations.json'), 'utf8'));
-  const sourceSize = spec.frameSize?.width;
+  const sourceSize = spec.frameSize?.width ?? spec.frameWidth;
+  const sourceHeight = spec.frameSize?.height ?? spec.frameHeight;
   const supportedSize = sourceSize === 192 || sourceSize === 384;
-  if (!supportedSize || spec.frameSize?.height !== sourceSize ||
+  if (!supportedSize || sourceHeight !== sourceSize ||
       spec.pivot?.x !== sourceSize / 2 || spec.pivot?.y !== sourceSize * 15 / 16) {
     throw new Error(`${sheet.slug} curated frames must use a 192x192 or 384x384 canvas with a centered pivot at 15/16 height.`);
   }
@@ -315,7 +316,7 @@ async function loadCuratedFrames(sheet, descriptors) {
     const frame = await sharp({ create: { width: FRAME_SIZE, height: FRAME_SIZE,
       channels: 4, background: TRANSPARENT } })
       .composite([{ input: art, left: 4, top: sourceSize === 384 ? 6 : 7 }]).png().toBuffer();
-    await validateFrame(frame, name);
+    await validateFrame(frame, name, sourceSize === 384 ? 2 : 4);
     return frame;
   }));
 }
@@ -351,11 +352,12 @@ async function saveOrCheck(file, expected, checkOnly) {
   }
 }
 
-async function validateFrame(buffer, name) {
+async function validateFrame(buffer, name, edgeMargin = 4) {
   const { data, info } = await sharp(buffer).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   if (info.width !== FRAME_SIZE || info.height !== FRAME_SIZE) throw new Error(`${name} has incorrect dimensions.`);
   const bounds = opaqueBounds(data, info.width, info.height);
-  if (!bounds || bounds.left < 4 || bounds.top < 4 || bounds.right > 91 || bounds.bottom > 91) {
+  if (!bounds || bounds.left < edgeMargin || bounds.top < edgeMargin ||
+      bounds.right > FRAME_SIZE - edgeMargin - 1 || bounds.bottom > FRAME_SIZE - edgeMargin - 1) {
     throw new Error(`${name} is empty or touches its frame edge: ${JSON.stringify(bounds)}.`);
   }
   if (!data.some((value, index) => index % 4 === 3 && value === 0)) {
@@ -390,7 +392,7 @@ export async function buildCharacterAtlas(sheet, checkOnly = false) {
     frames = await normalizeMotionFrames(measured);
   }
   for (let index = 0; index < frames.length; index += 1) {
-    await validateFrame(frames[index], descriptors[index].name);
+    await validateFrame(frames[index], descriptors[index].name, sheet.frameEdgeMargin ?? 4);
     await saveOrCheck(path.join(FRAME_DIR, `${descriptors[index].name}.png`), frames[index], checkOnly);
   }
   const atlas = await makeAtlas(frames);

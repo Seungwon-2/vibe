@@ -32,7 +32,7 @@ describe('runner character registry', () => {
       expect(Object.keys(character.atlasManifest.frames)).toHaveLength(60);
     }
     expect(CHARACTERS.filter(({ available }) => available).map(({ id }) => id)).toEqual([
-      'player-default', 'hanayo-hiyori', 'tokino-mary',
+      'player-default', 'goth-student', 'cogane-rang', 'hanayo-hiyori', 'tokino-mary',
     ]);
   });
 
@@ -59,8 +59,8 @@ describe('runner character registry', () => {
     expect(resolveCharacterId('akane-lize')).toBe('player-default');
     expect(resolveCharacterId('unknown')).toBe('player-default');
     expect(resolveCharacterId(null)).toBe('player-default');
-    expect(resolveCharacterId('goth-student')).toBe('player-default');
-    expect(resolveCharacterId('cogane-rang')).toBe('player-default');
+    expect(resolveCharacterId('goth-student')).toBe('goth-student');
+    expect(resolveCharacterId('cogane-rang')).toBe('cogane-rang');
     expect(getCharacter('goth-student').displayName).toBe('Shizuki Toa');
     expect(() => getCharacter('moonwing' as never)).toThrow('Unknown character: moonwing');
     expect(() => getCharacter('unknown' as never)).toThrow('Unknown character: unknown');
@@ -71,7 +71,7 @@ describe('runner character registry', () => {
       'rin-speed': { id: 'rin-speed', speedBonusRatio: 0.05, name: '질주의 메이드', icon: 'cloud', effectLabel: '최고 속도 +5%' },
       'hiyori-guard': { id: 'hiyori-guard', chargesPerRun: 2, name: '유령의 수호', icon: 'pink-flame', effectLabel: '충돌·낭떠러지 방어 2회' },
       'mary-pickup-magnet': { id: 'mary-pickup-magnet', radiusPx: 30, name: '별빛 자석', icon: 'sparkling-magnet', effectLabel: '수집 반경 +30px' },
-      unassigned: { id: 'unassigned', name: '준비 중', icon: null, effectLabel: '플레이 가능할 때 공개' },
+      unassigned: { id: 'unassigned', name: '고유 능력 없음', icon: null, effectLabel: '기본 성능으로 플레이합니다' },
     });
     expect(CHARACTERS.map(({ id }) => getCharacterPassive(id).id)).toEqual([
       'rin-speed',

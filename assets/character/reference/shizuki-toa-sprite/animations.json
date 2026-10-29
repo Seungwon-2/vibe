@@ -1,0 +1,163 @@
+{
+  "character": "Shizuki Toa",
+  "version": 2,
+  "frameWidth": 384,
+  "frameHeight": 384,
+  "pivot": {
+    "x": 192,
+    "y": 360
+  },
+  "atlas": {
+    "file": "assets/toa-atlas-v2.png",
+    "columns": 12,
+    "rows": 5
+  },
+  "animations": {
+    "run": {
+      "name": "달리기",
+      "frames": [
+        "assets/run-v2-01.png",
+        "assets/run-v2-02.png",
+        "assets/run-v2-03.png",
+        "assets/run-v2-04.png",
+        "assets/run-v2-05.png",
+        "assets/run-v2-06.png",
+        "assets/run-v2-07.png",
+        "assets/run-v2-08.png",
+        "assets/run-v2-09.png",
+        "assets/run-v2-10.png",
+        "assets/run-v2-11.png",
+        "assets/run-v2-12.png"
+      ],
+      "count": 12,
+      "fps": 18,
+      "loop": true,
+      "atlasStart": 0
+    },
+    "hit": {
+      "name": "충돌",
+      "frames": [
+        "assets/hit-v2-01.png",
+        "assets/hit-v2-02.png",
+        "assets/hit-v2-03.png",
+        "assets/hit-v2-04.png",
+        "assets/hit-v2-05.png",
+        "assets/hit-v2-06.png"
+      ],
+      "count": 6,
+      "fps": 10,
+      "loop": false,
+      "atlasStart": 12
+    },
+    "slide": {
+      "name": "슬라이딩",
+      "frames": [
+        "assets/slide-v2-01.png",
+        "assets/slide-v2-02.png",
+        "assets/slide-v2-03.png",
+        "assets/slide-v2-04.png",
+        "assets/slide-v2-05.png",
+        "assets/slide-v2-06.png"
+      ],
+      "count": 6,
+      "fps": 12,
+      "loop": false,
+      "atlasStart": 18
+    },
+    "jump": {
+      "name": "점프",
+      "frames": [
+        "assets/jump-v2-01.png",
+        "assets/jump-v2-02.png",
+        "assets/jump-v2-03.png",
+        "assets/jump-v2-04.png",
+        "assets/jump-v2-05.png",
+        "assets/jump-v2-06.png"
+      ],
+      "count": 6,
+      "fps": 12,
+      "loop": false,
+      "atlasStart": 24
+    },
+    "double": {
+      "name": "2단 점프",
+      "frames": [
+        "assets/double-v2-01.png",
+        "assets/double-v2-02.png",
+        "assets/double-v2-03.png",
+        "assets/double-v2-04.png",
+        "assets/double-v2-05.png",
+        "assets/double-v2-06.png"
+      ],
+      "count": 6,
+      "fps": 12,
+      "loop": false,
+      "atlasStart": 30
+    },
+    "victory": {
+      "name": "승리",
+      "frames": [
+        "assets/victory-v2-01.png",
+        "assets/victory-v2-02.png",
+        "assets/victory-v2-03.png",
+        "assets/victory-v2-04.png",
+        "assets/victory-v2-05.png",
+        "assets/victory-v2-06.png"
+      ],
+      "count": 6,
+      "fps": 8,
+      "loop": false,
+      "atlasStart": 36
+    },
+    "cry": {
+      "name": "울기",
+      "frames": [
+        "assets/cry-v2-01.png",
+        "assets/cry-v2-02.png",
+        "assets/cry-v2-03.png",
+        "assets/cry-v2-04.png",
+        "assets/cry-v2-05.png",
+        "assets/cry-v2-06.png"
+      ],
+      "count": 6,
+      "fps": 6,
+      "loop": true,
+      "atlasStart": 42
+    },
+    "idle": {
+      "name": "대기",
+      "frames": [
+        "assets/idle-v2-01.png",
+        "assets/idle-v2-02.png",
+        "assets/idle-v2-03.png",
+        "assets/idle-v2-04.png",
+        "assets/idle-v2-05.png",
+        "assets/idle-v2-06.png"
+      ],
+      "count": 6,
+      "fps": 6,
+      "loop": true,
+      "atlasStart": 48
+    },
+    "cheer": {
+      "name": "응원",
+      "frames": [
+        "assets/cheer-v2-01.png",
+        "assets/cheer-v2-02.png",
+        "assets/cheer-v2-03.png",
+        "assets/cheer-v2-04.png",
+        "assets/cheer-v2-05.png",
+        "assets/cheer-v2-06.png"
+      ],
+      "count": 6,
+      "fps": 8,
+      "loop": true,
+      "atlasStart": 54
+    }
+  },
+  "physics": {
+    "independentOfSprite": true,
+    "note": "Jump velocity, gravity and collider must be managed by game code."
+  },
+  "notes": "Unified Toa model: run12 and slide/jump/double/cry redrawn against idle model; all60 frames normalized using facial landmarks. Whole-character transforms only; no pasted fixed head. Perspective/expressions preserved."
+}

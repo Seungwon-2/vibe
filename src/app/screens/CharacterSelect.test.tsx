@@ -9,7 +9,7 @@ describe('CharacterSelect', () => {
     vi.unstubAllGlobals();
   });
 
-  it('shows all five catalog characters, selects Rin by default, and marks unfinished entries', () => {
+  it('shows all five playable characters and selects Rin by default', () => {
     render(<CharacterSelect selectedCharacterId={'unknown-id' as never} onConfirm={vi.fn()} onBack={vi.fn()} />);
     for (const name of ['Aokumo Rin', 'Hanayo Hiyori', 'Tokino Mary', 'Shizuki Toa', 'Cogane Rang']) {
       expect(screen.getByRole('button', { name })).toBeInTheDocument();
@@ -17,9 +17,9 @@ describe('CharacterSelect', () => {
     expect(screen.queryByRole('button', { name: 'Ayatsuno Yuni' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Akane Lize' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Aokumo Rin' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: 'Shizuki Toa' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Cogane Rang' })).toBeDisabled();
-    expect(screen.getAllByText('준비 중')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: 'Shizuki Toa' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Cogane Rang' })).toBeEnabled();
+    expect(screen.queryByText('준비 중')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '캐릭터 선택' })).toBeInTheDocument();
     expect(screen.getAllByTestId('selector-showcase-portrait')).toHaveLength(1);
     expect(screen.getByTestId('selector-showcase-portrait')).toHaveAttribute('src', expect.stringContaining('aokumo-rin-portrait'));
@@ -58,13 +58,18 @@ describe('CharacterSelect', () => {
     }
   });
 
-  it('does not allow an unavailable character to become the candidate or start the run', () => {
+  it('allows Toa and Rang to be selected and confirms their IDs', () => {
     const onConfirm = vi.fn();
-    render(<CharacterSelect selectedCharacterId="goth-student" onConfirm={onConfirm} onBack={vi.fn()} />);
-    expect(screen.getByRole('button', { name: 'Aokumo Rin' })).toHaveAttribute('aria-pressed', 'true');
+    render(<CharacterSelect selectedCharacterId="player-default" onConfirm={onConfirm} onBack={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Shizuki Toa' }));
-    expect(screen.getByRole('button', { name: 'Aokumo Rin' })).toHaveAttribute('aria-pressed', 'true');
-    expect(onConfirm).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Shizuki Toa' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: '선택한 캐릭터로 달리기 시작' }));
+    expect(onConfirm).toHaveBeenLastCalledWith('goth-student');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cogane Rang' }));
+    fireEvent.click(screen.getByRole('button', { name: '선택한 캐릭터로 달리기 시작' }));
+    expect(onConfirm).toHaveBeenLastCalledWith('cogane-rang');
+    expect(onConfirm).toHaveBeenCalledTimes(2);
   });
 
   it('updates showcase art, name, passive, and accent when a playable character is chosen', () => {
@@ -99,8 +104,10 @@ describe('CharacterSelect', () => {
     expect(screen.getByTestId('selector-passive').querySelector('svg')).toHaveAttribute('data-icon', 'sparkling-magnet');
     fireEvent.click(screen.getByRole('button', { name: 'Aokumo Rin' }));
     const toaCard = screen.getByRole('button', { name: 'Shizuki Toa' });
-    expect(toaCard).toBeDisabled();
+    expect(toaCard).toBeEnabled();
+    fireEvent.click(toaCard);
     expect(toaCard.querySelector('.character-ability-icon')).toBeNull();
+    expect(screen.getByTestId('selector-passive')).toHaveTextContent('고유 능력 없음');
   });
 
   it('confirms only the chosen character and keeps back separate from confirmation', () => {

@@ -14,7 +14,7 @@ describe('central character passive tuning', () => {
     });
   });
 
-  it('leaves not-yet-playable Toa and Rang unassigned', () => {
+  it('keeps Toa and Rang on default performance until their passives are designed', () => {
     expect(getCharacterPassive('goth-student').id).toBe('unassigned');
     expect(getCharacterPassive('cogane-rang').id).toBe('unassigned');
   });

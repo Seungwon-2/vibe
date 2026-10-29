@@ -19,7 +19,7 @@ export const CHARACTER_PASSIVES: Readonly<Record<CharacterPassiveId, CharacterPa
     'mary-pickup-magnet': Object.freeze({
       id: 'mary-pickup-magnet', radiusPx: 30, name: '별빛 자석', icon: 'sparkling-magnet', effectLabel: '수집 반경 +30px',
     }),
-    unassigned: Object.freeze({ id: 'unassigned', name: '준비 중', icon: null, effectLabel: '플레이 가능할 때 공개' }),
+    unassigned: Object.freeze({ id: 'unassigned', name: '고유 능력 없음', icon: null, effectLabel: '기본 성능으로 플레이합니다' }),
   });
 
 const CHARACTER_PASSIVE_BY_ID: Readonly<Record<CharacterId, CharacterPassiveId>> = Object.freeze({

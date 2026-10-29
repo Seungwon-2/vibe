@@ -11,10 +11,10 @@ export const STANDING_BODY_OFFSET_Y = STANDING_FRAME_BOTTOM - STANDING_BODY_HEIG
 // Opaque bottom edge of the final victory/cry frame in each runtime atlas.
 const TERMINAL_FRAME_BOTTOM: Readonly<Record<CharacterId, number>> = {
   'player-default': 89,
-  'goth-student': 92,
-  'cogane-rang': 92,
+  'goth-student': 89,
+  'cogane-rang': 89,
   'hanayo-hiyori': 89,
-  'tokino-mary': 90,
+  'tokino-mary': 89,
 };
 
 export function getTerminalSpriteY(characterId: CharacterId): number {
@@ -27,8 +27,8 @@ export const SLIDING_BODY_HEIGHT = 48;
 // placeholder sheets remain smaller until they receive matching slide art.
 const SLIDE_SCALE: Readonly<Record<CharacterId, number>> = {
   'player-default': 1,
-  'goth-student': 0.72,
-  'cogane-rang': 0.72,
+  'goth-student': 0.82,
+  'cogane-rang': 1,
   'hanayo-hiyori': 1,
   'tokino-mary': 1,
 };
@@ -36,10 +36,10 @@ const SLIDE_SCALE: Readonly<Record<CharacterId, number>> = {
 // Opaque bottom edge (maxY + 1) of the active slide frames, measured at alpha > 20.
 const SLIDE_FRAME_BOTTOM: Readonly<Record<CharacterId, number>> = {
   'player-default': 90,
-  'goth-student': 92,
-  'cogane-rang': 92,
+  'goth-student': 89,
+  'cogane-rang': 89,
   'hanayo-hiyori': 89,
-  'tokino-mary': 90,
+  'tokino-mary': 89,
 };
 
 export function getSlidePose(characterId: CharacterId) {

@@ -1,6 +1,6 @@
 import rangAtlasUrl from '../../../assets/character/runtime/cogane-rang.png?url';
 import rangManifest from '../../../assets/character/runtime/cogane-rang.json';
-import rangPortraitUrl from '../../../assets/character/portraits/cogane-rang-portrait.png?url';
+import rangPortraitUrl from '../../../assets/character/portraits/cogane-rang-portrait_sd.png?url';
 import hiyoriAtlasUrl from '../../../assets/character/runtime/hanayo-hiyori.png?url';
 import hiyoriManifest from '../../../assets/character/runtime/hanayo-hiyori.json';
 import hiyoriPortraitUrl from '../../../assets/character/portraits/hanayo-hiyori-portrait_sd.png?url';
@@ -12,7 +12,7 @@ import rinManifest from '../../../assets/character/runtime/player-default.json';
 import rinPortraitUrl from '../../../assets/character/portraits/aokumo-rin-portrait_sd.png?url';
 import toaAtlasUrl from '../../../assets/character/runtime/goth-student.png?url';
 import toaManifest from '../../../assets/character/runtime/goth-student.json';
-import toaPortraitUrl from '../../../assets/character/portraits/shizuki-toa-portrait.png?url';
+import toaPortraitUrl from '../../../assets/character/portraits/shizuki-toa-portrait_sd.png?url';
 import type { RuntimeAtlasManifest } from './characterTypes';
 
 export const CHARACTER_ATLASES = {
