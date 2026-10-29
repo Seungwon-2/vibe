@@ -1,5 +1,6 @@
 ﻿import { useState } from 'react';
 import { CharacterPreview } from '../components/CharacterPreview';
+import hiyoriShowcasePortraitUrl from '../../../assets/character/portraits/hanayo-hiyori-portrait_SD.png?url';
 import { CharacterAbilityIcon } from '../components/CharacterAbilityIcon';
 import { CHARACTERS, getCharacter, resolveCharacterId } from '../../game/characters/characterCatalog';
 import { getCharacterPassive } from '../../game/characters/characterAbilities';
@@ -19,6 +20,9 @@ export function CharacterSelect({ selectedCharacterId, onConfirm, onBack }: Char
   const [candidateCharacterId, setCandidateCharacterId] = useState(() => resolveCharacterId(selectedCharacterId));
   const selectedCharacter = getCharacter(candidateCharacterId);
   const selectedPassive = getCharacterPassive(selectedCharacter.id);
+  const showcasePortraitUrl = selectedCharacter.id === 'hanayo-hiyori'
+    ? hiyoriShowcasePortraitUrl
+    : selectedCharacter.portraitUrl;
 
   return (
     <main className="selector-shell">
@@ -36,7 +40,7 @@ export function CharacterSelect({ selectedCharacterId, onConfirm, onBack }: Char
           <section className="selector-showcase"
             style={{ '--character-accent': selectedCharacter.accentColor } as React.CSSProperties}
             aria-label={`${selectedCharacter.displayName} 소개`}>
-            <img className="selector-showcase__portrait" src={selectedCharacter.portraitUrl} alt="" data-testid="selector-showcase-portrait" />
+            <img className="selector-showcase__portrait" src={showcasePortraitUrl} alt="" data-testid="selector-showcase-portrait" />
             <span className="selector-showcase__shade" />
             <div className="selector-showcase__art">
               <CharacterPreview key={selectedCharacter.id} character={selectedCharacter} selected animation="victory" loop={false} variant="showcase" />

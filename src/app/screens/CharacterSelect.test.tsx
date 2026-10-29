@@ -74,6 +74,8 @@ describe('CharacterSelect', () => {
     expect(screen.getByRole('button', { name: 'Hanayo Hiyori' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: 'Aokumo Rin' })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByTestId('character-preview-hanayo-hiyori-showcase')).toHaveAttribute('data-animation', 'victory');
+    expect(screen.getByTestId('selector-showcase-portrait').getAttribute('src'))
+      .toContain('hanayo-hiyori-portrait_SD.png');
     expect(screen.getByTestId('selector-passive')).toHaveTextContent('유령의 수호');
     expect(screen.getByTestId('selector-passive')).toHaveTextContent('충돌·낭떠러지 방어 2회');
     expect(screen.getByTestId('selector-passive').querySelector('svg')).toHaveAttribute('data-icon', 'pink-flame');
