@@ -13,11 +13,18 @@ const runGatewayMock = vi.hoisted(() => ({
   submitRun: vi.fn(),
 }));
 
+const audioMock = vi.hoisted(() => ({
+  unlock: vi.fn(),
+  setPreferences: vi.fn(),
+  playEffect: vi.fn(),
+}));
+
 vi.mock('./services/PersonalBestStore', () => ({
   browserPersonalBestStore: { getBest: vi.fn(() => null) },
 }));
 
 vi.mock('./services/LocalRunGateway', () => ({ browserRunGateway: runGatewayMock }));
+vi.mock('./audio/RunnerAudioManager', () => ({ browserRunnerAudio: audioMock }));
 
 vi.mock('./game/runner/RunnerGame', async () => {
   const React = await import('react');
@@ -46,6 +53,7 @@ import App from './App';
 afterEach(cleanup);
 beforeEach(() => {
   localStorage.removeItem('runner-action:tutorial:v1:seen');
+  localStorage.removeItem('runner-audio:preferences:v1');
   runnerMock.finish = null;
   runnerMock.mounts = 0;
   runnerMock.destroys = 0;
@@ -57,9 +65,22 @@ beforeEach(() => {
   runGatewayMock.getBest.mockClear();
   runGatewayMock.getRanking.mockClear();
   runGatewayMock.submitRun.mockClear();
+  audioMock.unlock.mockClear();
+  audioMock.setPreferences.mockClear();
+  audioMock.playEffect.mockClear();
 });
 
 describe('App flow', () => {
+  it('opens sound settings, unlocks effects on a user gesture, and persists effect volume', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /사운드 설정/ }));
+    expect(audioMock.unlock).toHaveBeenCalled();
+    expect(audioMock.playEffect).toHaveBeenCalledWith('ui-click');
+    fireEvent.change(screen.getByRole('slider', { name: /효과음 크기/ }), { target: { value: '0.3' } });
+    expect(JSON.parse(localStorage.getItem('runner-audio:preferences:v1')!)).toMatchObject({ effectsVolume: 0.3 });
+    expect(audioMock.setPreferences).toHaveBeenLastCalledWith(expect.objectContaining({ effectsVolume: 0.3 }));
+  });
+
   it('shows menu controls before the first run and hides them after returning', () => {
     render(<App />);
     expect(document.querySelector('.main-menu-help')).toBeInTheDocument();

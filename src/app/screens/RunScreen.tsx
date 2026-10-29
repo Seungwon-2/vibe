@@ -12,6 +12,8 @@ import { RunnerHud } from '../components/RunnerHud';
 import type { RunnerHudCue } from '../components/RunnerHud';
 import { TouchControls } from '../components/TouchControls';
 import { markRunnerTutorialSeen, shouldShowRunnerTutorial } from '../../game/runner/runnerTutorial';
+import { AudioSettingsDialog } from '../components/AudioSettingsDialog';
+import type { AudioPreferences } from '../../audio/audioPreferences';
 
 function isPortrait(): boolean {
   return window.matchMedia?.('(orientation: portrait)').matches ?? window.innerHeight > window.innerWidth;
@@ -21,9 +23,13 @@ export type RunScreenProps = {
   characterId: CharacterId;
   onFinish(result: RunnerResult, outcome: RunnerFinishOutcome): void;
   onExit(): void;
+  audioPreferences: AudioPreferences;
+  onAudioPreferencesChange(preferences: AudioPreferences): void;
+  onUnlockAudio(): void;
 };
 
-export function RunScreen({ characterId, onFinish, onExit }: RunScreenProps): React.JSX.Element {
+export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onAudioPreferencesChange,
+  onUnlockAudio }: RunScreenProps): React.JSX.Element {
   const character = getCharacter(characterId);
   const [portrait, setPortrait] = useState(isPortrait);
   const [paused, setPaused] = useState(isPortrait);
@@ -31,6 +37,7 @@ export function RunScreen({ characterId, onFinish, onExit }: RunScreenProps): Re
   const [countdownValue, setCountdownValue] = useState<number | null>(3);
   const [recentBonus, setRecentBonus] = useState<RunnerHudCue | null>(null);
   const [exitConfirmation, setExitConfirmation] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [inputBridge] = useState(() => new RunnerInputBridge());
   const [tutorialEnabled] = useState(() => shouldShowRunnerTutorial());
   const bonusTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -78,7 +85,7 @@ export function RunScreen({ characterId, onFinish, onExit }: RunScreenProps): Re
   useEffect(() => {
     const onPauseShortcut = (event: KeyboardEvent): void => {
       if (event.code !== 'KeyP' || event.repeat) return;
-      if (paused && !portrait && !exitConfirmation) {
+      if (paused && !portrait && !exitConfirmation && !settingsOpen) {
         setPaused(false);
       } else if (!paused && snapshot.phase === 'running') {
         if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
@@ -90,7 +97,7 @@ export function RunScreen({ characterId, onFinish, onExit }: RunScreenProps): Re
     };
     window.addEventListener('keydown', onPauseShortcut);
     return () => window.removeEventListener('keydown', onPauseShortcut);
-  }, [exitConfirmation, inputBridge, paused, portrait, snapshot.phase]);
+  }, [exitConfirmation, inputBridge, paused, portrait, settingsOpen, snapshot.phase]);
 
   function handleEvent(event: RunnerEvent): void {
     if (event.type === 'countdown') {
@@ -148,8 +155,11 @@ export function RunScreen({ characterId, onFinish, onExit }: RunScreenProps): Re
         {snapshot.phase === 'countdown' && countdownValue !== null &&
           <CountdownOverlay value={countdownValue} />}
         {paused && (
-          <PauseOverlay onResume={() => setPaused(false)} onExit={requestExit} portrait={portrait} />
+          <PauseOverlay onResume={() => setPaused(false)} onExit={requestExit} portrait={portrait}
+            onOpenAudioSettings={() => { onUnlockAudio(); setSettingsOpen(true); }} />
         )}
+        {paused && settingsOpen && <AudioSettingsDialog preferences={audioPreferences}
+          onChange={onAudioPreferencesChange} onUnlockAudio={onUnlockAudio} onClose={() => setSettingsOpen(false)} />}
         {exitConfirmation && (
           <div className="runner-overlay runner-overlay--confirm" role="alertdialog" aria-modal="true"
             aria-labelledby="exit-confirm-title">

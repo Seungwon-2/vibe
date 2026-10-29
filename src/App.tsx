@@ -10,6 +10,8 @@ import { browserPersonalBestStore } from './services/PersonalBestStore';
 import { browserRunGateway } from './services/LocalRunGateway';
 import type { RankedRunRecord } from './services/RunGateway';
 import { shouldShowRunnerTutorial } from './game/runner/runnerTutorial';
+import { browserRunnerAudio } from './audio/RunnerAudioManager';
+import { DEFAULT_AUDIO_PREFERENCES, loadAudioPreferences, saveAudioPreferences, type AudioPreferences } from './audio/audioPreferences';
 
 type AppScreen = 'menu' | 'character-select' | 'run' | 'result' | 'rankings';
 type FinishedRun = {
@@ -24,6 +26,13 @@ type BestLoadState = { key: string; record: RankedRunRecord | null; error: strin
 type RankingLoadState = { requestId: number; rows: RankedRunRecord[]; error: string | null };
 
 function App(): React.JSX.Element {
+  const [audioPreferences, setAudioPreferences] = useState<AudioPreferences>(() => {
+    try {
+      return loadAudioPreferences(window.localStorage);
+    } catch {
+      return { ...DEFAULT_AUDIO_PREFERENCES };
+    }
+  });
   const [screen, setScreen] = useState<AppScreen>('menu');
   const [selectedCharacterId, setSelectedCharacterId] = useState<CharacterId>('player-default');
   const [finishedRun, setFinishedRun] = useState<FinishedRun | null>(null);
@@ -41,6 +50,35 @@ function App(): React.JSX.Element {
   const rankingLoading = screen === 'rankings' && rankingState.requestId !== rankingRequestId;
   const rankingRows = rankingState.requestId === rankingRequestId ? rankingState.rows : [];
   const rankingError = rankingState.requestId === rankingRequestId ? rankingState.error : null;
+
+  useEffect(() => {
+    browserRunnerAudio.setPreferences(audioPreferences);
+    try {
+      saveAudioPreferences(audioPreferences, window.localStorage);
+    } catch {
+      // Audio preferences remain active in memory when browser storage is unavailable.
+    }
+  }, [audioPreferences]);
+
+  useEffect(() => {
+    const unlock = (): void => browserRunnerAudio.unlock();
+    const handleButtonClick = (event: MouseEvent): void => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const button = target.closest('button');
+      if (!button || button.disabled || button.closest('.runner-stage')) return;
+      browserRunnerAudio.unlock();
+      browserRunnerAudio.playEffect('ui-click');
+    };
+    document.addEventListener('pointerdown', unlock, true);
+    document.addEventListener('keydown', unlock, true);
+    document.addEventListener('click', handleButtonClick, true);
+    return () => {
+      document.removeEventListener('pointerdown', unlock, true);
+      document.removeEventListener('keydown', unlock, true);
+      document.removeEventListener('click', handleButtonClick, true);
+    };
+  }, []);
 
   useEffect(() => {
     if (!bestRequestKey) return;
@@ -90,6 +128,8 @@ function App(): React.JSX.Element {
     const currentRunId = runId;
     return (
       <RunScreen key={`${currentRunId}:${selectedCharacterId}`} characterId={selectedCharacterId}
+        audioPreferences={audioPreferences} onAudioPreferencesChange={setAudioPreferences}
+        onUnlockAudio={() => browserRunnerAudio.unlock()}
         onExit={() => {
           latestRunId.current += 1;
           setScreen('menu');
@@ -137,7 +177,8 @@ function App(): React.JSX.Element {
 
   return <MainMenu onStart={() => setScreen('character-select')} onRankings={openRankings}
     topRun={overallBest} topRunLoading={bestLoading} topRunError={bestError}
-    showControlsHelp={shouldShowRunnerTutorial()} />;
+    showControlsHelp={shouldShowRunnerTutorial()} audioPreferences={audioPreferences}
+    onAudioPreferencesChange={setAudioPreferences} onUnlockAudio={() => browserRunnerAudio.unlock()} />;
 }
 
 export default App;

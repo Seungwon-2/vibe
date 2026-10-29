@@ -1,3 +1,7 @@
+import { useState } from 'react';
+import type { AudioPreferences } from '../../audio/audioPreferences';
+import { AudioCreditsDialog } from '../components/AudioCreditsDialog';
+import { AudioSettingsDialog } from '../components/AudioSettingsDialog';
 import { getCharacter } from '../../game/characters/characterCatalog';
 import type { RankedRunRecord } from '../../services/RunGateway';
 
@@ -8,10 +12,14 @@ export type MainMenuProps = {
   topRunLoading: boolean;
   topRunError: string | null;
   showControlsHelp: boolean;
+  audioPreferences: AudioPreferences;
+  onAudioPreferencesChange(preferences: AudioPreferences): void;
+  onUnlockAudio(): void;
 };
 
 export function MainMenu({ onStart, onRankings, topRun, topRunLoading, topRunError,
-  showControlsHelp }: MainMenuProps): React.JSX.Element {
+  showControlsHelp, audioPreferences, onAudioPreferencesChange, onUnlockAudio }: MainMenuProps): React.JSX.Element {
+  const [dialog, setDialog] = useState<'settings' | 'credits' | null>(null);
   const topCharacter = topRun ? getCharacter(topRun.characterId) : null;
   return (
     <main className="landing-shell">
@@ -35,9 +43,14 @@ export function MainMenu({ onStart, onRankings, topRun, topRunLoading, topRunErr
           <button className="main-menu-rankings" type="button" onClick={onRankings}>
             로컬 기록 보기
           </button>
-        </div>
+                  <div className="main-menu-audio-actions">
+            <button type="button" onClick={() => { onUnlockAudio(); setDialog('settings'); }}>사운드 설정</button>
+            <button type="button" onClick={() => setDialog('credits')}>효과음 크레딧</button>
+          </div></div>
         {showControlsHelp && <p className="main-menu-help">Space / ↑ 점프 · ↓ 슬라이딩 · P 일시정지</p>}
       </section>
-    </main>
+          {dialog === 'settings' && <AudioSettingsDialog preferences={audioPreferences}
+        onChange={onAudioPreferencesChange} onUnlockAudio={onUnlockAudio} onClose={() => setDialog(null)} />}
+      {dialog === 'credits' && <AudioCreditsDialog onClose={() => setDialog(null)} />}</main>
   );
 }

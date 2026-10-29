@@ -10,7 +10,7 @@
 
 ## Active Task
 
-[T04 Settings and Music Routing](./phases/2026-10-29-runner-audio/P01-runner-audio/T04-settings-and-music-routing.md)
+[T05 Gameplay Sound Effects](./phases/2026-10-29-runner-audio/P01-runner-audio/T05-gameplay-sound-effects.md)
 
 ## Status
 
@@ -22,7 +22,7 @@
 
 ## Next Step
 
-Next, add effects volume/mute and audio credits to the settings UI. Defer music routing until the user provides a preferred reference audio file.
+Connect jump, double-jump, slide, pickups, gate, hit, fall, Hiyori defense, and UI actions to the effects catalog. Defer music routing until the user provides a preferred reference audio file.
 
 ## Deferred Roadmap
 

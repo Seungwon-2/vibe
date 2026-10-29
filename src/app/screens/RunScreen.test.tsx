@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRunnerSnapshot, startRunner } from '../../game/runner/RunnerSimulation';
 import type { RunnerEvent } from '../../game/runner/runnerEvents';
+import { DEFAULT_AUDIO_PREFERENCES } from '../../audio/audioPreferences';
 
 const runMock = vi.hoisted(() => ({ paused: false }));
 
@@ -28,6 +29,12 @@ vi.mock('../../game/runner/RunnerGame', () => ({
 
 import { RunScreen } from './RunScreen';
 
+const audioProps = {
+  audioPreferences: { ...DEFAULT_AUDIO_PREFERENCES },
+  onAudioPreferencesChange: vi.fn(),
+  onUnlockAudio: vi.fn(),
+};
+
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
@@ -37,13 +44,13 @@ beforeEach(() => localStorage.removeItem('runner-action:tutorial:v1:seen'));
 
 describe('RunScreen', () => {
   it('shows control help on the first run and hides it after persistence on the next run', () => {
-    const firstRun = render(<RunScreen characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
+    const firstRun = render(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
     expect(screen.getByTestId('run-game')).toHaveAttribute('data-tutorial-enabled', 'true');
     expect(document.querySelector('.run-screen__help')).toBeInTheDocument();
     expect(localStorage.getItem('runner-action:tutorial:v1:seen')).toBe('1');
     firstRun.unmount();
 
-    render(<RunScreen characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
+    render(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
     expect(screen.getByTestId('run-game')).toHaveAttribute('data-tutorial-enabled', 'false');
     expect(document.querySelector('.run-screen__help')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /점프/ })).toBeInTheDocument();
@@ -51,7 +58,7 @@ describe('RunScreen', () => {
 
   it('pauses, confirms exit without losing the run prematurely, resumes, then exits', () => {
     const onExit = vi.fn();
-    render(<RunScreen characterId="player-default" onFinish={vi.fn()} onExit={onExit} />);
+    render(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={onExit} />);
     fireEvent.click(screen.getByRole('button', { name: 'begin mock run' }));
     fireEvent.keyDown(window, { code: 'KeyP' });
     expect(runMock.paused).toBe(true);
@@ -73,9 +80,21 @@ describe('RunScreen', () => {
     expect(onExit).toHaveBeenCalledOnce();
   });
 
+  it('opens audio settings from pause and keeps the run paused when settings close', () => {
+    render(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'begin mock run' }));
+    fireEvent.keyDown(window, { code: 'KeyP' });
+    expect(runMock.paused).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: '사운드 설정' }));
+    expect(screen.getByRole('dialog', { name: '사운드 설정' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '설정 닫기' }));
+    expect(screen.getByRole('dialog', { name: /일시 정지/ })).toBeInTheDocument();
+    expect(runMock.paused).toBe(true);
+  });
+
   it('shows Hiyori defense feedback for 1,200ms and clears it when paused', () => {
     vi.useFakeTimers();
-    render(<RunScreen characterId="hanayo-hiyori" onFinish={vi.fn()} onExit={vi.fn()} />);
+    render(<RunScreen {...audioProps} characterId="hanayo-hiyori" onFinish={vi.fn()} onExit={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'begin mock run' }));
     fireEvent.click(screen.getByRole('button', { name: 'trigger passive' }));
     expect(screen.getByRole('status')).toHaveTextContent('유령의 수호 · 낭떠러지 방어 · 남은 1회');
@@ -92,7 +111,7 @@ describe('RunScreen', () => {
 
   it('clears a pending passive cue timeout when the run screen unmounts', () => {
     vi.useFakeTimers();
-    const view = render(<RunScreen characterId="hanayo-hiyori" onFinish={vi.fn()} onExit={vi.fn()} />);
+    const view = render(<RunScreen {...audioProps} characterId="hanayo-hiyori" onFinish={vi.fn()} onExit={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'begin mock run' }));
     const timersBeforePassive = vi.getTimerCount();
     fireEvent.click(screen.getByRole('button', { name: 'trigger passive' }));
