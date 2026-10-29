@@ -10,7 +10,7 @@
 
 ## Active Task
 
-[T03 Audio Controller](./phases/2026-10-29-runner-audio/P01-runner-audio/T03-audio-controller.md)
+[T04 Settings and Music Routing](./phases/2026-10-29-runner-audio/P01-runner-audio/T04-settings-and-music-routing.md)
 
 ## Status
 
@@ -22,7 +22,7 @@
 
 ## Next Step
 
-Next, implement T03 persistent audio preferences and a local effects playback controller. Keep music playback deferred until the user provides a reference audio file; reactivate music planning at that time.
+Next, add effects volume/mute and audio credits to the settings UI. Defer music routing until the user provides a preferred reference audio file.
 
 ## Deferred Roadmap
 

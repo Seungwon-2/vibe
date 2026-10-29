@@ -1,6 +1,6 @@
 # Task: T03 Audio Controller
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -42,12 +42,12 @@ Create an effects-first browser-audio controller that stores player preferences,
   - Unit tests cover unlock-before-play, local catalog lookup, volume/mute, coin pitch bounds/reset, invalid ids, and rejected playback that does not throw.
 ## Acceptance Criteria
 
-- [ ] Audio preferences follow the confirmed defaults and persist under the versioned key.
-- [ ] Effects play only after a user gesture and use local catalog assets.
-- [ ] Mute and effects volume affect current and future effects.
-- [ ] Coin pitch changes remain bounded and reset after a pickup gap.
-- [ ] Playback failures never interrupt gameplay.
-- [ ] No background music asset is loaded while music remains deferred.
+- [x] Audio preferences follow the confirmed defaults and persist under the versioned key.
+- [x] Effects play only after a user gesture and use local catalog assets.
+- [x] Mute and effects volume affect current and future effects.
+- [x] Coin pitch changes remain bounded and reset after a pickup gap.
+- [x] Playback failures never interrupt gameplay.
+- [x] No background music asset is loaded while music remains deferred.
 
 ## Validation
 
@@ -69,6 +69,6 @@ Task: T03-audio-controller
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] Implementation complete
+- [x] Validation passed: controller/preferences tests (9/9) and typecheck.
 - commit: pending
