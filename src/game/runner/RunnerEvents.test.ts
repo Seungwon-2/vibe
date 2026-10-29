@@ -19,6 +19,24 @@ describe('runner event bridge', () => {
     ]);
   });
 
+  it('forwards successful player actions and fatal impacts as discrete events', () => {
+    const events: RunnerEvent[] = [];
+    const bridge = new RunnerEventEmitter({ onSnapshot: vi.fn(), onFinished: vi.fn(),
+      onEvent: (event) => events.push(event) });
+    bridge.playerAction('jump');
+    bridge.playerAction('double-jump');
+    bridge.playerAction('slide');
+    bridge.hazardHit();
+    bridge.pitFallStarted();
+    expect(events).toEqual([
+      { type: 'player-action', action: 'jump' },
+      { type: 'player-action', action: 'double-jump' },
+      { type: 'player-action', action: 'slide' },
+      { type: 'hazard-hit' },
+      { type: 'pit-fall-started' },
+    ]);
+  });
+
   it('bounds snapshots to 10Hz and forces state changes immediately', () => {
     const events: RunnerEvent[] = [];
     const onSnapshot = vi.fn();

@@ -14,6 +14,7 @@ import { TouchControls } from '../components/TouchControls';
 import { markRunnerTutorialSeen, shouldShowRunnerTutorial } from '../../game/runner/runnerTutorial';
 import { AudioSettingsDialog } from '../components/AudioSettingsDialog';
 import type { AudioPreferences } from '../../audio/audioPreferences';
+import { browserRunnerAudio } from '../../audio/RunnerAudioManager';
 
 function isPortrait(): boolean {
   return window.matchMedia?.('(orientation: portrait)').matches ?? window.innerHeight > window.innerWidth;
@@ -51,6 +52,15 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
     if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
     bonusTimeout.current = null;
     setRecentBonus(null);
+  }
+
+  function showBonusCue(id: string, kind: 'pickup' | 'gate', awardedMs: number): void {
+    if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
+    setRecentBonus({ id, kind, awardedMs });
+    bonusTimeout.current = setTimeout(() => {
+      bonusTimeout.current = null;
+      setRecentBonus(null);
+    }, 1_200);
   }
 
   function pauseRun(): void {
@@ -102,7 +112,14 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
   function handleEvent(event: RunnerEvent): void {
     if (event.type === 'countdown') {
       setCountdownValue(event.value > 0 ? event.value : null);
+    } else if (event.type === 'player-action') {
+      browserRunnerAudio.playEffect(event.action);
+    } else if (event.type === 'hazard-hit') {
+      browserRunnerAudio.playEffect('hit');
+    } else if (event.type === 'pit-fall-started') {
+      browserRunnerAudio.playEffect('fall');
     } else if (event.type === 'passive-triggered') {
+      browserRunnerAudio.playEffect('hiyori-defense');
       if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
       setRecentBonus({
         id: `passive-${++passiveCueSequence.current}`,
@@ -115,17 +132,16 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
         bonusTimeout.current = null;
         setRecentBonus(null);
       }, 1_200);
-    } else if ((event.type === 'pickup' || event.type === 'gate') && event.awardedMs > 0) {
-      if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
-      setRecentBonus({
-        id: event.type === 'pickup' ? event.pickupId : event.gateId,
-        kind: event.type,
-        awardedMs: event.awardedMs,
-      });
-      bonusTimeout.current = setTimeout(() => {
-        bonusTimeout.current = null;
-        setRecentBonus(null);
-      }, 1_200);
+    } else if (event.type === 'pickup' && event.kind === 'coin') {
+      browserRunnerAudio.playEffect('coin');
+    } else if (event.type === 'pickup' && event.kind === 'time') {
+      if (event.awardedMs > 0) browserRunnerAudio.playEffect('time-pickup');
+      if (event.awardedMs > 0) showBonusCue(event.pickupId, 'pickup', event.awardedMs);
+    } else if (event.type === 'gate') {
+      browserRunnerAudio.playEffect('gate');
+      if (event.awardedMs > 0) {
+        showBonusCue(event.gateId, event.type, event.awardedMs);
+      }
     }
   }
 

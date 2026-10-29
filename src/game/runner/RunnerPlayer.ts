@@ -55,6 +55,10 @@ export class RunnerPlayer {
     return this.grounded;
   }
 
+  get jumpCount(): number {
+    return this.jumpsUsed;
+  }
+
   jump(): boolean {
     if (this.finished || this.passiveRescuing || this.pitFalling || this.hurt || this.isSliding || this.jumpsUsed >= 2) return false;
     if (!this.grounded && this.jumpsUsed === 0) this.jumpsUsed = 1;
@@ -67,17 +71,19 @@ export class RunnerPlayer {
     return true;
   }
 
-  setSliding(held: boolean): void {
-    if (this.finished || this.passiveRescuing || this.pitFalling) return;
+  setSliding(held: boolean): boolean {
+    if (this.finished || this.passiveRescuing || this.pitFalling) return false;
+    const wasSliding = this.isSliding;
     if (this.hurt) {
       this.slidingHeld = held && this.grounded;
-      return;
+      return false;
     }
-    if (held && !this.grounded) return;
+    if (held && !this.grounded) return false;
     this.slidingHeld = held;
     if (this.isSliding) this.play('slide');
     else if (this.animation === 'slide') this.play('run');
     this.applyPose();
+    return !wasSliding && this.isSliding;
   }
 
   setHurt(hurt: boolean): void {

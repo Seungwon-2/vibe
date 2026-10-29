@@ -10,7 +10,7 @@
 
 ## Active Task
 
-[T05 Gameplay Sound Effects](./phases/2026-10-29-runner-audio/P01-runner-audio/T05-gameplay-sound-effects.md)
+None. Gameplay sound effects are integrated. T01 background music is deferred until the user provides a preferred reference audio file.
 
 ## Status
 
@@ -18,11 +18,11 @@
 - The pre-audio pit visual verification is complete; the user confirmed it was checked.
 - Background music is deferred until the user provides a preferred reference audio file; the generated tracks remain unapproved drafts. The user asked to start with effects instead.
 - Audio decisions are confirmed in `.memory/decisions/2026-10-28-runner-audio.md`.
-- The runner-audio plan uses deterministic local WAV generation and no third-party samples. Music composition is deferred; the active sequence starts with effects, then playback/preferences and gameplay SFX.
+- Deterministic local WAV effects, playback/preferences, settings/credits, and gameplay cues are implemented. Background music remains deferred until the user provides a preferred reference audio file.
 
 ## Next Step
 
-Connect jump, double-jump, slide, pickups, gate, hit, fall, Hiyori defense, and UI actions to the effects catalog. Defer music routing until the user provides a preferred reference audio file.
+Gameplay effects are implemented and validated. Next, continue the previously planned character/gameplay polish, or resume T01 music work when the user supplies a preferred reference audio file. Do not integrate the unapproved generated music drafts.
 
 ## Deferred Roadmap
 

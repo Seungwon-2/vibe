@@ -18,7 +18,7 @@ Add an offline-capable audio system to the current React + Phaser runner. Genera
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | Generate original offline music/effects, add audio playback/preferences, connect screen and gameplay cues | [P01 Runner Audio](../phases/2026-10-29-runner-audio/P01-runner-audio/phase.md) |
+| P01 | `deferred` | Gameplay sound effects are complete; background music waits for a user-provided reference file | [P01 Runner Audio](../phases/2026-10-29-runner-audio/P01-runner-audio/phase.md) |
 
 ## Scope Notes
 

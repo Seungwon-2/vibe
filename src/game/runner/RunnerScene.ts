@@ -130,8 +130,10 @@ export class RunnerScene extends Phaser.Scene {
       return;
     }
     const input = this.inputBridge.consumeFrame();
-    this.player.setSliding(input.slideHeld);
-    if (input.jumpPressed) this.player.jump();
+    if (this.player.setSliding(input.slideHeld)) this.eventEmitter.playerAction('slide');
+    if (input.jumpPressed && this.player.jump()) {
+      this.eventEmitter.playerAction(this.player.jumpCount === 1 ? 'jump' : 'double-jump');
+    }
     this.player.update(deltaMs);
     const gateAwards: { id: RunnerGateId; awardedMs: number }[] = [];
     const { state, result } = advanceRunner(this.snapshot, deltaMs,
@@ -206,6 +208,7 @@ export class RunnerScene extends Phaser.Scene {
       this.eventEmitter.passiveTriggered(state.passiveChargesRemaining, 'obstacle');
       return;
     }
+    this.eventEmitter.hazardHit();
     this.player.setHurt(true);
     this.player.setProtected(state.protectionRemainingMs);
     if (result) this.emitFinished(result);
@@ -241,6 +244,7 @@ export class RunnerScene extends Phaser.Scene {
     }
     if (!result) return 'ignored';
     this.pitFallCinematicActive = true;
+    this.eventEmitter.pitFallStarted();
     this.pendingPitFinish = { state, result };
     this.heldKeyboardActions.clear();
     this.inputBridge.clear();

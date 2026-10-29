@@ -72,16 +72,21 @@ describe('RunnerPlayer and input bridge', () => {
 
   it('allows exactly two jumps with shared physics and resets on landing', () => {
     const { player, body, sprite } = createPlayer('cogane-rang');
+    expect(player.jumpCount).toBe(0);
     expect(player.jump()).toBe(true);
+    expect(player.jumpCount).toBe(1);
     expect(body.velocity.y).toBe(-420);
     body.blocked.down = false;
     expect(player.jump()).toBe(true);
+    expect(player.jumpCount).toBe(2);
     expect(body.velocity.y).toBe(-420);
     expect(player.jump()).toBe(false);
+    expect(player.jumpCount).toBe(2);
     body.blocked.down = true;
     body.velocity.y = 0;
     player.update(16);
     expect(player.jump()).toBe(true);
+    expect(player.jumpCount).toBe(1);
     expect(sprite.anims.play).toHaveBeenCalledWith('cogane-rang:doubleJump', true);
   });
 
@@ -134,12 +139,13 @@ describe('RunnerPlayer and input bridge', () => {
 
   it('holds one slide pose without switching frames while the button stays down', () => {
     const { player, body, sprite } = createPlayer('player-default');
-    player.setSliding(true);
+    expect(player.setSliding(true)).toBe(true);
     expect(sprite.scaleX).toBe(1);
     expect(sprite.scaleY).toBe(1);
     expect(body.width).toBe(80);
     const firstY = sprite.y;
     const slideCalls = sprite.anims.play.mock.calls.length;
+    expect(player.setSliding(true)).toBe(false);
     player.update(16);
     player.update(16);
     expect(sprite.y).toBe(firstY);

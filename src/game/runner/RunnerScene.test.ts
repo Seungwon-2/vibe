@@ -80,6 +80,7 @@ describe('RunnerScene finish boundary', () => {
       player: { gameObject: typeof sprite; beginPitFall(): void; finish(outcome: string): void; update(delta: number): void };
       eventEmitter: {
         snapshot(snapshot: unknown, now: number, force: boolean): void;
+        pitFallStarted(): void;
         finish(result: RunnerResult, outcome: string): void;
       };
       time: { now: number };
@@ -96,7 +97,8 @@ describe('RunnerScene finish boundary', () => {
     harness.inputBridge = { clear };
     harness.heldKeyboardActions = new Set(['Space']);
     harness.player = { gameObject: sprite, beginPitFall: vi.fn(), finish: finishPlayer, update: vi.fn() };
-    harness.eventEmitter = { snapshot: snapshotEvent, finish: finishEvent };
+    const pitFallStarted = vi.fn();
+    harness.eventEmitter = { snapshot: snapshotEvent, pitFallStarted, finish: finishEvent };
     harness.time = { now: 123 };
     harness.tweens = { add: (config) => { fallTweens.push(config); return {} as never; } };
     harness.cameras = { main: { shake } };
@@ -112,6 +114,7 @@ describe('RunnerScene finish boundary', () => {
     expect(harness.snapshot).toBe(contactSnapshot);
     expect(harness.snapshot).toMatchObject({ phase: 'running', distanceMeters: 845, coins: 7, remainingMs: 59_000 });
     expect(harness.pitFallCinematicActive).toBe(true);
+    expect(pitFallStarted).toHaveBeenCalledOnce();
     expect(fallTweens).toHaveLength(1);
     expect(fallTweens[0]).toMatchObject({ y: 620, duration: 700, ease: 'Cubic.In' });
     expect(snapshotEvent).not.toHaveBeenCalled();

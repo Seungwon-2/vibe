@@ -5,6 +5,8 @@ import type { RunnerEvent } from '../../game/runner/runnerEvents';
 import { DEFAULT_AUDIO_PREFERENCES } from '../../audio/audioPreferences';
 
 const runMock = vi.hoisted(() => ({ paused: false }));
+const audioMock = vi.hoisted(() => ({ playEffect: vi.fn() }));
+vi.mock('../../audio/RunnerAudioManager', () => ({ browserRunnerAudio: audioMock }));
 
 vi.mock('../../game/runner/RunnerGame', () => ({
   RunnerGame: ({ paused, tutorialEnabled, onSnapshot, onEvent }: {
@@ -23,6 +25,18 @@ vi.mock('../../game/runner/RunnerGame', () => ({
       </button>
       <button type="button" onClick={() => onEvent({ type: 'passive-triggered', passiveId: 'hiyori-guard',
         remainingCharges: 1, trigger: 'pit' })}>trigger passive</button>
+      <button type="button" onClick={() => {
+        onEvent({ type: 'player-action', action: 'jump' });
+        onEvent({ type: 'player-action', action: 'double-jump' });
+        onEvent({ type: 'player-action', action: 'slide' });
+        onEvent({ type: 'pickup', pickupId: 'coin-1', kind: 'coin', awardedMs: 0 });
+        onEvent({ type: 'pickup', pickupId: 'time-1', kind: 'time', awardedMs: 3_000 });
+        onEvent({ type: 'pickup', pickupId: 'time-2', kind: 'time', awardedMs: 0 });
+        onEvent({ type: 'gate', gateId: 'gate-2000', awardedMs: 20_000 });
+        onEvent({ type: 'hazard-hit' });
+        onEvent({ type: 'pit-fall-started' });
+        onEvent({ type: 'passive-triggered', passiveId: 'hiyori-guard', remainingCharges: 1, trigger: 'pit' });
+      }}>play effects</button>
     </div>;
   },
 }));
@@ -43,6 +57,15 @@ afterEach(() => {
 beforeEach(() => localStorage.removeItem('runner-action:tutorial:v1:seen'));
 
 describe('RunScreen', () => {
+  it('routes gameplay events to effects and ignores zero-award pickups', () => {
+    audioMock.playEffect.mockClear();
+    render(<RunScreen {...audioProps} characterId="hanayo-hiyori" onFinish={vi.fn()} onExit={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'play effects' }));
+    expect(audioMock.playEffect.mock.calls).toEqual([
+      ['jump'], ['double-jump'], ['slide'], ['coin'], ['time-pickup'], ['gate'], ['hit'], ['fall'], ['hiyori-defense'],
+    ]);
+  });
+
   it('shows control help on the first run and hides it after persistence on the next run', () => {
     const firstRun = render(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
     expect(screen.getByTestId('run-game')).toHaveAttribute('data-tutorial-enabled', 'true');

@@ -3,9 +3,12 @@ import type { RunnerFinishOutcome, RunnerGateId, RunnerPickupKind, RunnerResult,
 export type RunnerEvent =
   | Readonly<{ type: 'snapshot'; snapshot: RunnerSnapshot }>
   | Readonly<{ type: 'countdown'; value: 0 | 1 | 2 | 3 }>
+  | Readonly<{ type: 'player-action'; action: 'jump' | 'double-jump' | 'slide' }>
   | Readonly<{ type: 'pickup'; pickupId: string; kind: RunnerPickupKind; awardedMs: number }>
   | Readonly<{ type: 'gate'; gateId: RunnerGateId; awardedMs: number }>
   | Readonly<{ type: 'passive-triggered'; passiveId: 'hiyori-guard'; remainingCharges: number; trigger: 'obstacle' | 'pit' }>
+  | Readonly<{ type: 'hazard-hit' }>
+  | Readonly<{ type: 'pit-fall-started' }>
   | Readonly<{ type: 'run-finished'; result: RunnerResult; outcome: RunnerFinishOutcome }>
   | Readonly<{ type: 'fatal-error'; message: string }>;
 
@@ -32,6 +35,18 @@ export class RunnerEventEmitter {
 
   countdown(value: 0 | 1 | 2 | 3): void {
     this.callbacks.onEvent?.({ type: 'countdown', value });
+  }
+
+  playerAction(action: 'jump' | 'double-jump' | 'slide'): void {
+    this.callbacks.onEvent?.({ type: 'player-action', action });
+  }
+
+  hazardHit(): void {
+    this.callbacks.onEvent?.({ type: 'hazard-hit' });
+  }
+
+  pitFallStarted(): void {
+    this.callbacks.onEvent?.({ type: 'pit-fall-started' });
   }
 
   pickup(pickupId: string, kind: RunnerPickupKind, awardedMs: number): void {
