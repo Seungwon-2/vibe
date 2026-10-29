@@ -1,6 +1,6 @@
 # Character sprite sources
 
-The runner uses the individual transparent PNGs in each `<slug>-sprite/` folder as its art source. Keep these originals at 192×192 with pivot `(96, 180)`. `animations.json` lists the frames and motion order; its `assets/` prefix is ignored because the PNGs live beside the JSON file.
+The runner uses the individual transparent PNGs in each `<slug>-sprite/` folder as its art source. Keep frames consistently at either 192×192 with pivot `(96, 180)` or 384×384 with pivot `(192, 360)`. Both sizes normalize to the same 96×96 runtime frame and keep the same gameplay scale. `animations.json` lists the frames and motion order; its `assets/` prefix is ignored because the PNGs live beside the JSON file.
 
 Run `npm run assets:prepare` after changing a source frame. This builds the 96×96 runtime frames, atlas, manifest, and checkerboard proof images in `assets/character/runtime/`. Run `npm run assets:validate` to check that generated files match their sources.
 

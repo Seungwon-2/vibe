@@ -283,13 +283,15 @@ const CURATED_ANIMATIONS = {
   idle: 'idle', start: 'cheer',
 };
 
-/** Keep the hand-aligned 192px source canvas and pivot when fitting the 96px game frame. */
+/** Keep the hand-aligned 192/384px source canvas and pivot when fitting the 96px game frame. */
 async function loadCuratedFrames(sheet, descriptors) {
   const directory = path.join(ROOT, sheet.spriteDir);
   const spec = JSON.parse(await fs.readFile(path.join(directory, 'animations.json'), 'utf8'));
-  if (spec.frameSize?.width !== 192 || spec.frameSize?.height !== 192 ||
-      spec.pivot?.x !== 96 || spec.pivot?.y !== 180) {
-    throw new Error(`${sheet.slug} curated frames must use a 192x192 canvas and pivot (96,180).`);
+  const sourceSize = spec.frameSize?.width;
+  const supportedSize = sourceSize === 192 || sourceSize === 384;
+  if (!supportedSize || spec.frameSize?.height !== sourceSize ||
+      spec.pivot?.x !== sourceSize / 2 || spec.pivot?.y !== sourceSize * 15 / 16) {
+    throw new Error(`${sheet.slug} curated frames must use a 192x192 or 384x384 canvas with a centered pivot at 15/16 height.`);
   }
   return Promise.all(descriptors.map(async ({ name, animation, index }) => {
     let references = spec.animations?.[CURATED_ANIMATIONS[animation]]?.frames;
@@ -306,13 +308,13 @@ async function loadCuratedFrames(sheet, descriptors) {
     const filename = path.basename(references[sourceIndex]);
     const file = path.join(directory, filename);
     const metadata = await sharp(file).metadata();
-    if (metadata.format !== 'png' || metadata.width !== 192 || metadata.height !== 192 || !metadata.hasAlpha) {
-      throw new Error(`${sheet.slug}/${filename} must be a transparent 192x192 PNG.`);
+    if (metadata.format !== 'png' || metadata.width !== sourceSize || metadata.height !== sourceSize || !metadata.hasAlpha) {
+      throw new Error(`${sheet.slug}/${filename} must be a transparent ${sourceSize}x${sourceSize} PNG.`);
     }
     const art = await sharp(file).resize(88, 88, { kernel: 'lanczos3' }).png().toBuffer();
     const frame = await sharp({ create: { width: FRAME_SIZE, height: FRAME_SIZE,
       channels: 4, background: TRANSPARENT } })
-      .composite([{ input: art, left: 4, top: 7 }]).png().toBuffer();
+      .composite([{ input: art, left: 4, top: sourceSize === 384 ? 6 : 7 }]).png().toBuffer();
     await validateFrame(frame, name);
     return frame;
   }));

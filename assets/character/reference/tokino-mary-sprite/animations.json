@@ -1,20 +1,20 @@
 {
-  "version": 1,
+  "version": 4,
   "character": "Tokino Mary",
   "frameSize": {
-    "width": 192,
-    "height": 192
+    "width": 384,
+    "height": 384
   },
   "pivot": {
-    "x": 96,
-    "y": 180
+    "x": 192,
+    "y": 360
   },
   "atlas": {
     "image": "assets/mary-atlas.png",
     "columns": 12,
     "rows": 5
   },
-  "notes": "Complete illustrated sprites regenerated from the supplied Mary motion sheet. Twelve alternating run poses guided by separate striped/white legs. White stockings and black shoes match other motions; teddy held continuously. Constant scale within source layouts, transparent common canvas, physical jump and collisions independent of images.",
+  "notes": "Run redrawn from original hit/idle character art, matching fine hair contours, pale cel shading, layered frills, teddy and compact leg model. Twelve ordered alternating footfall poses with restrained hair-tip follow-through. Other48 action frames unchanged. Transparent384x384, pivot192,360, independent physics.",
   "animations": {
     "run": {
       "frames": [
@@ -31,10 +31,28 @@
         "assets/run-11.png",
         "assets/run-12.png"
       ],
-      "fps": 20,
+      "fps": 24,
       "loop": true,
       "atlasStart": 0,
-      "count": 12
+      "count": 12,
+      "registration": {
+        "faceY": [
+          199.1462,
+          199.2253,
+          193.3697,
+          186.7474,
+          185.7035,
+          191.4888,
+          198.9538,
+          201.528,
+          197.5503,
+          191.6859,
+          190.0765,
+          194.1246
+        ],
+        "interpolation": "periodic Catmull-Rom translation only; optional",
+        "units": "frame pixels"
+      }
     },
     "hit": {
       "frames": [
