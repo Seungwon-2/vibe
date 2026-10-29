@@ -40,13 +40,15 @@ export function MainMenu({ onStart, onRankings, topRun, topRunLoading, topRunErr
           <button className="selector-confirm home-start" type="button" onClick={onStart}>
             달리기 시작
           </button>
-          <button className="main-menu-rankings" type="button" onClick={onRankings}>
+          <button className="main-menu-secondary main-menu-rankings" type="button" onClick={onRankings}>
             로컬 기록 보기
           </button>
-                  <div className="main-menu-audio-actions">
-            <button type="button" onClick={() => { onUnlockAudio(); setDialog('settings'); }}>사운드 설정</button>
-            <button type="button" onClick={() => setDialog('credits')}>효과음 크레딧</button>
-          </div></div>
+          <button className="main-menu-secondary" type="button"
+            onClick={() => { onUnlockAudio(); setDialog('settings'); }}>사운드 설정</button>
+          <button className="main-menu-secondary" type="button" onClick={() => setDialog('credits')}>
+            효과음 크레딧
+          </button>
+        </div>
         {showControlsHelp && <p className="main-menu-help">Space / ↑ 점프 · ↓ 슬라이딩 · P 일시정지</p>}
       </section>
           {dialog === 'settings' && <AudioSettingsDialog preferences={audioPreferences}

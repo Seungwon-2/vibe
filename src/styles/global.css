@@ -484,12 +484,13 @@ h1 {
   margin-top: 20px;
 }
 
-.main-menu-actions, .result-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
-.main-menu-rankings, .result-actions > button:not(.selector-confirm) {
-  min-height: 50px; padding: 11px 22px; border: 1px solid var(--ui-border);
+.main-menu-actions, .result-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; }
+.main-menu-actions > .home-start { margin: 0; }
+.main-menu-secondary, .result-actions > button:not(.selector-confirm) {
+  min-height: 54px; padding: 11px 22px; border: 1px solid var(--ui-border);
   border-radius: 14px; background: var(--ui-surface-soft); color: var(--ui-text); cursor: pointer;
 }
-.main-menu-rankings:hover, .result-actions > button:not(.selector-confirm):hover,
+.main-menu-secondary:hover, .result-actions > button:not(.selector-confirm):hover,
 .run-screen__header button:hover, .runner-pause-card .runner-result-actions button:hover:not(:disabled) {
   border-color: var(--ui-primary);
   background: var(--ui-surface-raised);
@@ -499,12 +500,11 @@ h1 {
   outline: 3px solid var(--ui-primary-strong);
   outline-offset: 3px;
 }
-.main-menu-audio-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px; }
-.main-menu-audio-actions button, .audio-dialog__close {
+.audio-dialog__close {
   min-height: 42px; padding: 9px 16px; border: 1px solid var(--ui-border); border-radius: 12px;
   background: var(--ui-surface-soft); color: var(--ui-text); font: inherit; cursor: pointer;
 }
-.main-menu-audio-actions button:focus-visible, .audio-dialog button:focus-visible,
+.main-menu-secondary:focus-visible, .audio-dialog button:focus-visible,
 .audio-dialog input:focus-visible { outline: 3px solid var(--ui-primary-strong); outline-offset: 3px; }
 .main-menu-help { margin: 26px 0 0; color: var(--ui-muted); font-size: 0.9rem; }
 
@@ -958,5 +958,5 @@ h1 {
 @media (max-width: 560px) {
   .audio-credit-list { grid-template-columns: 1fr; }
   .audio-dialog { border-radius: 18px; }
-  .main-menu-audio-actions button { flex: 1 1 140px; }
+  .main-menu-actions > button { flex: 1 1 140px; }
 }
