@@ -47,8 +47,8 @@ describe('CharacterSelect', () => {
       'player-default': 70,
       'hanayo-hiyori': 53,
       'tokino-mary': 58,
-      'goth-student': 88,
-      'cogane-rang': 83,
+      'goth-student': 70,
+      'cogane-rang': 67,
     };
     for (const [id, contentHeight] of Object.entries(contentHeights)) {
       const frame = screen.getByTestId(`character-preview-frame-${id}-roster`);

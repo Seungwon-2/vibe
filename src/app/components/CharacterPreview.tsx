@@ -19,8 +19,8 @@ type PreviewScaleStyle = CSSProperties & { '--preview-scale': string };
 
 const PREVIEW_METRICS: Readonly<Record<CharacterId, { contentHeight: number; contentBottom: number }>> = {
   'player-default': { contentHeight: 70, contentBottom: 88 },
-  'goth-student': { contentHeight: 88, contentBottom: 91 },
-  'cogane-rang': { contentHeight: 83, contentBottom: 91 },
+  'goth-student': { contentHeight: 70, contentBottom: 89 },
+  'cogane-rang': { contentHeight: 67, contentBottom: 89 },
   'hanayo-hiyori': { contentHeight: 53, contentBottom: 88 },
   'tokino-mary': { contentHeight: 58, contentBottom: 89 },
 };
