@@ -66,4 +66,4 @@ Task: T01-selector-viewport-fit
 ## Progress
 - [x] Implementation complete
 - [x] Validation passed (`npm run test -- src/app/screens/CharacterSelect.test.tsx`; `npm run build`)
-- commit: pending
+- commit: a11351f

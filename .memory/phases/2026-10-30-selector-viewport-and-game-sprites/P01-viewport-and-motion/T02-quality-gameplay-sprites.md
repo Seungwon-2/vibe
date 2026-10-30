@@ -99,4 +99,4 @@ Task: T02-quality-gameplay-sprites
 ## Progress
 - [x] Implementation complete
 - [x] Validation passed (`npm run test -- src/game/characters/characterRegistry.test.ts src/game/runner/RunnerScene.test.ts src/game/runner/RunnerPlayer.test.ts src/game/runner/runnerPose.test.ts src/app/screens/RunResult.test.tsx src/app/screens/CharacterSelect.test.tsx`; `npm run assets:validate`; `npm run build`)
-- commit: pending
+- commit: d62bc51
