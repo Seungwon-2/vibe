@@ -10,13 +10,13 @@
 
 ## Active Task
 
-[T02 Local Profile Store](./phases/2026-10-30-runner-modes-progression/P01-mode-and-profile-foundation/T02-local-profile-store.md)
+[T03 Mode Navigation](./phases/2026-10-30-runner-modes-progression/P01-mode-and-profile-foundation/T03-mode-navigation.md)
 
 ## Status
 
-- T01 domain types and the four-stage Story catalog are implemented.
+- T01 domain types and T02 local profile persistence are implemented.
 - Validation passed with npm run typecheck. No tests were added or run.
 
 ## Next Step
 
-Implement validated local profile persistence, including exact-once coin settlement and one-time reward claims.
+Add mode selection and Story stage navigation with profile-driven locked character/stage cards.

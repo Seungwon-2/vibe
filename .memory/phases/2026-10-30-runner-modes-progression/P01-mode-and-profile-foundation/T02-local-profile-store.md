@@ -1,6 +1,6 @@
 # Task: T02 Local Profile Store
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -63,6 +63,6 @@ Persist wallet, unlocks, Story progress, achievements, cosmetics, and per-charac
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed: npm run typecheck
+- commit: see task commit

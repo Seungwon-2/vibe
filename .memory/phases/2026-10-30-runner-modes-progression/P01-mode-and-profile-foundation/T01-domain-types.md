@@ -66,4 +66,4 @@ Define the shared typed models and static metadata for the two modes, four Story
 
 - [x] Implementation complete
 - [x] Validation passed: npm run typecheck
-- commit: pending
+- commit: 897433b

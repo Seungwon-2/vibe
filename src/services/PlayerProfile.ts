@@ -20,4 +20,6 @@ export interface PlayerProfileStore {
   load(): PlayerProfile;
   save(profile: PlayerProfile): void;
   update(mutator: (current: PlayerProfile) => PlayerProfile): PlayerProfile;
+  settleRunCoins(runId: string, amount: number): boolean;
+  claimReward(rewardKey: string, mutator: (current: PlayerProfile) => PlayerProfile): boolean;
 }
