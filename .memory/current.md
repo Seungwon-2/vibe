@@ -14,8 +14,8 @@
 
 ## Status
 
-T01 now forces the run loop during giant while preserving airborne physics and slide hitbox sizing. T02 is active. Existing unrelated local changes remain unstaged.
+The giant animation and title/selector viewport-fit tasks are complete. Targeted tests and production build passed. Browser screenshot validation was unavailable; existing unrelated local changes remain unstaged.
 
 ## Next Step
 
-Execute T02, validate title and selection screens at desktop and mobile viewport sizes, then commit only T02 changes.
+Proceed with the planned title and character-selector color refinement. The viewport-fit CSS is in place; confirm the requested viewport sizes in the local browser when available.

@@ -1,6 +1,6 @@
 # Task: T01 Giant Running Animation
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -55,4 +55,4 @@ Task: T01-giant-running-animation
 
 - [x] Implementation complete
 - [x] Validation passed (`npm run test -- src/game/runner/RunnerPlayer.test.ts src/game/runner/RunnerSimulation.test.ts`; `npm run build`)
-- commit: pending
+- commit: `6a416e6` on `project02`

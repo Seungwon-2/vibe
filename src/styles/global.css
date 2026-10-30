@@ -993,3 +993,159 @@ h1 {
   .audio-dialog { border-radius: 18px; }
   .main-menu-actions > button { flex: 1 1 140px; }
 }
+
+/* Keep the title and character picker inside the usable browser viewport. */
+.landing-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+}
+.title-card.main-menu-card {
+  width: min(100%, 920px);
+  max-height: 100%;
+  padding: clamp(18px, 5vh, 52px) clamp(18px, 5vw, 56px);
+}
+.main-menu-card .eyebrow { margin-bottom: clamp(6px, 1.6vh, 14px); }
+.main-menu-card h1 { font-size: clamp(1.8rem, min(6vw, 10vh), 4rem); line-height: 1.08; }
+.main-menu-card .intro-copy {
+  margin-block: clamp(10px, 2.5vh, 22px) clamp(12px, 3vh, 28px);
+  font-size: clamp(0.92rem, min(2.5vw, 4vh), 1.2rem);
+  line-height: 1.45;
+}
+.main-menu-card .main-menu-record { margin-bottom: clamp(8px, 1.8vh, 16px); }
+.main-menu-card .main-menu-actions { gap: clamp(7px, 1.3vw, 12px); }
+.main-menu-card .main-menu-actions > button { min-height: clamp(42px, 8vh, 72px); padding-block: 8px; }
+
+.selector-shell {
+  display: grid;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+    max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  overflow: hidden;
+  place-items: center;
+}
+.selector-panel {
+  display: grid;
+  width: min(100%, 1360px);
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: clamp(12px, 2.4vw, 32px);
+  overflow: hidden;
+}
+.selector-header { min-width: 0; margin-bottom: clamp(6px, 1.5vh, 18px); }
+.selector-layout { min-height: 0; }
+.selector-showcase,
+.selector-panel .character-roster { min-height: 0; }
+.selector-panel .character-roster { grid-template-rows: repeat(3, minmax(0, 1fr)); }
+.selector-footer { min-width: 0; margin-top: clamp(6px, 1.5vh, 16px); }
+
+@media (min-width: 761px) and (max-height: 640px) {
+  .selector-shell { padding-block: 6px; }
+  .selector-panel { padding: 10px 18px; }
+  .selector-header { margin-bottom: 6px; }
+  .selector-header .eyebrow { display: none; }
+  .selector-header h1 { font-size: 1.5rem; }
+  .selector-intro { margin-top: 3px; font-size: 0.85rem; }
+  .selector-layout { grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr); gap: 10px; }
+  .selector-showcase { min-height: min(210px, calc(100dvh - 180px)); }
+  .selector-showcase__art { min-height: 60px; }
+  .selector-showcase .character-preview--showcase { height: clamp(88px, 22vh, 140px); }
+  .selector-showcase .character-preview__sprite { --preview-size-scale: 0.52; }
+  .selector-showcase__details { padding: 0 8px 8px; }
+  .selector-showcase__details h2 { margin: 3px 0; font-size: 1rem; }
+  .selector-showcase__ability { gap: 5px; margin-top: 4px; padding: 4px 8px; }
+  .selector-showcase__ability .character-ability-icon { width: 28px !important; height: 28px !important; }
+  .selector-showcase__ability strong { font-size: 0.72rem; }
+  .selector-showcase__ability small { font-size: 0.62rem; }
+  .selector-panel .character-roster {
+    min-height: min(210px, calc(100dvh - 180px));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .selector-panel .character-card:nth-child(5) { grid-column: 2; grid-row: 2; }
+  .selector-panel .character-preview--roster { height: clamp(42px, 10vh, 58px); }
+  .selector-panel .character-preview--roster .character-preview__sprite { --preview-size-scale: 0.34; }
+  .selector-panel .character-card__name { min-height: 28px; padding: 3px 2px; font-size: 0.62rem; }
+  .selector-panel .character-card__coming-soon,
+  .selector-panel .character-card__selected-marker { top: 4px; padding: 3px 5px; font-size: 0.56rem; }
+  .selector-footer { gap: 4px; margin-top: 5px; padding-top: 5px; }
+  .selector-footer p { margin: 0; font-size: 0.68rem; }
+  .selector-footer .selector-confirm { min-height: 38px; }
+}
+
+@media (max-width: 760px) {
+  .selector-panel { padding: 10px; }
+  .selector-header { align-items: center; margin-bottom: 6px; }
+  .selector-header .eyebrow { display: none; }
+  .selector-header h1 { font-size: clamp(1.2rem, 5vw, 1.65rem); }
+  .selector-intro { margin-top: 3px; font-size: clamp(0.72rem, 2.8vw, 0.88rem); }
+  .selector-back { min-width: 60px; min-height: 38px; padding: 4px 9px; }
+  .selector-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(120px, 0.8fr) minmax(0, 1.2fr);
+    gap: 7px;
+  }
+  .selector-showcase { min-height: 0; border-radius: 16px; }
+  .selector-showcase__art { min-height: 0; }
+  .selector-showcase .character-preview--showcase { height: clamp(62px, 13dvh, 100px); }
+  .selector-showcase .character-preview__sprite { --preview-size-scale: 0.5; }
+  .selector-showcase__details { padding: 0 8px 7px; }
+  .selector-showcase__eyebrow { font-size: 0.62rem; }
+  .selector-showcase__details h2 { margin: 2px 0; font-size: clamp(0.95rem, 4vw, 1.2rem); }
+  .selector-showcase__ability { gap: 5px; margin-top: 3px; padding: 3px 8px; }
+  .selector-showcase__ability .character-ability-icon { width: 24px !important; height: 24px !important; }
+  .selector-showcase__ability strong { font-size: 0.7rem; }
+  .selector-showcase__ability small { font-size: 0.6rem; }
+  .selector-panel .character-roster {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .selector-panel .character-card { min-height: 0; border-radius: 12px; }
+  .selector-panel .character-card:nth-child(5) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    width: calc((100% - 6px) / 2);
+    justify-self: center;
+  }
+  .selector-panel .character-card__art { min-height: 0; }
+  .selector-panel .character-preview--roster { height: clamp(34px, 7dvh, 56px); }
+  .selector-panel .character-preview--roster .character-preview__sprite { --preview-size-scale: 0.36; }
+  .selector-panel .character-card__name { min-height: 26px; padding: 2px; font-size: clamp(0.58rem, 2.8vw, 0.74rem); }
+  .selector-panel .character-card__coming-soon,
+  .selector-panel .character-card__selected-marker { top: 3px; padding: 2px 4px; font-size: 0.5rem; }
+  .selector-panel .character-card__coming-soon { left: 3px; max-width: calc(100% - 6px); }
+  .selector-panel .character-card__selected-marker { right: 3px; }
+  .selector-footer { gap: 4px; margin-top: 5px; padding-top: 5px; }
+  .selector-footer p { margin: 0; font-size: clamp(0.58rem, 2.3vw, 0.72rem); line-height: 1.15; }
+  .selector-footer .selector-confirm { min-height: 40px; padding: 6px 10px; font-size: clamp(0.76rem, 3.5vw, 0.92rem); }
+}
+
+@media (max-width: 760px) and (max-height: 620px) {
+  .selector-shell { padding-block: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-bottom)); }
+  .selector-panel { padding: 7px 9px; }
+  .selector-header { margin-bottom: 3px; }
+  .selector-header h1 { font-size: 1.1rem; }
+  .selector-intro { font-size: 0.68rem; }
+  .selector-back { min-height: 32px; }
+  .selector-layout { grid-template-rows: minmax(92px, 0.75fr) minmax(0, 1.25fr); gap: 4px; }
+  .selector-showcase .character-preview--showcase { height: clamp(48px, 10dvh, 72px); }
+  .selector-showcase__details { padding-bottom: 4px; }
+  .selector-showcase__ability { margin-top: 1px; padding: 2px 6px; }
+  .selector-showcase__ability .character-ability-icon { width: 18px !important; height: 18px !important; }
+  .selector-showcase__ability small { font-size: 0.54rem; }
+  .selector-panel .character-roster { gap: 4px; }
+  .selector-panel .character-card:nth-child(5) { width: calc((100% - 4px) / 2); }
+  .selector-panel .character-preview--roster { height: clamp(26px, 5.5dvh, 38px); }
+  .selector-panel .character-preview--roster .character-preview__sprite { --preview-size-scale: 0.3; }
+  .selector-panel .character-card__name { min-height: 22px; font-size: 0.56rem; }
+  .selector-footer { margin-top: 3px; padding-top: 3px; }
+  .selector-footer p { display: none; }
+  .selector-footer .selector-confirm { min-height: 34px; }
+}
