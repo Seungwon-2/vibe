@@ -1485,3 +1485,46 @@ h1 {
 @media (prefers-reduced-motion: reduce) {
   .main-menu-hero { animation: none; }
 }
+
+/* Keep the title in the open sky and let the supplied character artwork read clearly. */
+.main-menu-card.title-card { justify-content: flex-start; }
+.main-menu-copy {
+  margin: clamp(18px, 2.2vh, 30px) auto 0;
+  padding: 0 0 12px;
+}
+.main-menu-copy .eyebrow { margin-bottom: 8px; }
+.main-menu-copy h1 { font-size: clamp(3.2rem, 8vw, 7.2rem); }
+.main-menu-shade {
+  background:
+    linear-gradient(180deg, rgb(12 17 53 / 18%) 0%, transparent 33%, rgb(15 16 49 / 8%) 72%, rgb(15 16 49 / 18%) 100%),
+    linear-gradient(90deg, rgb(12 17 53 / 8%) 0%, transparent 58%);
+}
+.main-menu-dock { margin-top: auto; }
+
+/* Reuse the title illustration as a quiet backdrop outside the game canvas. */
+.selector-shell {
+  background:
+    linear-gradient(145deg, rgb(242 247 255 / 67%), rgb(231 240 255 / 70%)),
+    url('/assets/title/title-hero.webp') center / cover fixed;
+}
+.selector-panel {
+  background: linear-gradient(145deg, rgb(255 255 255 / 79%), rgb(246 249 255 / 82%));
+  backdrop-filter: blur(2px);
+}
+.run-screen {
+  background:
+    linear-gradient(145deg, rgb(243 248 255 / 82%), rgb(232 241 255 / 84%)),
+    url('/assets/title/title-hero.webp') center / cover fixed;
+}
+
+@media (max-width: 600px) {
+  .main-menu-shade {
+    background: linear-gradient(180deg, rgb(12 17 53 / 20%), transparent 45%, rgb(15 16 49 / 20%) 100%);
+  }
+  .main-menu-copy { margin-top: clamp(14px, 2vh, 22px); padding-bottom: 8px; }
+  .main-menu-copy h1 { font-size: clamp(2.8rem, 12vw, 4.6rem); }
+}
+
+@media (max-height: 620px) and (min-width: 601px) {
+  .main-menu-copy { margin-top: 10px; padding-bottom: 4px; }
+}

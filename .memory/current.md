@@ -2,20 +2,20 @@
 
 ## Active Plan
 
-[Stella Runner Title Screen](./plans/2026-10-30-stella-title-screen.md)
+[Title Art and Screen Backdrops](./plans/2026-10-30-title-art-and-screen-backdrops.md)
 
 ## Active Phase
 
-[P01 Title Screen](./phases/2026-10-30-stella-title-screen/P01-title-screen/phase.md)
+[P01 Title and Backdrops](./phases/2026-10-30-title-art-and-screen-backdrops/P01-title-and-backdrops/phase.md)
 
 ## Active Task
 
-[T01 React Title Screen](./phases/2026-10-30-stella-title-screen/P01-title-screen/T01-react-title-screen.md)
+[T01 Title Art and Screen Backdrops](./phases/2026-10-30-title-art-and-screen-backdrops/P01-title-and-backdrops/T01-title-art-backdrops.md)
 
 ## Status
 
-The React title screen now uses the supplied group illustration, retains existing menu actions, and omits the standalone download/disclaimer elements. Targeted menu tests and production build passed. Browser screenshot validation was unavailable; unrelated working-tree changes remain unstaged.
+The title art is brighter with the heading placed in the sky. The same art now appears subtly behind the character selector and gameplay page, while the menu dock, cards, HUD, and Phaser stage retain their readable surfaces. Targeted tests and production build passed; browser screenshot review was unavailable.
 
 ## Next Step
 
-This title-screen task is complete. The next visual pass can tune title and selector colors after reviewing the updated local screen.
+Review the updated screens in the local browser when available, then continue with the planned title and character selection color refinement.
