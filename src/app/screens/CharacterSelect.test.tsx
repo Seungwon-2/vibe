@@ -28,9 +28,9 @@ describe('CharacterSelect', () => {
     expect(screen.getByTestId('character-preview-player-default-showcase').style.animationIterationCount).toBe('1');
     expect(screen.getByTestId('character-preview-player-default-showcase').style.animationFillMode).toBe('forwards');
     expect(screen.getByTestId('selector-passive')).toHaveTextContent('질주의 메이드');
-    expect(screen.getByTestId('selector-passive')).toHaveTextContent('최고 속도 +5%');
-    expect(screen.getByTestId('selector-passive').querySelector('svg')).toHaveAttribute('data-icon', 'cloud');
-    expect(screen.getByTestId('selector-passive').querySelector('svg')).toHaveAttribute('viewBox', '0 0 24 24');
+    expect(screen.getByTestId('selector-passive')).toHaveTextContent('기본 달리기 속도 +5%');
+    expect(screen.getByTestId('selector-passive').querySelector('img')).toHaveAttribute('data-icon', 'rin-cloud-tailwind');
+    expect(screen.getByTestId('selector-passive').querySelector('img')).toHaveAttribute('src', expect.stringContaining('rin-cloud-tailwind'));
     expect(screen.getByTestId('character-preview-player-default-showcase').style.animationDuration).toBe('1200ms');
     expect(screen.getByText('Aokumo Rin 선택됨')).toHaveClass('sr-only');
     for (const id of ['hanayo-hiyori', 'tokino-mary', 'goth-student', 'cogane-rang']) {
@@ -81,9 +81,9 @@ describe('CharacterSelect', () => {
     expect(screen.getByTestId('character-preview-hanayo-hiyori-showcase')).toHaveAttribute('data-animation', 'victory');
     expect(screen.getByTestId('selector-showcase-portrait').getAttribute('src'))
       .toContain('hanayo-hiyori-portrait_sd.png');
-    expect(screen.getByTestId('selector-passive')).toHaveTextContent('유령의 수호');
+    expect(screen.getByTestId('selector-passive')).toHaveTextContent('벚꽃 수호');
     expect(screen.getByTestId('selector-passive')).toHaveTextContent('충돌·낭떠러지 방어 2회');
-    expect(screen.getByTestId('selector-passive').querySelector('svg')).toHaveAttribute('data-icon', 'pink-flame');
+    expect(screen.getByTestId('selector-passive').querySelector('img')).toHaveAttribute('data-icon', 'hiyori-blossom-ward');
     const preview = screen.getByTestId('character-preview-hanayo-hiyori-showcase');
     expect(previousPreview.isConnected).toBe(false);
     expect(preview).toHaveAttribute('data-frame', 'hanayo-hiyori-victory-00');
@@ -96,18 +96,19 @@ describe('CharacterSelect', () => {
     expect(screen.getByText('Hanayo Hiyori 선택됨')).toBeInTheDocument();
   });
 
-  it('shows no ability icon for an unassigned character', () => {
+  it('shows Mary and Toa passive names and their matching art', () => {
     render(<CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Tokino Mary' }));
-    expect(screen.getByTestId('selector-passive')).toHaveTextContent('별빛 자석');
-    expect(screen.getByTestId('selector-passive')).toHaveTextContent('수집 반경 +30px');
-    expect(screen.getByTestId('selector-passive').querySelector('svg')).toHaveAttribute('data-icon', 'sparkling-magnet');
+    expect(screen.getByTestId('selector-passive')).toHaveTextContent('음표의 이끌림');
+    expect(screen.getByTestId('selector-passive')).toHaveTextContent('아이템 획득 범위 +35%');
+    expect(screen.getByTestId('selector-passive').querySelector('img')).toHaveAttribute('data-icon', 'mary-music-magnet');
     fireEvent.click(screen.getByRole('button', { name: 'Aokumo Rin' }));
     const toaCard = screen.getByRole('button', { name: 'Shizuki Toa' });
     expect(toaCard).toBeEnabled();
     fireEvent.click(toaCard);
     expect(toaCard.querySelector('.character-ability-icon')).toBeNull();
-    expect(screen.getByTestId('selector-passive')).toHaveTextContent('고유 능력 없음');
+    expect(screen.getByTestId('selector-passive')).toHaveTextContent('고스트 슬라이드');
+    expect(screen.getByTestId('selector-passive').querySelector('img')).toHaveAttribute('data-icon', 'toa-ghost-glide');
   });
 
   it('confirms only the chosen character and keeps back separate from confirmation', () => {

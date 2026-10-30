@@ -79,7 +79,7 @@ describe('RunnerPlayer and input bridge', () => {
     body.blocked.down = false;
     expect(player.jump()).toBe(true);
     expect(player.jumpCount).toBe(2);
-    expect(body.velocity.y).toBe(-420);
+    expect(body.velocity.y).toBeCloseTo(-420 * 1.058, 6);
     expect(player.jump()).toBe(false);
     expect(player.jumpCount).toBe(2);
     body.blocked.down = true;

@@ -25,7 +25,7 @@ describe('RunnerHud', () => {
     expect(screen.getByText('61')).toBeInTheDocument();
     expect(screen.getByLabelText('코인 2개')).toBeInTheDocument();
     expect(screen.getByText(/새벽 도심 · 다음 보너스까지 1,939m/)).toBeInTheDocument();
-    expect(screen.getByText('유령의 수호')).toBeInTheDocument();
+    expect(screen.getByText('벚꽃 수호')).toBeInTheDocument();
     expect(screen.getByText('충돌·낭떠러지 방어 2회')).toBeInTheDocument();
     expect(screen.getByRole('img', { name: '남은 방어 2회' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '일시정지' }));
@@ -52,7 +52,7 @@ describe('RunnerHud', () => {
     rerender(<RunnerHud snapshot={base} character={getCharacter('hanayo-hiyori')}
       recentBonus={{ id: 'passive-1', kind: 'passive-triggered', passiveId: 'hiyori-guard',
         remainingCharges: 1, trigger: 'pit' }} onPause={vi.fn()} />);
-    expect(screen.getByRole('status')).toHaveTextContent('유령의 수호 · 낭떠러지 방어 · 남은 1회');
+    expect(screen.getByRole('status')).toHaveTextContent('벚꽃 수호 · 낭떠러지 방어 · 남은 1회');
   });
 });
 

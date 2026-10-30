@@ -66,6 +66,7 @@ export function drawPickupArt(
 export const PICKUP_PIT_CLEARANCE_METERS = 40;
 const PICKUP_VISUAL_MARGIN_PX = 12;
 const PICKUP_ART_RADIUS_PX = 11;
+const PICKUP_BASE_RADIUS_PX = 32;
 
 // The standing-height row is frequent and predictable; elevated coins remain
 // optional and can be skipped when the authored course has no safe placement.
@@ -186,7 +187,10 @@ export const PICKUP_SCHEDULE = generatePickupSchedule(15_000);
 
 export function getPickupBodySize(characterId: CharacterId): number {
   const passive = getCharacterPassive(characterId);
-  return 24 + (characterId === 'tokino-mary' && 'radiusPx' in passive ? passive.radiusPx * 2 : 0);
+  const radius = passive.id === 'mary-pickup-magnet'
+    ? PICKUP_BASE_RADIUS_PX * passive.pickupRadiusMultiplier
+    : PICKUP_BASE_RADIUS_PX;
+  return Math.round(radius * 2);
 }
 
 type ActivePickup = {
@@ -274,6 +278,7 @@ export class CollectibleSpawner {
     const body = box.body as Phaser.Physics.Arcade.Body;
     body.setAllowGravity(false);
     body.setImmovable(true);
+    body.setCircle(pickupSize / 2);
     const art = this.scene.add.graphics();
     const biome = getBiomeForDistance(definition.distanceMeters);
     drawPickupArt(art, definition.kind, biome);

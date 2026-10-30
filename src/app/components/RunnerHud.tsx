@@ -13,7 +13,8 @@ export type RunnerHudProps = {
 
 export type RunnerHudCue =
   | Readonly<{ id: string; kind: 'pickup' | 'gate'; awardedMs: number }>
-  | Readonly<{ id: string; kind: 'passive-triggered'; passiveId: 'hiyori-guard'; remainingCharges: number; trigger: 'obstacle' | 'pit' }>;
+  | Readonly<{ id: string; kind: 'passive-triggered'; passiveId: 'hiyori-guard'; remainingCharges: number; trigger: 'obstacle' | 'pit' }>
+  | Readonly<{ id: string; kind: 'passive-triggered'; passiveId: 'toa-ghost-glide'; remainingCharges: 0; trigger: 'slide' }>;
 
 const BIOME_LABELS = {
   'dawn-city': '새벽 도심',
@@ -38,7 +39,9 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
   const bonusSeconds = recentBonus && recentBonus.kind !== 'passive-triggered'
     ? Math.max(1, Math.floor(recentBonus.awardedMs / 1_000)) : 0;
   const passiveCue = recentBonus?.kind === 'passive-triggered'
-    ? `${passive.name} · ${recentBonus.trigger === 'pit' ? '낭떠러지' : '장애물'} 방어 · 남은 ${recentBonus.remainingCharges}회`
+    ? recentBonus.passiveId === 'toa-ghost-glide'
+      ? `${passive.name} · 장애물 통과 · 재사용 대기`
+      : `${passive.name} · ${recentBonus.trigger === 'pit' ? '낭떠러지' : '장애물'} 방어 · 남은 ${recentBonus.remainingCharges}회`
     : null;
 
   return (
@@ -63,12 +66,14 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
       <div className="runner-hud__details">
         <span>{landmark}</span>
         <span className="runner-hud__passive" style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
-          {passive.icon && <CharacterAbilityIcon icon={passive.icon} accentColor={character.accentColor} size={18} />}
+          {passive.icon && <CharacterAbilityIcon icon={passive.icon} accentColor={character.accentColor} size={28} />}
           <span><strong>{passive.name}</strong><small>{passive.effectLabel}</small></span>
           {passive.id === 'hiyori-guard' && <span className="runner-hud__charges"
             role="img" aria-label={`남은 방어 ${snapshot.passiveChargesRemaining}회`}>
             {[0, 1].map((charge) => <i key={charge} className={charge < snapshot.passiveChargesRemaining ? 'is-ready' : ''} />)}
           </span>}
+          {passive.id === 'toa-ghost-glide' && snapshot.slideGuardCooldownRemainingMs > 0 &&
+            <small className="runner-hud__cooldown">{Math.ceil(snapshot.slideGuardCooldownRemainingMs / 1_000)}초</small>}
         </span>
       </div>
       {showBonus && (

@@ -63,7 +63,11 @@ export class RunnerPlayer {
     if (this.finished || this.passiveRescuing || this.pitFalling || this.hurt || this.isSliding || this.jumpsUsed >= 2) return false;
     if (!this.grounded && this.jumpsUsed === 0) this.jumpsUsed = 1;
     const second = this.jumpsUsed === 1;
-    this.body.setVelocityY(JUMP_IMPULSE);
+    const passive = this.passive;
+    const impulse = second && passive.id === 'rang-double-jump'
+      ? JUMP_IMPULSE * passive.doubleJumpVelocityMultiplier
+      : JUMP_IMPULSE;
+    this.body.setVelocityY(impulse);
     this.jumpsUsed += 1;
     this.grounded = false;
     this.airPhase = 'ascending';
@@ -96,10 +100,10 @@ export class RunnerPlayer {
   }
 
   setPassiveEffect(remainingMs: number): void {
-    const active = this.passive.id === 'hiyori-guard' && remainingMs > 0;
+    const active = (this.passive.id === 'hiyori-guard' || this.passive.id === 'toa-ghost-glide') && remainingMs > 0;
     if (active === this.passiveEffectActive) return;
     this.passiveEffectActive = active;
-    if (active) this.sprite.setTint(0xff8bc4);
+    if (active) this.sprite.setTint(this.passive.id === 'toa-ghost-glide' ? 0xc49aff : 0xff8bc4);
     else this.sprite.clearTint();
   }
 

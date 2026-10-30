@@ -180,9 +180,9 @@ describe('authored collectible schedule', () => {
 
 describe('pickup collision radius', () => {
   it('reserves pickup-radius expansion for Mary without catching upper coins on the ground', () => {
-    expect(getPickupBodySize('player-default')).toBe(24);
-    expect(getPickupBodySize('hanayo-hiyori')).toBe(24);
-    expect(getPickupBodySize('tokino-mary')).toBe(84);
+    expect(getPickupBodySize('player-default')).toBe(64);
+    expect(getPickupBodySize('hanayo-hiyori')).toBe(64);
+    expect(getPickupBodySize('tokino-mary')).toBe(86);
     const upper = PICKUP_SCHEDULE.find((pickup) => pickup.optionalJump);
     expect(upper).toBeDefined();
     const upperBottom = RUNNER_GROUND_Y - upper!.heightUnits + getPickupBodySize('hanayo-hiyori') / 2;

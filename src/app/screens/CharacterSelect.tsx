@@ -47,7 +47,7 @@ export function CharacterSelect({ selectedCharacterId, onConfirm, onBack }: Char
               <h2>{selectedCharacter.displayName}</h2>
               <div className="selector-showcase__ability" data-testid="selector-passive">
                 {selectedPassive.icon && <CharacterAbilityIcon icon={selectedPassive.icon}
-                  accentColor={selectedCharacter.accentColor} size={22} />}
+                  accentColor={selectedCharacter.accentColor} size={56} />}
                 <span><strong>{selectedPassive.name}</strong><small>{selectedPassive.effectLabel}</small></span>
               </div>
             </div>

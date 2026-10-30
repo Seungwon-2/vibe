@@ -119,14 +119,14 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
     } else if (event.type === 'pit-fall-started') {
       browserRunnerAudio.playEffect('fall');
     } else if (event.type === 'passive-triggered') {
-      browserRunnerAudio.playEffect('hiyori-defense');
+      if (event.passiveId === 'hiyori-guard') browserRunnerAudio.playEffect('hiyori-defense');
       if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
       setRecentBonus({
         id: `passive-${++passiveCueSequence.current}`,
         kind: 'passive-triggered',
-        passiveId: event.passiveId,
-        remainingCharges: event.remainingCharges,
-        trigger: event.trigger,
+        ...(event.passiveId === 'hiyori-guard'
+          ? { passiveId: 'hiyori-guard' as const, remainingCharges: event.remainingCharges, trigger: event.trigger }
+          : { passiveId: 'toa-ghost-glide' as const, remainingCharges: 0 as const, trigger: 'slide' as const }),
       });
       bonusTimeout.current = setTimeout(() => {
         bonusTimeout.current = null;

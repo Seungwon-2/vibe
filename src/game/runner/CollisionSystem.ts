@@ -11,18 +11,23 @@ export function getHazardGeometry(hazard: HazardDefinition, x: number): HazardGe
   return { x, y, width: hazard.width, height: hazard.height };
 }
 
-export function tryResolveHazardHit(state: RunnerSnapshot): {
+export function tryResolveHazardHit(state: RunnerSnapshot, sliding = false): {
   state: RunnerSnapshot;
   hit: boolean;
   blockedByPassive: boolean;
+  passiveId: 'hiyori-guard' | 'toa-ghost-glide' | null;
   result: RunnerResult | null;
 } {
-  const next = applyCollision(state);
-  if (next === state) return { state, hit: false, blockedByPassive: false, result: null };
+  const next = applyCollision(state, sliding);
+  if (next === state) return { state, hit: false, blockedByPassive: false, passiveId: null, result: null };
+  const passiveId = next.passiveChargesRemaining < state.passiveChargesRemaining
+    ? 'hiyori-guard'
+    : next.slideGuardCooldownRemainingMs > state.slideGuardCooldownRemainingMs ? 'toa-ghost-glide' : null;
   return {
     state: next,
     hit: true,
-    blockedByPassive: next.passiveChargesRemaining < state.passiveChargesRemaining,
+    blockedByPassive: passiveId !== null,
+    passiveId,
     result: next.phase === 'finished' ? finishRunner(next).result : null,
   };
 }
@@ -30,11 +35,13 @@ export function tryResolveHazardHit(state: RunnerSnapshot): {
 export function tryResolvePitFall(state: RunnerSnapshot): {
   state: RunnerSnapshot;
   blockedByPassive: boolean;
+  passiveId: 'hiyori-guard' | null;
   result: RunnerResult | null;
 } {
   const resolved = applyPitFall(state);
   return {
     ...resolved,
+    passiveId: resolved.blockedByPassive ? 'hiyori-guard' : null,
     result: resolved.state.phase === 'finished' ? finishRunner(resolved.state).result : null,
   };
 }

@@ -22,6 +22,8 @@ export type RunnerSnapshot = Readonly<{
   protectionRemainingMs: number;
   passiveChargesRemaining: number;
   passiveEffectRemainingMs: number;
+  slideGuardRemainingMs: number;
+  slideGuardCooldownRemainingMs: number;
   biomeId: RunnerBiomeId;
   finishedAtElapsedMs: number | null;
   finishReason: RunnerFinishReason | null;

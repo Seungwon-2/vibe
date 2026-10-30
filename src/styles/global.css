@@ -164,6 +164,8 @@ button {
 .runner-hud__charges { display: inline-flex; gap: 3px; margin-left: 2px; }
 .runner-hud__charges i { width: 9px; height: 9px; border: 1px solid #dc7aab; border-radius: 50%; background: transparent; }
 .runner-hud__charges i.is-ready { background: #ed8db9; box-shadow: 0 0 5px rgb(237 141 185 / 40%); }
+.character-ability-icon { display: inline-block; flex: 0 0 auto; object-fit: contain; image-rendering: auto; filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--ability-accent) 40%, transparent)); }
+.runner-hud__cooldown { color: var(--ui-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .runner-hud__bonus { position: absolute; top: 6cqw; right: 7cqw; padding: 2px 8px; border: 1px solid #e8d59a; border-radius: 999px; background: #fff2c6; color: #634b10; font-weight: 800; animation: runner-bonus-cue 1.8s ease-out forwards; }
 .runner-hud__bonus.is-passive-cue { max-width: min(72%, 360px); border-color: #ec91bd; background: #fff0f7; color: #77324f; text-align: center; }
 .runner-touch-controls { position: absolute; z-index: 4; inset: 0; display: flex; align-items: end; justify-content: space-between; padding: 0 12px 4px; pointer-events: none; }

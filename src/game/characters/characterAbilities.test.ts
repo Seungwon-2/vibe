@@ -4,18 +4,15 @@ import { getCharacterPassive } from './characterAbilities';
 describe('central character passive tuning', () => {
   it('assigns the agreed named passives and tunings', () => {
     expect(getCharacterPassive('player-default')).toMatchObject({
-      id: 'rin-speed', speedBonusRatio: 0.05, name: '질주의 메이드', icon: 'cloud',
+      id: 'rin-speed', speedBonusRatio: 0.05, name: '질주의 메이드', icon: 'rin-cloud-tailwind',
     });
     expect(getCharacterPassive('hanayo-hiyori')).toMatchObject({
-      id: 'hiyori-guard', chargesPerRun: 2, name: '유령의 수호', icon: 'pink-flame',
+      id: 'hiyori-guard', chargesPerRun: 2, name: '벚꽃 수호', icon: 'hiyori-blossom-ward',
     });
     expect(getCharacterPassive('tokino-mary')).toMatchObject({
-      id: 'mary-pickup-magnet', radiusPx: 30, name: '별빛 자석', icon: 'sparkling-magnet',
+      id: 'mary-pickup-magnet', pickupRadiusMultiplier: 1.35, name: '음표의 이끌림', icon: 'mary-music-magnet',
     });
-  });
-
-  it('keeps Toa and Rang on default performance until their passives are designed', () => {
-    expect(getCharacterPassive('goth-student').id).toBe('unassigned');
-    expect(getCharacterPassive('cogane-rang').id).toBe('unassigned');
+    expect(getCharacterPassive('goth-student')).toMatchObject({ id: 'toa-ghost-glide', slideGuardMs: 250, cooldownMs: 20_000 });
+    expect(getCharacterPassive('cogane-rang')).toMatchObject({ id: 'rang-double-jump', doubleJumpVelocityMultiplier: 1.058 });
   });
 });

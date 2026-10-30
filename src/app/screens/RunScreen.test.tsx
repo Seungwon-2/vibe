@@ -120,7 +120,7 @@ describe('RunScreen', () => {
     render(<RunScreen {...audioProps} characterId="hanayo-hiyori" onFinish={vi.fn()} onExit={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'begin mock run' }));
     fireEvent.click(screen.getByRole('button', { name: 'trigger passive' }));
-    expect(screen.getByRole('status')).toHaveTextContent('유령의 수호 · 낭떠러지 방어 · 남은 1회');
+    expect(screen.getByRole('status')).toHaveTextContent('벚꽃 수호 · 낭떠러지 방어 · 남은 1회');
     act(() => vi.advanceTimersByTime(1_199));
     expect(screen.getByRole('status')).toBeInTheDocument();
     act(() => vi.advanceTimersByTime(1));

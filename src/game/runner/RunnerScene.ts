@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { getCharacter } from '../characters/characterCatalog';
 import type { CharacterId } from '../characters/characterTypes';
-import { advanceRunner, collectPickup, createRunnerSnapshot, pauseRunner, resumeRunner, startRunner } from './RunnerSimulation';
+import { advanceRunner, beginRunnerSlide, collectPickup, createRunnerSnapshot, pauseRunner, resumeRunner, startRunner } from './RunnerSimulation';
 import { RunnerPlayer, RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { RunnerInputBridge } from './RunnerInput';
 import type { RunnerGateId, RunnerResult, RunnerSnapshot } from './runnerTypes';
@@ -130,7 +130,10 @@ export class RunnerScene extends Phaser.Scene {
       return;
     }
     const input = this.inputBridge.consumeFrame();
-    if (this.player.setSliding(input.slideHeld)) this.eventEmitter.playerAction('slide');
+    if (this.player.setSliding(input.slideHeld)) {
+      this.snapshot = beginRunnerSlide(this.snapshot);
+      this.eventEmitter.playerAction('slide');
+    }
     if (input.jumpPressed && this.player.jump()) {
       this.eventEmitter.playerAction(this.player.jumpCount === 1 ? 'jump' : 'double-jump');
     }
@@ -144,7 +147,7 @@ export class RunnerScene extends Phaser.Scene {
     this.player.setHurt(state.staggerRemainingMs > 0);
     this.player.setProtected(state.protectionRemainingMs);
     this.player.setPassiveEffect(state.passiveEffectRemainingMs);
-    this.drawPassiveEffect(state.passiveEffectRemainingMs);
+    this.drawPassiveEffect(state.passiveEffectRemainingMs, state.slideGuardRemainingMs);
     this.spawner.update(state);
     this.collectibles.update(state);
     this.pits.update(state);
@@ -177,11 +180,20 @@ export class RunnerScene extends Phaser.Scene {
     this.eventEmitter.snapshot(snapshot, this.time.now, force);
   }
 
-  private drawPassiveEffect(remainingMs: number): void {
+  private drawPassiveEffect(remainingMs: number, slideGuardRemainingMs: number): void {
     this.passiveEffectArt.clear();
-    if (this.snapshot.characterId !== 'hanayo-hiyori' || remainingMs <= 0) return;
+    const hiyoriActive = this.snapshot.characterId === 'hanayo-hiyori' && remainingMs > 0;
+    const toaActive = this.snapshot.characterId === 'goth-student' &&
+      ((this.player.isSliding && slideGuardRemainingMs > 0) || remainingMs > 0);
+    if (!hiyoriActive && !toaActive) return;
     const x = RUNNER_PLAYER_X;
     const y = this.player.gameObject.y - 38;
+    if (toaActive) {
+      this.passiveEffectArt.fillStyle(0x9b68e8, 0.24).fillEllipse(x - 30, y + 9, 56, 24)
+        .fillEllipse(x - 55, y + 14, 40, 16);
+      this.passiveEffectArt.lineStyle(3, 0xd8b7ff, 0.8).lineBetween(x - 66, y + 15, x - 4, y + 15);
+      return;
+    }
     this.passiveEffectArt.fillStyle(0xff7fbd, 0.2).fillCircle(x, y, 48);
     this.passiveEffectArt.fillStyle(0xff68ad, 0.94)
       .fillTriangle(x - 28, y + 14, x - 20, y - 14, x - 11, y + 14)
@@ -200,7 +212,7 @@ export class RunnerScene extends Phaser.Scene {
   };
 
   private readonly handleHazardOverlap = (): void => {
-    const { state, hit, blockedByPassive, result } = tryResolveHazardHit(this.snapshot);
+    const { state, hit, blockedByPassive, passiveId, result } = tryResolveHazardHit(this.snapshot, this.player.isSliding);
     if (!hit) return;
     this.publish(state, true);
     if (blockedByPassive) {

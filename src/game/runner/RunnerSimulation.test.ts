@@ -33,7 +33,7 @@ describe('RunnerSimulation', () => {
     const afterSecond = advanceRunner(started, 1_000).state;
     expect(afterSecond.elapsedMs).toBe(1_000);
     expect(afterSecond.remainingMs).toBe(89_000);
-    expect(afterSecond.distanceMeters).toBeCloseTo(83.47, 1);
+    expect(afterSecond.distanceMeters).toBeCloseTo(87.65, 1);
     expect(afterSecond.worldDistance * RUNNER_CONFIG.metersPerWorldUnit)
       .toBeCloseTo(afterSecond.distanceMeters, 8);
     expect(advanceRunner(afterSecond, -100).state).toBe(afterSecond);
@@ -62,7 +62,7 @@ describe('RunnerSimulation', () => {
     const fiveGates = { ...afterRamp, elapsedMs: 90_000,
       passedGateIds: ['gate-2000', 'gate-4000', 'gate-6000', 'gate-8000', 'gate-10000'] as const };
     const atMaxRamp = advanceRunner(fiveGates, 1).state;
-    expect(atMaxRamp.speedUnitsPerSecond).toBeCloseTo(422.5, 8);
+    expect(atMaxRamp.speedUnitsPerSecond).toBeCloseTo(426.5625, 8);
     const toaAtMaxRamp = advanceRunner({ ...fiveGates, characterId: 'goth-student' }, 1).state;
     expect(toaAtMaxRamp.speedUnitsPerSecond).toBeCloseTo(406.25, 8);
   });
@@ -132,7 +132,7 @@ describe('RunnerSimulation', () => {
     expect(initial.passiveChargesRemaining).toBe(2);
     const collisionRescue = applyCollision(initial);
     expect(collisionRescue).toMatchObject({
-      remainingMs: initial.remainingMs, staggerRemainingMs: 0, protectionRemainingMs: 0,
+      remainingMs: initial.remainingMs, staggerRemainingMs: 0, protectionRemainingMs: 1_200,
       passiveChargesRemaining: 1, passiveEffectRemainingMs: 700,
     });
     const effectHalfway = advanceRunner(collisionRescue, 300).state;
@@ -147,7 +147,8 @@ describe('RunnerSimulation', () => {
       passiveChargesRemaining: 0, passiveEffectRemainingMs: 700,
     });
 
-    const thirdCollision = applyCollision(pitRescue.state);
+    const afterProtection = advanceRunner(pitRescue.state, RUNNER_CONFIG.protectionMs).state;
+    const thirdCollision = applyCollision(afterProtection);
     expect(thirdCollision.remainingMs).toBe(initial.remainingMs - RUNNER_CONFIG.collisionPenaltyMs);
     expect(thirdCollision.staggerRemainingMs).toBe(RUNNER_CONFIG.staggerMs);
     const fatalPit = applyPitFall(pitRescue.state);

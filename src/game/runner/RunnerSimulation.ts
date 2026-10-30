@@ -20,10 +20,9 @@ function getSpeed(elapsedMs: number, gateCount: number, characterId: CharacterId
   const progress = Math.min(1, Math.max(0, elapsedMs / speedRampMs));
   const passive = getCharacterPassive(characterId);
   const passiveBonus = passive.id === 'rin-speed' ? passive.speedBonusRatio : 0;
-  const targetSpeed = maxSpeedUnitsPerSecond *
-    (1 + gateCount * RUNNER_CONFIG.gateSpeedBonusRatio + passiveBonus);
-  return initialSpeedUnitsPerSecond +
-    (targetSpeed - initialSpeedUnitsPerSecond) * progress;
+  const targetSpeed = maxSpeedUnitsPerSecond * (1 + gateCount * RUNNER_CONFIG.gateSpeedBonusRatio);
+  const baseSpeed = initialSpeedUnitsPerSecond + (targetSpeed - initialSpeedUnitsPerSecond) * progress;
+  return baseSpeed * (1 + passiveBonus);
 }
 
 function traveledWorldUnits(elapsedMs: number, deltaMs: number, gateCount: number, characterId: CharacterId): number {
@@ -35,9 +34,8 @@ function traveledWorldUnits(elapsedMs: number, deltaMs: number, gateCount: numbe
   const cappedDeltaMs = Math.max(0, elapsedMs + deltaMs - Math.max(elapsedMs, rampEnd));
   const passive = getCharacterPassive(characterId);
   const passiveBonus = passive.id === 'rin-speed' ? passive.speedBonusRatio : 0;
-  const targetSpeed = RUNNER_CONFIG.maxSpeedUnitsPerSecond *
-    (1 + gateCount * RUNNER_CONFIG.gateSpeedBonusRatio + passiveBonus);
-  return rampUnits + targetSpeed * cappedDeltaMs / 1_000;
+  const targetSpeed = RUNNER_CONFIG.maxSpeedUnitsPerSecond * (1 + gateCount * RUNNER_CONFIG.gateSpeedBonusRatio);
+  return rampUnits + targetSpeed * (1 + passiveBonus) * cappedDeltaMs / 1_000;
 }
 
 function advanceSegment(state: RunnerSnapshot, deltaMs: number, gateCount = state.passedGateIds.length): RunnerSnapshot {
@@ -54,6 +52,8 @@ function advanceSegment(state: RunnerSnapshot, deltaMs: number, gateCount = stat
     staggerRemainingMs: Math.max(0, state.staggerRemainingMs - deltaMs),
     protectionRemainingMs: Math.max(0, state.protectionRemainingMs - deltaMs),
     passiveEffectRemainingMs: Math.max(0, state.passiveEffectRemainingMs - deltaMs),
+    slideGuardRemainingMs: Math.max(0, state.slideGuardRemainingMs - deltaMs),
+    slideGuardCooldownRemainingMs: Math.max(0, state.slideGuardCooldownRemainingMs - deltaMs),
     biomeId: getBiomeForDistance(distanceMeters).id,
   };
 }
@@ -121,6 +121,8 @@ export function createRunnerSnapshot(characterId: CharacterId, now: Date = new D
       return passive.id === 'hiyori-guard' ? passive.chargesPerRun : 0;
     })(),
     passiveEffectRemainingMs: 0,
+    slideGuardRemainingMs: 0,
+    slideGuardCooldownRemainingMs: 0,
     biomeId: 'dawn-city',
     finishedAtElapsedMs: null,
     finishReason: null,
@@ -139,6 +141,15 @@ export function pauseRunner(state: RunnerSnapshot): RunnerSnapshot {
 
 export function resumeRunner(state: RunnerSnapshot): RunnerSnapshot {
   return state.phase === 'paused' ? { ...state, phase: 'running' } : state;
+}
+
+/** Opens Toa's short collision guard window only when a fresh slide begins. */
+export function beginRunnerSlide(state: RunnerSnapshot): RunnerSnapshot {
+  if (state.phase !== 'running' || state.slideGuardCooldownRemainingMs > 0) return state;
+  const passive = getCharacterPassive(state.characterId);
+  return passive.id === 'toa-ghost-glide'
+    ? { ...state, slideGuardRemainingMs: passive.slideGuardMs }
+    : state;
 }
 
 export function finishRunner(
@@ -181,6 +192,8 @@ export function advanceRunner(
         staggerRemainingMs: Math.max(0, current.staggerRemainingMs - frozenMs),
         protectionRemainingMs: Math.max(0, current.protectionRemainingMs - frozenMs),
         passiveEffectRemainingMs: Math.max(0, current.passiveEffectRemainingMs - frozenMs),
+        slideGuardRemainingMs: Math.max(0, current.slideGuardRemainingMs - frozenMs),
+        slideGuardCooldownRemainingMs: Math.max(0, current.slideGuardCooldownRemainingMs - frozenMs),
       };
       unspentMs = Math.max(0, unspentMs - frozenMs);
       if (current.remainingMs <= EPSILON) return finishRunner(current);
@@ -242,16 +255,25 @@ export function collectPickup(
   };
 }
 
-export function applyCollision(state: RunnerSnapshot): RunnerSnapshot {
+export function applyCollision(state: RunnerSnapshot, sliding = false): RunnerSnapshot {
   if (state.phase !== 'running' || state.protectionRemainingMs > 0 || state.remainingMs <= 0) {
     return state;
   }
   const passive = getCharacterPassive(state.characterId);
+  if (passive.id === 'toa-ghost-glide' && sliding && state.slideGuardRemainingMs > 0) {
+    return {
+      ...state,
+      slideGuardRemainingMs: 0,
+      slideGuardCooldownRemainingMs: passive.cooldownMs,
+      passiveEffectRemainingMs: 500,
+    };
+  }
   if (passive.id === 'hiyori-guard' && state.passiveChargesRemaining > 0) {
     return {
       ...state,
       passiveChargesRemaining: state.passiveChargesRemaining - 1,
       passiveEffectRemainingMs: 700,
+      protectionRemainingMs: RUNNER_CONFIG.protectionMs,
     };
   }
   const remainingMs = Math.max(0, state.remainingMs - RUNNER_CONFIG.collisionPenaltyMs);
@@ -273,6 +295,7 @@ export function applyPitFall(state: RunnerSnapshot): { state: RunnerSnapshot; bl
         ...state,
         passiveChargesRemaining: state.passiveChargesRemaining - 1,
         passiveEffectRemainingMs: 700,
+        protectionRemainingMs: RUNNER_CONFIG.protectionMs,
       },
       blockedByPassive: true,
     };

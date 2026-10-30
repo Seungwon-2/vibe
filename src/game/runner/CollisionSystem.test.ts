@@ -21,7 +21,7 @@ describe('hazard collision', () => {
     expect(first.hit).toBe(true);
     expect(first.state.remainingMs).toBe(85_000);
     expect(first.state.protectionRemainingMs).toBe(1_200);
-    expect(tryResolveHazardHit(first.state)).toEqual({ state: first.state, hit: false, blockedByPassive: false, result: null });
+    expect(tryResolveHazardHit(first.state)).toEqual({ state: first.state, hit: false, blockedByPassive: false, passiveId: null, result: null });
     const mary = startRunner(createRunnerSnapshot('tokino-mary'));
     expect(tryResolveHazardHit(mary).state.remainingMs).toBe(85_000);
     expect(tryResolveHazardHit(mary).state.protectionRemainingMs).toBe(1_200);
@@ -29,7 +29,7 @@ describe('hazard collision', () => {
     const hiyori = startRunner(createRunnerSnapshot('hanayo-hiyori'));
     const guarded = tryResolveHazardHit(hiyori);
     expect(guarded).toMatchObject({ hit: true, blockedByPassive: true, result: null });
-    expect(guarded.state).toMatchObject({ remainingMs: 90_000, passiveChargesRemaining: 1 });
+    expect(guarded.state).toMatchObject({ remainingMs: 90_000, passiveChargesRemaining: 1, protectionRemainingMs: 1_200 });
   });
 
   it('finishes once when a collision depletes the remaining timer', () => {
