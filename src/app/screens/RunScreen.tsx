@@ -4,7 +4,7 @@ import type { CharacterId } from '../../game/characters/characterTypes';
 import { RunnerGame } from '../../game/runner/RunnerGame';
 import { RunnerInputBridge } from '../../game/runner/RunnerInput';
 import { createRunnerSnapshot } from '../../game/runner/RunnerSimulation';
-import type { RunnerFinishOutcome, RunnerResult, RunnerSnapshot } from '../../game/runner/runnerTypes';
+import type { RunnerFinishOutcome, RunnerMode, RunnerResult, RunnerSnapshot, StoryStageId } from '../../game/runner/runnerTypes';
 import type { RunnerEvent } from '../../game/runner/runnerEvents';
 import { CountdownOverlay } from '../components/CountdownOverlay';
 import { PauseOverlay } from '../components/PauseOverlay';
@@ -22,6 +22,8 @@ function isPortrait(): boolean {
 
 export type RunScreenProps = {
   characterId: CharacterId;
+  mode?: RunnerMode;
+  storyStageId?: StoryStageId | null;
   onFinish(result: RunnerResult, outcome: RunnerFinishOutcome): void;
   onExit(): void;
   audioPreferences: AudioPreferences;
@@ -29,12 +31,12 @@ export type RunScreenProps = {
   onUnlockAudio(): void;
 };
 
-export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onAudioPreferencesChange,
+export function RunScreen({ characterId, mode = 'endless', storyStageId = null, onFinish, onExit, audioPreferences, onAudioPreferencesChange,
   onUnlockAudio }: RunScreenProps): React.JSX.Element {
   const character = getCharacter(characterId);
   const [portrait, setPortrait] = useState(isPortrait);
   const [paused, setPaused] = useState(isPortrait);
-  const [snapshot, setSnapshot] = useState<RunnerSnapshot>(() => createRunnerSnapshot(characterId));
+  const [snapshot, setSnapshot] = useState<RunnerSnapshot>(() => createRunnerSnapshot(characterId, new Date(), { mode, storyStageId }));
   const [countdownValue, setCountdownValue] = useState<number | null>(3);
   const [recentBonus, setRecentBonus] = useState<RunnerHudCue | null>(null);
   const [exitConfirmation, setExitConfirmation] = useState(false);
@@ -71,7 +73,7 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
     }, 650);
   }
 
-  function showBonusCue(id: string, kind: 'pickup' | 'gate', awardedMs: number): void {
+  function showBonusCue(id: string, kind: 'pickup' | 'gate' | 'speed-boost', awardedMs: number): void {
     if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
     setRecentBonus({ id, kind, awardedMs });
     bonusTimeout.current = setTimeout(() => {
@@ -170,7 +172,7 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
       browserRunnerAudio.playEffect('coin');
     } else if (event.type === 'pickup' && event.kind === 'time') {
       if (event.awardedMs > 0) browserRunnerAudio.playEffect('time-pickup');
-      if (event.awardedMs > 0) showBonusCue(event.pickupId, 'pickup', event.awardedMs);
+      if (event.awardedMs > 0) showBonusCue(event.pickupId, mode === 'story' ? 'speed-boost' : 'pickup', event.awardedMs);
     } else if (event.type === 'pickup' && event.kind === 'giant') {
       browserRunnerAudio.playEffect('time-pickup');
       showGiantCue(event.pickupId);
@@ -196,7 +198,8 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
       </header>
       <div className={`runner-stage${gateBurstActive ? ' is-gate-boosting' : ''}${snapshot.giantRemainingMs > 0 ? ' is-giant-active' : ''}`}
         role="region" aria-label="러닝 게임 화면">
-        <RunnerGame characterId={characterId} inputBridge={inputBridge} paused={paused}
+        <RunnerGame characterId={characterId} mode={mode} storyStageId={storyStageId}
+          inputBridge={inputBridge} paused={paused}
           tutorialEnabled={tutorialEnabled}
           onSnapshot={(next) => {
             setSnapshot(next);

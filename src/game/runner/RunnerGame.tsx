@@ -3,12 +3,14 @@ import Phaser from 'phaser';
 import type { CharacterId } from '../characters/characterTypes';
 import { createRunnerGameConfig } from './createRunnerGameConfig';
 import type { RunnerInputBridge } from './RunnerInput';
-import type { RunnerFinishOutcome, RunnerResult, RunnerSnapshot } from './runnerTypes';
+import type { RunnerFinishOutcome, RunnerMode, RunnerResult, RunnerSnapshot, StoryStageId } from './runnerTypes';
 import { RunnerScene } from './RunnerScene';
 import type { RunnerEvent } from './runnerEvents';
 
 export type RunnerGameProps = {
   characterId: CharacterId;
+  mode?: RunnerMode;
+  storyStageId?: StoryStageId | null;
   inputBridge: RunnerInputBridge;
   paused: boolean;
   tutorialEnabled: boolean;
@@ -18,7 +20,7 @@ export type RunnerGameProps = {
 };
 
 export function RunnerGame({
-  characterId, inputBridge, paused, tutorialEnabled, onSnapshot, onFinished, onEvent,
+  characterId, mode = 'endless', storyStageId = null, inputBridge, paused, tutorialEnabled, onSnapshot, onFinished, onEvent,
 }: RunnerGameProps): React.JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -35,7 +37,7 @@ export function RunnerGame({
     if (!hostRef.current) return;
     let game: Phaser.Game | null = null;
     try {
-      game = new Phaser.Game(createRunnerGameConfig(hostRef.current, characterId, inputBridge, {
+      game = new Phaser.Game(createRunnerGameConfig(hostRef.current, characterId, mode, storyStageId, inputBridge, {
         onSnapshot: (snapshot) => callbacksRef.current.onSnapshot(snapshot),
         onFinished: (result, outcome) => callbacksRef.current.onFinished(result, outcome),
         onEvent: (event) => callbacksRef.current.onEvent?.(event),
@@ -55,7 +57,7 @@ export function RunnerGame({
       gameRef.current = null;
       game?.destroy(true);
     };
-  }, [characterId, inputBridge, tutorialEnabled, attempt]);
+  }, [characterId, mode, storyStageId, inputBridge, tutorialEnabled, attempt]);
 
   useEffect(() => {
     const game = gameRef.current;

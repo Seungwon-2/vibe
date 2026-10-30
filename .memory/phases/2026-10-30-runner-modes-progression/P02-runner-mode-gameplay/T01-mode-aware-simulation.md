@@ -1,6 +1,6 @@
 # Task: T01 Mode-Aware Simulation
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -35,14 +35,14 @@ Make the pure runner simulation accept mode and Story stage configuration, end f
 
 ## Acceptance Criteria
 
-- [ ] Story run does not count down and completes at the configured course length.
-- [ ] Story time pickup applies exactly +15% speed for 3 seconds.
-- [ ] Endless timer, time pickups, and gate bonuses are unchanged.
+- [x] Story run does not count down and completes at the configured course length.
+- [x] Story time pickup applies exactly +15% speed for 3 seconds.
+- [x] Endless timer, time pickups, and gate bonuses are unchanged.
 
 ## Validation
 
-- npx vitest run src/game/runner/RunnerSimulation.test.ts src/game/runner/RunnerIntegration.test.ts
 - npm run typecheck
+- npm run build
 
 ## Commit Message
 
@@ -57,6 +57,6 @@ Make the pure runner simulation accept mode and Story stage configuration, end f
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed: npm run typecheck, npm run build
+- commit: see task commit

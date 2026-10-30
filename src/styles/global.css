@@ -2090,6 +2090,8 @@ body:has(.selector-shell--runner),
 .stage-option__order { color: #9474bd; font-size: .75rem; font-weight: 850; letter-spacing: .15em; }
 .stage-option__status { font-weight: 750; }
 .stage-select-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.runner-hud[data-mode="story"] .runner-hud__timer:not(.runner-hud__course-progress) { display: none; }
+.runner-hud[data-mode="story"] .runner-hud__course-progress { display: grid; }
 @media (max-width: 640px) {
   .progression-screen { align-items: start; padding: 8px; }
   .progression-panel { gap: 14px; padding: 20px 14px; border-radius: 20px; }

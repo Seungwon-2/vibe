@@ -4,7 +4,7 @@ import type { CharacterId } from '../characters/characterTypes';
 import { advanceRunner, beginRunnerSlide, collectPickup, createRunnerSnapshot, pauseRunner, resumeRunner, startRunner } from './RunnerSimulation';
 import { RunnerPlayer, RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { RunnerInputBridge } from './RunnerInput';
-import type { RunnerGateId, RunnerResult, RunnerSnapshot } from './runnerTypes';
+import type { RunnerGateId, RunnerMode, RunnerResult, RunnerSnapshot, StoryStageId } from './runnerTypes';
 import { RUNNER_CONFIG } from './runnerConfig';
 import { ObstacleSpawner } from './ObstacleSpawner';
 import { tryResolveHazardHit, tryResolvePitFall } from './CollisionSystem';
@@ -60,7 +60,10 @@ export class RunnerScene extends Phaser.Scene {
       onFinished: this.registry.get('onFinished') as (result: RunnerResult, outcome: RunnerFinishOutcome) => void,
       onEvent: this.registry.get('onEvent') as ((event: RunnerEvent) => void) | undefined,
     });
-    this.snapshot = createRunnerSnapshot(characterId);
+    this.snapshot = createRunnerSnapshot(characterId, new Date(), {
+      mode: this.registry.get('runnerMode') as RunnerMode,
+      storyStageId: this.registry.get('storyStageId') as StoryStageId | null,
+    });
     this.backdrop = new RunnerBackdrop(this);
     this.passiveEffectArt = this.add.graphics().setDepth(3);
 
@@ -218,7 +221,9 @@ export class RunnerScene extends Phaser.Scene {
   private readonly handlePickup = (pickup: PickupDefinition): void => {
     const next = collectPickup(this.snapshot, pickup);
     if (next === this.snapshot) return;
-    const awardedMs = next.remainingMs - this.snapshot.remainingMs;
+    const awardedMs = next.mode === 'story' && pickup.kind === 'time'
+      ? RUNNER_CONFIG.storySpeedBoostMs
+      : next.remainingMs - this.snapshot.remainingMs;
     this.publish(next, true);
     this.player.setGiant(next.giantRemainingMs > 0);
     this.eventEmitter.pickup(pickup.id, pickup.kind, awardedMs);
@@ -306,9 +311,12 @@ export class RunnerScene extends Phaser.Scene {
     if (this.finishEmitted) return;
     this.finishEmitted = true;
     this.inputBridge.clear();
-    const decision = browserPersonalBestStore.record(result);
+    const decision = result.mode === 'story' ? { isNewBest: false } : browserPersonalBestStore.record(result);
     const outcome: RunnerFinishOutcome = decision.isNewBest ? 'personal-best' : 'completed';
-    this.player.finish(result.finishReason === 'pit' || !decision.isNewBest ? 'gameOver' : 'victory');
+    const animation = result.mode === 'story'
+      ? result.completedStage ? 'victory' : 'gameOver'
+      : result.finishReason === 'pit' || !decision.isNewBest ? 'gameOver' : 'victory';
+    this.player.finish(animation);
     this.eventEmitter.finish(result, outcome);
   }
 

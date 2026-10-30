@@ -2,6 +2,7 @@
 import { getCharacterPassive } from '../../game/characters/characterAbilities';
 import { CharacterAbilityIcon } from './CharacterAbilityIcon';
 import { RUNNER_GATE_DISTANCES_M } from '../../game/runner/runnerConfig';
+import { getStoryStage } from '../../game/runner/storyConfig';
 import type { RunnerSnapshot } from '../../game/runner/runnerTypes';
 
 export type RunnerHudProps = {
@@ -12,7 +13,7 @@ export type RunnerHudProps = {
 };
 
 export type RunnerHudCue =
-  | Readonly<{ id: string; kind: 'pickup' | 'gate'; awardedMs: number }>
+  | Readonly<{ id: string; kind: 'pickup' | 'gate' | 'speed-boost'; awardedMs: number }>
   | Readonly<{ id: string; kind: 'giant' }>
   | Readonly<{ id: string; kind: 'passive-triggered'; passiveId: 'hiyori-guard'; remainingCharges: number; trigger: 'obstacle' | 'pit' }>
   | Readonly<{ id: string; kind: 'passive-triggered'; passiveId: 'toa-ghost-glide'; remainingCharges: 0; trigger: 'slide' }>;
@@ -30,11 +31,15 @@ function formatTime(remainingMs: number): string {
 }
 
 export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerHudProps): React.JSX.Element {
+  const storyStage = snapshot.mode === 'story' && snapshot.storyStageId
+    ? getStoryStage(snapshot.storyStageId) : null;
   const nextGateIndex = RUNNER_GATE_DISTANCES_M.findIndex((distance) => distance > snapshot.distanceMeters);
-  const landmark = nextGateIndex >= 0
+  const landmark = storyStage
+    ? storyStage.name + ' · 골인까지 ' + Math.ceil(Math.max(0, storyStage.lengthMeters - snapshot.distanceMeters)).toLocaleString() + 'm'
+    : nextGateIndex >= 0
     ? `${BIOME_LABELS[snapshot.biomeId]} · 다음 보너스까지 ${Math.ceil(RUNNER_GATE_DISTANCES_M[nextGateIndex] - snapshot.distanceMeters).toLocaleString()}m`
     : BIOME_LABELS[snapshot.biomeId];
-  const warning = snapshot.remainingMs <= 10_000;
+  const warning = !storyStage && snapshot.remainingMs <= 10_000;
   const passive = getCharacterPassive(character.id);
   const showBonus = recentBonus !== null && (recentBonus.kind === 'passive-triggered' ||
     recentBonus.kind === 'giant' || recentBonus.awardedMs > 0);
@@ -47,8 +52,19 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
     : null;
 
   return (
-    <div className="runner-hud" aria-label="게임 정보">
+    <div className="runner-hud" data-mode={snapshot.mode ?? 'endless'} aria-label="게임 정보">
       <div className="runner-hud__main">
+        {storyStage && (
+          <div className="runner-hud__timer runner-hud__course-progress">
+            <span>코스 진행</span>
+            <strong>{Math.min(storyStage.lengthMeters, Math.round(snapshot.distanceMeters)).toLocaleString()} / {storyStage.lengthMeters.toLocaleString()}m</strong>
+            <span className="runner-hud__gauge" role="progressbar" aria-label="코스 진행"
+              aria-valuemin={0} aria-valuemax={storyStage.lengthMeters}
+              aria-valuenow={Math.min(storyStage.lengthMeters, Math.round(snapshot.distanceMeters))}>
+              <span style={{ width: String(Math.max(0, Math.min(100, snapshot.distanceMeters / storyStage.lengthMeters * 100))) + '%' }} />
+            </span>
+          </div>
+        )}
         <div className={`runner-hud__timer${warning ? ' is-warning' : ''}`} aria-live={warning ? 'polite' : 'off'}>
           <span>남은 시간</span>
           <strong>{formatTime(snapshot.remainingMs)}</strong>
@@ -72,6 +88,11 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
             ✦ 거대화 · {Math.ceil(snapshot.giantRemainingMs / 1_000)}초
           </span>
         )}
+        {(snapshot.stageSpeedBoostRemainingMs ?? 0) > 0 && (
+          <span className="runner-hud__powerup" role="timer" aria-label={'속도 증가 ' + Math.ceil((snapshot.stageSpeedBoostRemainingMs ?? 0) / 1_000) + '초 남음'}>
+            ✧ 속도 +15% · {Math.ceil((snapshot.stageSpeedBoostRemainingMs ?? 0) / 1_000)}초
+          </span>
+        )}
         <span className="runner-hud__passive" style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
           {passive.icon && <CharacterAbilityIcon icon={passive.icon} accentColor={character.accentColor} size={28} />}
           <span><strong>{passive.name}</strong><small>{passive.effectLabel}</small></span>
@@ -85,7 +106,9 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
       </div>
       {showBonus && (
         <span key={recentBonus.id} className={`runner-hud__bonus${passiveCue ? ' is-passive-cue' : ''}`} role="status">
-          {passiveCue ?? (recentBonus.kind === 'giant' ? '거대화!' : `+${bonusSeconds}초`)}
+          {passiveCue ?? (recentBonus.kind === 'giant' ? '거대화!'
+            : recentBonus.kind === 'speed-boost' ? '속도 +15% · ' + bonusSeconds + '초'
+              : '+' + bonusSeconds + '초')}
         </span>
       )}
     </div>

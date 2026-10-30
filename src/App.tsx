@@ -114,9 +114,11 @@ function App(): React.JSX.Element {
     setScreen('rankings');
   }
 
-  function startRun(characterId = selectedCharacterId): void {
+  function startRun(characterId = selectedCharacterId, mode = selectedMode, stageId = mode === 'story' ? selectedStageId : null): void {
     latestRunId.current += 1;
     setSelectedCharacterId(characterId);
+    setSelectedMode(mode);
+    setSelectedStageId(stageId ?? 'dawn-city');
     setFinishedRun(null);
     setRunId(latestRunId.current);
     setScreen('run');
@@ -145,7 +147,7 @@ function App(): React.JSX.Element {
   if (screen === 'stage-select') {
     return <StageSelect profile={profile} selectedStageId={selectedStageId}
       onSelect={setSelectedStageId}
-      onStart={() => startRun(selectedCharacterId)}
+      onStart={() => startRun(selectedCharacterId, 'story', selectedStageId)}
       onBack={() => setScreen('character-select')} />;
   }
 
@@ -153,6 +155,7 @@ function App(): React.JSX.Element {
     const currentRunId = runId;
     return (
       <RunScreen key={`${currentRunId}:${selectedCharacterId}`} characterId={selectedCharacterId}
+        mode={selectedMode} storyStageId={selectedMode === 'story' ? selectedStageId : null}
         audioPreferences={audioPreferences} onAudioPreferencesChange={setAudioPreferences}
         onUnlockAudio={() => browserRunnerAudio.unlock()}
         onExit={() => {
@@ -163,8 +166,9 @@ function App(): React.JSX.Element {
           if (latestRunId.current !== currentRunId || submittedRunIds.current.has(currentRunId)) return;
           submittedRunIds.current.add(currentRunId);
           setFinishedRun({ runId: currentRunId, result, outcome, submittedRank: null,
-            submissionPending: true, recordError: null });
+          submissionPending: result.mode !== 'story', recordError: null });
           setScreen('result');
+          if (result.mode === 'story') return;
           void browserRunGateway.submitRun(result).then((record) => {
             if (latestRunId.current !== currentRunId) return;
             setFinishedRun((current) => current?.runId === currentRunId

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { CharacterId } from '../characters/characterTypes';
-import type { RunnerFinishOutcome, RunnerResult, RunnerSnapshot } from './runnerTypes';
+import type { RunnerFinishOutcome, RunnerMode, RunnerResult, RunnerSnapshot, StoryStageId } from './runnerTypes';
 import type { RunnerInputBridge } from './RunnerInput';
 import { RunnerScene } from './RunnerScene';
 import type { RunnerEvent } from './runnerEvents';
@@ -15,6 +15,8 @@ export type RunnerGameCallbacks = {
 export function createRunnerGameConfig(
   parent: HTMLElement,
   characterId: CharacterId,
+  mode: RunnerMode,
+  storyStageId: StoryStageId | null,
   inputBridge: RunnerInputBridge,
   callbacks: RunnerGameCallbacks,
   tutorialEnabled: boolean,
@@ -34,6 +36,8 @@ export function createRunnerGameConfig(
     callbacks: {
       preBoot: (game) => {
         game.registry.set('characterId', characterId);
+        game.registry.set('runnerMode', mode);
+        game.registry.set('storyStageId', storyStageId);
         game.registry.set('inputBridge', inputBridge);
         game.registry.set('onSnapshot', callbacks.onSnapshot);
         game.registry.set('onFinished', callbacks.onFinished);
