@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CharacterPreview } from '../components/CharacterPreview';
+import { SelectorRunnerPreview } from '../components/SelectorRunnerPreview';
 import { CharacterAbilityIcon } from '../components/CharacterAbilityIcon';
 import { CHARACTERS, getCharacter, resolveCharacterId } from '../../game/characters/characterCatalog';
 import { getCharacterPassive } from '../../game/characters/characterAbilities';
@@ -16,6 +16,28 @@ const SHORT_NAMES: Readonly<Record<CharacterId, string>> = {
   'tokino-mary': '메리',
   'goth-student': '토아',
   'cogane-rang': '랑',
+};
+const SELECTOR_ART: Readonly<Record<CharacterId, { portrait: string; runFrames: readonly string[] }>> = {
+  'player-default': {
+    portrait: '/assets/character/selector-art/aokumo-rin.webp',
+    runFrames: Array.from({ length: 12 }, (_, i) => `/assets/character/selector-art/runs/player-default/run-${String(i + 1).padStart(2, '0')}.png`),
+  },
+  'hanayo-hiyori': {
+    portrait: '/assets/character/selector-art/hanayo-hiyori.webp',
+    runFrames: Array.from({ length: 12 }, (_, i) => `/assets/character/selector-art/runs/hanayo-hiyori/run-${String(i + 1).padStart(2, '0')}.webp`),
+  },
+  'tokino-mary': {
+    portrait: '/assets/character/selector-art/tokino-mary.webp',
+    runFrames: Array.from({ length: 12 }, (_, i) => `/assets/character/selector-art/runs/tokino-mary/run-${String(i + 1).padStart(2, '0')}.webp`),
+  },
+  'goth-student': {
+    portrait: '/assets/character/selector-art/shizuki-toa.webp',
+    runFrames: Array.from({ length: 12 }, (_, i) => `/assets/character/selector-art/runs/goth-student/run-${String(i + 1).padStart(2, '0')}.webp`),
+  },
+  'cogane-rang': {
+    portrait: '/assets/character/selector-art/cogane-rang.webp',
+    runFrames: Array.from({ length: 12 }, (_, i) => `/assets/character/selector-art/runs/cogane-rang/run-${String(i + 1).padStart(2, '0')}.webp`),
+  },
 };
 
 export type CharacterSelectProps = {
@@ -50,7 +72,8 @@ export function CharacterSelect({ selectedCharacterId, onConfirm, onBack }: Char
                 type="button" key={character.id} aria-label={character.displayName} aria-pressed={selected}
                 disabled={!character.available} onClick={() => setCandidateCharacterId(character.id)}>
                 <span className="character-card__art character-card__art--runner">
-                  <CharacterPreview character={character} selected={false} animation="idle" variant="roster" />
+                  <img className="character-card__illustration" src={SELECTOR_ART[character.id].portrait}
+                    alt="" draggable={false} />
                   {!character.available && <span className="character-card__coming-soon">준비 중</span>}
                   {selected && <span className="character-card__selected-marker">선택됨</span>}
                 </span>
@@ -76,7 +99,7 @@ export function CharacterSelect({ selectedCharacterId, onConfirm, onBack }: Char
                 className={`selector-runway__runner${character.id === candidateCharacterId ? ' is-selected' : ''}`}
                 style={{ '--character-accent': character.accentColor } as React.CSSProperties}
                 key={character.id} data-testid={`selector-runner-${character.id}`} aria-hidden="true">
-                <CharacterPreview character={character} selected animation="run" variant="runway" />
+                <SelectorRunnerPreview characterId={character.id} frames={SELECTOR_ART[character.id].runFrames} />
               </span>
             ))}
           </div>
