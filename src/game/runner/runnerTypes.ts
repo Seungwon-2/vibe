@@ -2,14 +2,24 @@ import type { CharacterId } from '../characters/characterTypes';
 
 export type RunnerPhase = 'countdown' | 'running' | 'paused' | 'finished';
 export type RunnerFinishOutcome = 'personal-best' | 'completed';
-export type RunnerFinishReason = 'timeout' | 'pit';
+export type RunnerFinishReason = 'timeout' | 'pit' | 'lives-exhausted' | 'stage-complete';
+export type RunnerMode = 'endless' | 'story';
 export type RunnerPickupKind = 'coin' | 'time' | 'giant';
 export type RunnerBiomeId = 'dawn-city' | 'moonlit-forest' | 'crystal-mine' | 'cloud-skyway';
+export type StoryStageId = RunnerBiomeId;
+export type StoryChallengeId = 'no-hit' | 'coin-target';
 export type RunnerGateId = 'gate-2000' | 'gate-4000' | 'gate-6000' | 'gate-8000' | 'gate-10000';
 
 export type RunnerSnapshot = Readonly<{
   phase: RunnerPhase;
   characterId: CharacterId;
+  /** Optional during migration; populated by the mode-aware simulation task. */
+  mode?: RunnerMode;
+  storyStageId?: StoryStageId | null;
+  livesRemaining?: number;
+  nearMissScore?: number;
+  hitsTaken?: number;
+  stageSpeedBoostRemainingMs?: number;
   elapsedMs: number;
   remainingMs: number;
   distanceMeters: number;
@@ -35,6 +45,12 @@ export type RunnerSnapshot = Readonly<{
 
 export type RunnerResult = Readonly<{
   characterId: CharacterId;
+  /** Optional during migration; populated by the mode-aware simulation task. */
+  mode?: RunnerMode;
+  storyStageId?: StoryStageId | null;
+  hitsTaken?: number;
+  nearMissScore?: number;
+  completedStage?: boolean;
   distanceMeters: number;
   coins: number;
   durationMs: number;

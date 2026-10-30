@@ -2,20 +2,21 @@
 
 ## Active Plan
 
-None. `2026-10-30-selector-viewport-and-game-sprites` is complete.
+[Runner Modes, Progression, and Cosmetics](./plans/2026-10-30-runner-modes-progression.md)
 
 ## Active Phase
 
-None.
+[P01 Mode and Profile Foundation](./phases/2026-10-30-runner-modes-progression/P01-mode-and-profile-foundation/phase.md)
 
 ## Active Task
 
-None.
+[T02 Local Profile Store](./phases/2026-10-30-runner-modes-progression/P01-mode-and-profile-foundation/T02-local-profile-store.md)
 
 ## Status
 
-Completed `2026-10-30-selector-viewport-and-game-sprites`: selector is viewport-constrained, while gameplay and result previews use the supplied quality motion frames at the same 96px logical scale and hitbox sizes.
+- T01 domain types and the four-stage Story catalog are implemented.
+- Validation passed with npm run typecheck. No tests were added or run.
 
 ## Next Step
 
-Next: continue with the next planned project task.
+Implement validated local profile persistence, including exact-once coin settlement and one-time reward claims.
