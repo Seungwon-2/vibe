@@ -54,6 +54,7 @@ function advanceSegment(state: RunnerSnapshot, deltaMs: number, gateCount = stat
     passiveEffectRemainingMs: Math.max(0, state.passiveEffectRemainingMs - deltaMs),
     slideGuardRemainingMs: Math.max(0, state.slideGuardRemainingMs - deltaMs),
     slideGuardCooldownRemainingMs: Math.max(0, state.slideGuardCooldownRemainingMs - deltaMs),
+    giantRemainingMs: Math.max(0, state.giantRemainingMs - deltaMs),
     biomeId: getBiomeForDistance(distanceMeters).id,
   };
 }
@@ -112,6 +113,7 @@ export function createRunnerSnapshot(characterId: CharacterId, now: Date = new D
     worldDistance: 0,
     speedUnitsPerSecond: RUNNER_CONFIG.initialSpeedUnitsPerSecond,
     coins: 0,
+    giantRemainingMs: 0,
     collectedPickupIds: [],
     passedGateIds: [],
     staggerRemainingMs: 0,
@@ -162,6 +164,7 @@ export function finishRunner(
     : {
       ...state,
       phase: 'finished' as const,
+      giantRemainingMs: 0,
       remainingMs: 0,
       finishedAtElapsedMs: state.elapsedMs,
       finishReason: reason,
@@ -194,6 +197,7 @@ export function advanceRunner(
         passiveEffectRemainingMs: Math.max(0, current.passiveEffectRemainingMs - frozenMs),
         slideGuardRemainingMs: Math.max(0, current.slideGuardRemainingMs - frozenMs),
         slideGuardCooldownRemainingMs: Math.max(0, current.slideGuardCooldownRemainingMs - frozenMs),
+        giantRemainingMs: Math.max(0, current.giantRemainingMs - frozenMs),
       };
       unspentMs = Math.max(0, unspentMs - frozenMs);
       if (current.remainingMs <= EPSILON) return finishRunner(current);
@@ -240,6 +244,9 @@ export function collectPickup(
       state.collectedPickupIds.includes(pickup.id)) return state;
 
   const collectedPickupIds = [...state.collectedPickupIds, pickup.id];
+  if (pickup.kind === 'giant') {
+    return { ...state, giantRemainingMs: RUNNER_CONFIG.giantDurationMs, collectedPickupIds };
+  }
   if (pickup.kind === 'coin') {
     return { ...state, coins: state.coins + 1, collectedPickupIds };
   }
@@ -259,6 +266,7 @@ export function applyCollision(state: RunnerSnapshot, sliding = false): RunnerSn
   if (state.phase !== 'running' || state.protectionRemainingMs > 0 || state.remainingMs <= 0) {
     return state;
   }
+  if (state.giantRemainingMs > 0) return state;
   const passive = getCharacterPassive(state.characterId);
   if (passive.id === 'toa-ghost-glide' && sliding && state.slideGuardRemainingMs > 0) {
     return {
@@ -293,6 +301,7 @@ export function applyPitFall(state: RunnerSnapshot): { state: RunnerSnapshot; bl
     return {
       state: {
         ...state,
+        giantRemainingMs: 0,
         passiveChargesRemaining: state.passiveChargesRemaining - 1,
         passiveEffectRemainingMs: 700,
         protectionRemainingMs: RUNNER_CONFIG.protectionMs,

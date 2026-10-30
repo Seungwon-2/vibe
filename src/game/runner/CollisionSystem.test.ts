@@ -32,6 +32,13 @@ describe('hazard collision', () => {
     expect(guarded.state).toMatchObject({ remainingMs: 90_000, passiveChargesRemaining: 1, protectionRemainingMs: 1_200 });
   });
 
+  it('treats ordinary hazard overlap as passed while giant is active', () => {
+    const initial = { ...startRunner(createRunnerSnapshot('player-default')), giantRemainingMs: 1_000 };
+    expect(tryResolveHazardHit(initial)).toMatchObject({
+      state: initial, hit: false, blockedByPassive: false, passiveId: null, result: null,
+    });
+  });
+
   it('finishes once when a collision depletes the remaining timer', () => {
     const initial = startRunner(createRunnerSnapshot('player-default'));
     const hit = tryResolveHazardHit({ ...initial, remainingMs: 4_000 });

@@ -106,6 +106,30 @@ describe('RunnerSimulation', () => {
     expect(collectPickup(pauseRunner(rin), { id: 'coin-b', kind: 'coin' }).coins).toBe(0);
   });
 
+  it('activates and refreshes giant for four seconds without changing score or timer', () => {
+    const initial = running();
+    const giant = collectPickup(initial, { id: 'giant-0', kind: 'giant' });
+    expect(giant).toMatchObject({ giantRemainingMs: 4_000, remainingMs: 90_000, coins: 0 });
+    expect(collectPickup(giant, { id: 'giant-0', kind: 'giant' })).toBe(giant);
+    const halfway = advanceRunner(giant, 1_500).state;
+    expect(halfway.giantRemainingMs).toBe(2_500);
+    const refresh = collectPickup(halfway, { id: 'giant-1', kind: 'giant' });
+    expect(refresh.giantRemainingMs).toBe(4_000);
+    expect(advanceRunner(pauseRunner(refresh), 2_000).state.giantRemainingMs).toBe(4_000);
+    expect(advanceRunner(refresh, 4_000).state.giantRemainingMs).toBe(0);
+  });
+
+  it('expires giant during stagger while keeping pits lethal and clearing it on Hiyori rescue', () => {
+    const giant = { ...running(), giantRemainingMs: 2_000, staggerRemainingMs: 1_200 };
+    const frozen = advanceRunner(giant, 1_000).state;
+    expect(frozen.distanceMeters).toBe(giant.distanceMeters);
+    expect(frozen.giantRemainingMs).toBe(1_000);
+    const fatal = applyPitFall({ ...running(), giantRemainingMs: 2_000 });
+    expect(fatal.state).toMatchObject({ phase: 'finished', finishReason: 'pit', giantRemainingMs: 0 });
+    const rescue = applyPitFall({ ...running('hanayo-hiyori'), giantRemainingMs: 2_000 });
+    expect(rescue.state).toMatchObject({ phase: 'running', passiveChargesRemaining: 1, giantRemainingMs: 0 });
+  });
+
   it('keeps standard collision penalties for non-guard characters', () => {
     const rin = running();
     const mary = running('tokino-mary');
@@ -125,6 +149,12 @@ describe('RunnerSimulation', () => {
     expect(fatal.phase).toBe('finished');
     expect(fatal.remainingMs).toBe(0);
     expect(fatal.finishedAtElapsedMs).toBe(0);
+  });
+
+  it('lets giant ignore ordinary hazards without consuming passives or applying penalties', () => {
+    const giant = { ...running('hanayo-hiyori'), giantRemainingMs: 1_000 };
+    expect(applyCollision(giant)).toBe(giant);
+    expect(giant.passiveChargesRemaining).toBe(2);
   });
 
   it('gives Hiyori two mixed collision/pit guards without penalties, then restores normal outcomes', () => {
@@ -149,7 +179,7 @@ describe('RunnerSimulation', () => {
 
     const afterProtection = advanceRunner(pitRescue.state, RUNNER_CONFIG.protectionMs).state;
     const thirdCollision = applyCollision(afterProtection);
-    expect(thirdCollision.remainingMs).toBe(initial.remainingMs - RUNNER_CONFIG.collisionPenaltyMs);
+    expect(thirdCollision.remainingMs).toBe(afterProtection.remainingMs - RUNNER_CONFIG.collisionPenaltyMs);
     expect(thirdCollision.staggerRemainingMs).toBe(RUNNER_CONFIG.staggerMs);
     const fatalPit = applyPitFall(pitRescue.state);
     expect(fatalPit.blockedByPassive).toBe(false);

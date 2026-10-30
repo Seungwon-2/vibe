@@ -3,7 +3,7 @@ import type { CharacterId } from '../characters/characterTypes';
 export type RunnerPhase = 'countdown' | 'running' | 'paused' | 'finished';
 export type RunnerFinishOutcome = 'personal-best' | 'completed';
 export type RunnerFinishReason = 'timeout' | 'pit';
-export type RunnerPickupKind = 'coin' | 'time';
+export type RunnerPickupKind = 'coin' | 'time' | 'giant';
 export type RunnerBiomeId = 'dawn-city' | 'moonlit-forest' | 'crystal-mine' | 'cloud-skyway';
 export type RunnerGateId = 'gate-2000' | 'gate-4000' | 'gate-6000' | 'gate-8000' | 'gate-10000';
 
@@ -16,6 +16,7 @@ export type RunnerSnapshot = Readonly<{
   worldDistance: number;
   speedUnitsPerSecond: number;
   coins: number;
+  giantRemainingMs: number;
   collectedPickupIds: readonly string[];
   passedGateIds: readonly RunnerGateId[];
   staggerRemainingMs: number;

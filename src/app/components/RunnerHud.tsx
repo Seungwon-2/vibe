@@ -13,6 +13,7 @@ export type RunnerHudProps = {
 
 export type RunnerHudCue =
   | Readonly<{ id: string; kind: 'pickup' | 'gate'; awardedMs: number }>
+  | Readonly<{ id: string; kind: 'giant' }>
   | Readonly<{ id: string; kind: 'passive-triggered'; passiveId: 'hiyori-guard'; remainingCharges: number; trigger: 'obstacle' | 'pit' }>
   | Readonly<{ id: string; kind: 'passive-triggered'; passiveId: 'toa-ghost-glide'; remainingCharges: 0; trigger: 'slide' }>;
 
@@ -35,8 +36,9 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
     : BIOME_LABELS[snapshot.biomeId];
   const warning = snapshot.remainingMs <= 10_000;
   const passive = getCharacterPassive(character.id);
-  const showBonus = recentBonus !== null && (recentBonus.kind === 'passive-triggered' || recentBonus.awardedMs > 0);
-  const bonusSeconds = recentBonus && recentBonus.kind !== 'passive-triggered'
+  const showBonus = recentBonus !== null && (recentBonus.kind === 'passive-triggered' ||
+    recentBonus.kind === 'giant' || recentBonus.awardedMs > 0);
+  const bonusSeconds = recentBonus && recentBonus.kind !== 'passive-triggered' && recentBonus.kind !== 'giant'
     ? Math.max(1, Math.floor(recentBonus.awardedMs / 1_000)) : 0;
   const passiveCue = recentBonus?.kind === 'passive-triggered'
     ? recentBonus.passiveId === 'toa-ghost-glide'
@@ -65,6 +67,11 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
       </div>
       <div className="runner-hud__details">
         <span>{landmark}</span>
+        {snapshot.giantRemainingMs > 0 && (
+          <span className="runner-hud__powerup" role="timer" aria-label={`거대화 ${Math.ceil(snapshot.giantRemainingMs / 1_000)}초 남음`}>
+            ✦ 거대화 · {Math.ceil(snapshot.giantRemainingMs / 1_000)}초
+          </span>
+        )}
         <span className="runner-hud__passive" style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
           {passive.icon && <CharacterAbilityIcon icon={passive.icon} accentColor={character.accentColor} size={28} />}
           <span><strong>{passive.name}</strong><small>{passive.effectLabel}</small></span>
@@ -78,7 +85,7 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
       </div>
       {showBonus && (
         <span key={recentBonus.id} className={`runner-hud__bonus${passiveCue ? ' is-passive-cue' : ''}`} role="status">
-          {passiveCue ?? `+${bonusSeconds}초`}
+          {passiveCue ?? (recentBonus.kind === 'giant' ? '거대화!' : `+${bonusSeconds}초`)}
         </span>
       )}
     </div>

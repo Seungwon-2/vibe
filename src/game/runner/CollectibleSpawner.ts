@@ -52,6 +52,16 @@ export function drawPickupArt(
     return;
   }
 
+  if (kind === 'giant') {
+    art.fillStyle(0xffd66e).fillCircle(0, 0, 11);
+    art.lineStyle(2, p.hazardContrast, 0.96).strokeCircle(0, 0, 11);
+    art.fillStyle(0xfff4bd).fillTriangle(0, -9, 3, -2, 9, 0)
+      .fillTriangle(9, 0, 3, 2, 0, 9).fillTriangle(0, 9, -3, 2, -9, 0)
+      .fillTriangle(-9, 0, -3, -2, 0, -9);
+    art.fillStyle(0xffffff).fillCircle(0, 0, 3);
+    return;
+  }
+
   art.fillStyle(p.pickupTime).fillTriangle(0, -11, 10, 0, 0, 11)
     .fillTriangle(0, -11, 0, 11, -10, 0);
   art.lineStyle(2, p.hazardContrast, 0.96).lineBetween(0, -11, 10, 0)
@@ -179,7 +189,26 @@ export function generatePickupSchedule(maxDistanceMeters: number): readonly Pick
     optionalPickups.push({ id: `air-${Math.round((distanceMeters - 480) / RUNNER_CONFIG.optionalJumpCoinSpacingMeters)}`,
       kind: 'coin', distanceMeters, heightUnits: 116, optionalJump: true });
   }
-  return Object.freeze([...safePickups, ...optionalPickups]
+  const existingPickups = [...safePickups, ...optionalPickups];
+  const giantPickups: PickupDefinition[] = [];
+  let giantIndex = 0;
+  for (let target = RUNNER_CONFIG.giantPickupFirstDistanceMeters; target <= maxDistanceMeters;
+    target += RUNNER_CONFIG.giantPickupSpacingMeters) {
+    const offsets = Array.from(
+      { length: RUNNER_CONFIG.giantPickupSearchRadiusMeters * 2 + 1 },
+      (_, index) => index - RUNNER_CONFIG.giantPickupSearchRadiusMeters,
+    ).sort((left, right) => Math.abs(left) - Math.abs(right) || left - right);
+    const distanceMeters = offsets.map((offset) => target + offset).find((candidate) =>
+      candidate >= SAFE_PICKUP_START_METERS && candidate <= maxDistanceMeters &&
+      isPickupDistanceSafe(candidate, 52, hazards, horizon) &&
+      [...existingPickups, ...giantPickups].every((pickup) =>
+        Math.abs(pickup.distanceMeters - candidate) >= 30),
+    );
+    if (distanceMeters === undefined) continue;
+    giantPickups.push({ id: `giant-${giantIndex++}`, kind: 'giant', distanceMeters,
+      heightUnits: 52, optionalJump: false });
+  }
+  return Object.freeze([...existingPickups, ...giantPickups]
     .sort((left, right) => left.distanceMeters - right.distanceMeters || left.id.localeCompare(right.id)));
 }
 

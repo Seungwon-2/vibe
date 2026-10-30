@@ -147,7 +147,8 @@ export class RunnerScene extends Phaser.Scene {
     this.player.setHurt(state.staggerRemainingMs > 0);
     this.player.setProtected(state.protectionRemainingMs);
     this.player.setPassiveEffect(state.passiveEffectRemainingMs);
-    this.drawPassiveEffect(state.passiveEffectRemainingMs, state.slideGuardRemainingMs);
+    this.player.setGiant(state.giantRemainingMs > 0);
+    this.drawPassiveEffect(state.passiveEffectRemainingMs, state.slideGuardRemainingMs, state.giantRemainingMs);
     this.spawner.update(state);
     this.collectibles.update(state);
     this.pits.update(state);
@@ -180,14 +181,21 @@ export class RunnerScene extends Phaser.Scene {
     this.eventEmitter.snapshot(snapshot, this.time.now, force);
   }
 
-  private drawPassiveEffect(remainingMs: number, slideGuardRemainingMs: number): void {
+  private drawPassiveEffect(remainingMs: number, slideGuardRemainingMs: number, giantRemainingMs: number): void {
     this.passiveEffectArt.clear();
     const hiyoriActive = this.snapshot.characterId === 'hanayo-hiyori' && remainingMs > 0;
     const toaActive = this.snapshot.characterId === 'goth-student' &&
       ((this.player.isSliding && slideGuardRemainingMs > 0) || remainingMs > 0);
-    if (!hiyoriActive && !toaActive) return;
     const x = RUNNER_PLAYER_X;
     const y = this.player.gameObject.y - 38;
+    if (giantRemainingMs > 0) {
+      this.passiveEffectArt.fillStyle(0xffd66e, 0.12).fillCircle(x, y, 58);
+      this.passiveEffectArt.lineStyle(3, 0xffdf83, 0.9).strokeCircle(x, y, 52);
+      this.passiveEffectArt.fillStyle(0xfff1b7, 0.9)
+        .fillCircle(x - 42, y - 38, 3).fillCircle(x + 44, y - 24, 2)
+        .fillCircle(x + 38, y + 40, 3);
+    }
+    if (!hiyoriActive && !toaActive) return;
     if (toaActive) {
       this.passiveEffectArt.fillStyle(0x9b68e8, 0.24).fillEllipse(x - 30, y + 9, 56, 24)
         .fillEllipse(x - 55, y + 14, 40, 16);
@@ -208,6 +216,7 @@ export class RunnerScene extends Phaser.Scene {
     if (next === this.snapshot) return;
     const awardedMs = next.remainingMs - this.snapshot.remainingMs;
     this.publish(next, true);
+    this.player.setGiant(next.giantRemainingMs > 0);
     this.eventEmitter.pickup(pickup.id, pickup.kind, awardedMs);
   };
 
@@ -234,6 +243,7 @@ export class RunnerScene extends Phaser.Scene {
       this.heldKeyboardActions.clear();
       this.inputBridge.clear();
       this.player.setPassiveEffect(state.passiveEffectRemainingMs);
+      this.player.setGiant(state.giantRemainingMs > 0);
       this.player.beginPitRescue();
       this.eventEmitter.passiveTriggered(state.passiveChargesRemaining, 'pit');
       const safeY = this.player.gameObject.y;
@@ -261,6 +271,8 @@ export class RunnerScene extends Phaser.Scene {
     this.heldKeyboardActions.clear();
     this.inputBridge.clear();
     this.player.beginPitFall();
+    this.player.setGiant(false);
+    this.passiveEffectArt.clear();
     this.pitFallTween = this.tweens.add({
       targets: this.player.gameObject,
       y: 620,

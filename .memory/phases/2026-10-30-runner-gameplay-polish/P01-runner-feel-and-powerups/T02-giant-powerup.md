@@ -1,6 +1,6 @@
 # Task: T02 Giant Power-Up
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -27,7 +27,7 @@ Add a visible, timed giant item that automatically lets the runner pass through 
 
 - Add `'giant'` to `RunnerPickupKind` and `giantRemainingMs: number` to `RunnerSnapshot`.
 - Add config fields `giantDurationMs: 4_000`, `giantPickupFirstDistanceMeters: 3_000`, `giantPickupSpacingMeters: 1_360`, and `giantPickupSearchRadiusMeters: 180`.
-- In `generatePickupSchedule(maxDistanceMeters)`, generate giant targets `first + n * spacing` through the requested maximum. For each target, search integer-meter candidates nearest-first within the configured radius. Reuse `isPickupDistanceSafe` for hazard-art/collider/pit/gate clearance, and reject candidates within 100m of any already scheduled pickup. Add `{ id: 'giant-N', kind: 'giant', distanceMeters, heightUnits: 52, optionalJump: false }`; omit it if no safe candidate exists.
+- In `generatePickupSchedule(maxDistanceMeters)`, generate giant targets `first + n * spacing` through the requested maximum. For each target, search integer-meter candidates nearest-first within the configured radius. Reuse `isPickupDistanceSafe` for hazard-art/collider/pit/gate clearance, and reject candidates within 30m of any already scheduled pickup so the art and sensors do not crowd each other. A 100m exclusion leaves no positions because existing safe coins are spaced about 125m apart. Add `{ id: 'giant-N', kind: 'giant', distanceMeters, heightUnits: 52, optionalJump: false }`; omit it if no safe candidate exists.
 - Preserve existing time-pickup slots, coin counts where safe placement permits, optional jump coins, and deterministic sorting. A giant pickup must never share a distance with a coin/time pickup.
 - Extend `drawPickupArt` with a distinct biome-aware golden/star silhouette for `giant`; do not treat every non-coin item as a time item.
 - Continue creating the item sensor as a circle with the selected character's current pickup radius. Giant pickup art remains decorative; collision geometry remains code-owned.
@@ -68,11 +68,11 @@ Add a visible, timed giant item that automatically lets the runner pass through 
 
 ## Acceptance Criteria
 
-- [ ] Giant items are scheduled deterministically only at safe non-overlapping locations.
-- [ ] Giant lasts and refreshes to four seconds; course pause does not consume its timer.
-- [ ] Ordinary obstacle collisions have no penalty during giant; pits remain fatal.
-- [ ] The enlarged art is visible while physical collision dimensions remain equal to the non-giant pose.
-- [ ] HUD and pickup cue identify giant and show its remaining duration without changing coins or timer.
+- [x] Giant items are scheduled deterministically only at safe non-overlapping locations.
+- [x] Giant lasts and refreshes to four seconds; course pause does not consume its timer.
+- [x] Ordinary obstacle collisions have no penalty during giant; pits remain fatal.
+- [x] The enlarged art is visible while physical collision dimensions remain equal to the non-giant pose.
+- [x] HUD and pickup cue identify giant and show its remaining duration without changing coins or timer.
 
 ## Validation
 
@@ -95,6 +95,6 @@ Task: T02-giant-powerup
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed (`npm run test -- src/game/runner/CollectibleSpawner.test.ts src/game/runner/RunnerSimulation.test.ts src/game/runner/CollisionSystem.test.ts src/game/runner/RunnerPlayer.test.ts src/app/components/RunnerHud.test.tsx src/app/screens/RunScreen.test.tsx`; `npm run build`)
+- commit: task commit created on `project02`

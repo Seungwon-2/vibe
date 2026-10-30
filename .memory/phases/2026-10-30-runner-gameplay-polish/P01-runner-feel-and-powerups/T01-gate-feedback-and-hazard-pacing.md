@@ -85,4 +85,4 @@ Task: T01-gate-feedback-and-hazard-pacing
 
 - [x] Implementation complete
 - [x] Validation passed (`npm run test -- src/game/runner/hazardPatterns.test.ts src/app/screens/RunScreen.test.tsx`; `npm run build`)
-- commit: pending
+- commit: `5a26c1d`

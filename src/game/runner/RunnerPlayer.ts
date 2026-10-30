@@ -21,6 +21,7 @@ export class RunnerPlayer {
   private passiveRescuing = false;
   private pitFalling = false;
   private passiveEffectActive = false;
+  private giantActive = false;
   private animation: RunnerAnimation | null = null;
   private airPhase: AirPhase = 'ascending';
   private poseKey = '';
@@ -107,6 +108,13 @@ export class RunnerPlayer {
     else this.sprite.clearTint();
   }
 
+  setGiant(active: boolean): void {
+    if (active === this.giantActive) return;
+    this.giantActive = active;
+    this.poseKey = '';
+    this.applyPose();
+  }
+
   beginPitRescue(): void {
     if (this.finished || this.passiveRescuing) return;
     this.passiveRescuing = true;
@@ -155,6 +163,7 @@ export class RunnerPlayer {
     this.slidingHeld = false;
     this.hurt = false;
     this.setPassiveEffect(0);
+    this.setGiant(false);
     this.grounded = true;
     this.sprite.setAlpha(1);
     this.play(outcome);
@@ -206,23 +215,26 @@ export class RunnerPlayer {
   }
 
   private applyPose(): void {
+    const visualScale = this.giantActive ? 1.25 : 1;
     if (this.animation === 'slide') {
       const pose = getSlidePose(this.characterId);
-      if (this.poseKey === pose.key) return;
-      this.poseKey = pose.key;
-      this.sprite.setScale(pose.scaleX, pose.scaleY);
+      const poseKey = `slide:${pose.key}:giant:${this.giantActive}`;
+      if (this.poseKey === poseKey) return;
+      this.poseKey = poseKey;
+      this.sprite.setScale(pose.scaleX * visualScale, pose.scaleY * visualScale);
       this.sprite.y = pose.spriteY;
       this.body.updateFromGameObject();
-      this.body.setSize(pose.sourceBodyWidth, pose.sourceBodyHeight, false);
-      this.body.setOffset(pose.offsetX, pose.offsetY);
+      this.body.setSize(pose.sourceBodyWidth / visualScale, pose.sourceBodyHeight / visualScale, false);
+      this.body.setOffset(pose.offsetX / visualScale, pose.offsetY / visualScale);
     } else {
-      if (this.poseKey === 'standing') return;
-      this.poseKey = 'standing';
-      this.sprite.setScale(1);
+      const poseKey = `standing:giant:${this.giantActive}`;
+      if (this.poseKey === poseKey) return;
+      this.poseKey = poseKey;
+      this.sprite.setScale(visualScale);
       if (this.grounded) this.sprite.y = STANDING_SPRITE_Y;
       this.body.updateFromGameObject();
-      this.body.setSize(STANDING_BODY_WIDTH, STANDING_BODY_HEIGHT, false);
-      this.body.setOffset(28, STANDING_BODY_OFFSET_Y);
+      this.body.setSize(STANDING_BODY_WIDTH / visualScale, STANDING_BODY_HEIGHT / visualScale, false);
+      this.body.setOffset(28 / visualScale, STANDING_BODY_OFFSET_Y / visualScale);
     }
     this.body.updateFromGameObject();
     this.body.prev.copy(this.body.position);

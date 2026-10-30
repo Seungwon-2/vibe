@@ -80,6 +80,15 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
     }, 1_200);
   }
 
+  function showGiantCue(id: string): void {
+    if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
+    setRecentBonus({ id, kind: 'giant' });
+    bonusTimeout.current = setTimeout(() => {
+      bonusTimeout.current = null;
+      setRecentBonus(null);
+    }, 1_200);
+  }
+
   function pauseRun(): void {
     clearBonus();
     clearGateBurst();
@@ -162,6 +171,9 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
     } else if (event.type === 'pickup' && event.kind === 'time') {
       if (event.awardedMs > 0) browserRunnerAudio.playEffect('time-pickup');
       if (event.awardedMs > 0) showBonusCue(event.pickupId, 'pickup', event.awardedMs);
+    } else if (event.type === 'pickup' && event.kind === 'giant') {
+      browserRunnerAudio.playEffect('time-pickup');
+      showGiantCue(event.pickupId);
     } else if (event.type === 'gate') {
       browserRunnerAudio.playEffect('gate');
       showGateBurst();
@@ -182,7 +194,8 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
         <div><span className="eyebrow">RUNNING ACTION</span><strong>{character.displayName}</strong></div>
         <button type="button" onClick={requestExit}>나가기</button>
       </header>
-      <div className={`runner-stage${gateBurstActive ? ' is-gate-boosting' : ''}`} role="region" aria-label="러닝 게임 화면">
+      <div className={`runner-stage${gateBurstActive ? ' is-gate-boosting' : ''}${snapshot.giantRemainingMs > 0 ? ' is-giant-active' : ''}`}
+        role="region" aria-label="러닝 게임 화면">
         <RunnerGame characterId={characterId} inputBridge={inputBridge} paused={paused}
           tutorialEnabled={tutorialEnabled}
           onSnapshot={(next) => {

@@ -45,7 +45,7 @@ function makeGraphics() {
 
 function makeDisplayObject() {
   const calls: Record<string, ReturnType<typeof vi.fn>> = {};
-  const body = { setAllowGravity: vi.fn(), setImmovable: vi.fn(), setSize: vi.fn() };
+  const body = { setAllowGravity: vi.fn(), setImmovable: vi.fn(), setSize: vi.fn(), setCircle: vi.fn() };
   let proxy: Record<string, unknown>;
   proxy = new Proxy({ body } as Record<string, unknown>, {
     get: (_target, property) => {
@@ -87,7 +87,7 @@ describe('authored collectible schedule', () => {
   it('generates a stable safe-route stream with 100–150m cadence and time items replacing coins', () => {
     const generated = generatePickupSchedule(15_000);
     expect(generated).toEqual(PICKUP_SCHEDULE);
-    const safe = generated.filter((item) => !item.optionalJump);
+    const safe = generated.filter((item) => !item.optionalJump && item.kind !== 'giant');
     expect(safe[0]).toMatchObject({ distanceMeters: 160, heightUnits: 52, optionalJump: false });
     const knownHazards: { distanceMeters: number; definition: HazardDefinition }[] = [];
     for (let patternIndex = 0; ; patternIndex += 1) {
@@ -131,6 +131,18 @@ describe('authored collectible schedule', () => {
     expect(optional.length).toBeGreaterThan(0);
     expect(optional.every((pickup) => pickup.kind === 'coin' && pickup.heightUnits === 116)).toBe(true);
     expect(optional.length).toBeLessThan(25); // unsafe authored slots are omitted
+  });
+
+  it('schedules giant pickups deterministically outside course hazards, landmarks, and other pickups', () => {
+    const generated = generatePickupSchedule(15_000);
+    const giants = generated.filter(({ kind }) => kind === 'giant');
+    expect(giants.length).toBeGreaterThan(5);
+    expect(giants).toEqual(generatePickupSchedule(15_000).filter(({ kind }) => kind === 'giant'));
+    expect(giants.every(({ heightUnits, optionalJump }) => heightUnits === 52 && !optionalJump)).toBe(true);
+    for (const giant of giants) {
+      expect(generated.filter((item) => item.id !== giant.id).every((item) =>
+        Math.abs(item.distanceMeters - giant.distanceMeters) >= 30)).toBe(true);
+    }
   });
 
   it('keeps every pickup outside low and overhead hazard art and collision bounds', () => {
@@ -210,6 +222,12 @@ describe('themed pickup art', () => {
       expect(time.fillStyle).toHaveBeenCalledWith(biome.palette.pickupTime);
       expect(time.fillStyle).not.toHaveBeenCalledWith(biome.palette.pickupCoin);
       expect(time.lineStyle).toHaveBeenCalledWith(2, biome.palette.hazardContrast, 0.96);
+
+      const giant = makeGraphics();
+      drawPickupArt(giant as unknown as Phaser.GameObjects.Graphics, 'giant', biome);
+      expect(giant.fillCircle).toHaveBeenCalledWith(0, 0, 11);
+      expect(giant.fillTriangle).toHaveBeenCalledTimes(4);
+      expect(giant.fillStyle).toHaveBeenCalledWith(0xffd66e);
     }
   });
 
@@ -226,7 +244,7 @@ describe('themed pickup art', () => {
 
     spawner.update(snapshot(0));
     expect((mock.scene.add.rectangle as ReturnType<typeof vi.fn>)).toHaveBeenCalledWith(
-      0, 0, 24, 24, 0xffffff, 0,
+      0, 0, getPickupBodySize('player-default'), getPickupBodySize('player-default'), 0xffffff, 0,
     );
     const firstPickupX = RUNNER_PLAYER_X + PICKUP_SCHEDULE[0].distanceMeters / METERS_PER_WORLD_UNIT;
     expect(mock.rectangles[0].calls.setPosition).toHaveBeenCalledWith(firstPickupX,

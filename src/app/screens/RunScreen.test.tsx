@@ -32,6 +32,7 @@ vi.mock('../../game/runner/RunnerGame', () => ({
         onEvent({ type: 'pickup', pickupId: 'coin-1', kind: 'coin', awardedMs: 0 });
         onEvent({ type: 'pickup', pickupId: 'time-1', kind: 'time', awardedMs: 3_000 });
         onEvent({ type: 'pickup', pickupId: 'time-2', kind: 'time', awardedMs: 0 });
+        onEvent({ type: 'pickup', pickupId: 'giant-0', kind: 'giant', awardedMs: 0 });
         onEvent({ type: 'gate', gateId: 'gate-2000', awardedMs: 20_000 });
         onEvent({ type: 'hazard-hit' });
         onEvent({ type: 'pit-fall-started' });
@@ -62,7 +63,7 @@ describe('RunScreen', () => {
     render(<RunScreen {...audioProps} characterId="hanayo-hiyori" onFinish={vi.fn()} onExit={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'play effects' }));
     expect(audioMock.playEffect.mock.calls).toEqual([
-      ['jump'], ['double-jump'], ['slide'], ['coin'], ['time-pickup'], ['gate'], ['hit'], ['fall'], ['hiyori-defense'],
+      ['jump'], ['double-jump'], ['slide'], ['coin'], ['time-pickup'], ['time-pickup'], ['gate'], ['hit'], ['fall'], ['hiyori-defense'],
     ]);
   });
 

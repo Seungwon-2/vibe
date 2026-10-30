@@ -54,6 +54,17 @@ describe('RunnerHud', () => {
         remainingCharges: 1, trigger: 'pit' }} onPause={vi.fn()} />);
     expect(screen.getByRole('status')).toHaveTextContent('벚꽃 수호 · 낭떠러지 방어 · 남은 1회');
   });
+
+  it('shows giant duration and a pickup cue without reporting it as a time bonus', () => {
+    const { rerender } = render(<RunnerHud snapshot={snapshot({ giantRemainingMs: 2_200 })}
+      character={getCharacter('player-default')} recentBonus={null} onPause={vi.fn()} />);
+    expect(screen.getByRole('timer', { name: '거대화 3초 남음' })).toBeInTheDocument();
+    rerender(<RunnerHud snapshot={snapshot({ giantRemainingMs: 0 })} character={getCharacter('player-default')}
+      recentBonus={{ id: 'giant-0', kind: 'giant' }} onPause={vi.fn()} />);
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('거대화!');
+    expect(screen.queryByText('+0초')).not.toBeInTheDocument();
+  });
 });
 
 describe('overlays', () => {
