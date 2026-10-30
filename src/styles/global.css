@@ -1897,6 +1897,9 @@ body:has(.selector-shell--runner),
   flex: initial;
   flex-direction: column;
   overflow: hidden;
+  /* Clear the old fifth-card rule that placed Rang on a hidden second row. */
+  grid-column: auto !important;
+  grid-row: auto !important;
 }
 
 .selector-shell.selector-shell--runner .character-card__art.character-card__art--runner {
