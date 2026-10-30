@@ -1,19 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { CharacterSelect } from './app/screens/CharacterSelect';
 import { MainMenu } from './app/screens/MainMenu';
+import { ModeSelect } from './app/screens/ModeSelect';
 import { RankingScreen } from './app/screens/RankingScreen';
 import { RunResult } from './app/screens/RunResult';
 import { RunScreen } from './app/screens/RunScreen';
+import { StageSelect } from './app/screens/StageSelect';
 import type { CharacterId } from './game/characters/characterTypes';
-import type { RunnerFinishOutcome, RunnerResult } from './game/runner/runnerTypes';
+import type { RunnerFinishOutcome, RunnerMode, RunnerResult, StoryStageId } from './game/runner/runnerTypes';
 import { browserPersonalBestStore } from './services/PersonalBestStore';
 import { browserRunGateway } from './services/LocalRunGateway';
 import type { RankedRunRecord } from './services/RunGateway';
+import { browserPlayerProfileStore } from './services/LocalPlayerProfileStore';
 import { shouldShowRunnerTutorial } from './game/runner/runnerTutorial';
 import { browserRunnerAudio } from './audio/RunnerAudioManager';
 import { DEFAULT_AUDIO_PREFERENCES, loadAudioPreferences, saveAudioPreferences, type AudioPreferences } from './audio/audioPreferences';
 
-type AppScreen = 'menu' | 'character-select' | 'run' | 'result' | 'rankings';
+type AppScreen = 'menu' | 'mode-select' | 'character-select' | 'stage-select' | 'run' | 'result' | 'rankings';
 type FinishedRun = {
   runId: number;
   result: RunnerResult;
@@ -35,6 +38,9 @@ function App(): React.JSX.Element {
   });
   const [screen, setScreen] = useState<AppScreen>('menu');
   const [selectedCharacterId, setSelectedCharacterId] = useState<CharacterId>('player-default');
+  const [selectedMode, setSelectedMode] = useState<RunnerMode>('endless');
+  const [selectedStageId, setSelectedStageId] = useState<StoryStageId>('dawn-city');
+  const [profile] = useState(() => browserPlayerProfileStore.load());
   const [finishedRun, setFinishedRun] = useState<FinishedRun | null>(null);
   const [runId, setRunId] = useState(0);
   const latestRunId = useRef(0);
@@ -119,9 +125,28 @@ function App(): React.JSX.Element {
   if (screen === 'character-select') {
     return (
       <CharacterSelect selectedCharacterId={selectedCharacterId}
-        onConfirm={(characterId) => startRun(characterId)}
+        profile={profile}
+        onConfirm={(characterId) => {
+          setSelectedCharacterId(characterId);
+          if (selectedMode === 'story') setScreen('stage-select');
+          else startRun(characterId);
+        }}
         onBack={() => setScreen('menu')} />
     );
+  }
+
+  if (screen === 'mode-select') {
+    return <ModeSelect onSelect={(mode) => {
+      setSelectedMode(mode);
+      setScreen('character-select');
+    }} onBack={() => setScreen('menu')} />;
+  }
+
+  if (screen === 'stage-select') {
+    return <StageSelect profile={profile} selectedStageId={selectedStageId}
+      onSelect={setSelectedStageId}
+      onStart={() => startRun(selectedCharacterId)}
+      onBack={() => setScreen('character-select')} />;
   }
 
   if (screen === 'run') {
@@ -175,7 +200,7 @@ function App(): React.JSX.Element {
     );
   }
 
-  return <MainMenu onStart={() => setScreen('character-select')} onRankings={openRankings}
+  return <MainMenu onStart={() => setScreen('mode-select')} onRankings={openRankings}
     topRun={overallBest} topRunLoading={bestLoading} topRunError={bestError}
     showControlsHelp={shouldShowRunnerTutorial()} audioPreferences={audioPreferences}
     onAudioPreferencesChange={setAudioPreferences} onUnlockAudio={() => browserRunnerAudio.unlock()} />;

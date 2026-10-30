@@ -1,6 +1,6 @@
 # Task: T03 Mode Navigation
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -70,6 +70,6 @@ Add Title → Mode Select → Character Select → Story Stage Select navigation
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed: npm run typecheck
+- commit: see task commit

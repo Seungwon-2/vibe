@@ -65,4 +65,4 @@ Persist wallet, unlocks, Story progress, achievements, cosmetics, and per-charac
 
 - [x] Implementation complete
 - [x] Validation passed: npm run typecheck
-- commit: see task commit
+- commit: 60909ff
