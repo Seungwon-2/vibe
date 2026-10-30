@@ -1,13 +1,16 @@
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
+import { getCharacterPassive } from '../characters/characterAbilities';
 import type { HazardBand, HazardDefinition, HazardKind, HazardPattern } from './hazardTypes';
 
 export const PATTERN_START_METERS = RUNNER_CONFIG.earlyPatternStartMeters;
 // Retained for early-course callers; dense patterns use their own slot spacing.
 export const PATTERN_SPACING_METERS = RUNNER_CONFIG.earlyPatternSpacingMeters;
 export const METERS_PER_WORLD_UNIT = RUNNER_CONFIG.metersPerWorldUnit;
-// Five shared gate bonuses plus Rin's additional 5-point passive.
+// Gate bonuses stack additively; Rin's passive multiplies the resulting speed.
+const RIN_SPEED_BONUS = getCharacterPassive('player-default');
 export const MAX_RUN_SPEED_UNITS_PER_SECOND = RUNNER_CONFIG.maxSpeedUnitsPerSecond *
-  (1 + (RUNNER_GATE_DISTANCES_M.length + 1) * RUNNER_CONFIG.gateSpeedBonusRatio);
+  (1 + RUNNER_GATE_DISTANCES_M.length * RUNNER_CONFIG.gateSpeedBonusRatio) *
+  (RIN_SPEED_BONUS.id === 'rin-speed' ? 1 + RIN_SPEED_BONUS.speedBonusRatio : 1);
 
 const DENSE_WAVE_PERIOD_METERS =
   (RUNNER_CONFIG.densePatternsPerSection - 1) * RUNNER_CONFIG.densePatternSpacingMeters +

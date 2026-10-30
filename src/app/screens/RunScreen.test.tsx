@@ -66,6 +66,20 @@ describe('RunScreen', () => {
     ]);
   });
 
+  it('shows a brief gate speed burst and restarts its duration on another gate', () => {
+    vi.useFakeTimers();
+    render(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'play effects' }));
+    const stage = document.querySelector('.runner-stage');
+    expect(stage).toHaveClass('is-gate-boosting');
+    act(() => vi.advanceTimersByTime(600));
+    fireEvent.click(screen.getByRole('button', { name: 'play effects' }));
+    act(() => vi.advanceTimersByTime(649));
+    expect(stage).toHaveClass('is-gate-boosting');
+    act(() => vi.advanceTimersByTime(1));
+    expect(stage).not.toHaveClass('is-gate-boosting');
+  });
+
   it('shows control help on the first run and hides it after persistence on the next run', () => {
     const firstRun = render(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
     expect(screen.getByTestId('run-game')).toHaveAttribute('data-tutorial-enabled', 'true');

@@ -42,6 +42,8 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
   const [inputBridge] = useState(() => new RunnerInputBridge());
   const [tutorialEnabled] = useState(() => shouldShowRunnerTutorial());
   const bonusTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const gateBurstTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [gateBurstActive, setGateBurstActive] = useState(false);
   const passiveCueSequence = useRef(0);
 
   useEffect(() => {
@@ -52,6 +54,21 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
     if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
     bonusTimeout.current = null;
     setRecentBonus(null);
+  }
+
+  function clearGateBurst(): void {
+    if (gateBurstTimeout.current !== null) clearTimeout(gateBurstTimeout.current);
+    gateBurstTimeout.current = null;
+    setGateBurstActive(false);
+  }
+
+  function showGateBurst(): void {
+    if (gateBurstTimeout.current !== null) clearTimeout(gateBurstTimeout.current);
+    setGateBurstActive(true);
+    gateBurstTimeout.current = setTimeout(() => {
+      gateBurstTimeout.current = null;
+      setGateBurstActive(false);
+    }, 650);
   }
 
   function showBonusCue(id: string, kind: 'pickup' | 'gate', awardedMs: number): void {
@@ -65,6 +82,7 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
 
   function pauseRun(): void {
     clearBonus();
+    clearGateBurst();
     setPaused(true);
   }
 
@@ -77,6 +95,9 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
         if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
         bonusTimeout.current = null;
         setRecentBonus(null);
+        if (gateBurstTimeout.current !== null) clearTimeout(gateBurstTimeout.current);
+        gateBurstTimeout.current = null;
+        setGateBurstActive(false);
         setPaused(true);
       }
     };
@@ -88,6 +109,7 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
       window.removeEventListener('resize', updateOrientation);
       window.removeEventListener('orientationchange', updateOrientation);
       if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
+      if (gateBurstTimeout.current !== null) clearTimeout(gateBurstTimeout.current);
       inputBridge.clear();
     };
   }, [inputBridge]);
@@ -101,6 +123,9 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
         if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
         bonusTimeout.current = null;
         setRecentBonus(null);
+        if (gateBurstTimeout.current !== null) clearTimeout(gateBurstTimeout.current);
+        gateBurstTimeout.current = null;
+        setGateBurstActive(false);
         inputBridge.clear();
         setPaused(true);
       }
@@ -139,6 +164,7 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
       if (event.awardedMs > 0) showBonusCue(event.pickupId, 'pickup', event.awardedMs);
     } else if (event.type === 'gate') {
       browserRunnerAudio.playEffect('gate');
+      showGateBurst();
       if (event.awardedMs > 0) {
         showBonusCue(event.gateId, event.type, event.awardedMs);
       }
@@ -156,7 +182,7 @@ export function RunScreen({ characterId, onFinish, onExit, audioPreferences, onA
         <div><span className="eyebrow">RUNNING ACTION</span><strong>{character.displayName}</strong></div>
         <button type="button" onClick={requestExit}>나가기</button>
       </header>
-      <div className="runner-stage" role="region" aria-label="러닝 게임 화면">
+      <div className={`runner-stage${gateBurstActive ? ' is-gate-boosting' : ''}`} role="region" aria-label="러닝 게임 화면">
         <RunnerGame characterId={characterId} inputBridge={inputBridge} paused={paused}
           tutorialEnabled={tutorialEnabled}
           onSnapshot={(next) => {

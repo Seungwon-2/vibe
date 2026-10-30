@@ -14,17 +14,17 @@ describe('authored hazard patterns', () => {
       ['combination', 2_000, 6_000], ['advanced', 6_000, null],
     ]);
     expect([0, 1, 2, 3, 4, 5, 6, 7, 8].map(getPatternStartDistance))
-      .toEqual([360, 600, 1_440, 2_000, 2_300, 2_600, 3_150, 3_450, 3_750]);
+      .toEqual([360, 600, 1_440, 2_000, 2_360, 2_720, 3_360, 3_720, 4_080]);
     expect(getPatternForDistance(360).id).toBe('tutorial-jump');
     expect(getPatternForDistance(600).id).toBe('tutorial-slide');
     expect(getPatternForDistance(1_440).id).toBe('practice-jump');
     expect(getPatternForDistance(1_999).maxDistanceMeters).toBe(2_000);
     expect(getPatternForDistance(2_000).id).toBe('combo-jump');
-    expect(getPatternForDistance(2_300).id).toBe('combo-slide');
-    expect(getPatternForDistance(2_600).id).toBe('combo-jump');
-    expect(getPatternForDistance(3_150).id).toBe('combo-slide');
+    expect(getPatternForDistance(2_360).id).toBe('combo-slide');
+    expect(getPatternForDistance(2_720).id).toBe('combo-jump');
+    expect(getPatternForDistance(3_360).id).toBe('combo-slide');
     expect(getPatternForDistance(5_999).maxDistanceMeters).toBe(6_000);
-    expect(getPatternForDistance(6_000).id).toBe('advanced-jump');
+    expect(getPatternForDistance(6_000).id).toBe('advanced-slide');
     expect(getPatternForDistance(6_000)).toBe(getPatternForDistance(6_000));
     expect(() => getPatternStartDistance(-1)).toThrow(RangeError);
   });
@@ -43,29 +43,32 @@ describe('authored hazard patterns', () => {
     }
   });
 
-  it('alternates three-action waves and leaves a 550m recovery span', () => {
+  it('alternates three-action waves and leaves a 640m recovery span', () => {
     expect(RUNNER_CONFIG.densePatternsPerSection).toBe(3);
-    expect(RUNNER_CONFIG.densePatternSpacingMeters).toBe(300);
-    expect(RUNNER_CONFIG.denseRecoveryGapMeters).toBe(550);
+    expect(RUNNER_CONFIG.densePatternSpacingMeters).toBe(360);
+    expect(RUNNER_CONFIG.denseRecoveryGapMeters).toBe(640);
     const period = (RUNNER_CONFIG.densePatternsPerSection - 1) *
       RUNNER_CONFIG.densePatternSpacingMeters + RUNNER_CONFIG.denseRecoveryGapMeters;
-    expect(period).toBe(1_150);
+    expect(period).toBe(1_360);
     const starts = Array.from({ length: 18 }, (_, index) => getPatternStartDistance(index + 3));
     for (let wave = 0; wave < 6; wave += 1) {
       const start = wave * 3;
       expect(starts.slice(start, start + 3)).toEqual([
         2_000 + wave * period,
-        2_000 + wave * period + 300,
-        2_000 + wave * period + 600,
+        2_000 + wave * period + 360,
+        2_000 + wave * period + 720,
       ]);
-      if (wave < 5) expect(starts[start + 3] - starts[start + 2]).toBe(550);
+      if (wave < 5) expect(starts[start + 3] - starts[start + 2]).toBe(640);
       const kinds = starts.slice(start, start + 3).map((distance) =>
         getPatternForDistance(distance).obstacles[0].kind,
       );
       expect(kinds).toEqual(wave % 2 === 0
         ? ['ground', 'overhead', 'ground'] : ['overhead', 'ground', 'overhead']);
     }
-    expect(starts[3] - starts[0]).toBe(1_150);
+    expect(starts[3] - starts[0]).toBe(1_360);
+    const fastestMetersPerSecond = MAX_RUN_SPEED_UNITS_PER_SECOND * METERS_PER_WORLD_UNIT;
+    expect(RUNNER_CONFIG.densePatternSpacingMeters / fastestMetersPerSecond).toBeGreaterThanOrEqual(2.5);
+    expect(RUNNER_CONFIG.denseRecoveryGapMeters / fastestMetersPerSecond).toBeGreaterThanOrEqual(4.5);
   });
 
   it('keeps generated hazards outside pit zones and preserves one second of action recovery at fastest speed', () => {
@@ -102,7 +105,7 @@ describe('authored hazard patterns', () => {
         METERS_PER_WORLD_UNIT / MAX_RUN_SPEED_UNITS_PER_SECOND;
       const precedingActionSeconds = scheduled[index - 1].kind === 'ground' ? 0.95 : 0.6;
       const minimumRecoverySeconds = scheduled[index - 1].at === 360 && scheduled[index].at === 600
-        ? 0.75 // the first tutorial jump is intentionally followed by the slide lesson at 600m
+        ? 0.7 // the first tutorial jump is intentionally followed by the slide lesson at 600m
         : 1;
       expect(gapSeconds - precedingActionSeconds).toBeGreaterThanOrEqual(minimumRecoverySeconds);
     }
