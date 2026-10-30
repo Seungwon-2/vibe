@@ -2,20 +2,20 @@
 
 ## Active Plan
 
-[Selector Illustration and Fit](./plans/2026-10-30-selector-illustration-and-fit.md)
+[Selector Viewport and Game Sprites](./plans/2026-10-30-selector-viewport-and-game-sprites.md)
 
 ## Active Phase
 
-[P01 Selector Visuals](./phases/2026-10-30-selector-illustration-and-fit/P01-selector-visuals/phase.md)
+[P01 Viewport and Motion](./phases/2026-10-30-selector-viewport-and-game-sprites/P01-viewport-and-motion/phase.md)
 
 ## Active Task
 
-None — plan complete.
+[T02 Quality Gameplay Sprites](./phases/2026-10-30-selector-viewport-and-game-sprites/P01-viewport-and-motion/T02-quality-gameplay-sprites.md)
 
 ## Status
 
-Completed: cards use static high-resolution illustrations, only the lower preview rail animates with quality run frames, and the five-card roster stays on one row or scrolls horizontally on narrow screens.
+T01 complete: selector is constrained to the viewport with a one-row five-card landscape roster. Active work is migrating gameplay and result animation assets to supplied high-resolution frames without changing collisions.
 
 ## Next Step
 
-No active task. The selector illustration and fit task is complete; create or select the next plan when ready.
+Read T02 and load supplied quality action frames for the live player and result preview while retaining existing world-space hitboxes and foot baseline.

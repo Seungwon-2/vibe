@@ -23,6 +23,9 @@ describe('CharacterSelect', () => {
 
     const cards = [...document.querySelectorAll<HTMLButtonElement>('.character-card--runner')];
     expect(cards.map((card) => card.getAttribute('aria-label'))).toEqual(roster.map(({ name }) => name));
+    const rosterGroup = screen.getByRole('group', { name: '플레이할 캐릭터' });
+    expect(rosterGroup).toHaveAttribute('data-roster-layout', 'one-row');
+    expect(cards.every((card) => card.parentElement === rosterGroup)).toBe(true);
     expect(cards[0]).toHaveAttribute('aria-pressed', 'true');
 
     for (const [index, character] of roster.entries()) {

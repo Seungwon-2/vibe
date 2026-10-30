@@ -61,7 +61,8 @@ export function CharacterSelect({ selectedCharacterId, onConfirm, onBack }: Char
           <p className="selector-intro">캐릭터를 고른 뒤 아래의 달리기 버튼을 누르세요.</p>
         </header>
 
-        <div className="character-roster character-roster--runner" role="group" aria-label="플레이할 캐릭터">
+        <div className="character-roster character-roster--runner" data-roster-layout="one-row"
+          role="group" aria-label="플레이할 캐릭터">
           {SELECTOR_CHARACTERS.map((character) => {
             const selected = character.id === candidateCharacterId;
             const passive = getCharacterPassive(character.id);
