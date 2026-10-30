@@ -90,4 +90,4 @@ Task: T01-selector-art-and-fit
 
 - [x] Implementation complete
 - [x] Validation passed (`npm run test -- src/app/screens/CharacterSelect.test.tsx`; `npm run build`)
-- commit: pending
+- commit: `0ab4a29` (`fix(selector): use crisp art and keep five cards in one row`)
