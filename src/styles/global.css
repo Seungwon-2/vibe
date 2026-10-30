@@ -1303,3 +1303,185 @@ h1 {
   .selector-footer p { font-size: 0.68rem; }
   .selector-footer .selector-confirm { min-height: 42px; }
 }
+
+/* Stella Runner title scene adapted from the supplied standalone prototype. */
+.landing-shell.main-menu-scene {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 540px;
+  padding: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background: #17183f;
+  color: #fff;
+}
+.main-menu-hero,
+.main-menu-shade,
+.main-menu-starfield {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.main-menu-hero { z-index: 0; object-fit: cover; object-position: center 56%; animation: title-hero-drift 28s ease-in-out infinite alternate; }
+.main-menu-shade {
+  z-index: 1;
+  background: linear-gradient(90deg, rgb(12 17 53 / 78%) 0%, rgb(12 17 53 / 54%) 30%, rgb(12 17 53 / 12%) 76%),
+    linear-gradient(0deg, rgb(15 16 49 / 93%) 0%, rgb(15 16 49 / 82%) 18%, transparent 57%);
+}
+.main-menu-starfield {
+  z-index: 2;
+  opacity: 0.46;
+  background-image: radial-gradient(circle, rgb(255 255 255 / 88%) 0 1px, transparent 2px),
+    radial-gradient(circle, rgb(255 226 173 / 85%) 0 1.5px, transparent 2.5px);
+  background-position: 18px 24px, 90px 75px;
+  background-size: 160px 130px, 260px 230px;
+  mask-image: linear-gradient(180deg, #000 0%, transparent 74%);
+}
+.main-menu-card.title-card {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #fff;
+  text-align: left;
+}
+.main-menu-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: clamp(20px, 3.8vh, 38px) clamp(20px, 5vw, 72px) 0;
+  color: #fff;
+  letter-spacing: 0.16em;
+}
+.main-menu-brand { font-size: clamp(0.8rem, 1.2vw, 1rem); font-weight: 900; }
+.main-menu-edition { color: #fff0c7; font-size: 0.72rem; font-weight: 800; }
+.main-menu-copy {
+  width: min(calc(100% - 40px), 1000px);
+  margin: auto;
+  padding: 20px 0 clamp(20px, 6vh, 64px);
+  text-align: center;
+  text-shadow: 0 3px 20px rgb(14 14 47 / 68%);
+}
+.main-menu-copy .eyebrow { margin-bottom: 12px; color: #ffe1a7; font-weight: 800; letter-spacing: 0.18em; }
+.main-menu-copy h1 {
+  color: #fff;
+  font-size: clamp(3.2rem, 9vw, 8rem);
+  font-weight: 900;
+  letter-spacing: -0.075em;
+  line-height: 0.98;
+  text-shadow: 0 8px 34px rgb(14 14 47 / 65%);
+}
+.main-menu-copy h1 em { color: #fff0b5; font-style: normal; }
+.main-menu-copy h1 span { display: inline-block; margin-left: 0.12em; color: #ffd68c; font-size: 0.34em; vertical-align: top; }
+.main-menu-card .intro-copy { max-width: 42rem; margin: clamp(14px, 2.3vh, 24px) auto; color: #f6f2ff; font-size: clamp(0.95rem, 1.5vw, 1.2rem); line-height: 1.55; }
+.main-menu-card .main-menu-record {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  margin: 2px 0 0;
+  padding: 5px 14px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 999px;
+  background: rgb(14 20 61 / 46%);
+  color: #fff5d8;
+  font-size: clamp(0.78rem, 1.15vw, 0.94rem);
+  text-shadow: none;
+}
+.main-menu-dock {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.75fr) minmax(0, 1.4fr);
+  align-items: center;
+  gap: clamp(16px, 3vw, 40px);
+  padding: clamp(18px, 3vh, 30px) clamp(20px, 5vw, 72px) max(18px, env(safe-area-inset-bottom));
+  border-top: 1px solid rgb(255 255 255 / 22%);
+  background: linear-gradient(105deg, rgb(18 22 65 / 96%), rgb(37 29 76 / 94%) 68%, rgb(35 28 70 / 94%));
+  box-shadow: 0 -12px 36px rgb(11 12 43 / 28%);
+}
+.dock-copy { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
+.dock-copy strong { color: #fff4d5; font-size: clamp(1rem, 1.45vw, 1.25rem); }
+.dock-copy > span { color: #e0dcf3; font-size: clamp(0.78rem, 1vw, 0.9rem); }
+.main-menu-card .main-menu-help { margin: 5px 0 0; color: #c8c8e0; font-size: 0.78rem; }
+.main-menu-actions {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.2fr) repeat(3, minmax(110px, 0.8fr));
+  align-items: center;
+  gap: 9px;
+}
+.main-menu-actions .home-start {
+  min-height: 58px;
+  border: 1px solid rgb(255 238 194 / 75%);
+  background: linear-gradient(115deg, #ffdd8b, #ff9dba);
+  box-shadow: 0 10px 28px rgb(15 9 46 / 32%);
+  color: #34254c;
+  font-size: clamp(0.92rem, 1.25vw, 1.08rem);
+}
+.main-menu-actions .main-menu-secondary {
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 10px;
+  border-color: rgb(237 234 255 / 34%);
+  background: rgb(255 255 255 / 9%);
+  color: #fff;
+  font-size: clamp(0.72rem, 0.95vw, 0.86rem);
+  white-space: nowrap;
+}
+.main-menu-actions .main-menu-secondary:hover { border-color: #ffe1a7; background: rgb(255 255 255 / 17%); }
+.main-menu-actions button:focus-visible { outline-color: #ffe1a7; }
+@keyframes title-hero-drift { from { transform: scale(1); } to { transform: scale(1.035); } }
+
+@media (max-width: 900px) {
+  .main-menu-dock { grid-template-columns: 1fr; gap: 14px; }
+  .dock-copy { align-items: center; text-align: center; }
+  .main-menu-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .main-menu-actions .home-start { grid-column: 1 / -1; }
+}
+@media (max-width: 600px) {
+  .landing-shell.main-menu-scene { min-height: 540px; }
+  .main-menu-hero { object-position: 52% 52%; }
+  .main-menu-shade { background: linear-gradient(180deg, rgb(12 17 53 / 50%), rgb(12 17 53 / 20%) 32%, rgb(15 16 49 / 45%) 58%, rgb(15 16 49 / 94%) 78%); }
+  .main-menu-topbar { padding: max(16px, env(safe-area-inset-top)) 18px 0; }
+  .main-menu-edition { font-size: 0.62rem; }
+  .main-menu-copy { width: calc(100% - 32px); padding: 12px 0 18px; }
+  .main-menu-copy .eyebrow { font-size: 0.68rem; }
+  .main-menu-copy h1 { font-size: clamp(3rem, 14vw, 4.6rem); }
+  .main-menu-card .intro-copy { max-width: 22rem; margin: 12px auto; font-size: 0.88rem; }
+  .main-menu-card .main-menu-record { min-height: 30px; padding-inline: 10px; font-size: 0.72rem; }
+  .main-menu-dock { gap: 10px; padding: 14px 14px max(14px, env(safe-area-inset-bottom)); }
+  .dock-copy { gap: 3px; }
+  .dock-copy strong { font-size: 0.95rem; }
+  .dock-copy > span { font-size: 0.72rem; }
+  .main-menu-card .main-menu-help { font-size: 0.68rem; }
+  .main-menu-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+  .main-menu-actions .home-start { grid-column: 1 / -1; min-height: 50px; }
+  .main-menu-actions .main-menu-secondary { min-height: 40px; font-size: 0.68rem; }
+}
+@media (max-height: 620px) and (min-width: 601px) {
+  .main-menu-topbar { padding-top: 14px; }
+  .main-menu-copy { padding-block: 8px; }
+  .main-menu-copy h1 { font-size: clamp(3rem, 7vw, 5.5rem); }
+  .main-menu-card .intro-copy { margin-block: 10px; }
+  .main-menu-dock { gap: 16px; padding-block: 12px; }
+  .main-menu-actions .home-start { min-height: 48px; }
+  .main-menu-actions .main-menu-secondary { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .main-menu-hero { animation: none; }
+}

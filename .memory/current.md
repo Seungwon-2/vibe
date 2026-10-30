@@ -2,20 +2,20 @@
 
 ## Active Plan
 
-[Character Selector Layout Modes](./plans/2026-10-30-character-selector-layout-modes.md)
+[Stella Runner Title Screen](./plans/2026-10-30-stella-title-screen.md)
 
 ## Active Phase
 
-[P01 Selector Layout](./phases/2026-10-30-character-selector-layout-modes/P01-selector-layout/phase.md)
+[P01 Title Screen](./phases/2026-10-30-stella-title-screen/P01-title-screen/phase.md)
 
 ## Active Task
 
-[T01 Selector Layout Modes](./phases/2026-10-30-character-selector-layout-modes/P01-selector-layout/T01-selector-layout-modes.md)
+[T01 React Title Screen](./phases/2026-10-30-stella-title-screen/P01-title-screen/T01-react-title-screen.md)
 
 ## Status
 
-Selector layout modes are implemented, with normalized sprite display bounds and intentional portrait scrolling for short screens. Targeted selector tests and production build passed. Browser screenshot validation was unavailable; existing unrelated local changes remain unstaged.
+The React title screen now uses the supplied group illustration, retains existing menu actions, and omits the standalone download/disclaimer elements. Targeted menu tests and production build passed. Browser screenshot validation was unavailable; unrelated working-tree changes remain unstaged.
 
 ## Next Step
 
-The layout task is complete. The next requested visual task is refining title and selector colors; title artwork can be added under `public/assets/title/`.
+This title-screen task is complete. The next visual pass can tune title and selector colors after reviewing the updated local screen.
