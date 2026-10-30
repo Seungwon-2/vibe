@@ -104,6 +104,25 @@ describe('RunnerPlayer and input bridge', () => {
     expect(sprite.anims.play.mock.calls.filter(([key]) => key === 'player-default:jump-fall')).toHaveLength(1);
   });
 
+  it('keeps run frames through a giant jump descent, then restores falling frames when giant ends', () => {
+    const { player, body, sprite } = createPlayer('player-default');
+    player.setGiant(true);
+    expect(player.jump()).toBe(true);
+    body.blocked.down = false;
+    body.velocity.y = 80;
+
+    player.update(16);
+
+    expect(player.isGrounded).toBe(false);
+    expect(body.velocity.y).toBe(80);
+    expect(sprite.scaleX).toBe(1.35);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:run', true);
+
+    player.setGiant(false);
+    player.update(16);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:jump-fall', true);
+  });
+
   it('does not snap a descending jump to the floor when a stale floor flag is set', () => {
     const { player, body, sprite } = createPlayer('player-default');
     player.jump();
@@ -166,8 +185,8 @@ describe('RunnerPlayer and input bridge', () => {
     expect(sprite.scaleX).toBe(1.35);
     expect(body.width).toBeCloseTo(80, 8);
     expect(body.height).toBeCloseTo(48, 8);
-    expect(sprite.anims.play.mock.calls.length).toBe(animationCalls + 1);
-    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:slide', true);
+    expect(sprite.anims.play.mock.calls.length).toBe(animationCalls);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:run', true);
     player.setGiant(false);
     expect(sprite.scaleX).toBe(1);
     expect(body.width).toBeCloseTo(80, 8);

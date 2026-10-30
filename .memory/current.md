@@ -2,20 +2,20 @@
 
 ## Active Plan
 
-[Runner Speed and Giant Power-Up Refinement](./plans/2026-10-30-runner-speed-giant-refinement.md)
+[Runner Motion and Viewport Fit](./plans/2026-10-30-runner-motion-viewport-fit.md)
 
 ## Active Phase
 
-[P01 Speed and Giant Placement](./phases/2026-10-30-runner-speed-giant-refinement/P01-speed-and-giant-placement/phase.md)
+[P01 Motion and Layout](./phases/2026-10-30-runner-motion-viewport-fit/P01-motion-and-layout/phase.md)
 
 ## Active Task
 
-None. Runner speed and giant pickup refinement tasks are complete.
+[T02 Title and Selector Viewport Fit](./phases/2026-10-30-runner-motion-viewport-fit/P01-motion-and-layout/T02-title-selector-viewport-fit.md)
 
 ## Status
 
-Runner speed and giant pickup refinement are implemented and validated. Existing unrelated local changes remain unstaged.
+T01 now forces the run loop during giant while preserving airborne physics and slide hitbox sizing. T02 is active. Existing unrelated local changes remain unstaged.
 
 ## Next Step
 
-Gameplay speed and giant power-up tuning are complete. Next, run the updated game locally and evaluate the new pacing and wave coverage.
+Execute T02, validate title and selection screens at desktop and mobile viewport sizes, then commit only T02 changes.

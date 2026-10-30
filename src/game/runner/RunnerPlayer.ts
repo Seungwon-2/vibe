@@ -85,7 +85,7 @@ export class RunnerPlayer {
     }
     if (held && !this.grounded) return false;
     this.slidingHeld = held;
-    if (this.isSliding) this.play('slide');
+    if (this.isSliding) this.play(this.giantActive ? 'run' : 'slide');
     else if (this.animation === 'slide') this.play('run');
     this.applyPose();
     return !wasSliding && this.isSliding;
@@ -203,7 +203,7 @@ export class RunnerPlayer {
       this.grounded = false;
     }
     if (!this.grounded && this.body.velocity.y >= 0) this.airPhase = 'descending';
-    this.play(this.hurt ? 'hurt' : this.isSliding ? 'slide' :
+    this.play(this.hurt ? 'hurt' : this.giantActive ? 'run' : this.isSliding ? 'slide' :
       !this.grounded ? this.jumpsUsed === 2
         ? this.airPhase === 'descending' ? 'double-jump-fall' : 'doubleJump'
         : this.airPhase === 'descending' ? 'jump-fall' : 'jump' : 'run');
@@ -216,7 +216,7 @@ export class RunnerPlayer {
 
   private applyPose(): void {
     const visualScale = this.giantActive ? 1.35 : 1;
-    if (this.animation === 'slide') {
+    if (this.isSliding) {
       const pose = getSlidePose(this.characterId);
       const poseKey = `slide:${pose.key}:giant:${this.giantActive}`;
       if (this.poseKey === poseKey) return;
@@ -242,7 +242,7 @@ export class RunnerPlayer {
   }
 
   private snapToGround(): void {
-    this.sprite.y = this.animation === 'slide'
+    this.sprite.y = this.isSliding
       ? getSlidePose(this.characterId).spriteY
       : STANDING_SPRITE_Y;
     this.body.setVelocityY(0);
