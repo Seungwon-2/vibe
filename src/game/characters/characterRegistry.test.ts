@@ -18,11 +18,11 @@ const REQUIRED_ANIMATIONS: readonly CharacterAnimationName[] = [
 describe('runner character registry', () => {
   it('loads the five active characters with their names, colors, and assets', () => {
     expect(CHARACTERS.map(({ id, displayName, accentColor }) => [id, displayName, accentColor])).toEqual([
-      ['player-default', 'Aokumo Rin', '#2b66c0'],
-      ['goth-student', 'Shizuki Toa', '#513661'],
-      ['cogane-rang', 'Cogane Rang', '#c98743'],
-      ['hanayo-hiyori', 'Hanayo Hiyori', '#fca6d0'],
-      ['tokino-mary', 'Tokino Mary', '#6d929a'],
+      ['player-default', '아오쿠모 린', '#2b66c0'],
+      ['goth-student', '시즈키 토아', '#513661'],
+      ['cogane-rang', '코가네 랑', '#c98743'],
+      ['hanayo-hiyori', '하나요 히요리', '#fca6d0'],
+      ['tokino-mary', '토키노 메리', '#6d929a'],
     ]);
 
     for (const character of CHARACTERS) {
@@ -61,7 +61,7 @@ describe('runner character registry', () => {
     expect(resolveCharacterId(null)).toBe('player-default');
     expect(resolveCharacterId('goth-student')).toBe('goth-student');
     expect(resolveCharacterId('cogane-rang')).toBe('cogane-rang');
-    expect(getCharacter('goth-student').displayName).toBe('Shizuki Toa');
+    expect(getCharacter('goth-student').displayName).toBe('시즈키 토아');
     expect(() => getCharacter('moonwing' as never)).toThrow('Unknown character: moonwing');
     expect(() => getCharacter('unknown' as never)).toThrow('Unknown character: unknown');
   });

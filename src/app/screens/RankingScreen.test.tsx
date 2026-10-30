@@ -17,8 +17,8 @@ describe('RankingScreen', () => {
     render(<RankingScreen rows={rows} loading={false} error={null} onBack={vi.fn()} />);
     expect(screen.getByRole('heading', { name: '로컬 랭킹' })).toBeInTheDocument();
     expect(screen.getByRole('list', { name: '통합 달리기 랭킹' })).toBeInTheDocument();
-    expect(screen.getByText('Hanayo Hiyori')).toBeInTheDocument();
-    expect(screen.getByText('Cogane Rang')).toBeInTheDocument();
+    expect(screen.getByText('하나요 히요리')).toBeInTheDocument();
+    expect(screen.getByText('코가네 랑')).toBeInTheDocument();
     expect(screen.getByText('2,500m')).toBeInTheDocument();
     expect(screen.getByText('1,900m')).toBeInTheDocument();
     expect(screen.getByText(/8 코인/)).toBeInTheDocument();

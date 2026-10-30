@@ -2,20 +2,20 @@
 
 ## Active Plan
 
-[Title Art and Screen Backdrops](./plans/2026-10-30-title-art-and-screen-backdrops.md)
+[Character Selector Runner Layout](./plans/2026-10-30-character-selector-runner-layout.md)
 
 ## Active Phase
 
-[P01 Title and Backdrops](./phases/2026-10-30-title-art-and-screen-backdrops/P01-title-and-backdrops/phase.md)
+[P01 Character Selector](./phases/2026-10-30-character-selector-runner-layout/P01-character-selector/phase.md)
 
 ## Active Task
 
-[T01 Title Art and Screen Backdrops](./phases/2026-10-30-title-art-and-screen-backdrops/P01-title-and-backdrops/T01-title-art-backdrops.md)
+[T01 Reference Character Selector](./phases/2026-10-30-character-selector-runner-layout/P01-character-selector/T01-reference-character-selector.md)
 
 ## Status
 
-The title art is brighter with the heading placed in the sky. The same art now appears subtly behind the character selector and gameplay page, while the menu dock, cards, HUD, and Phaser stage retain their readable surfaces. Targeted tests and production build passed; browser screenshot review was unavailable.
+The selector now uses the reference's five-card layout with Korean names, passive icons and effects, and a five-character running preview lane. Selection and save IDs are unchanged. Targeted tests and the production build pass. The local app is available at `http://localhost:5173/`; screenshot review was unavailable in this session.
 
 ## Next Step
 
-Review the updated screens in the local browser when available, then continue with the planned title and character selection color refinement.
+Review the selector at `http://localhost:5173/` on desktop and narrow landscape/mobile sizes. If it looks right, continue with the next requested game polish task.

@@ -6,7 +6,7 @@ export type CharacterPreviewProps = {
   selected: boolean;
   animation?: CharacterAnimationName;
   loop?: boolean;
-  variant?: 'showcase' | 'roster';
+  variant?: 'showcase' | 'roster' | 'runway';
 };
 
 type SpriteStyle = CSSProperties & {
