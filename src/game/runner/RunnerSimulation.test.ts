@@ -24,7 +24,7 @@ describe('RunnerSimulation', () => {
     const initial = createRunnerSnapshot('player-default', EPOCH);
     expect(initial).toMatchObject({
       phase: 'countdown', remainingMs: 90_000, distanceMeters: 0,
-      speedUnitsPerSecond: 250, biomeId: 'dawn-city',
+      speedUnitsPerSecond: 275, biomeId: 'dawn-city',
     });
     expect(RUNNER_CONFIG.countdownMs).toBe(3_000);
     expect(advanceRunner(initial, 4_000)).toEqual({ state: initial, result: null });
@@ -33,7 +33,7 @@ describe('RunnerSimulation', () => {
     const afterSecond = advanceRunner(started, 1_000).state;
     expect(afterSecond.elapsedMs).toBe(1_000);
     expect(afterSecond.remainingMs).toBe(89_000);
-    expect(afterSecond.distanceMeters).toBeCloseTo(87.65, 1);
+    expect(afterSecond.distanceMeters).toBeCloseTo(96.41, 1);
     expect(afterSecond.worldDistance * RUNNER_CONFIG.metersPerWorldUnit)
       .toBeCloseTo(afterSecond.distanceMeters, 8);
     expect(advanceRunner(afterSecond, -100).state).toBe(afterSecond);
@@ -51,20 +51,20 @@ describe('RunnerSimulation', () => {
     expect(first.distanceMeters).toBeGreaterThan(2_000);
     expect(first.passedGateIds).toEqual(['gate-2000']);
     expect(first.biomeId).toBe('moonlit-forest');
-    expect(first.speedUnitsPerSecond).toBeGreaterThan(250);
+    expect(first.speedUnitsPerSecond).toBeGreaterThan(275);
 
     const afterRamp = advanceRunner(first, 60_000).state;
     expect(afterRamp.elapsedMs).toBe(90_000);
-    expect(afterRamp.speedUnitsPerSecond).toBeGreaterThan(325);
+    expect(afterRamp.speedUnitsPerSecond).toBeGreaterThan(357.5);
     expect(afterRamp.passedGateIds.length).toBeGreaterThanOrEqual(3);
     expect(afterRamp.remainingMs).toBeGreaterThan(0);
 
     const fiveGates = { ...afterRamp, elapsedMs: 90_000,
       passedGateIds: ['gate-2000', 'gate-4000', 'gate-6000', 'gate-8000', 'gate-10000'] as const };
     const atMaxRamp = advanceRunner(fiveGates, 1).state;
-    expect(atMaxRamp.speedUnitsPerSecond).toBeCloseTo(426.5625, 8);
+    expect(atMaxRamp.speedUnitsPerSecond).toBeCloseTo(469.21875, 8);
     const toaAtMaxRamp = advanceRunner({ ...fiveGates, characterId: 'goth-student' }, 1).state;
-    expect(toaAtMaxRamp.speedUnitsPerSecond).toBeCloseTo(406.25, 8);
+    expect(toaAtMaxRamp.speedUnitsPerSecond).toBeCloseTo(446.875, 8);
   });
 
   it('is independent of update chunk size even across gates and time expiry', () => {
@@ -207,22 +207,26 @@ describe('RunnerSimulation', () => {
     expect(expiredDuringFreeze.result).not.toBeNull();
   });
 
-  it('awards a gate reached before timeout but does not travel after the timer ends', () => {
+  it('awards every gate reached while bonus time keeps the run active', () => {
     const nearGate = {
       ...running(), distanceMeters: 1_990, worldDistance: 1_990 * 3, remainingMs: 500,
     };
-    const rescued = advanceRunner(nearGate, 30_000);
-    expect(rescued.state.passedGateIds).toEqual(['gate-2000']);
-    expect(rescued.state.phase).toBe('finished');
-    expect(rescued.state.elapsedMs).toBeCloseTo(20_500, 5);
+    const advanced = advanceRunner(nearGate, 30_000);
+    expect(advanced.state.passedGateIds).toEqual(['gate-2000', 'gate-4000']);
+    expect(advanced.state.phase).toBe('running');
+    expect(advanced.state.elapsedMs).toBe(30_000);
+    expect(advanced.state.distanceMeters).toBeGreaterThan(4_000);
 
-    const tooFar = {
+    const allGatesPassed = {
       ...running(), distanceMeters: 1_900, worldDistance: 1_900 * 3, remainingMs: 500,
+      passedGateIds: RUNNER_GATE_DISTANCES_M.map((distance) => `gate-${distance}` as const),
     };
-    const expired = advanceRunner(tooFar, 30_000);
-    expect(expired.state.passedGateIds).toEqual([]);
-    expect(expired.state.distanceMeters).toBeLessThan(2_000);
-    expect(expired.state.elapsedMs).toBe(500);
+    const atTimeout = advanceRunner(allGatesPassed, 500);
+    const overshot = advanceRunner(allGatesPassed, 30_000);
+    expect(overshot.state.phase).toBe('finished');
+    expect(overshot.state.remainingMs).toBe(0);
+    expect(overshot.state.elapsedMs).toBe(500);
+    expect(overshot.state.distanceMeters).toBeCloseTo(atTimeout.state.distanceMeters, 8);
   });
 
   it('keeps final results stable and rounds meters only at the result boundary', () => {

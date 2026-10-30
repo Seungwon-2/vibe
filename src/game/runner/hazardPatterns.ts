@@ -119,7 +119,7 @@ export function getPatternStartDistance(patternIndex: number): number {
   const waveIndex = Math.floor(denseSlotIndex / RUNNER_CONFIG.densePatternsPerSection);
   const slotIndex = denseSlotIndex % RUNNER_CONFIG.densePatternsPerSection;
   // Recovery starts after slot three; from first slot to next wave this is
-  // two 300m gaps plus the configured 550m clear interval (1,150m total).
+  // two 400m gaps plus the configured 720m clear interval (1,520m total).
   return DENSE_WAVE_FIRST_METERS + waveIndex * DENSE_WAVE_PERIOD_METERS +
     slotIndex * RUNNER_CONFIG.densePatternSpacingMeters;
 }
