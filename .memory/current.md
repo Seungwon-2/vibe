@@ -2,20 +2,20 @@
 
 ## Active Plan
 
-[Runner Motion and Viewport Fit](./plans/2026-10-30-runner-motion-viewport-fit.md)
+[Character Selector Layout Modes](./plans/2026-10-30-character-selector-layout-modes.md)
 
 ## Active Phase
 
-[P01 Motion and Layout](./phases/2026-10-30-runner-motion-viewport-fit/P01-motion-and-layout/phase.md)
+[P01 Selector Layout](./phases/2026-10-30-character-selector-layout-modes/P01-selector-layout/phase.md)
 
 ## Active Task
 
-[T02 Title and Selector Viewport Fit](./phases/2026-10-30-runner-motion-viewport-fit/P01-motion-and-layout/T02-title-selector-viewport-fit.md)
+[T01 Selector Layout Modes](./phases/2026-10-30-character-selector-layout-modes/P01-selector-layout/T01-selector-layout-modes.md)
 
 ## Status
 
-The giant animation and title/selector viewport-fit tasks are complete. Targeted tests and production build passed. Browser screenshot validation was unavailable; existing unrelated local changes remain unstaged.
+Selector layout modes are implemented, with normalized sprite display bounds and intentional portrait scrolling for short screens. Targeted selector tests and production build passed. Browser screenshot validation was unavailable; existing unrelated local changes remain unstaged.
 
 ## Next Step
 
-Proceed with the planned title and character-selector color refinement. The viewport-fit CSS is in place; confirm the requested viewport sizes in the local browser when available.
+The layout task is complete. The next requested visual task is refining title and selector colors; title artwork can be added under `public/assets/title/`.
