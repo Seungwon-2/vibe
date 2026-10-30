@@ -43,7 +43,11 @@ export class RunnerScene extends Phaser.Scene {
 
   preload(): void {
     const character = getCharacter(this.registry.get('characterId') as CharacterId);
-    this.load.atlas(character.textureKey, character.atlasUrl, character.atlasManifest);
+    const qualityFrames = new Map(character.qualityAnimations.run.map((frame) => [frame.textureKey, frame.url]));
+    for (const frames of Object.values(character.qualityAnimations)) {
+      for (const frame of frames) qualityFrames.set(frame.textureKey, frame.url);
+    }
+    for (const [textureKey, url] of qualityFrames) this.load.image(textureKey, url);
     this.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, this.handleLoadError, this);
   }
 
@@ -61,21 +65,21 @@ export class RunnerScene extends Phaser.Scene {
     this.passiveEffectArt = this.add.graphics().setDepth(3);
 
     const animationFrames = {
-      run: character.animations.run,
-      jump: character.animations.jump.slice(0, 4),
-      'jump-fall': character.animations.jump.slice(4),
+      run: character.qualityAnimations.run,
+      jump: character.qualityAnimations.jump.slice(0, 4),
+      'jump-fall': character.qualityAnimations.jump.slice(4),
       // A second jump reaches its apex after about 0.47s. All six frames at
       // 12 fps fit the ascent, including the spin recovery in frames 4–5.
-      doubleJump: character.animations.doubleJump,
-      'double-jump-fall': character.animations.doubleJump.slice(4),
+      doubleJump: character.qualityAnimations.doubleJump,
+      'double-jump-fall': character.qualityAnimations.doubleJump.slice(4),
       // The first curated slide is a tall entry pose; start at the low pose
       // so the visible art clears the overhead hazard at its native scale.
       slide: character.available
-        ? character.animations.slide.slice(2, 4)
-        : character.animations.slide.slice(1, 4),
-      hurt: getHurtAnimationFrames(character.animations.hurt),
-      victory: character.animations.victory,
-      gameOver: character.animations.gameOver,
+        ? character.qualityAnimations.slide.slice(2, 4)
+        : character.qualityAnimations.slide.slice(1, 4),
+      hurt: getHurtAnimationFrames(character.qualityAnimations.hurt),
+      victory: character.qualityAnimations.victory,
+      gameOver: character.qualityAnimations.gameOver,
     } as const;
     for (const [name, frames] of Object.entries(animationFrames)) {
       if (frames.length === 0) throw new Error(`Missing ${characterId}:${name} frames`);
@@ -85,7 +89,7 @@ export class RunnerScene extends Phaser.Scene {
         : isFall ? 6 : name === 'jump' ? 8 : 12;
       this.anims.create({
         key: `${characterId}:${name}`,
-        frames: frames.map((frame) => ({ key: character.textureKey, frame })),
+        frames: frames.map((frame) => ({ key: frame.textureKey })),
         frameRate,
         repeat: name === 'run' || isFall ? -1 : 0,
       });
@@ -95,7 +99,7 @@ export class RunnerScene extends Phaser.Scene {
     const floor = this.add.rectangle(0, RUNNER_GROUND_Y, 960, 70, 0xffffff, 0).setOrigin(0, 0);
     this.physics.add.existing(floor, true);
     const sprite = this.physics.add.sprite(
-      RUNNER_PLAYER_X, RUNNER_GROUND_Y, character.textureKey, character.animations.run[0],
+      RUNNER_PLAYER_X, RUNNER_GROUND_Y, character.qualityAnimations.run[0].textureKey,
     );
     this.physics.add.collider(sprite, floor);
     this.player = new RunnerPlayer(sprite, characterId);

@@ -2,9 +2,8 @@ import type Phaser from 'phaser';
 import { getCharacter } from '../characters/characterCatalog';
 import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterAnimationName, CharacterId } from '../characters/characterTypes';
-import { getSlidePose, getTerminalSpriteY, RUNNER_GROUND_Y, RUNNER_PLAYER_X,
-  STANDING_BODY_HEIGHT, STANDING_BODY_OFFSET_Y, STANDING_BODY_WIDTH,
-  STANDING_SPRITE_Y } from './runnerPose';
+import { getQualitySpriteY, getSlidePose, getTerminalSpriteY, RUNNER_GROUND_Y, RUNNER_PLAYER_X,
+  STANDING_BODY_HEIGHT, STANDING_BODY_WIDTH } from './runnerPose';
 
 export { RUNNER_PLAYER_X, RUNNER_GROUND_Y } from './runnerPose';
 const JUMP_IMPULSE = -420;
@@ -35,7 +34,7 @@ export class RunnerPlayer {
     this.passive = getCharacterPassive(characterId);
     this.character = getCharacter(characterId);
     sprite.setOrigin(0.5, 1);
-    sprite.setPosition(RUNNER_PLAYER_X, STANDING_SPRITE_Y);
+    sprite.setPosition(RUNNER_PLAYER_X, getQualitySpriteY(characterId));
     this.play('run');
     this.applyPose();
   }
@@ -215,26 +214,36 @@ export class RunnerPlayer {
   }
 
   private applyPose(): void {
-    const visualScale = this.giantActive ? 1.35 : 1;
+    const characterScale = this.character.qualityScale;
+    const giantScale = this.giantActive ? 1.35 : 1;
+    const visualScale = characterScale * giantScale;
     if (this.isSliding) {
       const pose = getSlidePose(this.characterId);
       const poseKey = `slide:${pose.key}:giant:${this.giantActive}`;
       if (this.poseKey === poseKey) return;
       this.poseKey = poseKey;
-      this.sprite.setScale(pose.scaleX * visualScale, pose.scaleY * visualScale);
-      this.sprite.y = pose.spriteY;
+      const scaleX = characterScale * pose.scaleX * giantScale;
+      const scaleY = characterScale * pose.scaleY * giantScale;
+      this.sprite.setScale(scaleX, scaleY);
+      this.sprite.y = getQualitySpriteY(this.characterId, pose.scaleY * giantScale);
       this.body.updateFromGameObject();
-      this.body.setSize(pose.sourceBodyWidth / visualScale, pose.sourceBodyHeight / visualScale, false);
-      this.body.setOffset(pose.offsetX / visualScale, pose.offsetY / visualScale);
+      const sourceBodyWidth = pose.bodyWidth / scaleX;
+      const sourceBodyHeight = (pose.sourceBodyHeight * pose.scaleY) / scaleY;
+      this.body.setSize(sourceBodyWidth, sourceBodyHeight, false);
+      this.body.setOffset((this.character.qualityFrameSize - sourceBodyWidth) / 2,
+        this.character.qualityPivotY - sourceBodyHeight);
     } else {
       const poseKey = `standing:giant:${this.giantActive}`;
       if (this.poseKey === poseKey) return;
       this.poseKey = poseKey;
       this.sprite.setScale(visualScale);
-      if (this.grounded) this.sprite.y = STANDING_SPRITE_Y;
+      if (this.grounded) this.sprite.y = getQualitySpriteY(this.characterId, giantScale);
       this.body.updateFromGameObject();
-      this.body.setSize(STANDING_BODY_WIDTH / visualScale, STANDING_BODY_HEIGHT / visualScale, false);
-      this.body.setOffset(28 / visualScale, STANDING_BODY_OFFSET_Y / visualScale);
+      const sourceBodyWidth = STANDING_BODY_WIDTH / visualScale;
+      const sourceBodyHeight = STANDING_BODY_HEIGHT / visualScale;
+      this.body.setSize(sourceBodyWidth, sourceBodyHeight, false);
+      this.body.setOffset((this.character.qualityFrameSize - sourceBodyWidth) / 2,
+        this.character.qualityPivotY - sourceBodyHeight);
     }
     this.body.updateFromGameObject();
     this.body.prev.copy(this.body.position);
@@ -243,8 +252,8 @@ export class RunnerPlayer {
 
   private snapToGround(): void {
     this.sprite.y = this.isSliding
-      ? getSlidePose(this.characterId).spriteY
-      : STANDING_SPRITE_Y;
+      ? getQualitySpriteY(this.characterId, getSlidePose(this.characterId).scaleY * (this.giantActive ? 1.35 : 1))
+      : getQualitySpriteY(this.characterId, this.giantActive ? 1.35 : 1);
     this.body.setVelocityY(0);
     this.body.updateFromGameObject();
     this.body.prev.copy(this.body.position);
@@ -256,7 +265,7 @@ export class RunnerPlayer {
     const key = `${this.characterId}:${name}`;
     const catalogName: CharacterAnimationName = name === 'jump-fall' ? 'jump'
       : name === 'double-jump-fall' ? 'doubleJump' : name;
-    if (this.character.animations[catalogName].length === 0) {
+    if (this.character.qualityAnimations[catalogName].length === 0) {
       throw new Error(`Missing ${this.characterId}:${catalogName} animation`);
     }
     this.sprite.anims.play(key, true);

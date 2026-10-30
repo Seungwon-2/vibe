@@ -2,20 +2,20 @@
 
 ## Active Plan
 
-[Selector Viewport and Game Sprites](./plans/2026-10-30-selector-viewport-and-game-sprites.md)
+None. `2026-10-30-selector-viewport-and-game-sprites` is complete.
 
 ## Active Phase
 
-[P01 Viewport and Motion](./phases/2026-10-30-selector-viewport-and-game-sprites/P01-viewport-and-motion/phase.md)
+None.
 
 ## Active Task
 
-[T02 Quality Gameplay Sprites](./phases/2026-10-30-selector-viewport-and-game-sprites/P01-viewport-and-motion/T02-quality-gameplay-sprites.md)
+None.
 
 ## Status
 
-T01 complete: selector is constrained to the viewport with a one-row five-card landscape roster. Active work is migrating gameplay and result animation assets to supplied high-resolution frames without changing collisions.
+Completed `2026-10-30-selector-viewport-and-game-sprites`: selector is viewport-constrained, while gameplay and result previews use the supplied quality motion frames at the same 96px logical scale and hitbox sizes.
 
 ## Next Step
 
-Read T02 and load supplied quality action frames for the live player and result preview while retaining existing world-space hitboxes and foot baseline.
+Next: continue with the next planned project task.

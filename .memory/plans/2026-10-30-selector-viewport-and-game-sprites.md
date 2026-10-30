@@ -8,7 +8,7 @@ Stop the character selector from creating document-level scroll or wrapping into
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | Make selector viewport-fit and migrate live runner visuals to supplied quality frames | [P01](../phases/2026-10-30-selector-viewport-and-game-sprites/P01-viewport-and-motion/phase.md) |
+| P01 | `done` | Make selector viewport-fit and migrate live runner visuals to supplied quality frames | [P01](../phases/2026-10-30-selector-viewport-and-game-sprites/P01-viewport-and-motion/phase.md) |
 
 ## Decisions
 
@@ -16,7 +16,7 @@ See [decision record](../decisions/2026-10-30-selector-viewport-and-game-sprites
 
 ## Completion Criteria
 
-- [ ] Landscape selector fits the viewport height without document-level vertical scrolling; five cards occupy a single row.
-- [ ] The live runner and result preview use the supplied quality motion frames for all five characters.
-- [ ] World size, feet baseline, jump behavior, slide pose, and collision boxes stay equivalent to the existing 96px logical design.
-- [ ] Focused tests and production build pass; changes are committed on `project02` without unrelated files.
+- [x] Landscape selector fits the viewport height without document-level vertical scrolling; five cards occupy a single row.
+- [x] The live runner and result preview use the supplied quality motion frames for all five characters.
+- [x] World size, feet baseline, jump behavior, slide pose, and collision boxes stay equivalent to the existing 96px logical design.
+- [x] Focused tests and production build pass; changes are committed on `project02` without unrelated files.

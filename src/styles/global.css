@@ -1815,6 +1815,51 @@ h1 {
   .selector-confirm--runner { transition: none; }
 }
 
+/* Quality PNG/WebP frames replace the 96px pixel-art atlas in UI previews. */
+.character-preview__sheet,
+.character-preview__sheet.is-animated {
+  position: absolute;
+  display: block;
+  max-width: none;
+  image-rendering: auto;
+  animation: none;
+  will-change: auto;
+}
+
+/* The selector itself is viewport-locked; narrow screens scroll cards horizontally. */
+html:has(.selector-shell--runner),
+body:has(.selector-shell--runner),
+#root:has(.selector-shell--runner) {
+  overflow: hidden;
+}
+
+.selector-shell.selector-shell--runner .selector-panel.selector-panel--runner {
+  grid-template-rows: auto minmax(0, 1fr) clamp(70px, 12vh, 126px) auto;
+}
+
+@media (min-width: 701px) {
+  .selector-shell.selector-shell--runner .character-roster.character-roster--runner {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr);
+    grid-auto-flow: column;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 700px) {
+  .selector-shell.selector-shell--runner .character-roster.character-roster--runner {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+  }
+  .selector-shell.selector-shell--runner .character-card.character-card--runner {
+    flex: 0 0 min(76vw, 260px);
+  }
+}
+
 /* Selector cards use the supplied clean illustrations; only the runway animates. */
 .selector-shell.selector-shell--runner .character-roster.character-roster--runner {
   display: grid;

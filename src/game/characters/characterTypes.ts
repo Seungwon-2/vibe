@@ -18,6 +18,7 @@ export type CharacterAnimationName =
   | 'victory'
   | 'gameOver';
 
+// Kept for migration tooling that validates the archived 96px atlases. Runtime rendering uses quality frames.
 export type RuntimeAtlasFrame = {
   frame: { x: number; y: number; w: number; h: number };
   rotated: false;
@@ -28,12 +29,12 @@ export type RuntimeAtlasFrame = {
 
 export type RuntimeAtlasManifest = {
   frames: Record<string, RuntimeAtlasFrame>;
-  meta: {
-    image: string;
-    size: { w: number; h: number };
-    scale: '1';
-  };
+  meta: { image: string; size: { w: number; h: number }; scale: '1' };
 };
+
+export type CharacterFrameRef = Readonly<{ textureKey: string; url: string }>;
+export type CharacterQualityAnimations = Readonly<Record<CharacterAnimationName, readonly CharacterFrameRef[]>>;
+export type CharacterAnimationFps = Readonly<Record<CharacterAnimationName, number>>;
 
 export type CharacterDefinition = {
   id: CharacterId;
@@ -41,11 +42,10 @@ export type CharacterDefinition = {
   accentColor: string;
   available: boolean;
   portraitUrl: string;
-  textureKey: string;
-  atlasUrl: string;
-  atlasManifest: RuntimeAtlasManifest;
-  frameWidth: 96;
-  frameHeight: 96;
-  animations: Record<CharacterAnimationName, readonly string[]>;
+  qualityAnimations: CharacterQualityAnimations;
+  qualityAnimationFps: CharacterAnimationFps;
+  qualityFrameSize: 192 | 384;
+  qualityPivotY: 180 | 360;
+  qualityScale: number;
   passive: CharacterPassiveId;
 };

@@ -3,18 +3,20 @@ import type Phaser from 'phaser';
 import { RunnerInputBridge } from './RunnerInput';
 import { RunnerPlayer } from './RunnerPlayer';
 import type { CharacterId } from '../characters/characterTypes';
+import { getCharacter } from '../characters/characterCatalog';
 
 function createPlayer(characterId: CharacterId) {
+  const frameSize = getCharacter(characterId).qualityFrameSize as number;
   const offset = { x: 0, y: 0 };
   const body = {
     blocked: { down: true },
     touching: { down: false },
     velocity: { y: 0 },
     position: { x: 0, y: 0 },
-    width: 96,
-    height: 96,
-    sourceWidth: 96,
-    sourceHeight: 96,
+    width: frameSize,
+    height: frameSize,
+    sourceWidth: frameSize,
+    sourceHeight: frameSize,
     enable: true,
     get bottom() { return body.position.y + body.height; },
     prev: { copy: vi.fn() },
@@ -32,7 +34,7 @@ function createPlayer(characterId: CharacterId) {
     updateFromGameObject: vi.fn(() => {
       body.width = body.sourceWidth * sprite.scaleX;
       body.height = body.sourceHeight * sprite.scaleY;
-      body.position.y = sprite.y + (offset.y - 96) * sprite.scaleY;
+      body.position.y = sprite.y + (offset.y - frameSize) * sprite.scaleY;
     }),
   };
   const sprite = {
@@ -115,7 +117,7 @@ describe('RunnerPlayer and input bridge', () => {
 
     expect(player.isGrounded).toBe(false);
     expect(body.velocity.y).toBe(80);
-    expect(sprite.scaleX).toBe(1.35);
+    expect(sprite.scaleX).toBeCloseTo(getCharacter('player-default').qualityScale * 1.35);
     expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:run', true);
 
     player.setGiant(false);
@@ -145,22 +147,22 @@ describe('RunnerPlayer and input bridge', () => {
     expect(body.width).toBeCloseTo(64);
     expect(body.height).toBeCloseTo(48);
     expect(body.bottom).toBeCloseTo(470);
-    expect(sprite.scaleX).toBe(0.82);
-    expect(sprite.scaleY).toBe(0.82);
+    expect(sprite.scaleX).toBeCloseTo(getCharacter('goth-student').qualityScale * 0.82);
+    expect(sprite.scaleY).toBeCloseTo(getCharacter('goth-student').qualityScale * 0.82);
     expect(sprite.y).toBeGreaterThan(470);
     expect(player.jump()).toBe(false);
     player.setSliding(false);
     player.update(100);
     expect(player.isSliding).toBe(false);
-    expect(body.setOffset).toHaveBeenLastCalledWith(28, 16);
-    expect(sprite.scaleY).toBe(1);
+    expect(body.setOffset).toHaveBeenLastCalledWith(112, 56);
+    expect(sprite.scaleY).toBeCloseTo(getCharacter('goth-student').qualityScale);
   });
 
   it('holds one slide pose without switching frames while the button stays down', () => {
     const { player, body, sprite } = createPlayer('player-default');
     expect(player.setSliding(true)).toBe(true);
-    expect(sprite.scaleX).toBe(1);
-    expect(sprite.scaleY).toBe(1);
+    expect(sprite.scaleX).toBeCloseTo(getCharacter('player-default').qualityScale);
+    expect(sprite.scaleY).toBeCloseTo(getCharacter('player-default').qualityScale);
     expect(body.width).toBe(80);
     const firstY = sprite.y;
     const slideCalls = sprite.anims.play.mock.calls.length;
@@ -178,17 +180,17 @@ describe('RunnerPlayer and input bridge', () => {
     const standingSize = { width: body.width, height: body.height };
     const animationCalls = sprite.anims.play.mock.calls.length;
     player.setGiant(true);
-    expect(sprite.scaleX).toBe(1.35);
+    expect(sprite.scaleX).toBeCloseTo(getCharacter('player-default').qualityScale * 1.35);
     expect(body.width).toBeCloseTo(standingSize.width, 8);
     expect(body.height).toBeCloseTo(standingSize.height, 8);
     player.setSliding(true);
-    expect(sprite.scaleX).toBe(1.35);
+    expect(sprite.scaleX).toBeCloseTo(getCharacter('player-default').qualityScale * 1.35);
     expect(body.width).toBeCloseTo(80, 8);
     expect(body.height).toBeCloseTo(48, 8);
     expect(sprite.anims.play.mock.calls.length).toBe(animationCalls);
     expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:run', true);
     player.setGiant(false);
-    expect(sprite.scaleX).toBe(1);
+    expect(sprite.scaleX).toBeCloseTo(getCharacter('player-default').qualityScale);
     expect(body.width).toBeCloseTo(80, 8);
     expect(body.height).toBeCloseTo(48, 8);
   });
@@ -214,7 +216,7 @@ describe('RunnerPlayer and input bridge', () => {
     body.position.y = 464;
     sprite.y = 540;
     player.update(16);
-    expect(sprite.y).toBe(474);
+    expect(sprite.y).toBe(476);
     expect(body.position.y).toBe(394);
     expect(body.velocity.y).toBe(0);
     expect(player.isGrounded).toBe(true);
@@ -229,8 +231,8 @@ describe('RunnerPlayer and input bridge', () => {
     player.finish('victory');
     expect(body.enable).toBe(false);
     expect(body.setAllowGravity).toHaveBeenCalledWith(false);
-    expect(sprite.y).toBe(477);
-    expect(body.position.y).toBe(397);
+    expect(sprite.y).toBe(476);
+    expect(body.position.y).toBe(394);
     expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:gameOver', true);
     expect(sprite.anims.play).toHaveBeenCalledTimes(2); // run, then game-over
     expect(player.jump()).toBe(false);
@@ -254,7 +256,7 @@ describe('RunnerPlayer and input bridge', () => {
     expect(sprite.setTint).toHaveBeenCalledWith(0xff8bc4);
     player.endPitRescue();
     expect(body.enable).toBe(true);
-    expect(sprite.y).toBe(474);
+    expect(sprite.y).toBe(476);
     expect(sprite.anims.play).toHaveBeenLastCalledWith('hanayo-hiyori:run', true);
     player.setPassiveEffect(0);
     expect(sprite.clearTint).toHaveBeenCalledOnce();

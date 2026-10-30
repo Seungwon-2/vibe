@@ -4,7 +4,7 @@ import type { PitDefinition, PitFallContactResult } from './PitSpawner';
 import { createRunnerSnapshot, startRunner } from './RunnerSimulation';
 
 const record = vi.hoisted(() => vi.fn());
-vi.mock('phaser', () => ({ default: { Scene: class {} } }));
+vi.mock('phaser', () => ({ default: { Scene: class {}, Loader: { Events: { FILE_LOAD_ERROR: 'fileloaderror' } } } }));
 vi.mock('../../services/PersonalBestStore', () => ({
   browserPersonalBestStore: { record },
 }));
@@ -12,6 +12,22 @@ vi.mock('../../services/PersonalBestStore', () => ({
 import { RunnerScene } from './RunnerScene';
 
 describe('RunnerScene finish boundary', () => {
+  it('loads only the selected character quality frames for gameplay', () => {
+    const scene = new RunnerScene();
+    const images: [string, string][] = [];
+    const harness = scene as unknown as {
+      registry: { get(key: string): string };
+      load: { image(key: string, url: string): void; on(): void };
+      preload(): void;
+    };
+    harness.registry = { get: () => 'player-default' };
+    harness.load = { image: (key, url) => images.push([key, url]), on: vi.fn() };
+    harness.preload();
+    expect(images).toHaveLength(12 + 6 * 6);
+    expect(images.every(([, url]) => url.includes('/assets/character/'))).toBe(true);
+    expect(images.some(([key]) => key.startsWith('player-default:quality:run:'))).toBe(true);
+    expect(images.some(([, url]) => url.includes('/runtime/'))).toBe(false);
+  });
   it('records and plays the first terminal action only once across finish paths', () => {
     record.mockReset().mockReturnValue({ isNewBest: true });
     const scene = new RunnerScene();
@@ -77,7 +93,7 @@ describe('RunnerScene finish boundary', () => {
       pitFallCinematicActive: boolean;
       inputBridge: { clear(): void };
       heldKeyboardActions: Set<string>;
-      player: { gameObject: typeof sprite; beginPitFall(): void; finish(outcome: string): void; update(delta: number): void };
+      player: { gameObject: typeof sprite; beginPitFall(): void; setGiant(active: boolean): void; finish(outcome: string): void; update(delta: number): void };
       eventEmitter: {
         snapshot(snapshot: unknown, now: number, force: boolean): void;
         pitFallStarted(): void;
@@ -95,8 +111,9 @@ describe('RunnerScene finish boundary', () => {
     harness.snapshot = contactSnapshot;
     harness.finishEmitted = false;
     harness.inputBridge = { clear };
+      passiveEffectArt: { clear(): void };
     harness.heldKeyboardActions = new Set(['Space']);
-    harness.player = { gameObject: sprite, beginPitFall: vi.fn(), finish: finishPlayer, update: vi.fn() };
+    harness.player = { gameObject: sprite, beginPitFall: vi.fn(), setGiant: vi.fn(), finish: finishPlayer, update: vi.fn() };
     const pitFallStarted = vi.fn();
     harness.eventEmitter = { snapshot: snapshotEvent, pitFallStarted, finish: finishEvent };
     harness.time = { now: 123 };
@@ -115,6 +132,7 @@ describe('RunnerScene finish boundary', () => {
     expect(harness.snapshot).toMatchObject({ phase: 'running', distanceMeters: 845, coins: 7, remainingMs: 59_000 });
     expect(harness.pitFallCinematicActive).toBe(true);
     expect(pitFallStarted).toHaveBeenCalledOnce();
+    harness.passiveEffectArt = { clear: vi.fn() };
     expect(fallTweens).toHaveLength(1);
     expect(fallTweens[0]).toMatchObject({ y: 620, duration: 700, ease: 'Cubic.In' });
     expect(snapshotEvent).not.toHaveBeenCalled();
@@ -181,7 +199,8 @@ describe('RunnerScene finish boundary', () => {
     harness.finishEmitted = false;
     harness.inputBridge = { clear };
     harness.heldKeyboardActions = new Set(['Space']);
-    harness.player = { gameObject: sprite, setPassiveEffect: setEffect, beginPitRescue: beginRescue,
+    harness.player = { gameObject: sprite, setPassiveEffect: setEffect, setGiant: vi.fn(), beginPitRescue: beginRescue,
+        setGiant(active: boolean): void;
       endPitRescue: endRescue, finish: vi.fn() };
     harness.eventEmitter = { snapshot: snapshotEvent, passiveTriggered: triggerEvent, finish: vi.fn() };
     harness.time = { now: 50 };

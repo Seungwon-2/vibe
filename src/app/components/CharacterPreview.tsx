@@ -1,5 +1,5 @@
-import type { CSSProperties } from 'react';
-import type { CharacterAnimationName, CharacterDefinition, CharacterId } from '../../game/characters/characterTypes';
+import { useEffect, useState, type CSSProperties } from 'react';
+import type { CharacterAnimationName, CharacterDefinition } from '../../game/characters/characterTypes';
 
 export type CharacterPreviewProps = {
   character: CharacterDefinition;
@@ -9,64 +9,68 @@ export type CharacterPreviewProps = {
   variant?: 'showcase' | 'roster' | 'runway';
 };
 
-type SpriteStyle = CSSProperties & {
-  '--sprite-start-x': string;
-  '--sprite-end-x': string;
-  '--sprite-row-y': string;
-};
-
-type PreviewScaleStyle = CSSProperties & { '--preview-scale': string };
-
-const PREVIEW_METRICS: Readonly<Record<CharacterId, { contentHeight: number; contentBottom: number }>> = {
-  'player-default': { contentHeight: 70, contentBottom: 88 },
-  'goth-student': { contentHeight: 70, contentBottom: 89 },
-  'cogane-rang': { contentHeight: 67, contentBottom: 89 },
-  'hanayo-hiyori': { contentHeight: 53, contentBottom: 88 },
-  'tokino-mary': { contentHeight: 58, contentBottom: 89 },
-};
+type SpriteStyle = CSSProperties & { '--preview-scale': string };
 
 const PREVIEW_CONTENT_HEIGHT = 136;
 const PREVIEW_BASELINE = 91;
-const RUN_FRAME_MS = 64;
+
+const CONTENT_HEIGHT: Readonly<Record<CharacterDefinition['id'], number>> = {
+  'player-default': 70.5,
+  'goth-student': 70.5,
+  'cogane-rang': 72.75,
+  'hanayo-hiyori': 69,
+  'tokino-mary': 72.75,
+};
 
 export function CharacterPreview({ character, selected, animation, loop = true, variant }: CharacterPreviewProps): React.JSX.Element {
   const animationName = animation ?? (variant === 'showcase' ? 'run'
     : variant === 'roster' ? 'idle'
       : selected ? 'run' : character.id === 'player-default' ? 'victory' : 'idle');
-  const frames = character.animations[animationName];
-  const frameName = frames[0];
-  const animationStart = character.atlasManifest.frames[frameName].frame;
-  const metrics = PREVIEW_METRICS[character.id];
-  const frameSteps = loop ? frames.length : Math.max(1, frames.length - 1);
-  const previewScaleStyle: PreviewScaleStyle = {
-    '--preview-scale': `${PREVIEW_CONTENT_HEIGHT / metrics.contentHeight}`,
+  const frames = character.qualityAnimations[animationName];
+  const [frameIndex, setFrameIndex] = useState(0);
+  const frame = frames[Math.min(frameIndex, frames.length - 1)];
+  const frameScale = character.qualityScale;
+  const previewScaleStyle: SpriteStyle = {
+    '--preview-scale': `${PREVIEW_CONTENT_HEIGHT / CONTENT_HEIGHT[character.id]}`,
   };
-  const spriteStyle: SpriteStyle = {
-    width: character.atlasManifest.meta.size.w,
-    height: character.atlasManifest.meta.size.h,
-    transform: 'translate3d(var(--sprite-start-x), var(--sprite-row-y), 0)',
-    animationDuration: `${frames.length * (animationName === 'run' ? RUN_FRAME_MS : 200)}ms`,
-    animationIterationCount: loop ? 'infinite' : '1',
-    animationFillMode: loop ? 'none' : 'forwards',
-    animationTimingFunction: `steps(${frameSteps}, end)`,
-    '--sprite-start-x': `${-animationStart.x}px`,
-    '--sprite-end-x': `${-(animationStart.x + (loop ? frames.length : frames.length - 1) * character.frameWidth)}px`,
-    '--sprite-row-y': `${-animationStart.y + PREVIEW_BASELINE - metrics.contentBottom}px`,
-  };
-  const variantClass = variant ? ` character-preview--${variant}` : '';
 
+  useEffect(() => {
+    setFrameIndex(0);
+    const preloadedFrames = frames.map(({ url }) => {
+      const image = new Image();
+      image.decoding = 'async';
+      image.src = url;
+      return image;
+    });
+    const interval = frames.length < 2 ? undefined : window.setInterval(() => {
+      setFrameIndex((current) => current >= frames.length - 1
+        ? loop ? 0 : current
+        : current + 1);
+    }, 1000 / character.qualityAnimationFps[animationName]);
+    return () => {
+      if (interval !== undefined) window.clearInterval(interval);
+      for (const image of preloadedFrames) image.onload = null;
+    };
+  }, [animationName, character.qualityAnimationFps, frames.length, loop]);
+
+  const variantClass = variant ? ` character-preview--${variant}` : '';
   return (
     <span className={`character-preview${variantClass}`} aria-hidden="true">
       <span className="character-preview__sprite" data-testid={`character-preview-frame-${character.id}${variant ? `-${variant}` : ''}`} style={previewScaleStyle}>
         <img
-          className="character-preview__sheet is-animated"
+          className="character-preview__sheet"
           data-testid={`character-preview-${character.id}${variant ? `-${variant}` : ''}`}
           data-animation={animationName}
-          data-frame={frameName}
-          src={character.atlasUrl}
-          style={spriteStyle}
+          data-frame={frame.textureKey}
+          src={frame.url}
           alt=""
           draggable={false}
+          style={{
+            width: character.qualityFrameSize * frameScale,
+            height: character.qualityFrameSize * frameScale,
+            left: 0,
+            top: PREVIEW_BASELINE - character.qualityPivotY * frameScale,
+          }}
         />
       </span>
     </span>

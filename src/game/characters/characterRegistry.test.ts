@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import { CHARACTERS, getCharacter, resolveCharacterId } from './characterCatalog';
 import { CHARACTER_PASSIVES, getCharacterPassive } from './characterAbilities';
 import type { CharacterAnimationName } from './characterTypes';
@@ -25,30 +27,23 @@ describe('runner character registry', () => {
       ['tokino-mary', '토키노 메리', '#6d929a'],
     ]);
 
-    for (const character of CHARACTERS) {
-      expect(character.portraitUrl).toMatch(/\.png/);
-      expect(character.atlasUrl).toMatch(/\.png/);
-      expect(character.atlasManifest.meta.size).toEqual({ w: 1152, h: 480 });
-      expect(Object.keys(character.atlasManifest.frames)).toHaveLength(60);
-    }
+    for (const character of CHARACTERS) expect(character.portraitUrl).toMatch(/\.webp/);
     expect(CHARACTERS.filter(({ available }) => available).map(({ id }) => id)).toEqual([
       'player-default', 'goth-student', 'cogane-rang', 'hanayo-hiyori', 'tokino-mary',
     ]);
   });
 
-  it('resolves every required animation to existing 96 by 96 atlas frames', () => {
+  it('maps gameplay animations to the bundled high-resolution frame files', () => {
     for (const character of CHARACTERS) {
-      expect(character.frameWidth).toBe(96);
-      expect(character.frameHeight).toBe(96);
-      expect(character.animations.run).toHaveLength(12);
-      expect(Object.keys(character.animations)).toEqual(REQUIRED_ANIMATIONS);
-
+      expect(character.qualityScale * character.qualityFrameSize).toBe(96);
+      expect(character.qualityAnimations.run).toHaveLength(12);
       for (const animation of REQUIRED_ANIMATIONS) {
-        const frames = character.animations[animation];
-        expect(frames.length, `${character.id} ${animation}`).toBe(animation === 'run' ? 12 : 6);
-        for (const frameName of frames) {
-          expect(character.atlasManifest.frames[frameName]).toBeDefined();
-          expect(character.atlasManifest.frames[frameName].frame).toMatchObject({ w: 96, h: 96 });
+        const frames = character.qualityAnimations[animation];
+        expect(frames.length, `${character.id} quality ${animation}`).toBe(
+          animation === 'run' ? 12 : animation === 'idle' ? 1 : 6,
+        );
+        for (const frame of frames) {
+          expect(existsSync(path.join(process.cwd(), 'public', frame.url.replace(/^\//, ''))), frame.url).toBe(true);
         }
       }
     }
