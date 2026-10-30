@@ -139,6 +139,20 @@ describe('authored collectible schedule', () => {
     expect(giants.length).toBeGreaterThan(5);
     expect(giants).toEqual(generatePickupSchedule(15_000).filter(({ kind }) => kind === 'giant'));
     expect(giants.every(({ heightUnits, optionalJump }) => heightUnits === 52 && !optionalJump)).toBe(true);
+    const wavePeriod = (RUNNER_CONFIG.densePatternsPerSection - 1) *
+      RUNNER_CONFIG.densePatternSpacingMeters + RUNNER_CONFIG.denseRecoveryGapMeters;
+    const maxEffectiveMetersPerSecond = 469.21875 * RUNNER_CONFIG.metersPerWorldUnit;
+    for (const giant of giants) {
+      const matchedWave = Array.from({ length: 20 }, (_, index) =>
+        RUNNER_CONFIG.denseSectionStartMeters + index * wavePeriod,
+      ).find((waveStart) => Math.abs(giant.distanceMeters -
+        (waveStart - RUNNER_CONFIG.giantPickupLeadMeters)) <= RUNNER_CONFIG.giantPickupSearchRadiusMeters);
+      expect(matchedWave, `giant at ${giant.distanceMeters}m must be tied to a dense wave`).toBeDefined();
+      expect(giant.distanceMeters).toBeLessThan(matchedWave!);
+      expect((matchedWave! + (RUNNER_CONFIG.densePatternsPerSection - 1) *
+        RUNNER_CONFIG.densePatternSpacingMeters - giant.distanceMeters) /
+        maxEffectiveMetersPerSecond).toBeLessThanOrEqual(RUNNER_CONFIG.giantDurationMs / 1_000);
+    }
     for (const giant of giants) {
       expect(generated.filter((item) => item.id !== giant.id).every((item) =>
         Math.abs(item.distanceMeters - giant.distanceMeters) >= 30)).toBe(true);

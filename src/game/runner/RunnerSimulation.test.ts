@@ -106,17 +106,17 @@ describe('RunnerSimulation', () => {
     expect(collectPickup(pauseRunner(rin), { id: 'coin-b', kind: 'coin' }).coins).toBe(0);
   });
 
-  it('activates and refreshes giant for four seconds without changing score or timer', () => {
+  it('activates and refreshes giant for six seconds without changing score or timer', () => {
     const initial = running();
     const giant = collectPickup(initial, { id: 'giant-0', kind: 'giant' });
-    expect(giant).toMatchObject({ giantRemainingMs: 4_000, remainingMs: 90_000, coins: 0 });
+    expect(giant).toMatchObject({ giantRemainingMs: 6_000, remainingMs: 90_000, coins: 0 });
     expect(collectPickup(giant, { id: 'giant-0', kind: 'giant' })).toBe(giant);
     const halfway = advanceRunner(giant, 1_500).state;
-    expect(halfway.giantRemainingMs).toBe(2_500);
+    expect(halfway.giantRemainingMs).toBe(4_500);
     const refresh = collectPickup(halfway, { id: 'giant-1', kind: 'giant' });
-    expect(refresh.giantRemainingMs).toBe(4_000);
-    expect(advanceRunner(pauseRunner(refresh), 2_000).state.giantRemainingMs).toBe(4_000);
-    expect(advanceRunner(refresh, 4_000).state.giantRemainingMs).toBe(0);
+    expect(refresh.giantRemainingMs).toBe(6_000);
+    expect(advanceRunner(pauseRunner(refresh), 2_000).state.giantRemainingMs).toBe(6_000);
+    expect(advanceRunner(refresh, 6_000).state.giantRemainingMs).toBe(0);
   });
 
   it('expires giant during stagger while keeping pits lethal and clearing it on Hiyori rescue', () => {

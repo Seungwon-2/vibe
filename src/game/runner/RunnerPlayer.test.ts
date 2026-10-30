@@ -157,15 +157,21 @@ describe('RunnerPlayer and input bridge', () => {
   it('enlarges giant visuals while keeping standing and sliding world hitboxes unchanged', () => {
     const { player, body, sprite } = createPlayer('player-default');
     const standingSize = { width: body.width, height: body.height };
+    const animationCalls = sprite.anims.play.mock.calls.length;
     player.setGiant(true);
-    expect(sprite.scaleX).toBe(1.25);
-    expect({ width: body.width, height: body.height }).toEqual(standingSize);
+    expect(sprite.scaleX).toBe(1.35);
+    expect(body.width).toBeCloseTo(standingSize.width, 8);
+    expect(body.height).toBeCloseTo(standingSize.height, 8);
     player.setSliding(true);
-    expect(sprite.scaleX).toBe(1.25);
-    expect({ width: body.width, height: body.height }).toEqual({ width: 80, height: 48 });
+    expect(sprite.scaleX).toBe(1.35);
+    expect(body.width).toBeCloseTo(80, 8);
+    expect(body.height).toBeCloseTo(48, 8);
+    expect(sprite.anims.play.mock.calls.length).toBe(animationCalls + 1);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:slide', true);
     player.setGiant(false);
     expect(sprite.scaleX).toBe(1);
-    expect({ width: body.width, height: body.height }).toEqual({ width: 80, height: 48 });
+    expect(body.width).toBeCloseTo(80, 8);
+    expect(body.height).toBeCloseTo(48, 8);
   });
 
   it('rejects an airborne slide and restores run after landing', () => {

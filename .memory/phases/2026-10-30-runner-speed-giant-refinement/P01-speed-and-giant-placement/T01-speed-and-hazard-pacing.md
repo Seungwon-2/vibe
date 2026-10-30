@@ -70,4 +70,4 @@ Task: T01-speed-and-hazard-pacing
 
 - [x] Implementation complete
 - [x] Validation passed (`npm run test -- src/game/runner/hazardPatterns.test.ts src/game/runner/RunnerSimulation.test.ts`; `npm run build`)
-- commit: pending
+- commit: `79f96cc` on `project02`

@@ -215,7 +215,7 @@ export class RunnerPlayer {
   }
 
   private applyPose(): void {
-    const visualScale = this.giantActive ? 1.25 : 1;
+    const visualScale = this.giantActive ? 1.35 : 1;
     if (this.animation === 'slide') {
       const pose = getSlidePose(this.characterId);
       const poseKey = `slide:${pose.key}:giant:${this.giantActive}`;

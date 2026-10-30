@@ -192,14 +192,19 @@ export function generatePickupSchedule(maxDistanceMeters: number): readonly Pick
   const existingPickups = [...safePickups, ...optionalPickups];
   const giantPickups: PickupDefinition[] = [];
   let giantIndex = 0;
-  for (let target = RUNNER_CONFIG.giantPickupFirstDistanceMeters; target <= maxDistanceMeters;
-    target += RUNNER_CONFIG.giantPickupSpacingMeters) {
+  const denseWavePeriod = (RUNNER_CONFIG.densePatternsPerSection - 1) *
+    RUNNER_CONFIG.densePatternSpacingMeters + RUNNER_CONFIG.denseRecoveryGapMeters;
+  const giantPickupLead = RUNNER_CONFIG.giantPickupLeadMeters;
+  for (let waveStart = RUNNER_CONFIG.denseSectionStartMeters;
+    waveStart - giantPickupLead <= maxDistanceMeters; waveStart += denseWavePeriod) {
+    const target = waveStart - giantPickupLead;
     const offsets = Array.from(
       { length: RUNNER_CONFIG.giantPickupSearchRadiusMeters * 2 + 1 },
       (_, index) => index - RUNNER_CONFIG.giantPickupSearchRadiusMeters,
     ).sort((left, right) => Math.abs(left) - Math.abs(right) || left - right);
     const distanceMeters = offsets.map((offset) => target + offset).find((candidate) =>
-      candidate >= SAFE_PICKUP_START_METERS && candidate <= maxDistanceMeters &&
+      candidate >= Math.max(SAFE_PICKUP_START_METERS, target - RUNNER_CONFIG.giantPickupSearchRadiusMeters) &&
+      candidate <= Math.min(maxDistanceMeters, target + RUNNER_CONFIG.giantPickupSearchRadiusMeters, waveStart - 1) &&
       isPickupDistanceSafe(candidate, 52, hazards, horizon) &&
       [...existingPickups, ...giantPickups].every((pickup) =>
         Math.abs(pickup.distanceMeters - candidate) >= 30),

@@ -10,12 +10,12 @@
 
 ## Active Task
 
-[T02 Giant Before Dense Waves](./phases/2026-10-30-runner-speed-giant-refinement/P01-speed-and-giant-placement/T02-giant-before-dense-waves.md)
+None. Runner speed and giant pickup refinement tasks are complete.
 
 ## Status
 
-T01 is implemented and validated. T02 now uses the confirmed six-second giant duration. Existing unrelated local changes remain unstaged.
+Runner speed and giant pickup refinement are implemented and validated. Existing unrelated local changes remain unstaged.
 
 ## Next Step
 
-Execute T02, validate pickup placement, giant animation/scale, and pit behavior, then commit only T02 changes.
+Gameplay speed and giant power-up tuning are complete. Next, run the updated game locally and evaluate the new pacing and wave coverage.
