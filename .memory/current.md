@@ -3,9 +3,9 @@
 ## Active Plan
 
 - Plan: [2026-10-30-runner-modes-progression](./plans/2026-10-30-runner-modes-progression.md)
-- Phase: P02 Runner Mode Gameplay
-- Active Task: [T03 Endless Pacing and Layout](./phases/2026-10-30-runner-modes-progression/P02-runner-mode-gameplay/T03-endless-pacing-and-layout.md)
+- Phase: P03 Progression and Rewards
+- Active Task: [T01 Wallet and Story Progression](./phases/2026-10-30-runner-modes-progression/P03-progression-and-rewards/T01-wallet-and-story-progression.md)
 
 ## Last Completed
 
-- P02-T02 Story Lives and Outcomes — `feat(runner): add story lives and pit recovery`
+- P02-T03 Endless Pacing and Layout — `feat(runner): tune endless waves and reward routes`

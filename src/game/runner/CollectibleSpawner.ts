@@ -3,8 +3,8 @@ import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterId } from '../characters/characterTypes';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import type { RunnerPickupKind, RunnerSnapshot } from './runnerTypes';
-import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance,
-  METERS_PER_WORLD_UNIT } from './hazardPatterns';
+import { getDenseWaveSchedule, getHazardDistance, getPatternForDistance, getPatternStartDistance,
+  isGateClearance, MAX_RUN_SPEED_UNITS_PER_SECOND, METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import { getBiomeForDistance } from '../visuals/runnerBiomes';
 import { drawRunnerGate } from '../visuals/runnerCourseObjects';
@@ -83,7 +83,7 @@ const PICKUP_BASE_RADIUS_PX = 32;
 const SAFE_PICKUP_START_METERS = 160;
 const SAFE_PICKUP_SPACING_METERS = RUNNER_CONFIG.safePickupSpacingMeters;
 
-type ScheduledHazard = Readonly<{ distanceMeters: number; definition: HazardDefinition }>;
+type ScheduledHazard = Readonly<{ distanceMeters: number; definition: HazardDefinition; patternIndex: number }>;
 
 function getScheduledHazards(maxDistanceMeters: number): ScheduledHazard[] {
   const hazards: ScheduledHazard[] = [];
@@ -92,7 +92,7 @@ function getScheduledHazards(maxDistanceMeters: number): ScheduledHazard[] {
     if (patternStart > maxDistanceMeters) break;
     const pattern = getPatternForDistance(patternStart);
     for (const hazard of pattern.obstacles) {
-      hazards.push({ distanceMeters: getHazardDistance(patternIndex, hazard), definition: hazard });
+      hazards.push({ distanceMeters: getHazardDistance(patternIndex, hazard), definition: hazard, patternIndex });
     }
   }
   return hazards;
@@ -183,28 +183,45 @@ export function generatePickupSchedule(maxDistanceMeters: number): readonly Pick
   }
 
   const optionalPickups: PickupDefinition[] = [];
-  for (let distanceMeters = 480; distanceMeters <= maxDistanceMeters;
-    distanceMeters += RUNNER_CONFIG.optionalJumpCoinSpacingMeters) {
-    if (!isPickupDistanceSafe(distanceMeters, 116, hazards, horizon)) continue;
-    optionalPickups.push({ id: `air-${Math.round((distanceMeters - 480) / RUNNER_CONFIG.optionalJumpCoinSpacingMeters)}`,
-      kind: 'coin', distanceMeters, heightUnits: 116, optionalJump: true });
+  let groundHazardIndex = 0;
+  for (const hazard of hazards) {
+    if (hazard.definition.kind !== 'ground') continue;
+    const rowIndex = groundHazardIndex++;
+    if (rowIndex % RUNNER_CONFIG.postJumpCoinRowEveryNthHazard !== 0) continue;
+    const rowStart = hazard.distanceMeters +
+      hazard.definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit +
+      RUNNER_CONFIG.postJumpCoinLandingClearanceMeters;
+    const row = Array.from({ length: RUNNER_CONFIG.postJumpCoinRowCount }, (_, index) => ({
+      id: `post-jump-${hazard.patternIndex}-${index}`,
+      kind: 'coin' as const,
+      distanceMeters: rowStart + index * RUNNER_CONFIG.postJumpCoinRowSpacingMeters,
+      heightUnits: 52,
+      optionalJump: true,
+    }));
+    const rowIsSafe = row.every((pickup) => pickup.distanceMeters <= maxDistanceMeters &&
+      isPickupDistanceSafe(pickup.distanceMeters, pickup.heightUnits, hazards, horizon) &&
+      [...safePickups, ...optionalPickups].every((existing) =>
+        Math.abs(existing.distanceMeters - pickup.distanceMeters) >= RUNNER_CONFIG.pickupObjectClearanceMeters));
+    if (rowIsSafe) optionalPickups.push(...row);
   }
   const existingPickups = [...safePickups, ...optionalPickups];
   const giantPickups: PickupDefinition[] = [];
   let giantIndex = 0;
-  const denseWavePeriod = (RUNNER_CONFIG.densePatternsPerSection - 1) *
-    RUNNER_CONFIG.densePatternSpacingMeters + RUNNER_CONFIG.denseRecoveryGapMeters;
   const giantPickupLead = RUNNER_CONFIG.giantPickupLeadMeters;
-  for (let waveStart = RUNNER_CONFIG.denseSectionStartMeters;
-    waveStart - giantPickupLead <= maxDistanceMeters; waveStart += denseWavePeriod) {
-    const target = waveStart - giantPickupLead;
+  for (let waveIndex = 0; ; waveIndex += 1) {
+    const wave = getDenseWaveSchedule(waveIndex);
+    if (wave.waveStartMeters - giantPickupLead > maxDistanceMeters) break;
+    const target = wave.waveStartMeters - giantPickupLead;
+    const finalPatternDistance = wave.patternDistances.at(-1)!;
+    const fastestMetersPerSecond = MAX_RUN_SPEED_UNITS_PER_SECOND * RUNNER_CONFIG.metersPerWorldUnit;
+    if ((finalPatternDistance - target) / fastestMetersPerSecond > RUNNER_CONFIG.giantDurationMs / 1_000) continue;
     const offsets = Array.from(
       { length: RUNNER_CONFIG.giantPickupSearchRadiusMeters * 2 + 1 },
       (_, index) => index - RUNNER_CONFIG.giantPickupSearchRadiusMeters,
     ).sort((left, right) => Math.abs(left) - Math.abs(right) || left - right);
     const distanceMeters = offsets.map((offset) => target + offset).find((candidate) =>
       candidate >= Math.max(SAFE_PICKUP_START_METERS, target - RUNNER_CONFIG.giantPickupSearchRadiusMeters) &&
-      candidate <= Math.min(maxDistanceMeters, target + RUNNER_CONFIG.giantPickupSearchRadiusMeters, waveStart - 1) &&
+      candidate <= Math.min(maxDistanceMeters, target + RUNNER_CONFIG.giantPickupSearchRadiusMeters, wave.waveStartMeters - 1) &&
       isPickupDistanceSafe(candidate, 52, hazards, horizon) &&
       [...existingPickups, ...giantPickups].every((pickup) =>
         Math.abs(pickup.distanceMeters - candidate) >= 30),

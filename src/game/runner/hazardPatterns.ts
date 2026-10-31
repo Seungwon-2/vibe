@@ -12,10 +12,45 @@ export const MAX_RUN_SPEED_UNITS_PER_SECOND = RUNNER_CONFIG.maxSpeedUnitsPerSeco
   (1 + RUNNER_GATE_DISTANCES_M.length * RUNNER_CONFIG.gateSpeedBonusRatio) *
   (RIN_SPEED_BONUS.id === 'rin-speed' ? 1 + RIN_SPEED_BONUS.speedBonusRatio : 1);
 
-const DENSE_WAVE_PERIOD_METERS =
-  (RUNNER_CONFIG.densePatternsPerSection - 1) * RUNNER_CONFIG.densePatternSpacingMeters +
-  RUNNER_CONFIG.denseRecoveryGapMeters;
 const DENSE_WAVE_FIRST_METERS = RUNNER_CONFIG.denseSectionStartMeters;
+const DENSE_SPACING_VARIANTS = Object.freeze([
+  RUNNER_CONFIG.endlessDensePatternSpacingMinMeters,
+  RUNNER_CONFIG.densePatternSpacingMeters,
+  RUNNER_CONFIG.endlessDensePatternSpacingMaxMeters,
+]);
+const DENSE_RECOVERY_VARIANTS = Object.freeze([
+  RUNNER_CONFIG.endlessDenseRecoveryGapMinMeters,
+  RUNNER_CONFIG.denseRecoveryGapMeters,
+  RUNNER_CONFIG.endlessDenseRecoveryGapMaxMeters,
+]);
+
+export function getDenseWaveSchedule(waveIndex: number): Readonly<{
+  waveStartMeters: number;
+  patternDistances: readonly number[];
+  nextWaveStartMeters: number;
+}> {
+  if (!Number.isInteger(waveIndex) || waveIndex < 0) {
+    throw new RangeError('Wave index must be a non-negative integer');
+  }
+  let waveStartMeters: number = DENSE_WAVE_FIRST_METERS;
+  for (let index = 0; index < waveIndex; index += 1) {
+    const firstSpacing = DENSE_SPACING_VARIANTS[index % DENSE_SPACING_VARIANTS.length];
+    const secondSpacing = DENSE_SPACING_VARIANTS[(index + 1) % DENSE_SPACING_VARIANTS.length];
+    waveStartMeters += firstSpacing + secondSpacing +
+      DENSE_RECOVERY_VARIANTS[index % DENSE_RECOVERY_VARIANTS.length];
+  }
+  const patternDistances = [waveStartMeters];
+  for (let slot = 1; slot < RUNNER_CONFIG.densePatternsPerSection; slot += 1) {
+    patternDistances.push(patternDistances[slot - 1] +
+      DENSE_SPACING_VARIANTS[(waveIndex + slot - 1) % DENSE_SPACING_VARIANTS.length]);
+  }
+  const recovery = DENSE_RECOVERY_VARIANTS[waveIndex % DENSE_RECOVERY_VARIANTS.length];
+  return Object.freeze({
+    waveStartMeters,
+    patternDistances: Object.freeze(patternDistances),
+    nextWaveStartMeters: patternDistances.at(-1)! + recovery,
+  });
+}
 
 function obstacle(id: string, kind: HazardKind, offsetMeters = 0): HazardDefinition {
   return {
@@ -80,13 +115,14 @@ function getScheduledKind(distanceMeters: number): HazardKind {
     return earlyIndex % 2 === 0 ? 'ground' : 'overhead';
   }
 
-  let waveIndex = Math.floor((distanceMeters - DENSE_WAVE_FIRST_METERS) / DENSE_WAVE_PERIOD_METERS);
-  const waveStart = DENSE_WAVE_FIRST_METERS + waveIndex * DENSE_WAVE_PERIOD_METERS;
-  let slotIndex = Math.floor((distanceMeters - waveStart) / RUNNER_CONFIG.densePatternSpacingMeters);
-  if (slotIndex >= RUNNER_CONFIG.densePatternsPerSection) {
+  let waveIndex = 0;
+  let wave = getDenseWaveSchedule(waveIndex);
+  while (distanceMeters >= wave.nextWaveStartMeters) {
     waveIndex += 1;
-    slotIndex = 0;
+    wave = getDenseWaveSchedule(waveIndex);
   }
+  const slotIndex = wave.patternDistances.reduce((slot, start, index) =>
+    distanceMeters >= start ? index : slot, 0);
   return (waveIndex + slotIndex) % 2 === 0 ? 'ground' : 'overhead';
 }
 
@@ -118,10 +154,7 @@ export function getPatternStartDistance(patternIndex: number): number {
   const denseSlotIndex = patternIndex - earlyCount;
   const waveIndex = Math.floor(denseSlotIndex / RUNNER_CONFIG.densePatternsPerSection);
   const slotIndex = denseSlotIndex % RUNNER_CONFIG.densePatternsPerSection;
-  // Recovery starts after slot three; from first slot to next wave this is
-  // two 400m gaps plus the configured 720m clear interval (1,520m total).
-  return DENSE_WAVE_FIRST_METERS + waveIndex * DENSE_WAVE_PERIOD_METERS +
-    slotIndex * RUNNER_CONFIG.densePatternSpacingMeters;
+  return getDenseWaveSchedule(waveIndex).patternDistances[slotIndex];
 }
 
 export function getHazardDistance(patternIndex: number, hazard: HazardDefinition): number {
