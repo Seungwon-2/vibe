@@ -12,6 +12,7 @@ import { browserPersonalBestStore } from './services/PersonalBestStore';
 import { browserRunGateway } from './services/LocalRunGateway';
 import type { RankedRunRecord } from './services/RunGateway';
 import { browserPlayerProfileStore } from './services/LocalPlayerProfileStore';
+import { settleRun, type SettlementResult } from './services/PlayerProgression';
 import { shouldShowRunnerTutorial } from './game/runner/runnerTutorial';
 import { browserRunnerAudio } from './audio/RunnerAudioManager';
 import { DEFAULT_AUDIO_PREFERENCES, loadAudioPreferences, saveAudioPreferences, type AudioPreferences } from './audio/audioPreferences';
@@ -24,6 +25,7 @@ type FinishedRun = {
   submittedRank: number | null;
   submissionPending: boolean;
   recordError: string | null;
+  settlement: SettlementResult;
 };
 type BestLoadState = { key: string; record: RankedRunRecord | null; error: string | null };
 type RankingLoadState = { requestId: number; rows: RankedRunRecord[]; error: string | null };
@@ -40,7 +42,7 @@ function App(): React.JSX.Element {
   const [selectedCharacterId, setSelectedCharacterId] = useState<CharacterId>('player-default');
   const [selectedMode, setSelectedMode] = useState<RunnerMode>('endless');
   const [selectedStageId, setSelectedStageId] = useState<StoryStageId>('dawn-city');
-  const [profile] = useState(() => browserPlayerProfileStore.load());
+  const [profile, setProfile] = useState(() => browserPlayerProfileStore.load());
   const [finishedRun, setFinishedRun] = useState<FinishedRun | null>(null);
   const [runId, setRunId] = useState(0);
   const latestRunId = useRef(0);
@@ -165,8 +167,10 @@ function App(): React.JSX.Element {
         onFinish={(result, outcome) => {
           if (latestRunId.current !== currentRunId || submittedRunIds.current.has(currentRunId)) return;
           submittedRunIds.current.add(currentRunId);
+          const settlement = settleRun(browserPlayerProfileStore, `${currentRunId}:${result.finishedAtIso}`, result);
+          setProfile(settlement.profile);
           setFinishedRun({ runId: currentRunId, result, outcome, submittedRank: null,
-          submissionPending: result.mode !== 'story', recordError: null });
+            submissionPending: result.mode !== 'story', recordError: null, settlement });
           setScreen('result');
           if (result.mode === 'story') return;
           void browserRunGateway.submitRun(result).then((record) => {
@@ -189,6 +193,7 @@ function App(): React.JSX.Element {
       Math.round(finishedRun.result.distanceMeters);
     return (
       <RunResult result={finishedRun.result} outcome={finishedRun.outcome} bestDistanceMeters={bestDistance}
+        settlement={finishedRun.settlement}
         submittedRank={finishedRun.submittedRank} recordPending={finishedRun.submissionPending}
         recordError={finishedRun.recordError ?? bestError} overallBest={overallBest}
         onRetry={() => startRun(finishedRun.result.characterId)}

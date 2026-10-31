@@ -3,6 +3,7 @@ import { getCharacter } from '../../game/characters/characterCatalog';
 import type { CharacterId } from '../../game/characters/characterTypes';
 import type { RunnerFinishOutcome, RunnerResult } from '../../game/runner/runnerTypes';
 import type { RankedRunRecord } from '../../services/RunGateway';
+import type { SettlementResult } from '../../services/PlayerProgression';
 
 export type RunResultProps = {
   result: RunnerResult;
@@ -12,13 +13,14 @@ export type RunResultProps = {
   recordPending?: boolean;
   recordError?: string | null;
   overallBest?: RankedRunRecord | null;
+  settlement?: SettlementResult;
   onRetry(): void;
   onChooseCharacter(): void;
   onRankings(): void;
 };
 
 export function RunResult({ result, outcome, bestDistanceMeters, submittedRank = null,
-  recordPending = false, recordError = null, overallBest = null,
+  recordPending = false, recordError = null, overallBest = null, settlement,
   onRetry, onChooseCharacter, onRankings }: RunResultProps): React.JSX.Element {
   const character = getCharacter(result.characterId as CharacterId);
   const overallBestCharacter = overallBest ? getCharacter(overallBest.characterId) : null;
@@ -45,6 +47,12 @@ export function RunResult({ result, outcome, bestDistanceMeters, submittedRank =
             <p className="result-cause" role="status"><span aria-hidden="true">✦</span> 낭떠러지에 빠져 달리기가 종료되었습니다.</p>
           )}
           <p className="result-distance">{Math.round(result.distanceMeters).toLocaleString()}<span>m</span></p>
+          {settlement && <div className="result-settlement" role="status">
+            <span>지갑에 코인 {settlement.depositedCoins.toLocaleString()}개 적립</span>
+            {settlement.newlyUnlockedStageId && <span>새 스테이지 해금</span>}
+            {settlement.newlyUnlockedCharacterId && <span>{getCharacter(settlement.newlyUnlockedCharacterId).displayName} 해금</span>}
+            {settlement.newlyClaimedCosmeticIds.length > 0 && <span>도전 꾸미기 {settlement.newlyClaimedCosmeticIds.length}개 해금</span>}
+          </div>}
           <dl className="result-stats">
             <div><dt>최고 거리</dt><dd>{bestDistanceMeters.toLocaleString()}m</dd></div>
             <div><dt>수집 코인</dt><dd>{result.coins.toLocaleString()}</dd></div>

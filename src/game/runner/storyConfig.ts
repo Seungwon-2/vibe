@@ -9,6 +9,7 @@ export type StoryStageDefinition = Readonly<{
   lengthMeters: number;
   unlockCharacterId: CharacterId | null;
   coinTarget: number;
+  challengeRewardCosmeticIds: Readonly<{ noHit: string; coinTarget: string }>;
 }>;
 
 export const STORY_STAGES: readonly StoryStageDefinition[] = Object.freeze([
@@ -20,6 +21,7 @@ export const STORY_STAGES: readonly StoryStageDefinition[] = Object.freeze([
     lengthMeters: 2_500,
     unlockCharacterId: 'hanayo-hiyori',
     coinTarget: 20,
+    challengeRewardCosmeticIds: { noHit: 'dawn-no-hit-trail', coinTarget: 'dawn-coin-profile' },
   },
   {
     id: 'moonlit-forest',
@@ -29,6 +31,7 @@ export const STORY_STAGES: readonly StoryStageDefinition[] = Object.freeze([
     lengthMeters: 3_000,
     unlockCharacterId: 'tokino-mary',
     coinTarget: 25,
+    challengeRewardCosmeticIds: { noHit: 'forest-no-hit-trail', coinTarget: 'forest-coin-profile' },
   },
   {
     id: 'crystal-mine',
@@ -38,6 +41,7 @@ export const STORY_STAGES: readonly StoryStageDefinition[] = Object.freeze([
     lengthMeters: 3_500,
     unlockCharacterId: 'goth-student',
     coinTarget: 30,
+    challengeRewardCosmeticIds: { noHit: 'mine-no-hit-trail', coinTarget: 'mine-coin-profile' },
   },
   {
     id: 'cloud-skyway',
@@ -47,6 +51,7 @@ export const STORY_STAGES: readonly StoryStageDefinition[] = Object.freeze([
     lengthMeters: 4_000,
     unlockCharacterId: 'cogane-rang',
     coinTarget: 35,
+    challengeRewardCosmeticIds: { noHit: 'skyway-no-hit-trail', coinTarget: 'skyway-coin-profile' },
   },
 ]);
 

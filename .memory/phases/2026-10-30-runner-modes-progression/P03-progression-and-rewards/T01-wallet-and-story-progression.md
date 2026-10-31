@@ -1,6 +1,6 @@
 # Task: T01 Wallet and Story Progression
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -33,14 +33,15 @@ On every finished run, deposit collected coins exactly once, and on Story outcom
 
 ## Acceptance Criteria
 
-- [ ] Any finished run deposits run coins exactly once.
-- [ ] Story clear unlocks only the next stage and corresponding character.
-- [ ] Challenge and first-clear rewards are one-time and not farmable by replay.
+- [x] Any finished run deposits run coins exactly once.
+- [x] Story clear unlocks only the next stage and corresponding character.
+- [x] Challenge and first-clear rewards are one-time and not farmable by replay.
 
 ## Validation
 
-- npx vitest run src/services/PlayerProgression.test.ts src/services/LocalPlayerProfileStore.test.ts
-- npm run typecheck
+- `npm run typecheck` — passed.
+- `npm run build` — passed. Vite reports the existing large-chunk advisory.
+- Vitest was not run per session instruction not to run tests unless requested.
 
 ## Commit Message
 
@@ -55,6 +56,6 @@ On every finished run, deposit collected coins exactly once, and on Story outcom
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed
+- commit: `feat(progression): add wallet and story unlock rewards`
