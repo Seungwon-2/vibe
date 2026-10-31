@@ -590,6 +590,7 @@ h1 {
   .run-screen > .runner-stage { width: min(100%, calc((100dvh - 48px) * 16 / 9), 1200px); }
 }
 .runner-overlay--confirm { z-index: 8; padding: 14px; background: rgb(37 57 93 / 48%); }
+.runner-overlay--confirm .runner-result-actions { width: 100%; justify-content: center; }
 .result-shell { display: grid; min-height: 100dvh; place-items: center; padding: clamp(12px, 3vw, 32px); }
 .result-panel { display: grid; width: min(100%, 960px); grid-template-columns: minmax(180px, 0.7fr) 1.3fr; gap: clamp(16px, 4vw, 42px); align-items: center; padding: clamp(18px, 4vw, 42px); border: 1px solid var(--ui-border); border-radius: 28px; background: linear-gradient(145deg, var(--ui-surface), var(--ui-surface-raised)); box-shadow: var(--ui-shadow); color: var(--ui-text); }
 .result-character { display: grid; justify-items: center; gap: 12px; color: #fff; font-weight: 700; }
