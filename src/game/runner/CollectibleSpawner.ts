@@ -2,11 +2,13 @@ import type Phaser from 'phaser';
 import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterId } from '../characters/characterTypes';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
-import type { RunnerPickupKind, RunnerSnapshot } from './runnerTypes';
+import type { RunnerPickupKind, RunnerSnapshot, StoryStageId } from './runnerTypes';
 import { getDenseWaveSchedule, getHazardDistance, getPatternForDistance, getPatternStartDistance,
   isGateClearance, MAX_RUN_SPEED_UNITS_PER_SECOND, METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
-import { getBiomeForDistance } from '../visuals/runnerBiomes';
+import { getBiomeById, getBiomeForDistance, type RunnerBiomeDefinition } from '../visuals/runnerBiomes';
+import { getStoryStage } from './storyConfig';
+import { getStoryHazardSchedule } from './storyCourses';
 import { drawRunnerGate } from '../visuals/runnerCourseObjects';
 import { getPitDefinitions, isPitClearance } from './PitSpawner';
 import { getHazardGeometry } from './CollisionSystem';
@@ -85,7 +87,12 @@ const SAFE_PICKUP_SPACING_METERS = RUNNER_CONFIG.safePickupSpacingMeters;
 
 type ScheduledHazard = Readonly<{ distanceMeters: number; definition: HazardDefinition; patternIndex: number }>;
 
-function getScheduledHazards(maxDistanceMeters: number): ScheduledHazard[] {
+function getScheduledHazards(maxDistanceMeters: number, storyStageId: StoryStageId | null): ScheduledHazard[] {
+  if (storyStageId) {
+    return getStoryHazardSchedule(storyStageId)
+      .filter(({ distanceMeters }) => distanceMeters <= maxDistanceMeters)
+      .map(({ distanceMeters, definition }, patternIndex) => ({ distanceMeters, definition, patternIndex }));
+  }
   const hazards: ScheduledHazard[] = [];
   for (let patternIndex = 0; ; patternIndex += 1) {
     const patternStart = getPatternStartDistance(patternIndex);
@@ -153,9 +160,10 @@ function getTimePickupSlotIndexes(maxDistanceMeters: number): Set<number> {
 }
 
 /** Generate stable, absolute-distance pickups for any requested course length. */
-export function generatePickupSchedule(maxDistanceMeters: number): readonly PickupDefinition[] {
+export function generatePickupSchedule(maxDistanceMeters: number,
+  storyStageId: StoryStageId | null = null): readonly PickupDefinition[] {
   if (!Number.isFinite(maxDistanceMeters) || maxDistanceMeters < SAFE_PICKUP_START_METERS) return [];
-  const hazards = getScheduledHazards(maxDistanceMeters + PICKUP_PIT_CLEARANCE_METERS);
+  const hazards = getScheduledHazards(maxDistanceMeters + PICKUP_PIT_CLEARANCE_METERS, storyStageId);
   const pits = getPitDefinitions(maxDistanceMeters + PICKUP_PIT_CLEARANCE_METERS);
   // isPickupDistanceSafe accepts a horizon for pit enumeration; include the
   // clearance beyond the requested end so a pit just outside the range counts.
@@ -255,9 +263,12 @@ type GateArt = { distanceMeters: number; art: Phaser.GameObjects.Graphics; label
 
 export class CollectibleSpawner {
   private nextPickupIndex = 0;
+  private activePickupSchedule: readonly PickupDefinition[] = PICKUP_SCHEDULE;
+  private scheduledStoryStageId: StoryStageId | null = null;
   private active: ActivePickup[] = [];
   private gates: GateArt[] = [];
   private createdGates = new Set<number>();
+  private activeStoryBiome: RunnerBiomeDefinition | null = null;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -268,10 +279,22 @@ export class CollectibleSpawner {
 
   update(snapshot: RunnerSnapshot): void {
     if (snapshot.phase !== 'running') return;
+    const storyStage = snapshot.mode === 'story' && snapshot.storyStageId
+      ? getStoryStage(snapshot.storyStageId) : null;
+    const stageBiome = storyStage ? getBiomeById(storyStage.biomeId) : null;
+    this.activeStoryBiome = stageBiome;
+    const storyStageId = storyStage?.id ?? null;
+    if (storyStageId !== this.scheduledStoryStageId) {
+      this.scheduledStoryStageId = storyStageId;
+      this.activePickupSchedule = storyStage
+        ? generatePickupSchedule(storyStage.lengthMeters, storyStage.id)
+        : PICKUP_SCHEDULE;
+      this.nextPickupIndex = 0;
+    }
     const visibleLead = (960 - RUNNER_PLAYER_X) * METERS_PER_WORLD_UNIT;
-    while (this.nextPickupIndex < PICKUP_SCHEDULE.length &&
-      PICKUP_SCHEDULE[this.nextPickupIndex].distanceMeters <= snapshot.distanceMeters + visibleLead) {
-      this.spawnPickup(PICKUP_SCHEDULE[this.nextPickupIndex]);
+    while (this.nextPickupIndex < this.activePickupSchedule.length &&
+      this.activePickupSchedule[this.nextPickupIndex].distanceMeters <= snapshot.distanceMeters + visibleLead) {
+      this.spawnPickup(this.activePickupSchedule[this.nextPickupIndex]);
       this.nextPickupIndex += 1;
     }
     for (const pickup of [...this.active]) {
@@ -283,21 +306,21 @@ export class CollectibleSpawner {
     }
 
     for (const distanceMeters of RUNNER_GATE_DISTANCES_M) {
+      if (storyStage && distanceMeters >= storyStage.lengthMeters) continue;
       if (distanceMeters > snapshot.distanceMeters + visibleLead ||
         this.createdGates.has(distanceMeters) ||
         snapshot.distanceMeters > distanceMeters + 100) continue;
       this.createdGates.add(distanceMeters);
-      const biome = getBiomeForDistance(distanceMeters);
+      const biome = stageBiome ?? getBiomeForDistance(distanceMeters);
       const { palette, landmark } = biome;
       const art = this.scene.add.graphics().setDepth(-5);
-      // Thematic landmark art remains non-colliding and aligned with +20s.
+      // Story milestones are visual landmarks only; Endless retains its gate rewards.
       drawRunnerGate(art, biome);
-      const label = this.scene.add.text(0, 0, '+20s',
+      const label = this.scene.add.text(0, 0, `${landmark} · ${distanceMeters.toLocaleString()}m`,
         { color: `#${palette.hazardContrast.toString(16).padStart(6, '0')}`,
           fontSize: '15px', fontFamily: 'monospace',
           backgroundColor: '#fffffff0', padding: { x: 5, y: 3 } }).setOrigin(0.5)
         .setDepth(5);
-      label.setText(`${landmark}  +20s`);
       this.gates.push({ distanceMeters, art, label });
     }
     for (const gate of [...this.gates]) {
@@ -331,7 +354,9 @@ export class CollectibleSpawner {
     body.setImmovable(true);
     body.setCircle(pickupSize / 2);
     const art = this.scene.add.graphics();
-    const biome = getBiomeForDistance(definition.distanceMeters);
+    const biome = this.activeStoryBiome
+      ? this.activeStoryBiome
+      : getBiomeForDistance(definition.distanceMeters);
     drawPickupArt(art, definition.kind, biome);
     const active: ActivePickup = { definition, box, art, collected: false };
     this.active.push(active);

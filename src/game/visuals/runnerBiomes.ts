@@ -62,6 +62,14 @@ export const RUNNER_BIOMES: readonly RunnerBiomeDefinition[] = Object.freeze([
   },
 ]);
 
+const BIOME_BY_ID = new Map(RUNNER_BIOMES.map((biome) => [biome.id, biome]));
+
+export function getBiomeById(biomeId: RunnerBiomeId): RunnerBiomeDefinition {
+  const biome = BIOME_BY_ID.get(biomeId);
+  if (!biome) throw new Error('Unknown runner biome: ' + biomeId);
+  return biome;
+}
+
 export function getBiomeForDistance(distanceMeters: number): RunnerBiomeDefinition {
   let biome = RUNNER_BIOMES[0];
   for (const candidate of RUNNER_BIOMES) {

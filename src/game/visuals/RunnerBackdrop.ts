@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
-import type { RunnerSnapshot } from '../runner/runnerTypes';
-import { getBiomeForDistance, type RunnerBiomeDefinition } from './runnerBiomes';
+import type { RunnerSnapshot, StoryStageId } from '../runner/runnerTypes';
+import { getStoryStage } from '../runner/storyConfig';
+import { getBiomeById, getBiomeForDistance, type RunnerBiomeDefinition } from './runnerBiomes';
 
 const WIDTH = 960;
 const HEIGHT = 540;
@@ -226,8 +227,9 @@ export class RunnerBackdrop {
   private outgoing: BackdropSet | null = null;
   private transitionElapsedMs = BIOME_CROSSFADE_MS;
 
-  constructor(private readonly scene: Phaser.Scene, initialDistanceMeters = 0) {
-    this.active = this.createSet(getBiomeForDistance(initialDistanceMeters));
+  constructor(private readonly scene: Phaser.Scene, initialDistanceMeters = 0,
+    private readonly storyStageId: StoryStageId | null = null) {
+    this.active = this.createSet(this.resolveBiome(initialDistanceMeters));
   }
 
   get biomeId(): RunnerBiomeDefinition['id'] {
@@ -235,7 +237,7 @@ export class RunnerBackdrop {
   }
 
   update(snapshot: Pick<RunnerSnapshot, 'distanceMeters' | 'worldDistance'>, deltaMs: number): void {
-    const biome = getBiomeForDistance(snapshot.distanceMeters);
+    const biome = this.resolveBiome(snapshot.distanceMeters);
     if (biome.id !== this.active.biome.id) {
       if (this.outgoing) this.destroySet(this.outgoing);
       this.outgoing = this.active;
@@ -291,6 +293,12 @@ export class RunnerBackdrop {
     const container = this.scene.add.container(0, 0,
       [sky, skyDetail, layers.far, layers.middle, layers.near]).setDepth(-40);
     return { biome, container, layers, textureKeys };
+  }
+
+  private resolveBiome(distanceMeters: number): RunnerBiomeDefinition {
+    return this.storyStageId
+      ? getBiomeById(getStoryStage(this.storyStageId).biomeId)
+      : getBiomeForDistance(distanceMeters);
   }
 
   private destroySet(set: BackdropSet): void {

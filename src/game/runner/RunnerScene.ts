@@ -66,7 +66,8 @@ export class RunnerScene extends Phaser.Scene {
       mode: this.registry.get('runnerMode') as RunnerMode,
       storyStageId: this.registry.get('storyStageId') as StoryStageId | null,
     });
-    this.backdrop = new RunnerBackdrop(this);
+    this.backdrop = new RunnerBackdrop(this, 0,
+      this.snapshot.mode === 'story' ? this.snapshot.storyStageId ?? null : null);
     this.passiveEffectArt = this.add.graphics().setDepth(3);
 
     const animationFrames = {

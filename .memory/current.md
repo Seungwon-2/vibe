@@ -2,15 +2,14 @@
 
 ## Active Plan
 
-- Plan: [2026-10-30-runner-modes-progression](./plans/2026-10-30-runner-modes-progression.md)
-- Status: completed
-- Phase: all phases complete
-- Active Task: none
+- Plan: [2026-10-31-story-stage-maps-and-goal](./plans/2026-10-31-story-stage-maps-and-goal.md)
+- Phase: P01 Story Courses
+- Active Task: [T02 Goal Finish Sequence](./phases/2026-10-31-story-stage-maps-and-goal/P01-story-courses/T02-goal-finish-sequence.md)
 
 ## Last Completed
 
-- P04-T02 Equipped Cosmetics Runtime — `feat(cosmetics): render equipped runner effects`
+- 2026-10-30 runner modes, progression, and cosmetics plan — completed on `project02`.
 
 ## Next Step
 
-- Tune giant-item placement and visuals, review gameplay balance in local play, then revisit Azure deployment planning.
+- Render the themed Story goal arch/finish stripe and hold the victory pose for about 800ms before the result screen.

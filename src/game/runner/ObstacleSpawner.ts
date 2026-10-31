@@ -7,7 +7,9 @@ import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import type { HazardDefinition } from './hazardTypes';
 import { RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { RunnerSnapshot } from './runnerTypes';
-import { getBiomeForDistance } from '../visuals/runnerBiomes';
+import { getStoryStage } from './storyConfig';
+import { getStoryHazardSchedule } from './storyCourses';
+import { getBiomeById, getBiomeForDistance } from '../visuals/runnerBiomes';
 import { drawRunnerHazard } from '../visuals/runnerHazards';
 
 type ActiveHazard = {
@@ -23,6 +25,7 @@ export class ObstacleSpawner {
   private pending: { atMeters: number; definition: HazardDefinition }[] = [];
   private active: ActiveHazard[] = [];
   private warnedKinds = new Set<HazardDefinition['kind']>();
+  private activeStoryStageId: RunnerSnapshot['storyStageId'] = null;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -33,28 +36,38 @@ export class ObstacleSpawner {
 
   update(snapshot: RunnerSnapshot): void {
     if (snapshot.phase !== 'running') return;
+    this.activeStoryStageId = snapshot.mode === 'story' ? snapshot.storyStageId ?? null : null;
     const visibleLeadMeters = (960 - RUNNER_PLAYER_X) * METERS_PER_WORLD_UNIT;
-    while (getPatternStartDistance(this.nextPatternIndex) <= snapshot.distanceMeters + visibleLeadMeters) {
-      const base = getPatternStartDistance(this.nextPatternIndex);
-      const pattern = getPatternForDistance(base);
-      const candidate = pattern.obstacles.map((definition) => ({
-        atMeters: getHazardDistance(this.nextPatternIndex, definition), definition,
-      }));
-      const lastHazardMeters = Math.max(base, ...candidate.map(({ atMeters }) => atMeters));
-      const nearbyPits = getPitDefinitions(lastHazardMeters + RUNNER_CONFIG.pitHazardClearanceMeters +
-        RUNNER_CONFIG.pitWidthMeters / 2);
-      const conflictsWithPit = candidate.some(({ atMeters, definition }) => nearbyPits.some((pit) =>
-        isPitClearance(atMeters, pit, RUNNER_CONFIG.pitHazardClearanceMeters +
-          definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit),
-      ));
-      const conflictsWithGate = candidate.some(({ atMeters, definition }) =>
-        RUNNER_GATE_DISTANCES_M.some((gate) => isGateClearance(
-          atMeters, gate, definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit,
-        )),
-      );
-      // Skip an entire authored pattern so action groups cannot be split.
-      if (!conflictsWithPit && !conflictsWithGate) this.pending.push(...candidate);
-      this.nextPatternIndex += 1;
+    if (snapshot.mode === 'story' && snapshot.storyStageId) {
+      const course = getStoryHazardSchedule(snapshot.storyStageId);
+      while (this.nextPatternIndex < course.length &&
+        course[this.nextPatternIndex].distanceMeters <= snapshot.distanceMeters + visibleLeadMeters) {
+        const placement = course[this.nextPatternIndex++];
+        this.pending.push({ atMeters: placement.distanceMeters, definition: placement.definition });
+      }
+    } else {
+      while (getPatternStartDistance(this.nextPatternIndex) <= snapshot.distanceMeters + visibleLeadMeters) {
+        const base = getPatternStartDistance(this.nextPatternIndex);
+        const pattern = getPatternForDistance(base);
+        const candidate = pattern.obstacles.map((definition) => ({
+          atMeters: getHazardDistance(this.nextPatternIndex, definition), definition,
+        }));
+        const lastHazardMeters = Math.max(base, ...candidate.map(({ atMeters }) => atMeters));
+        const nearbyPits = getPitDefinitions(lastHazardMeters + RUNNER_CONFIG.pitHazardClearanceMeters +
+          RUNNER_CONFIG.pitWidthMeters / 2);
+        const conflictsWithPit = candidate.some(({ atMeters, definition }) => nearbyPits.some((pit) =>
+          isPitClearance(atMeters, pit, RUNNER_CONFIG.pitHazardClearanceMeters +
+            definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit),
+        ));
+        const conflictsWithGate = candidate.some(({ atMeters, definition }) =>
+          RUNNER_GATE_DISTANCES_M.some((gate) => isGateClearance(
+            atMeters, gate, definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit,
+          )),
+        );
+        // Skip an entire authored pattern so action groups cannot be split.
+        if (!conflictsWithPit && !conflictsWithGate) this.pending.push(...candidate);
+        this.nextPatternIndex += 1;
+      }
     }
 
     this.pending = this.pending.filter((entry) => {
@@ -88,7 +101,9 @@ export class ObstacleSpawner {
     body.setImmovable(true);
     body.setSize(geometry.width, geometry.height);
     const art = this.scene.add.graphics();
-    const biome = getBiomeForDistance(atMeters);
+    const biome = this.activeStoryStageId
+      ? getBiomeById(getStoryStage(this.activeStoryStageId).biomeId)
+      : getBiomeForDistance(atMeters);
     drawRunnerHazard(art, definition, biome);
     const showWarning = this.tutorialEnabled && !this.warnedKinds.has(definition.kind);
     const warning = showWarning ? this.scene.add.text(0, 0,
