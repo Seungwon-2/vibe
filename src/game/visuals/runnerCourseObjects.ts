@@ -1,6 +1,51 @@
 import type Phaser from 'phaser';
 import type { RunnerBiomeDefinition } from './runnerBiomes';
 
+/** Draws a decorative finish arch and striped ground line around local x=[-76, 76]. */
+export function drawRunnerGoal(
+  graphics: Phaser.GameObjects.Graphics,
+  biome: RunnerBiomeDefinition,
+): void {
+  const p = biome.palette;
+  graphics.fillStyle(p.gate, 0.96).fillRoundedRect(-68, -204, 16, 204, 7)
+    .fillRoundedRect(52, -204, 16, 204, 7)
+    .fillRoundedRect(-68, -204, 136, 18, 7);
+  graphics.lineStyle(3, p.hazardContrast, 0.92).strokeRoundedRect(-68, -204, 136, 204, 7);
+  graphics.fillStyle(p.groundFace, 0.96).fillRoundedRect(-43, -174, 86, 130, 12);
+  graphics.lineStyle(3, p.accent, 0.95).strokeRoundedRect(-43, -174, 86, 130, 12);
+  graphics.fillStyle(p.gate, 0.96).fillRoundedRect(-36, -167, 72, 28, 8);
+  graphics.fillStyle(0xffffff, 0.96).fillRect(-29, -163, 58, 20);
+  graphics.lineStyle(5, p.gate, 0.94).lineBetween(-76, -3, 76, -3);
+  for (let index = 0; index < 8; index += 1) {
+    graphics.fillStyle(index % 2 === 0 ? p.gate : 0xffffff, 0.96)
+      .fillRect(-64 + index * 16, -2, 16, 6);
+  }
+
+  switch (biome.id) {
+    case 'dawn-city':
+      graphics.fillStyle(p.accent, 0.96).fillCircle(-60, -189, 5).fillCircle(60, -189, 5);
+      graphics.lineStyle(2, p.groundFace, 0.9).lineBetween(-54, -182, -43, -173)
+        .lineBetween(54, -182, 43, -173);
+      break;
+    case 'moonlit-forest':
+      graphics.fillStyle(0xf4d6e8, 0.92).fillEllipse(-56, -185, 18, 9).fillEllipse(56, -185, 18, 9)
+        .fillTriangle(-64, -184, -53, -193, -49, -180)
+        .fillTriangle(64, -184, 53, -193, 49, -180);
+      break;
+    case 'crystal-mine':
+      graphics.fillStyle(p.accent, 0.98).fillTriangle(-60, -176, -52, -197, -44, -176)
+        .fillTriangle(60, -176, 52, -197, 44, -176);
+      graphics.lineStyle(2, 0xffffff, 0.8).lineBetween(-52, -193, -52, -180)
+        .lineBetween(52, -193, 52, -180);
+      break;
+    case 'cloud-skyway':
+      graphics.fillStyle(0xffffff, 0.98).fillEllipse(-58, -185, 24, 12).fillEllipse(-49, -190, 14, 12)
+        .fillEllipse(58, -185, 24, 12).fillEllipse(49, -190, 14, 12);
+      graphics.fillStyle(p.accent, 0.96).fillCircle(0, -194, 5);
+      break;
+  }
+}
+
 /** Draws a decorative gate inside x=[-28, 28], y=[-168, 0]. */
 export function drawRunnerGate(
   graphics: Phaser.GameObjects.Graphics,

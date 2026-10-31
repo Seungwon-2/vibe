@@ -9,7 +9,7 @@ import { RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import { getBiomeById, getBiomeForDistance, type RunnerBiomeDefinition } from '../visuals/runnerBiomes';
 import { getStoryStage } from './storyConfig';
 import { getStoryHazardSchedule } from './storyCourses';
-import { drawRunnerGate } from '../visuals/runnerCourseObjects';
+import { drawRunnerGate, drawRunnerGoal } from '../visuals/runnerCourseObjects';
 import { getPitDefinitions, isPitClearance } from './PitSpawner';
 import { getHazardGeometry } from './CollisionSystem';
 import type { HazardDefinition } from './hazardTypes';
@@ -260,6 +260,7 @@ type ActivePickup = {
 };
 
 type GateArt = { distanceMeters: number; art: Phaser.GameObjects.Graphics; label: Phaser.GameObjects.Text };
+type GoalArt = { art: Phaser.GameObjects.Graphics; label: Phaser.GameObjects.Text };
 
 export class CollectibleSpawner {
   private nextPickupIndex = 0;
@@ -267,6 +268,7 @@ export class CollectibleSpawner {
   private scheduledStoryStageId: StoryStageId | null = null;
   private active: ActivePickup[] = [];
   private gates: GateArt[] = [];
+  private goal: GoalArt | null = null;
   private createdGates = new Set<number>();
   private activeStoryBiome: RunnerBiomeDefinition | null = null;
 
@@ -333,12 +335,31 @@ export class CollectibleSpawner {
         this.gates = this.gates.filter((item) => item !== gate);
       }
     }
+
+    if (storyStage && !this.goal && storyStage.lengthMeters <= snapshot.distanceMeters + visibleLead) {
+      const art = this.scene.add.graphics().setDepth(-5);
+      drawRunnerGoal(art, stageBiome!);
+      const label = this.scene.add.text(0, 0, 'GOAL', {
+        color: `#${stageBiome!.palette.hazardContrast.toString(16).padStart(6, '0')}`,
+        fontSize: '20px', fontStyle: 'bold', fontFamily: 'monospace',
+        backgroundColor: '#fffffff2', padding: { x: 9, y: 5 },
+      }).setOrigin(0.5).setDepth(6);
+      this.goal = { art, label };
+    }
+    if (storyStage && this.goal) {
+      const x = this.screenX(storyStage.lengthMeters, snapshot.distanceMeters);
+      this.goal.art.setPosition(x, RUNNER_GROUND_Y);
+      this.goal.label.setPosition(x, RUNNER_GROUND_Y - 224);
+    }
   }
 
   destroy(): void {
     for (const pickup of [...this.active]) this.removePickup(pickup);
     for (const gate of this.gates) { gate.art.destroy(); gate.label.destroy(); }
     this.gates = [];
+    this.goal?.art.destroy();
+    this.goal?.label.destroy();
+    this.goal = null;
   }
 
   private screenX(atMeters: number, currentMeters: number): number {

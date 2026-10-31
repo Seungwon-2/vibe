@@ -7,6 +7,7 @@ export const RUNNER_CONFIG = Object.freeze({
   storySpeedBoostRatio: 0.15,
   storyLivesPerStage: 3,
   storyHitProtectionMs: 800,
+  storyVictoryHoldMs: 800,
   gateBonusMs: 20_000,
   gateSpeedBonusRatio: 0.05,
   firstPitDistanceMeters: 850,

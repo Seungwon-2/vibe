@@ -1,15 +1,14 @@
-﻿# Current Work
+# Current Work
 
-## Active Plan
+## Status
 
-- Plan: [2026-10-31-story-stage-maps-and-goal](./plans/2026-10-31-story-stage-maps-and-goal.md)
-- Phase: P01 Story Courses
-- Active Task: [T02 Goal Finish Sequence](./phases/2026-10-31-story-stage-maps-and-goal/P01-story-courses/T02-goal-finish-sequence.md)
+- The 2026-10-31 Story stage maps and goal finish plan is complete on `project02`.
 
 ## Last Completed
 
-- 2026-10-30 runner modes, progression, and cosmetics plan — completed on `project02`.
+- Story courses and goal finish: each Story stage keeps its own biome and authored hazard route, with a themed GOAL finish and an 800ms victory pose before results.
+- 2026-10-30 runner modes, progression, and cosmetics plan.
 
 ## Next Step
 
-- Render the themed Story goal arch/finish stripe and hold the victory pose for about 800ms before the result screen.
+- Play through all four Story courses locally; review hazard rhythm and goal readability, then tune as needed before Azure deployment.

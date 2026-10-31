@@ -34,6 +34,8 @@ export class RunnerScene extends Phaser.Scene {
   private trailEffect!: RunnerTrailEffect;
   private pits!: PitSpawner;
   private finishEmitted = false;
+  private finishPending = false;
+  private storyFinishTimer: Phaser.Time.TimerEvent | null = null;
   private pitFallCinematicActive = false;
   private pendingPitFinish: { state: RunnerSnapshot; result: RunnerResult } | null = null;
   private pitFallTween: Phaser.Tweens.Tween | null = null;
@@ -167,7 +169,11 @@ export class RunnerScene extends Phaser.Scene {
     this.pits.update(state);
     if (result) {
       this.inputBridge.clear();
-      this.emitFinished(result);
+      if (result.mode === 'story' && result.finishReason === 'stage-complete') {
+        this.beginStoryFinish(result);
+      } else {
+        this.emitFinished(result);
+      }
     }
   }
 
@@ -316,6 +322,20 @@ export class RunnerScene extends Phaser.Scene {
     this.emitFinished(pending.result);
   };
 
+  private beginStoryFinish(result: RunnerResult): void {
+    if (this.finishEmitted || this.finishPending) return;
+    this.finishPending = true;
+    this.inputBridge.clear();
+    this.heldKeyboardActions.clear();
+    this.trailEffect.clear();
+    this.player.finish('victory');
+    this.storyFinishTimer = this.time.delayedCall(RUNNER_CONFIG.storyVictoryHoldMs, () => {
+      this.storyFinishTimer = null;
+      this.finishPending = false;
+      this.emitFinished(result);
+    });
+  }
+
   private emitFinished(result: RunnerResult): void {
     if (this.finishEmitted) return;
     this.finishEmitted = true;
@@ -372,6 +392,9 @@ export class RunnerScene extends Phaser.Scene {
     this.pitFallTween = null;
     this.pitFinishTimer?.remove(false);
     this.pitFinishTimer = null;
+    this.storyFinishTimer?.remove(false);
+    this.storyFinishTimer = null;
+    this.finishPending = false;
     this.pendingPitFinish = null;
     this.pitFallCinematicActive = false;
     if (this.player) this.tweens.killTweensOf(this.player.gameObject);

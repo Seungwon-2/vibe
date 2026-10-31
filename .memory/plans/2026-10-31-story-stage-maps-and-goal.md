@@ -8,7 +8,12 @@ Make each Story stage feel like a distinct, self-contained course. Lock its biom
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | in_progress | Author fixed Story courses and provide a visible, celebratory goal finish. | [P01](../phases/2026-10-31-story-stage-maps-and-goal/P01-story-courses/phase.md) |
+| P01 | done | Author fixed Story courses and provide a visible, celebratory goal finish. | [P01](../phases/2026-10-31-story-stage-maps-and-goal/P01-story-courses/phase.md) |
+
+## Status
+
+- Complete: both planned tasks are implemented and build validation passed.
+- Follow-up: play all four Story courses locally and tune difficulty from observed play before Azure deployment.
 
 ## Confirmed Rules
 
