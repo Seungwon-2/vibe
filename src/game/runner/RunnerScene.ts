@@ -252,6 +252,7 @@ export class RunnerScene extends Phaser.Scene {
       this.heldKeyboardActions.clear();
       this.inputBridge.clear();
       this.player.setPassiveEffect(state.passiveEffectRemainingMs);
+      this.player.setProtected(state.protectionRemainingMs);
       this.player.setGiant(state.giantRemainingMs > 0);
       this.player.beginPitRescue();
       this.eventEmitter.passiveTriggered(state.passiveChargesRemaining, 'pit');

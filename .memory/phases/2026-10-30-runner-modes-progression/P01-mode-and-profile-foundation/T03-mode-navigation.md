@@ -72,4 +72,4 @@ Add Title → Mode Select → Character Select → Story Stage Select navigation
 
 - [x] Implementation complete
 - [x] Validation passed: npm run typecheck
-- commit: see task commit
+- commit: 1b6d632

@@ -11,7 +11,3 @@
 ## Progress
 
 - done: 3/3
-
-## Progress
-
-- done: 3/3

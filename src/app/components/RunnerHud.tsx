@@ -65,17 +65,22 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
             </span>
           </div>
         )}
-        <div className={`runner-hud__timer${warning ? ' is-warning' : ''}`} aria-live={warning ? 'polite' : 'off'}>
+        {!storyStage && <div className={`runner-hud__timer${warning ? ' is-warning' : ''}`} aria-live={warning ? 'polite' : 'off'}>
           <span>남은 시간</span>
           <strong>{formatTime(snapshot.remainingMs)}</strong>
           <span className="runner-hud__gauge" role="progressbar" aria-label="남은 시간"
             aria-valuemin={0} aria-valuemax={120_000} aria-valuenow={snapshot.remainingMs}>
             <span style={{ width: `${Math.max(0, Math.min(100, snapshot.remainingMs / 120_000 * 100))}%` }} />
           </span>
-        </div>
+        </div>}
         <div className="runner-hud__distance" aria-live="off">
           <strong>{Math.round(snapshot.distanceMeters).toLocaleString()}</strong><span>m</span>
         </div>
+        {storyStage && <div className="runner-hud__lives" role="img"
+          aria-label={`남은 생명 ${snapshot.livesRemaining ?? 0}개`}>
+          <span>생명</span>
+          <strong>{'♥'.repeat(snapshot.livesRemaining ?? 0)}{'♡'.repeat(Math.max(0, 3 - (snapshot.livesRemaining ?? 0)))}</strong>
+        </div>}
         <div className="runner-hud__actions">
           <span className="runner-hud__coins" aria-label={`코인 ${snapshot.coins}개`}>🟡 {snapshot.coins}</span>
           <button className="runner-hud__pause" type="button" aria-label="일시정지" onClick={onPause}>Ⅱ</button>

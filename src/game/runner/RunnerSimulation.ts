@@ -334,7 +334,8 @@ export function collectPickup(
 }
 
 export function applyCollision(state: RunnerSnapshot, sliding = false): RunnerSnapshot {
-  if (state.phase !== 'running' || state.protectionRemainingMs > 0 || state.remainingMs <= 0) {
+  if (state.phase !== 'running' || state.protectionRemainingMs > 0 ||
+      (state.mode !== 'story' && state.remainingMs <= 0)) {
     return state;
   }
   if (state.giantRemainingMs > 0) return state;
@@ -350,10 +351,23 @@ export function applyCollision(state: RunnerSnapshot, sliding = false): RunnerSn
   if (passive.id === 'hiyori-guard' && state.passiveChargesRemaining > 0) {
     return {
       ...state,
+      hitsTaken: (state.hitsTaken ?? 0) + (state.mode === 'story' ? 1 : 0),
       passiveChargesRemaining: state.passiveChargesRemaining - 1,
       passiveEffectRemainingMs: 700,
-      protectionRemainingMs: RUNNER_CONFIG.protectionMs,
+      protectionRemainingMs: state.mode === 'story'
+        ? RUNNER_CONFIG.storyHitProtectionMs : RUNNER_CONFIG.protectionMs,
     };
+  }
+  if (state.mode === 'story') {
+    const livesRemaining = Math.max(0, (state.livesRemaining ?? RUNNER_CONFIG.storyLivesPerStage) - 1);
+    const hit: RunnerSnapshot = {
+      ...state,
+      livesRemaining,
+      hitsTaken: (state.hitsTaken ?? 0) + 1,
+      staggerRemainingMs: RUNNER_CONFIG.storyHitProtectionMs,
+      protectionRemainingMs: RUNNER_CONFIG.storyHitProtectionMs,
+    };
+    return livesRemaining === 0 ? finishRunner(hit, undefined, 'lives-exhausted').state : hit;
   }
   const remainingMs = Math.max(0, state.remainingMs - RUNNER_CONFIG.collisionPenaltyMs);
   const hit: RunnerSnapshot = {
@@ -366,16 +380,22 @@ export function applyCollision(state: RunnerSnapshot, sliding = false): RunnerSn
 }
 
 export function applyPitFall(state: RunnerSnapshot): { state: RunnerSnapshot; blockedByPassive: boolean } {
-  if (state.phase !== 'running' || state.remainingMs <= 0) return { state, blockedByPassive: false };
+  if (state.phase !== 'running' || (state.mode !== 'story' && state.remainingMs <= 0)) {
+    return { state, blockedByPassive: false };
+  }
   const passive = getCharacterPassive(state.characterId);
   if (passive.id === 'hiyori-guard' && state.passiveChargesRemaining > 0) {
     return {
       state: {
         ...state,
         giantRemainingMs: 0,
+        hitsTaken: (state.hitsTaken ?? 0) + (state.mode === 'story' ? 1 : 0),
         passiveChargesRemaining: state.passiveChargesRemaining - 1,
         passiveEffectRemainingMs: 700,
-        protectionRemainingMs: RUNNER_CONFIG.protectionMs,
+        protectionRemainingMs: state.mode === 'story'
+          ? RUNNER_CONFIG.storyHitProtectionMs : RUNNER_CONFIG.protectionMs,
+        // Freeze the course while the scene returns Hiyori to the safe ground anchor.
+        staggerRemainingMs: state.mode === 'story' ? 500 : state.staggerRemainingMs,
       },
       blockedByPassive: true,
     };

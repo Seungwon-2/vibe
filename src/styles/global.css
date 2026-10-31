@@ -183,6 +183,9 @@ button {
 .runner-hud__distance { display: flex; align-items: baseline; gap: 4px; font-variant-numeric: tabular-nums; }
 .runner-hud__distance strong { font-size: clamp(1.15rem, 3.2cqw, 2rem); }
 .runner-hud__distance > span { color: var(--ui-muted); }
+.runner-hud__lives { display: grid; gap: 1px; justify-items: center; padding: 3px 9px; border: 1px solid color-mix(in srgb, #e987a8, var(--ui-border) 45%); border-radius: 12px; background: #fff6fa; color: #c84f7b; font-weight: 800; }
+.runner-hud__lives > span { color: var(--ui-muted); font-size: .72em; }
+.runner-hud__lives strong { letter-spacing: 2px; }
 .runner-hud__actions { display: flex; justify-self: end; align-items: center; gap: 10px; }
 .runner-hud__coins { min-width: 46px; padding: 5px 8px; border: 1px solid #e8d59a; border-radius: 12px; background: #fff5d7; color: #634b10; font-weight: 800; }
 .runner-hud__pause { width: 40px; height: 40px; border: 1px solid var(--ui-border); border-radius: 12px; color: var(--ui-primary-strong); background: var(--ui-surface); font-size: 1.25rem; cursor: pointer; pointer-events: auto; }
@@ -2090,8 +2093,8 @@ body:has(.selector-shell--runner),
 .stage-option__order { color: #9474bd; font-size: .75rem; font-weight: 850; letter-spacing: .15em; }
 .stage-option__status { font-weight: 750; }
 .stage-select-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.runner-hud[data-mode="story"] .runner-hud__timer:not(.runner-hud__course-progress) { display: none; }
 .runner-hud[data-mode="story"] .runner-hud__course-progress { display: grid; }
+.runner-hud[data-mode="story"] .runner-hud__main { grid-template-columns: minmax(120px, 1fr) auto auto auto; }
 @media (max-width: 640px) {
   .progression-screen { align-items: start; padding: 8px; }
   .progression-panel { gap: 14px; padding: 20px 14px; border-radius: 20px; }
