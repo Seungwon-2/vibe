@@ -36,26 +36,25 @@ const STORY_COURSES: Readonly<Record<StoryStageId, readonly StoryHazardPlacement
     placement('forest-slide-01', 360, 'overhead'), placement('forest-jump-01', 620, 'ground'),
     placement('forest-slide-02', 1_080, 'overhead'), placement('forest-jump-02', 1_420, 'ground'),
     placement('forest-slide-03', 1_760, 'overhead'), placement('forest-jump-03', 2_280, 'ground'),
-    placement('forest-slide-04', 2_620, 'overhead'),
   ]),
   'crystal-mine': Object.freeze([
     placement('mine-jump-01', 390, 'ground'), placement('mine-slide-01', 620, 'overhead'),
     placement('mine-jump-02', 1_100, 'ground'), placement('mine-jump-03', 1_390, 'ground'),
     placement('mine-slide-02', 1_760, 'overhead'), placement('mine-jump-04', 2_280, 'ground'),
-    placement('mine-slide-03', 2_620, 'overhead'), placement('mine-jump-05', 2_920, 'ground'),
+    placement('mine-jump-05', 2_920, 'ground'),
     placement('mine-slide-04', 3_180, 'overhead'),
   ]),
   'cloud-skyway': Object.freeze([
     placement('skyway-slide-01', 380, 'overhead'), placement('skyway-jump-01', 620, 'ground'),
     placement('skyway-slide-02', 1_100, 'overhead'), placement('skyway-jump-02', 1_410, 'ground'),
     placement('skyway-slide-03', 1_760, 'overhead'), placement('skyway-jump-03', 2_280, 'ground'),
-    placement('skyway-slide-04', 2_620, 'overhead'), placement('skyway-jump-04', 2_920, 'ground'),
+    placement('skyway-jump-04', 2_920, 'ground'),
     placement('skyway-slide-05', 3_220, 'overhead'), placement('skyway-jump-05', 3_550, 'ground'),
     placement('skyway-slide-06', 3_780, 'overhead'),
   ]),
 });
 
-function validateCourses(): void {
+export function validateStoryCourses(): void {
   for (const [stageId, course] of Object.entries(STORY_COURSES) as [StoryStageId, readonly StoryHazardPlacement[]][]) {
     const stage = getStoryStage(stageId);
     for (let index = 0; index < course.length; index += 1) {
@@ -80,8 +79,6 @@ function validateCourses(): void {
     }
   }
 }
-
-validateCourses();
 
 export function getStoryHazardSchedule(stageId: StoryStageId): readonly StoryHazardPlacement[] {
   const course = STORY_COURSES[stageId];

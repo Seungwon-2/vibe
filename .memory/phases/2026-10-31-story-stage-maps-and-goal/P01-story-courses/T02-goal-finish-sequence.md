@@ -55,6 +55,12 @@ Show a thematic goal arch, finish stripe, and `GOAL` at each Story endpoint, the
 
 Results: typecheck passed; production build passed. Vite reported its existing large JavaScript chunk advisory.
 
+## Follow-up Runtime Fix (2026-10-31)
+
+- Fixed a blank startup caused by route validation throwing during `storyCourses` module import. The explicit `validateStoryCourses()` check now runs only when requested, not while the app boots.
+- Removed three late hazards that overlapped pit safety zones in the Moonlit Forest, Crystal Mine, and Cloud Skyway routes.
+- Rechecked all authored routes with the explicit validator, confirmed the local browser rendered the title menu, and reran typecheck/build successfully.
+
 ## Commit Message
 
 ```text
