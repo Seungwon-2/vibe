@@ -49,7 +49,9 @@ export type RunnerResult = Readonly<{
   mode?: RunnerMode;
   storyStageId?: StoryStageId | null;
   hitsTaken?: number;
+  livesRemaining?: number;
   nearMissScore?: number;
+  passedGateCount?: number;
   completedStage?: boolean;
   distanceMeters: number;
   coins: number;

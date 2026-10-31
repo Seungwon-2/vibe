@@ -1,6 +1,6 @@
 # Task: T02 Story Results and Achievements
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -37,14 +37,15 @@ Show mode-specific clear/failure results and implement one-time achievements wit
 
 ## Acceptance Criteria
 
-- [ ] Story clear and failure expose the correct next actions and rewards.
-- [ ] Achievement progress and first-earned rewards persist, with immediate notification.
-- [ ] Story and near-miss score never alter Endless leaderboard records.
+- [x] Story clear and failure expose the correct next actions and rewards.
+- [x] Achievement progress and first-earned rewards persist, with immediate notification.
+- [x] Story and near-miss score never alter Endless leaderboard records.
 
 ## Validation
 
-- npx vitest run src/app/screens/RunResult.test.tsx src/App.test.tsx src/services/AchievementService.test.ts
-- npm run typecheck
+- `npm run typecheck` — passed.
+- `npm run build` — passed. Vite reports the existing large-chunk advisory.
+- Vitest was not run per session instruction not to run tests unless requested.
 
 ## Commit Message
 
@@ -59,6 +60,6 @@ Show mode-specific clear/failure results and implement one-time achievements wit
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed
+- commit: `feat(progression): add story results and achievements`

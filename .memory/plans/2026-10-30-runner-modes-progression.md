@@ -25,9 +25,9 @@ Add an offline-first Story campaign alongside the harder Endless mode. Story has
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | P01 | done | Define mode/stage domain state, local profile storage, and navigation. | [P01](../phases/2026-10-30-runner-modes-progression/P01-mode-and-profile-foundation/phase.md) |
-| P02 | in_progress | Implement Story simulation, finite courses, lives/pits, and Endless pacing. | [P02](../phases/2026-10-30-runner-modes-progression/P02-runner-mode-gameplay/phase.md) |
-| P03 | pending | Implement wallet settlement, progression, challenges, and achievements. | [P03](../phases/2026-10-30-runner-modes-progression/P03-progression-and-rewards/phase.md) |
-| P04 | pending | Add cosmetic catalog/equipment, shop screens, and equipped running effects. | [P04](../phases/2026-10-30-runner-modes-progression/P04-cosmetic-shop/phase.md) |
+| P02 | done | Implement Story simulation, finite courses, lives/pits, and Endless pacing. | [P02](../phases/2026-10-30-runner-modes-progression/P02-runner-mode-gameplay/phase.md) |
+| P03 | done | Implement wallet settlement, progression, challenges, and achievements. | [P03](../phases/2026-10-30-runner-modes-progression/P03-progression-and-rewards/phase.md) |
+| P04 | in_progress | Add cosmetic catalog/equipment, shop screens, and equipped running effects. | [P04](../phases/2026-10-30-runner-modes-progression/P04-cosmetic-shop/phase.md) |
 
 ## Deferred
 

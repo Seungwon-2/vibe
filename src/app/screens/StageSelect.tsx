@@ -7,10 +7,11 @@ export type StageSelectProps = {
   selectedStageId: StoryStageId;
   onSelect(stageId: StoryStageId): void;
   onStart(): void;
+  onAchievements(): void;
   onBack(): void;
 };
 
-export function StageSelect({ profile, selectedStageId, onSelect, onStart, onBack }: StageSelectProps): React.JSX.Element {
+export function StageSelect({ profile, selectedStageId, onSelect, onStart, onAchievements, onBack }: StageSelectProps): React.JSX.Element {
   const selected = STORY_STAGES.find((stage) => stage.id === selectedStageId) ?? STORY_STAGES[0];
 
   return (
@@ -42,6 +43,7 @@ export function StageSelect({ profile, selectedStageId, onSelect, onStart, onBac
         </div>
         <div className="stage-select-footer">
           <button className="progression-secondary" type="button" onClick={onBack}>뒤로</button>
+          <button className="progression-secondary" type="button" onClick={onAchievements}>업적</button>
           <button className="progression-primary" type="button" disabled={!profile.unlockedStageIds.includes(selected.id)}
             onClick={onStart}>{selected.name} 시작</button>
         </div>

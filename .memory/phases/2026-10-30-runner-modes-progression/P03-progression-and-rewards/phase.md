@@ -5,8 +5,8 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | done | Settle run coins once and grant first-clear, stage, character, and challenge rewards. | [T01](./T01-wallet-and-story-progression.md) |
-| T02 | in_progress | Add Story clear/failure results and achievement tracking/list/notifications. | [T02](./T02-story-results-and-achievements.md) |
+| T02 | done | Add Story clear/failure results and achievement tracking/list/notifications. | [T02](./T02-story-results-and-achievements.md) |
 
 ## Progress
 
-- done: 1/2 (active: T02)
+- done: 2/2

@@ -42,7 +42,8 @@ export function applyStoryOutcome(
   result: RunnerResult,
 ): Pick<SettlementResult, 'newlyUnlockedStageId' | 'newlyUnlockedCharacterId' | 'newlyClaimedCosmeticIds' | 'challenges'> {
   if (result.mode !== 'story' || !result.storyStageId || result.finishReason !== 'stage-complete' || !result.completedStage) {
-    return { newlyUnlockedStageId: null, newlyUnlockedCharacterId: null, newlyClaimedCosmeticIds: [], challenges: [] };
+    const challenges = result.mode === 'story' ? evaluateStageChallenges(result).map((challenge) => ({ ...challenge, newlyClaimed: false })) : [];
+    return { newlyUnlockedStageId: null, newlyUnlockedCharacterId: null, newlyClaimedCosmeticIds: [], challenges };
   }
 
   const stage = getStoryStage(result.storyStageId);

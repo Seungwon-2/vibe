@@ -8,6 +8,7 @@ import type { RankedRunRecord } from '../../services/RunGateway';
 export type MainMenuProps = {
   onStart(): void;
   onRankings(): void;
+  onAchievements?(): void;
   topRun: RankedRunRecord | null;
   topRunLoading: boolean;
   topRunError: string | null;
@@ -17,7 +18,7 @@ export type MainMenuProps = {
   onUnlockAudio(): void;
 };
 
-export function MainMenu({ onStart, onRankings, topRun, topRunLoading, topRunError,
+export function MainMenu({ onStart, onRankings, onAchievements, topRun, topRunLoading, topRunError,
   showControlsHelp, audioPreferences, onAudioPreferencesChange, onUnlockAudio }: MainMenuProps): React.JSX.Element {
   const [dialog, setDialog] = useState<'settings' | 'credits' | null>(null);
   const topCharacter = topRun ? getCharacter(topRun.characterId) : null;
@@ -57,6 +58,7 @@ export function MainMenu({ onStart, onRankings, topRun, topRunLoading, topRunErr
             <button className="main-menu-secondary main-menu-rankings" type="button" onClick={onRankings}>
               로컬 기록 보기
             </button>
+            {onAchievements && <button className="main-menu-secondary" type="button" onClick={onAchievements}>업적</button>}
             <button className="main-menu-secondary" type="button"
               onClick={() => { onUnlockAudio(); setDialog('settings'); }}>사운드 설정</button>
             <button className="main-menu-secondary" type="button" onClick={() => setDialog('credits')}>

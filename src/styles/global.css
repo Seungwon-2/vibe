@@ -2093,6 +2093,26 @@ body:has(.selector-shell--runner),
 .stage-option__order { color: #9474bd; font-size: .75rem; font-weight: 850; letter-spacing: .15em; }
 .stage-option__status { font-weight: 750; }
 .stage-select-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.result-settlement, .story-result-rewards, .story-challenges {
+  display: grid; gap: 7px; margin: 12px 0; padding: 14px 16px;
+  border: 1px solid #d9e3fa; border-radius: 16px; background: #f2f6ff; color: #33476d;
+}
+.result-settlement { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.result-settlement span, .story-result-rewards span { font-weight: 700; }
+.story-challenges > span { color: #7d8295; }
+.story-challenges > span.is-achieved { color: #37867e; font-weight: 800; }
+.achievement-panel { max-height: calc(100dvh - 48px); overflow: auto; }
+.achievement-wallet { justify-self: start; padding: 10px 16px; border-radius: 999px; background: #fff2ce; color: #775a20; }
+.achievement-wallet strong { margin-left: 8px; font-size: 1.2rem; }
+.achievement-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.achievement-card { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 16px; border: 1px solid #e7deef; border-radius: 18px; background: #fff; color: #42435b; }
+.achievement-card.is-unlocked { border-color: #b7d9c6; background: #f2fbf5; }
+.achievement-card__medal { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: #eee9fa; color: #9573ce; font-size: 1.4rem; }
+.achievement-card.is-unlocked .achievement-card__medal { background: #d8f1df; color: #3b9973; }
+.achievement-card p { margin: 4px 0; color: #74768d; }
+.achievement-card small { color: #8b7aa8; }
+.achievement-card__reward { white-space: nowrap; color: #84622a; font-weight: 800; }
+.story-result-actions { flex-wrap: wrap; }
 .runner-hud[data-mode="story"] .runner-hud__course-progress { display: grid; }
 .runner-hud[data-mode="story"] .runner-hud__main { grid-template-columns: minmax(120px, 1fr) auto auto auto; }
 @media (max-width: 640px) {
@@ -2102,4 +2122,5 @@ body:has(.selector-shell--runner),
   .mode-option { grid-template-columns: auto 1fr; align-items: center; gap: 8px 14px; padding: 16px; }
   .mode-option span:last-child { grid-column: 2; }
   .stage-select-footer { align-items: stretch; flex-direction: column-reverse; }
+  .achievement-list { grid-template-columns: minmax(0, 1fr); }
 }

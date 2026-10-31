@@ -4,6 +4,8 @@ import { MainMenu } from './app/screens/MainMenu';
 import { ModeSelect } from './app/screens/ModeSelect';
 import { RankingScreen } from './app/screens/RankingScreen';
 import { RunResult } from './app/screens/RunResult';
+import { StoryResult } from './app/screens/StoryResult';
+import { AchievementsScreen } from './app/screens/AchievementsScreen';
 import { RunScreen } from './app/screens/RunScreen';
 import { StageSelect } from './app/screens/StageSelect';
 import type { CharacterId } from './game/characters/characterTypes';
@@ -13,11 +15,12 @@ import { browserRunGateway } from './services/LocalRunGateway';
 import type { RankedRunRecord } from './services/RunGateway';
 import { browserPlayerProfileStore } from './services/LocalPlayerProfileStore';
 import { settleRun, type SettlementResult } from './services/PlayerProgression';
+import { recordRunAndUnlock } from './services/AchievementService';
 import { shouldShowRunnerTutorial } from './game/runner/runnerTutorial';
 import { browserRunnerAudio } from './audio/RunnerAudioManager';
 import { DEFAULT_AUDIO_PREFERENCES, loadAudioPreferences, saveAudioPreferences, type AudioPreferences } from './audio/audioPreferences';
 
-type AppScreen = 'menu' | 'mode-select' | 'character-select' | 'stage-select' | 'run' | 'result' | 'rankings';
+type AppScreen = 'menu' | 'mode-select' | 'character-select' | 'stage-select' | 'run' | 'result' | 'rankings' | 'achievements';
 type FinishedRun = {
   runId: number;
   result: RunnerResult;
@@ -26,6 +29,8 @@ type FinishedRun = {
   submissionPending: boolean;
   recordError: string | null;
   settlement: SettlementResult;
+  newlyUnlockedAchievementIds: readonly string[];
+  achievementBonusCoins: number;
 };
 type BestLoadState = { key: string; record: RankedRunRecord | null; error: string | null };
 type RankingLoadState = { requestId: number; rows: RankedRunRecord[]; error: string | null };
@@ -49,6 +54,7 @@ function App(): React.JSX.Element {
   const submittedRunIds = useRef(new Set<number>());
   const [bestState, setBestState] = useState<BestLoadState>({ key: '', record: null, error: null });
   const [rankingRequestId, setRankingRequestId] = useState(0);
+  const [achievementsReturnTo, setAchievementsReturnTo] = useState<'menu' | 'stage-select'>('menu');
   const [rankingState, setRankingState] = useState<RankingLoadState>({ requestId: -1, rows: [], error: null });
   const bestRequestKey = screen === 'menu' ? 'menu'
     : screen === 'result' && finishedRun ? `result:${finishedRun.runId}` : null;
@@ -116,6 +122,11 @@ function App(): React.JSX.Element {
     setScreen('rankings');
   }
 
+  function openAchievements(from: 'menu' | 'stage-select'): void {
+    setAchievementsReturnTo(from);
+    setScreen('achievements');
+  }
+
   function startRun(characterId = selectedCharacterId, mode = selectedMode, stageId = mode === 'story' ? selectedStageId : null): void {
     latestRunId.current += 1;
     setSelectedCharacterId(characterId);
@@ -150,7 +161,12 @@ function App(): React.JSX.Element {
     return <StageSelect profile={profile} selectedStageId={selectedStageId}
       onSelect={setSelectedStageId}
       onStart={() => startRun(selectedCharacterId, 'story', selectedStageId)}
+      onAchievements={() => openAchievements('stage-select')}
       onBack={() => setScreen('character-select')} />;
+  }
+
+  if (screen === 'achievements') {
+    return <AchievementsScreen profile={profile} onBack={() => setScreen(achievementsReturnTo)} />;
   }
 
   if (screen === 'run') {
@@ -168,9 +184,13 @@ function App(): React.JSX.Element {
           if (latestRunId.current !== currentRunId || submittedRunIds.current.has(currentRunId)) return;
           submittedRunIds.current.add(currentRunId);
           const settlement = settleRun(browserPlayerProfileStore, `${currentRunId}:${result.finishedAtIso}`, result);
-          setProfile(settlement.profile);
+          const achievements = recordRunAndUnlock(browserPlayerProfileStore,
+            `${currentRunId}:${result.finishedAtIso}`, result);
+          setProfile(achievements.profile);
           setFinishedRun({ runId: currentRunId, result, outcome, submittedRank: null,
-            submissionPending: result.mode !== 'story', recordError: null, settlement });
+            submissionPending: result.mode !== 'story', recordError: null, settlement,
+            newlyUnlockedAchievementIds: achievements.newlyUnlockedAchievementIds,
+            achievementBonusCoins: achievements.bonusCoins });
           setScreen('result');
           if (result.mode === 'story') return;
           void browserRunGateway.submitRun(result).then((record) => {
@@ -191,9 +211,19 @@ function App(): React.JSX.Element {
   if (screen === 'result' && finishedRun) {
     const bestDistance = browserPersonalBestStore.getBest(finishedRun.result.characterId)?.distanceMeters ??
       Math.round(finishedRun.result.distanceMeters);
+    if (finishedRun.result.mode === 'story') {
+      return <StoryResult result={finishedRun.result} settlement={finishedRun.settlement}
+        newlyUnlockedAchievementIds={finishedRun.newlyUnlockedAchievementIds}
+        achievementBonusCoins={finishedRun.achievementBonusCoins}
+        onRetry={() => startRun(finishedRun.result.characterId, 'story', finishedRun.result.storyStageId ?? 'dawn-city')}
+        onNextStage={(stageId) => startRun(finishedRun.result.characterId, 'story', stageId)}
+        onStageSelect={() => setScreen('stage-select')} />;
+    }
     return (
       <RunResult result={finishedRun.result} outcome={finishedRun.outcome} bestDistanceMeters={bestDistance}
         settlement={finishedRun.settlement}
+        newlyUnlockedAchievementIds={finishedRun.newlyUnlockedAchievementIds}
+        achievementBonusCoins={finishedRun.achievementBonusCoins}
         submittedRank={finishedRun.submittedRank} recordPending={finishedRun.submissionPending}
         recordError={finishedRun.recordError ?? bestError} overallBest={overallBest}
         onRetry={() => startRun(finishedRun.result.characterId)}
@@ -210,6 +240,7 @@ function App(): React.JSX.Element {
   }
 
   return <MainMenu onStart={() => setScreen('mode-select')} onRankings={openRankings}
+    onAchievements={() => openAchievements('menu')}
     topRun={overallBest} topRunLoading={bestLoading} topRunError={bestError}
     showControlsHelp={shouldShowRunnerTutorial()} audioPreferences={audioPreferences}
     onAudioPreferencesChange={setAudioPreferences} onUnlockAudio={() => browserRunnerAudio.unlock()} />;
