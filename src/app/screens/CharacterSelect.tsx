@@ -46,9 +46,10 @@ export type CharacterSelectProps = {
   profile?: PlayerProfile;
   onConfirm(characterId: CharacterId): void;
   onBack(): void;
+  onShop?(): void;
 };
 
-export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBack }: CharacterSelectProps): React.JSX.Element {
+export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBack, onShop }: CharacterSelectProps): React.JSX.Element {
   const unlockedCharacterIds = profile?.unlockedCharacterIds ?? SELECTOR_CHARACTER_IDS;
   const initialCharacterId = unlockedCharacterIds.includes(selectedCharacterId) ? selectedCharacterId
     : unlockedCharacterIds[0] ?? 'player-default';
@@ -118,6 +119,7 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
 
         <footer className="selector-footer selector-footer--runner">
           <button className="selector-back selector-back--runner" type="button" onClick={onBack}>← 타이틀로</button>
+          {onShop && <button className="selector-back selector-back--runner" type="button" onClick={onShop}>코인 상점</button>}
           <button className="selector-confirm selector-confirm--runner" type="button"
             onClick={() => onConfirm(candidateCharacterId)}>
             {SHORT_NAMES[candidateCharacterId]} · 달리기 시작 ▶

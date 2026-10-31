@@ -9,6 +9,7 @@ export type MainMenuProps = {
   onStart(): void;
   onRankings(): void;
   onAchievements?(): void;
+  onShop?(): void;
   topRun: RankedRunRecord | null;
   topRunLoading: boolean;
   topRunError: string | null;
@@ -18,7 +19,7 @@ export type MainMenuProps = {
   onUnlockAudio(): void;
 };
 
-export function MainMenu({ onStart, onRankings, onAchievements, topRun, topRunLoading, topRunError,
+export function MainMenu({ onStart, onRankings, onAchievements, onShop, topRun, topRunLoading, topRunError,
   showControlsHelp, audioPreferences, onAudioPreferencesChange, onUnlockAudio }: MainMenuProps): React.JSX.Element {
   const [dialog, setDialog] = useState<'settings' | 'credits' | null>(null);
   const topCharacter = topRun ? getCharacter(topRun.characterId) : null;
@@ -59,6 +60,7 @@ export function MainMenu({ onStart, onRankings, onAchievements, topRun, topRunLo
               로컬 기록 보기
             </button>
             {onAchievements && <button className="main-menu-secondary" type="button" onClick={onAchievements}>업적</button>}
+            {onShop && <button className="main-menu-secondary" type="button" onClick={onShop}>코인 상점</button>}
             <button className="main-menu-secondary" type="button"
               onClick={() => { onUnlockAudio(); setDialog('settings'); }}>사운드 설정</button>
             <button className="main-menu-secondary" type="button" onClick={() => setDialog('credits')}>

@@ -6,6 +6,7 @@ import { RankingScreen } from './app/screens/RankingScreen';
 import { RunResult } from './app/screens/RunResult';
 import { StoryResult } from './app/screens/StoryResult';
 import { AchievementsScreen } from './app/screens/AchievementsScreen';
+import { ShopScreen } from './app/screens/ShopScreen';
 import { RunScreen } from './app/screens/RunScreen';
 import { StageSelect } from './app/screens/StageSelect';
 import type { CharacterId } from './game/characters/characterTypes';
@@ -16,11 +17,13 @@ import type { RankedRunRecord } from './services/RunGateway';
 import { browserPlayerProfileStore } from './services/LocalPlayerProfileStore';
 import { settleRun, type SettlementResult } from './services/PlayerProgression';
 import { recordRunAndUnlock } from './services/AchievementService';
+import { equipCosmetic, purchaseCosmetic, unequipCosmetic } from './services/CosmeticService';
+import type { CosmeticKind } from './services/CosmeticCatalog';
 import { shouldShowRunnerTutorial } from './game/runner/runnerTutorial';
 import { browserRunnerAudio } from './audio/RunnerAudioManager';
 import { DEFAULT_AUDIO_PREFERENCES, loadAudioPreferences, saveAudioPreferences, type AudioPreferences } from './audio/audioPreferences';
 
-type AppScreen = 'menu' | 'mode-select' | 'character-select' | 'stage-select' | 'run' | 'result' | 'rankings' | 'achievements';
+type AppScreen = 'menu' | 'mode-select' | 'character-select' | 'stage-select' | 'run' | 'result' | 'rankings' | 'achievements' | 'shop';
 type FinishedRun = {
   runId: number;
   result: RunnerResult;
@@ -55,6 +58,7 @@ function App(): React.JSX.Element {
   const [bestState, setBestState] = useState<BestLoadState>({ key: '', record: null, error: null });
   const [rankingRequestId, setRankingRequestId] = useState(0);
   const [achievementsReturnTo, setAchievementsReturnTo] = useState<'menu' | 'stage-select'>('menu');
+  const [shopReturnTo, setShopReturnTo] = useState<'menu' | 'character-select'>('menu');
   const [rankingState, setRankingState] = useState<RankingLoadState>({ requestId: -1, rows: [], error: null });
   const bestRequestKey = screen === 'menu' ? 'menu'
     : screen === 'result' && finishedRun ? `result:${finishedRun.runId}` : null;
@@ -127,6 +131,28 @@ function App(): React.JSX.Element {
     setScreen('achievements');
   }
 
+  function openShop(from: 'menu' | 'character-select'): void {
+    setShopReturnTo(from);
+    setScreen('shop');
+  }
+
+  function handleCosmeticPurchase(cosmeticId: string): boolean {
+    const result = purchaseCosmetic(browserPlayerProfileStore, cosmeticId);
+    setProfile(browserPlayerProfileStore.load());
+    return result.ok;
+  }
+
+  function handleCosmeticEquip(characterId: CharacterId, cosmeticId: string): boolean {
+    const result = equipCosmetic(browserPlayerProfileStore, characterId, cosmeticId);
+    setProfile(browserPlayerProfileStore.load());
+    return result.ok;
+  }
+
+  function handleCosmeticUnequip(characterId: CharacterId, kind: CosmeticKind): void {
+    unequipCosmetic(browserPlayerProfileStore, characterId, kind);
+    setProfile(browserPlayerProfileStore.load());
+  }
+
   function startRun(characterId = selectedCharacterId, mode = selectedMode, stageId = mode === 'story' ? selectedStageId : null): void {
     latestRunId.current += 1;
     setSelectedCharacterId(characterId);
@@ -141,6 +167,7 @@ function App(): React.JSX.Element {
     return (
       <CharacterSelect selectedCharacterId={selectedCharacterId}
         profile={profile}
+        onShop={() => openShop('character-select')}
         onConfirm={(characterId) => {
           setSelectedCharacterId(characterId);
           if (selectedMode === 'story') setScreen('stage-select');
@@ -167,6 +194,12 @@ function App(): React.JSX.Element {
 
   if (screen === 'achievements') {
     return <AchievementsScreen profile={profile} onBack={() => setScreen(achievementsReturnTo)} />;
+  }
+
+  if (screen === 'shop') {
+    return <ShopScreen profile={profile} initialCharacterId={selectedCharacterId}
+      onBack={() => setScreen(shopReturnTo)} onPurchase={handleCosmeticPurchase}
+      onEquip={handleCosmeticEquip} onUnequip={handleCosmeticUnequip} />;
   }
 
   if (screen === 'run') {
@@ -241,6 +274,7 @@ function App(): React.JSX.Element {
 
   return <MainMenu onStart={() => setScreen('mode-select')} onRankings={openRankings}
     onAchievements={() => openAchievements('menu')}
+    onShop={() => openShop('menu')}
     topRun={overallBest} topRunLoading={bestLoading} topRunError={bestError}
     showControlsHelp={shouldShowRunnerTutorial()} audioPreferences={audioPreferences}
     onAudioPreferencesChange={setAudioPreferences} onUnlockAudio={() => browserRunnerAudio.unlock()} />;
