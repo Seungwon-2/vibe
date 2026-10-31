@@ -4,9 +4,10 @@ import type { CharacterId } from '../../game/characters/characterTypes';
 export type SelectorRunnerPreviewProps = {
   characterId: CharacterId;
   frames: readonly string[];
+  trailColor?: string;
 };
 
-export function SelectorRunnerPreview({ characterId, frames }: SelectorRunnerPreviewProps): React.JSX.Element {
+export function SelectorRunnerPreview({ characterId, frames, trailColor }: SelectorRunnerPreviewProps): React.JSX.Element {
   const [frameIndex, setFrameIndex] = useState(0);
 
   useEffect(() => {
@@ -25,13 +26,16 @@ export function SelectorRunnerPreview({ characterId, frames }: SelectorRunnerPre
   }, [frames]);
 
   return (
-    <img
-      className="selector-runner-frame"
-      data-testid={`selector-runner-frame-${characterId}`}
-      data-frame-index={frameIndex}
-      src={frames[frameIndex]}
-      alt=""
-      draggable={false}
-    />
+    <span className="selector-runner-preview">
+      {trailColor && <span className="selector-runner-preview__trail" style={{ '--trail-color': trailColor } as React.CSSProperties} />}
+      <img
+        className="selector-runner-frame"
+        data-testid={`selector-runner-frame-${characterId}`}
+        data-frame-index={frameIndex}
+        src={frames[frameIndex]}
+        alt=""
+        draggable={false}
+      />
+    </span>
   );
 }

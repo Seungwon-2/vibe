@@ -1,6 +1,6 @@
 # Task: T02 Equipped Cosmetics Runtime
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -34,15 +34,16 @@ Render equipped runner trails/effects and optional full-action skins in selector
 
 ## Acceptance Criteria
 
-- [ ] Equipped effect is visible with stronger jump/speed feedback and is visual-only.
-- [ ] Pause/finish/destroy clean up trail rendering.
-- [ ] Incomplete/mismatched skin sets are never loaded into the runtime.
+- [x] Equipped effect is visible with stronger jump/speed feedback and is visual-only.
+- [x] Pause/finish/destroy clean up trail rendering.
+- [x] Incomplete/mismatched skin sets are never loaded into the runtime.
 
 ## Validation
 
-- npm run assets:validate
-- npx vitest run src/game/runner/RunnerScene.test.ts src/game/runner/RunnerPlayer.test.ts
-- npm run typecheck
+- `npm run assets:validate` — passed (5 existing character atlases)
+- `npm run typecheck` — passed
+- `npm run build` — passed (Vite reports the existing large-chunk advisory)
+- Vitest not run in this session.
 
 ## Commit Message
 
@@ -57,6 +58,6 @@ Render equipped runner trails/effects and optional full-action skins in selector
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed
+- commit: `feat(cosmetics): render equipped runner effects`

@@ -17,6 +17,7 @@ import { RunnerBackdrop } from '../visuals/RunnerBackdrop';
 import { getHurtAnimationFrames } from './hurtAnimation';
 import { PitSpawner } from './PitSpawner';
 import type { PitFallContactResult, PitDefinition } from './PitSpawner';
+import { RunnerTrailEffect } from './RunnerTrailEffect';
 
 export class RunnerScene extends Phaser.Scene {
   private inputBridge!: RunnerInputBridge;
@@ -30,6 +31,7 @@ export class RunnerScene extends Phaser.Scene {
   private collectibles!: CollectibleSpawner;
   private backdrop!: RunnerBackdrop;
   private passiveEffectArt!: Phaser.GameObjects.Graphics;
+  private trailEffect!: RunnerTrailEffect;
   private pits!: PitSpawner;
   private finishEmitted = false;
   private pitFallCinematicActive = false;
@@ -106,6 +108,7 @@ export class RunnerScene extends Phaser.Scene {
     );
     this.physics.add.collider(sprite, floor);
     this.player = new RunnerPlayer(sprite, characterId);
+    this.trailEffect = new RunnerTrailEffect(this, this.registry.get('trailCosmeticId') as string | null);
     this.spawner = new ObstacleSpawner(this, this.player.gameObject, this.handleHazardOverlap,
       this.registry.get('runnerTutorialEnabled') === true);
     this.collectibles = new CollectibleSpawner(this, this.player.gameObject, this.handlePickup, characterId);
@@ -155,6 +158,8 @@ export class RunnerScene extends Phaser.Scene {
     this.player.setProtected(state.protectionRemainingMs);
     this.player.setPassiveEffect(state.passiveEffectRemainingMs);
     this.player.setGiant(state.giantRemainingMs > 0);
+    this.trailEffect.update(this.time.now, deltaMs, this.player.gameObject.x, this.player.gameObject.y - 12,
+      state.phase === 'running', !this.player.isGrounded || (state.stageSpeedBoostRemainingMs ?? 0) > 0 || state.giantRemainingMs > 0);
     this.drawPassiveEffect(state.passiveEffectRemainingMs, state.slideGuardRemainingMs, state.giantRemainingMs);
     this.spawner.update(state);
     this.collectibles.update(state);
@@ -171,6 +176,7 @@ export class RunnerScene extends Phaser.Scene {
     this.inputBridge.clear();
     this.heldKeyboardActions.clear();
     if (paused) {
+      this.trailEffect?.clear();
       this.publish(pauseRunner(this.snapshot), true);
       this.scene.pause();
     } else {
@@ -276,6 +282,7 @@ export class RunnerScene extends Phaser.Scene {
     }
     if (!result) return 'ignored';
     this.pitFallCinematicActive = true;
+    this.trailEffect.clear();
     this.eventEmitter.pitFallStarted();
     this.pendingPitFinish = { state, result };
     this.heldKeyboardActions.clear();
@@ -312,6 +319,7 @@ export class RunnerScene extends Phaser.Scene {
     if (this.finishEmitted) return;
     this.finishEmitted = true;
     this.inputBridge.clear();
+    this.trailEffect.clear();
     const decision = result.mode === 'story' ? { isNewBest: false } : browserPersonalBestStore.record(result);
     const outcome: RunnerFinishOutcome = decision.isNewBest ? 'personal-best' : 'completed';
     const animation = result.mode === 'story'
@@ -372,5 +380,6 @@ export class RunnerScene extends Phaser.Scene {
     this.pits?.destroy();
     this.backdrop?.destroy();
     this.passiveEffectArt?.destroy();
+    this.trailEffect?.destroy();
   }
 }

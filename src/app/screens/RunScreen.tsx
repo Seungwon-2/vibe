@@ -24,6 +24,7 @@ export type RunScreenProps = {
   characterId: CharacterId;
   mode?: RunnerMode;
   storyStageId?: StoryStageId | null;
+  trailCosmeticId?: string | null;
   onFinish(result: RunnerResult, outcome: RunnerFinishOutcome): void;
   onExit(): void;
   audioPreferences: AudioPreferences;
@@ -31,7 +32,7 @@ export type RunScreenProps = {
   onUnlockAudio(): void;
 };
 
-export function RunScreen({ characterId, mode = 'endless', storyStageId = null, onFinish, onExit, audioPreferences, onAudioPreferencesChange,
+export function RunScreen({ characterId, mode = 'endless', storyStageId = null, trailCosmeticId = null, onFinish, onExit, audioPreferences, onAudioPreferencesChange,
   onUnlockAudio }: RunScreenProps): React.JSX.Element {
   const character = getCharacter(characterId);
   const [portrait, setPortrait] = useState(isPortrait);
@@ -198,7 +199,7 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
       </header>
       <div className={`runner-stage${gateBurstActive ? ' is-gate-boosting' : ''}${snapshot.giantRemainingMs > 0 ? ' is-giant-active' : ''}`}
         role="region" aria-label="러닝 게임 화면">
-        <RunnerGame characterId={characterId} mode={mode} storyStageId={storyStageId}
+        <RunnerGame characterId={characterId} mode={mode} storyStageId={storyStageId} trailCosmeticId={trailCosmeticId}
           inputBridge={inputBridge} paused={paused}
           tutorialEnabled={tutorialEnabled}
           onSnapshot={(next) => {

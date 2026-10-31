@@ -22,6 +22,7 @@ export function purchaseCosmetic(profileStore: PlayerProfileStore, cosmeticId: s
 export function equipCosmetic(profileStore: PlayerProfileStore, characterId: CharacterId, cosmeticId: string): CosmeticActionResult {
   const cosmetic = getCosmetic(cosmeticId);
   if (!cosmetic) return { ok: false, reason: 'unknown' };
+  if (cosmetic.placeholder) return { ok: false, reason: 'unavailable' };
   if (!profileStore.load().unlockedCosmeticIds.includes(cosmeticId)) return { ok: false, reason: 'not-owned' };
   if (!cosmetic.compatibleCharacterIds.includes(characterId)) return { ok: false, reason: 'incompatible' };
   profileStore.update((profile) => {

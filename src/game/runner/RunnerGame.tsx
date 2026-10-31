@@ -11,6 +11,7 @@ export type RunnerGameProps = {
   characterId: CharacterId;
   mode?: RunnerMode;
   storyStageId?: StoryStageId | null;
+  trailCosmeticId?: string | null;
   inputBridge: RunnerInputBridge;
   paused: boolean;
   tutorialEnabled: boolean;
@@ -20,7 +21,7 @@ export type RunnerGameProps = {
 };
 
 export function RunnerGame({
-  characterId, mode = 'endless', storyStageId = null, inputBridge, paused, tutorialEnabled, onSnapshot, onFinished, onEvent,
+  characterId, mode = 'endless', storyStageId = null, trailCosmeticId = null, inputBridge, paused, tutorialEnabled, onSnapshot, onFinished, onEvent,
 }: RunnerGameProps): React.JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -37,7 +38,7 @@ export function RunnerGame({
     if (!hostRef.current) return;
     let game: Phaser.Game | null = null;
     try {
-      game = new Phaser.Game(createRunnerGameConfig(hostRef.current, characterId, mode, storyStageId, inputBridge, {
+      game = new Phaser.Game(createRunnerGameConfig(hostRef.current, characterId, mode, storyStageId, trailCosmeticId, inputBridge, {
         onSnapshot: (snapshot) => callbacksRef.current.onSnapshot(snapshot),
         onFinished: (result, outcome) => callbacksRef.current.onFinished(result, outcome),
         onEvent: (event) => callbacksRef.current.onEvent?.(event),
@@ -57,7 +58,7 @@ export function RunnerGame({
       gameRef.current = null;
       game?.destroy(true);
     };
-  }, [characterId, mode, storyStageId, inputBridge, tutorialEnabled, attempt]);
+  }, [characterId, mode, storyStageId, trailCosmeticId, inputBridge, tutorialEnabled, attempt]);
 
   useEffect(() => {
     const game = gameRef.current;

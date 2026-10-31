@@ -17,6 +17,7 @@ export function createRunnerGameConfig(
   characterId: CharacterId,
   mode: RunnerMode,
   storyStageId: StoryStageId | null,
+  trailCosmeticId: string | null,
   inputBridge: RunnerInputBridge,
   callbacks: RunnerGameCallbacks,
   tutorialEnabled: boolean,
@@ -38,6 +39,7 @@ export function createRunnerGameConfig(
         game.registry.set('characterId', characterId);
         game.registry.set('runnerMode', mode);
         game.registry.set('storyStageId', storyStageId);
+        game.registry.set('trailCosmeticId', trailCosmeticId);
         game.registry.set('inputBridge', inputBridge);
         game.registry.set('onSnapshot', callbacks.onSnapshot);
         game.registry.set('onFinished', callbacks.onFinished);

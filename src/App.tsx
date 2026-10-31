@@ -19,6 +19,7 @@ import { settleRun, type SettlementResult } from './services/PlayerProgression';
 import { recordRunAndUnlock } from './services/AchievementService';
 import { equipCosmetic, purchaseCosmetic, unequipCosmetic } from './services/CosmeticService';
 import type { CosmeticKind } from './services/CosmeticCatalog';
+import { getCosmetic } from './services/CosmeticCatalog';
 import { shouldShowRunnerTutorial } from './game/runner/runnerTutorial';
 import { browserRunnerAudio } from './audio/RunnerAudioManager';
 import { DEFAULT_AUDIO_PREFERENCES, loadAudioPreferences, saveAudioPreferences, type AudioPreferences } from './audio/audioPreferences';
@@ -204,9 +205,12 @@ function App(): React.JSX.Element {
 
   if (screen === 'run') {
     const currentRunId = runId;
+    const trailCosmeticId = (profile.equippedCosmeticIdsByCharacter[selectedCharacterId] ?? [])
+      .find((cosmeticId) => getCosmetic(cosmeticId)?.kind === 'trail') ?? null;
     return (
       <RunScreen key={`${currentRunId}:${selectedCharacterId}`} characterId={selectedCharacterId}
         mode={selectedMode} storyStageId={selectedMode === 'story' ? selectedStageId : null}
+        trailCosmeticId={trailCosmeticId}
         audioPreferences={audioPreferences} onAudioPreferencesChange={setAudioPreferences}
         onUnlockAudio={() => browserRunnerAudio.unlock()}
         onExit={() => {

@@ -5,6 +5,7 @@ import { CHARACTERS, getCharacter, resolveCharacterId } from '../../game/charact
 import { getCharacterPassive } from '../../game/characters/characterAbilities';
 import type { CharacterId } from '../../game/characters/characterTypes';
 import type { PlayerProfile } from '../../services/PlayerProfile';
+import { getCosmetic } from '../../services/CosmeticCatalog';
 
 const SELECTOR_CHARACTER_IDS: readonly CharacterId[] = [
   'player-default', 'hanayo-hiyori', 'tokino-mary', 'goth-student', 'cogane-rang',
@@ -111,7 +112,9 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
                 className={`selector-runway__runner${character.id === candidateCharacterId ? ' is-selected' : ''}`}
                 style={{ '--character-accent': character.accentColor } as React.CSSProperties}
                 key={character.id} data-testid={`selector-runner-${character.id}`} aria-hidden="true">
-                <SelectorRunnerPreview characterId={character.id} frames={SELECTOR_ART[character.id].runFrames} />
+                <SelectorRunnerPreview characterId={character.id} frames={SELECTOR_ART[character.id].runFrames}
+                  trailColor={(profile?.equippedCosmeticIdsByCharacter[character.id] ?? [])
+                    .map((cosmeticId) => getCosmetic(cosmeticId)).find((cosmetic) => cosmetic?.kind === 'trail')?.color} />
               </span>
             ))}
           </div>
