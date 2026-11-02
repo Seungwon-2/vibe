@@ -1,19 +1,17 @@
 ﻿# Current Context
 
 ## Active Plan
-[Runner Gameplay Review Updates](./plans/2026-11-02-runner-gameplay-review.md)
+[Runner Speed and Pickup Rewards](./plans/2026-11-02-runner-speed-pickup-reward.md)
 
 ## Active Phase
-[P01 Gameplay Systems](./phases/2026-11-02-runner-gameplay-review/P01-gameplay-systems/phase.md)
+[P01 Speed and Pickups](./phases/2026-11-02-runner-speed-pickup-reward/P01-speed-and-pickups/phase.md)
 
 ## Active Task
-None — Runner Gameplay Review Updates is complete.
+[T02 Global Speed Increase](./phases/2026-11-02-runner-speed-pickup-reward/P01-speed-and-pickups/T02-global-speed-increase.md)
 
-## Status: complete
-- Story pickup schedule now checks its own stage's fixed pits.
-- Dawn City double-jump barrier moved to 1,300m with neighboring hazards retimed.
-- Story giants are linked to authored obstacle groups; Endless giants remain tied to dense waves.
-- Add varied Story hazard sequences and progressive Endless interval tuning.
+## Status
+- T01 completed and committed; Story final-life loss now holds the game-over pose for 1 second.
+- RunnerScene tests and typecheck pass. Two unrelated stale assertions in RunnerSimulation tests are documented in T01.
 
 ## Next Step
-The Runner Gameplay Review Updates plan is complete. Await the next requested task.
+Execute T02: raise initial and maximum course speeds by 10% while preserving the existing ramp, character animation rates, and collision geometry.

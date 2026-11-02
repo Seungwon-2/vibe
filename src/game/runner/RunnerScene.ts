@@ -170,6 +170,8 @@ export class RunnerScene extends Phaser.Scene {
       this.inputBridge.clear();
       if (result.mode === 'story' && result.finishReason === 'stage-complete') {
         this.beginStoryFinish(result);
+      } else if (result.mode === 'story' && result.finishReason === 'lives-exhausted') {
+        this.beginStoryDefeat(result);
       } else {
         this.emitFinished(result);
       }
@@ -331,6 +333,20 @@ export class RunnerScene extends Phaser.Scene {
     this.trailEffect.clear();
     this.player.finish('victory');
     this.storyFinishTimer = this.time.delayedCall(RUNNER_CONFIG.storyVictoryHoldMs, () => {
+      this.storyFinishTimer = null;
+      this.finishPending = false;
+      this.emitFinished(result);
+    });
+  }
+
+  private beginStoryDefeat(result: RunnerResult): void {
+    if (this.finishEmitted || this.finishPending) return;
+    this.finishPending = true;
+    this.inputBridge.clear();
+    this.heldKeyboardActions.clear();
+    this.trailEffect.clear();
+    this.player.finish('gameOver');
+    this.storyFinishTimer = this.time.delayedCall(RUNNER_CONFIG.storyDefeatHoldMs, () => {
       this.storyFinishTimer = null;
       this.finishPending = false;
       this.emitFinished(result);

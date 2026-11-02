@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { RunnerResult } from './runnerTypes';
 import type { PitDefinition, PitFallContactResult } from './PitSpawner';
 import { createRunnerSnapshot, startRunner } from './RunnerSimulation';
+import { RUNNER_CONFIG } from './runnerConfig';
 
 const record = vi.hoisted(() => vi.fn());
 vi.mock('phaser', () => ({ default: { Scene: class {}, Loader: { Events: { FILE_LOAD_ERROR: 'fileloaderror' } } } }));
@@ -95,6 +96,59 @@ describe('RunnerScene finish boundary', () => {
     harness.emitFinished(result);
     expect(finishPlayer).toHaveBeenCalledExactlyOnceWith('gameOver');
     expect(finishEvent).toHaveBeenCalledExactlyOnceWith(result, 'completed');
+  });
+
+  it('holds the Story game-over pose for one second after the last life is lost', () => {
+    record.mockReset();
+    const scene = new RunnerScene();
+    const clearInput = vi.fn();
+    const clearTrail = vi.fn();
+    const finishPlayer = vi.fn();
+    const finishEvent = vi.fn();
+    let finishAfterHold: (() => void) | undefined;
+    const harness = scene as unknown as {
+      finishEmitted: boolean;
+      finishPending: boolean;
+      inputBridge: { clear(): void };
+      heldKeyboardActions: Set<string>;
+      trailEffect: { clear(): void };
+      player: { finish(outcome: string): void };
+      eventEmitter: { finish(result: RunnerResult, outcome: string): void };
+      time: { delayedCall(delay: number, callback: () => void): unknown };
+      beginStoryDefeat(result: RunnerResult): void;
+    };
+    const result: RunnerResult = { characterId: 'hanayo-hiyori', mode: 'story', storyStageId: 'dawn-city',
+      hitsTaken: 3, livesRemaining: 0, nearMissScore: 0, passedGateCount: 0, completedStage: false,
+      distanceMeters: 1_200, coins: 4, durationMs: 15_000,
+      finishedAtIso: '2026-11-02T00:00:00.000Z', finishReason: 'lives-exhausted' };
+    harness.finishEmitted = false;
+    harness.finishPending = false;
+    harness.inputBridge = { clear: clearInput };
+    harness.heldKeyboardActions = new Set(['Space']);
+    harness.trailEffect = { clear: clearTrail };
+    harness.player = { finish: finishPlayer };
+    harness.eventEmitter = { finish: finishEvent };
+    harness.time = { delayedCall: (delay, callback) => {
+      expect(delay).toBe(RUNNER_CONFIG.storyDefeatHoldMs);
+      finishAfterHold = callback;
+      return {} as never;
+    } };
+
+    harness.beginStoryDefeat(result);
+
+    expect(harness.finishPending).toBe(true);
+    expect(clearInput).toHaveBeenCalledOnce();
+    expect(clearTrail).toHaveBeenCalledOnce();
+    expect(harness.heldKeyboardActions.size).toBe(0);
+    expect(finishPlayer).toHaveBeenCalledExactlyOnceWith('gameOver');
+    expect(finishEvent).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+
+    finishAfterHold?.();
+
+    expect(harness.finishPending).toBe(false);
+    expect(finishEvent).toHaveBeenCalledExactlyOnceWith(result, 'completed');
+    expect(record).not.toHaveBeenCalled();
   });
 
   it('delays a fatal pit result until after the fall and camera shake, preserving contact-time data', () => {

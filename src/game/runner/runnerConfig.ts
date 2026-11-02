@@ -8,6 +8,7 @@ export const RUNNER_CONFIG = Object.freeze({
   storyLivesPerStage: 3,
   storyHitProtectionMs: 800,
   storyVictoryHoldMs: 800,
+  storyDefeatHoldMs: 1_000,
   gateBonusMs: 20_000,
   gateSpeedBonusRatio: 0.05,
   firstPitDistanceMeters: 850,
