@@ -63,6 +63,62 @@ export function drawRunnerHazard(
     return;
   }
 
+  if (kind === 'double-jump') {
+    const top = 0;
+    const bottom = visualHeight;
+    switch (biome.id) {
+      case 'dawn-city': {
+        graphics.fillStyle(p.middle, 0.98).fillRect(4, top, width - 8, bottom);
+        graphics.fillStyle(p.gate, 0.98).fillRect(9, top + 5, width - 18, bottom - 10);
+        for (let y = 18; y < bottom - 12; y += 34) {
+          graphics.fillStyle(p.accent, 0.98).fillRect(13, y, width - 26, 8);
+          graphics.fillStyle(p.hazardContrast, 0.95).fillTriangle(15, y + 8, 26, y, 26, y + 8)
+            .fillTriangle(width - 15, y + 8, width - 26, y, width - 26, y + 8);
+        }
+        graphics.fillStyle(p.groundFace, 0.98).fillRect(0, bottom - 10, width, 10);
+        graphics.lineStyle(2, p.hazardContrast, 0.95).lineBetween(2, 1, 2, bottom - 1)
+          .lineBetween(width - 2, 1, width - 2, bottom - 1);
+        break;
+      }
+      case 'moonlit-forest': {
+        graphics.fillStyle(p.middle, 0.96).fillRoundedRect(7, 0, width - 14, bottom, 12);
+        graphics.fillStyle(p.gate, 0.98).fillRoundedRect(13, 4, width - 26, bottom - 8, 9);
+        for (let y = 12; y < bottom - 5; y += 25) {
+          graphics.fillStyle(p.accent, 0.98).fillTriangle(9, y + 9, 26, y - 2, 25, y + 10)
+            .fillTriangle(width - 9, y + 9, width - 26, y - 2, width - 25, y + 10);
+          graphics.fillStyle(p.hazardContrast, 0.9).fillCircle(width / 2, y + 4, 2);
+        }
+        graphics.fillStyle(p.groundFace, 0.98).fillEllipse(width / 2, bottom - 8, width - 4, 14);
+        break;
+      }
+      case 'crystal-mine': {
+        graphics.fillStyle(p.middle, 0.97).fillRect(5, 0, width - 10, bottom);
+        graphics.fillStyle(p.gate, 0.98).fillTriangle(5, bottom, 18, 18, 29, bottom)
+          .fillTriangle(19, bottom, 39, 0, 59, bottom)
+          .fillTriangle(37, bottom, 50, 25, width - 5, bottom);
+        for (let y = 14; y < bottom - 30; y += 38) {
+          graphics.fillStyle(p.pickupTime, 0.98).fillTriangle(17, y, 26, y + 15, 17, y + 30);
+          graphics.lineStyle(2, 0xffffff, 0.88).lineBetween(39, y + 3, 44, y + 24);
+        }
+        graphics.fillStyle(p.groundFace, 0.98).fillRect(1, bottom - 8, width - 2, 8);
+        break;
+      }
+      case 'cloud-skyway': {
+        graphics.fillStyle(p.middle, 0.95).fillRoundedRect(5, 2, width - 10, bottom - 2, 18);
+        graphics.fillStyle(p.gate, 0.98).fillEllipse(width / 2, 17, width - 6, 32)
+          .fillEllipse(width / 2, bottom - 24, width - 4, 48);
+        graphics.fillStyle(0xffffff, 0.98).fillRect(13, 14, width - 26, bottom - 28);
+        for (let y = 28; y < bottom - 12; y += 31) {
+          graphics.lineStyle(4, p.accent, 0.96).lineBetween(12, y, width - 12, y + 5);
+          graphics.fillStyle(p.hazardContrast, 0.92).fillCircle(width / 2, y + 7, 2.5);
+        }
+        graphics.lineStyle(3, p.hazardContrast, 0.94).lineBetween(2, bottom - 1, width - 2, bottom - 1);
+        break;
+      }
+    }
+    return;
+  }
+
   // A themed overhead barrier fills the jump-blocking lane and leaves the same low crawl gap
   // as the slide collision pose. It is drawn independently of the collider dimensions.
   const barrierBottom = Math.max(0, visualHeight - 54);

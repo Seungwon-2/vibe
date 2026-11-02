@@ -28,6 +28,23 @@ describe('RunnerScene finish boundary', () => {
     expect(images.some(([key]) => key.startsWith('player-default:quality:run:'))).toBe(true);
     expect(images.some(([, url]) => url.includes('/runtime/'))).toBe(false);
   });
+
+  it('disables the floor collision while the player body overlaps a pit opening', () => {
+    const scene = new RunnerScene();
+    const harness = scene as unknown as {
+      player: { body: { left: number; right: number } };
+      pits: { isPlayerFootInPitOpening(footX: number): boolean };
+      shouldCollideWithFloor(): boolean;
+    };
+    harness.player = { body: { left: 150, right: 190 } };
+    harness.pits = { isPlayerFootInPitOpening: (footX) => footX >= 125 && footX <= 215 };
+
+    expect(harness.shouldCollideWithFloor()).toBe(false);
+    harness.player.body.left = 80;
+    harness.player.body.right = 120;
+    expect(harness.shouldCollideWithFloor()).toBe(true);
+  });
+
   it('records and plays the first terminal action only once across finish paths', () => {
     record.mockReset().mockReturnValue({ isNewBest: true });
     const scene = new RunnerScene();
@@ -36,11 +53,13 @@ describe('RunnerScene finish boundary', () => {
     const finishEvent = vi.fn();
     const harness = scene as unknown as {
       inputBridge: { clear(): void };
+      trailEffect: { clear(): void };
       player: { finish(outcome: string): void };
       eventEmitter: { finish(result: RunnerResult, outcome: string): void };
       emitFinished(result: RunnerResult): void;
     };
     harness.inputBridge = { clear };
+    harness.trailEffect = { clear: vi.fn() };
     harness.player = { finish: finishPlayer };
     harness.eventEmitter = { finish: finishEvent };
     const result: RunnerResult = { characterId: 'player-default', distanceMeters: 10,
@@ -62,11 +81,13 @@ describe('RunnerScene finish boundary', () => {
     const finishEvent = vi.fn();
     const harness = scene as unknown as {
       inputBridge: { clear(): void };
+      trailEffect: { clear(): void };
       player: { finish(outcome: string): void };
       eventEmitter: { finish(result: RunnerResult, outcome: string): void };
       emitFinished(result: RunnerResult): void;
     };
     harness.inputBridge = { clear: vi.fn() };
+    harness.trailEffect = { clear: vi.fn() };
     harness.player = { finish: finishPlayer };
     harness.eventEmitter = { finish: finishEvent };
     const result: RunnerResult = { characterId: 'tokino-mary', distanceMeters: 50,
@@ -92,8 +113,10 @@ describe('RunnerScene finish boundary', () => {
       finishEmitted: boolean;
       pitFallCinematicActive: boolean;
       inputBridge: { clear(): void };
+      trailEffect: { clear(): void };
       heldKeyboardActions: Set<string>;
       player: { gameObject: typeof sprite; beginPitFall(): void; setGiant(active: boolean): void; finish(outcome: string): void; update(delta: number): void };
+      passiveEffectArt: { clear(): void };
       eventEmitter: {
         snapshot(snapshot: unknown, now: number, force: boolean): void;
         pitFallStarted(): void;
@@ -111,9 +134,10 @@ describe('RunnerScene finish boundary', () => {
     harness.snapshot = contactSnapshot;
     harness.finishEmitted = false;
     harness.inputBridge = { clear };
-      passiveEffectArt: { clear(): void };
+    harness.trailEffect = { clear: vi.fn() };
     harness.heldKeyboardActions = new Set(['Space']);
     harness.player = { gameObject: sprite, beginPitFall: vi.fn(), setGiant: vi.fn(), finish: finishPlayer, update: vi.fn() };
+    harness.passiveEffectArt = { clear: vi.fn() };
     const pitFallStarted = vi.fn();
     harness.eventEmitter = { snapshot: snapshotEvent, pitFallStarted, finish: finishEvent };
     harness.time = { now: 123 };
@@ -132,7 +156,6 @@ describe('RunnerScene finish boundary', () => {
     expect(harness.snapshot).toMatchObject({ phase: 'running', distanceMeters: 845, coins: 7, remainingMs: 59_000 });
     expect(harness.pitFallCinematicActive).toBe(true);
     expect(pitFallStarted).toHaveBeenCalledOnce();
-    harness.passiveEffectArt = { clear: vi.fn() };
     expect(fallTweens).toHaveLength(1);
     expect(fallTweens[0]).toMatchObject({ y: 620, duration: 700, ease: 'Cubic.In' });
     expect(snapshotEvent).not.toHaveBeenCalled();
@@ -178,10 +201,13 @@ describe('RunnerScene finish boundary', () => {
       snapshot: ReturnType<typeof createRunnerSnapshot>;
       finishEmitted: boolean;
       inputBridge: { clear(): void };
+      trailEffect: { clear(): void };
       heldKeyboardActions: Set<string>;
       player: {
         gameObject: typeof sprite;
         setPassiveEffect(remainingMs: number): void;
+        setProtected(remainingMs: number): void;
+        setGiant(active: boolean): void;
         beginPitRescue(): void;
         endPitRescue(): void;
         finish(outcome: string): void;
@@ -198,9 +224,9 @@ describe('RunnerScene finish boundary', () => {
     harness.snapshot = startRunner(createRunnerSnapshot('hanayo-hiyori'));
     harness.finishEmitted = false;
     harness.inputBridge = { clear };
+    harness.trailEffect = { clear: vi.fn() };
     harness.heldKeyboardActions = new Set(['Space']);
-    harness.player = { gameObject: sprite, setPassiveEffect: setEffect, setGiant: vi.fn(), beginPitRescue: beginRescue,
-        setGiant(active: boolean): void;
+    harness.player = { gameObject: sprite, setPassiveEffect: setEffect, setProtected: vi.fn(), setGiant: vi.fn(), beginPitRescue: beginRescue,
       endPitRescue: endRescue, finish: vi.fn() };
     harness.eventEmitter = { snapshot: snapshotEvent, passiveTriggered: triggerEvent, finish: vi.fn() };
     harness.time = { now: 50 };

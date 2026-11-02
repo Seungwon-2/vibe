@@ -4,9 +4,9 @@ import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterAnimationName, CharacterId } from '../characters/characterTypes';
 import { getQualitySpriteY, getSlidePose, getTerminalSpriteY, RUNNER_GROUND_Y, RUNNER_PLAYER_X,
   STANDING_BODY_HEIGHT, STANDING_BODY_WIDTH } from './runnerPose';
+import { RUNNER_CONFIG } from './runnerConfig';
 
 export { RUNNER_PLAYER_X, RUNNER_GROUND_Y } from './runnerPose';
-const JUMP_IMPULSE = -420;
 type RunnerAction = 'run' | 'jump' | 'doubleJump' | 'slide' | 'hurt' | 'victory' | 'gameOver';
 type AirPhase = 'ascending' | 'descending';
 type RunnerAnimation = RunnerAction | 'jump-fall' | 'double-jump-fall';
@@ -65,8 +65,8 @@ export class RunnerPlayer {
     const second = this.jumpsUsed === 1;
     const passive = this.passive;
     const impulse = second && passive.id === 'rang-double-jump'
-      ? JUMP_IMPULSE * passive.doubleJumpVelocityMultiplier
-      : JUMP_IMPULSE;
+      ? RUNNER_CONFIG.jumpImpulseY * passive.doubleJumpVelocityMultiplier
+      : RUNNER_CONFIG.jumpImpulseY;
     this.body.setVelocityY(impulse);
     this.jumpsUsed += 1;
     this.grounded = false;

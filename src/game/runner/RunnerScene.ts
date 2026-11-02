@@ -108,14 +108,14 @@ export class RunnerScene extends Phaser.Scene {
     const sprite = this.physics.add.sprite(
       RUNNER_PLAYER_X, RUNNER_GROUND_Y, character.qualityAnimations.run[0].textureKey,
     );
-    this.physics.add.collider(sprite, floor);
+    this.physics.add.collider(sprite, floor, undefined, this.shouldCollideWithFloor);
     this.player = new RunnerPlayer(sprite, characterId);
     this.trailEffect = new RunnerTrailEffect(this, this.registry.get('trailCosmeticId') as string | null);
     this.spawner = new ObstacleSpawner(this, this.player.gameObject, this.handleHazardOverlap,
       this.registry.get('runnerTutorialEnabled') === true, () => this.player.isSliding);
     this.collectibles = new CollectibleSpawner(this, this.player.gameObject, this.handlePickup, characterId);
-    this.pits = new PitSpawner(this, this.player.gameObject, () => this.player.isGrounded,
-      this.handlePitFall);
+    this.pits = new PitSpawner(this, this.player.gameObject, this.handlePitFall,
+      this.registry.get('runnerTutorialEnabled') === true);
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
     window.addEventListener('blur', this.handleBlur);
@@ -234,13 +234,22 @@ export class RunnerScene extends Phaser.Scene {
     this.eventEmitter.pickup(pickup.id, pickup.kind, awardedMs);
   };
 
+  private readonly shouldCollideWithFloor = (): boolean => {
+    if (!this.player || !this.pits) return true;
+    const body = this.player.body;
+    const footX = (body.left + body.right) / 2;
+    return !this.pits.isPlayerFootInPitOpening(footX);
+  };
+
   private readonly handleHazardOverlap = (): void => {
     const { state, hit, blockedByPassive, passiveId, result } = tryResolveHazardHit(this.snapshot, this.player.isSliding);
     if (!hit) return;
     this.publish(state, true);
     if (blockedByPassive) {
       this.player.setPassiveEffect(state.passiveEffectRemainingMs);
-      this.eventEmitter.passiveTriggered(state.passiveChargesRemaining, 'obstacle');
+      this.player.setProtected(state.protectionRemainingMs);
+      if (passiveId === 'toa-ghost-glide') this.eventEmitter.toaGlideTriggered();
+      else this.eventEmitter.passiveTriggered(state.passiveChargesRemaining, 'obstacle');
       return;
     }
     this.eventEmitter.hazardHit();

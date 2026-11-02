@@ -1,4 +1,4 @@
-export type HazardKind = 'ground' | 'overhead';
+export type HazardKind = 'ground' | 'overhead' | 'double-jump';
 
 export type HazardDefinition = Readonly<{
   id: string;

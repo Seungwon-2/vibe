@@ -22,12 +22,18 @@ type ActiveHazard = {
   passed: boolean;
 };
 
+function getTutorialLabel(kind: HazardDefinition['kind']): string {
+  if (kind === 'double-jump') return 'DOUBLE JUMP';
+  return kind === 'ground' ? 'JUMP' : 'SLIDE';
+}
+
 export class ObstacleSpawner {
   private nextPatternIndex = 0;
   private pending: { atMeters: number; definition: HazardDefinition }[] = [];
   private active: ActiveHazard[] = [];
   private warnedKinds = new Set<HazardDefinition['kind']>();
   private activeStoryStageId: RunnerSnapshot['storyStageId'] = null;
+  private skipPatternAfterDoubleJump = false;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -68,7 +74,12 @@ export class ObstacleSpawner {
           )),
         );
         // Skip an entire authored pattern so action groups cannot be split.
-        if (!conflictsWithPit && !conflictsWithGate) this.pending.push(...candidate);
+        const skipForDoubleJumpRecovery = this.skipPatternAfterDoubleJump;
+        if (!conflictsWithPit && !conflictsWithGate && !skipForDoubleJumpRecovery) {
+          this.pending.push(...candidate);
+        }
+        this.skipPatternAfterDoubleJump = !skipForDoubleJumpRecovery && !conflictsWithPit && !conflictsWithGate &&
+          pattern.obstacles.some((definition) => definition.kind === 'double-jump');
         this.nextPatternIndex += 1;
       }
     }
@@ -113,7 +124,7 @@ export class ObstacleSpawner {
     drawRunnerHazard(art, definition, biome, visual.height);
     const showWarning = this.tutorialEnabled && !this.warnedKinds.has(definition.kind);
     const warning = showWarning ? this.scene.add.text(0, 0,
-      definition.kind === 'ground' ? '↑ JUMP' : '↓ SLIDE',
+      getTutorialLabel(definition.kind),
       { color: `#${biome.palette.hazardContrast.toString(16).padStart(6, '0')}`,
         fontSize: '15px', fontFamily: 'monospace',
         backgroundColor: '#fffffff0', padding: { x: 5, y: 2 } },
@@ -126,13 +137,6 @@ export class ObstacleSpawner {
       if (isHazardDodgedBySlide(hazard.definition, this.isGroundedSliding())) {
         hazard.passed = true;
         (hazard.box.body as Phaser.Physics.Arcade.Body).enable = false;
-        this.scene.tweens.add({
-          targets: hazard.art,
-          alpha: 0,
-          duration: 180,
-          ease: 'Cubic.Out',
-          onComplete: () => this.remove(hazard),
-        });
         return;
       }
       this.onOverlap(hazard.definition);

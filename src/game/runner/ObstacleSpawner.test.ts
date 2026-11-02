@@ -35,13 +35,16 @@ function makeScene() {
   const rectangles: ReturnType<typeof makeChainObject>[] = [];
   const graphics: ReturnType<typeof makeChainObject>[] = [];
   const texts: ReturnType<typeof makeChainObject>[] = [];
+  const textLabels: string[] = [];
   const overlaps: (() => void)[] = [];
   const tweens: { onComplete?: () => void; [key: string]: unknown }[] = [];
   const scene = {
     add: {
       rectangle: vi.fn(() => { const item = makeChainObject(); rectangles.push(item); return item; }),
       graphics: vi.fn(() => { const item = makeChainObject(); graphics.push(item); return item; }),
-      text: vi.fn(() => { const item = makeChainObject(); texts.push(item); return item; }),
+      text: vi.fn((_x: number, _y: number, value: string) => {
+        textLabels.push(value); const item = makeChainObject(); texts.push(item); return item;
+      }),
     },
     physics: { add: {
       existing: vi.fn(),
@@ -49,7 +52,7 @@ function makeScene() {
     } },
     tweens: { add: vi.fn((config: { onComplete?: () => void; [key: string]: unknown }) => tweens.push(config)) },
   };
-  return { scene: scene as unknown as Phaser.Scene, rectangles, graphics, texts, overlaps, tweens };
+  return { scene: scene as unknown as Phaser.Scene, rectangles, graphics, texts, textLabels, overlaps, tweens };
 }
 
 function snapshotAt(distanceMeters: number, phase: 'running' | 'paused' = 'running') {
@@ -125,7 +128,7 @@ describe('ObstacleSpawner schedule', () => {
     tutorialSpawner.update(snapshotAt(1_000));
     expect(tutorialMock.texts).toHaveLength(2);
     tutorialSpawner.update(snapshotAt(6_000));
-    expect(tutorialMock.texts).toHaveLength(2);
+    expect(tutorialMock.texts).toHaveLength(3);
     expect(tutorialMock.overlaps.length).toBeGreaterThan(2);
     tutorialSpawner.destroy();
 
@@ -163,14 +166,26 @@ describe('ObstacleSpawner schedule', () => {
     mock.overlaps[1]();
     expect(onOverlap).not.toHaveBeenCalled();
     expect(mock.rectangles[1].body.enable).toBe(false);
-    expect(mock.tweens).toHaveLength(1);
-    expect(mock.tweens[0]).toMatchObject({ alpha: 0, duration: 180, ease: 'Cubic.Out' });
+    expect(mock.tweens).toHaveLength(0);
     expect(mock.graphics[1].destroy).not.toHaveBeenCalled();
     mock.overlaps[1]();
     expect(onOverlap).not.toHaveBeenCalled();
-    expect(mock.tweens).toHaveLength(1);
-    mock.tweens[0].onComplete?.();
+    expect(mock.tweens).toHaveLength(0);
+    spawner.update(snapshotAt(1_300));
     expect(mock.graphics[1].destroy).toHaveBeenCalledOnce();
+    spawner.destroy();
+  });
+
+  it('places a tall non-slideable barrier after the 2,000m practice band', () => {
+    const mock = makeScene();
+    const spawner = new ObstacleSpawner(mock.scene, {} as Phaser.Physics.Arcade.Sprite, vi.fn(), true);
+    spawner.update(snapshotAt(5_350));
+    expect(mock.textLabels).toContain('DOUBLE JUMP');
+    const doubleJumpOverlap = mock.overlaps.find((_callback, index) =>
+      Number((mock.rectangles[index]?.body.setSize as ReturnType<typeof vi.fn>).mock.calls[0]?.[1]) ===
+        RUNNER_CONFIG.doubleJumpBarrierHeightPx,
+    );
+    expect(doubleJumpOverlap).toBeDefined();
     spawner.destroy();
   });
 });

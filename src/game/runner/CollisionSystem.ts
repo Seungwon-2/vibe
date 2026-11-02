@@ -8,7 +8,9 @@ export type HazardGeometry = Readonly<{ x: number; y: number; width: number; hei
 export function getHazardGeometry(hazard: HazardDefinition, x: number): HazardGeometry {
   // Standing player spans y=394..470; aligned sliding player spans y=422..470.
   // The overhead bar ends at y=416, leaving a readable 6px slide clearance.
-  const y = hazard.kind === 'ground' ? 470 - hazard.height : 380;
+  const y = hazard.kind === 'ground' || hazard.kind === 'double-jump'
+    ? RUNNER_GROUND_Y - hazard.height
+    : 380;
   return { x, y, width: hazard.width, height: hazard.height };
 }
 

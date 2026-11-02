@@ -3,6 +3,7 @@ import type { CharacterId } from '../characters/characterTypes';
 import type { RunnerFinishOutcome, RunnerMode, RunnerResult, RunnerSnapshot, StoryStageId } from './runnerTypes';
 import type { RunnerInputBridge } from './RunnerInput';
 import { RunnerScene } from './RunnerScene';
+import { RUNNER_CONFIG } from './runnerConfig';
 import type { RunnerEvent } from './runnerEvents';
 
 export type RunnerGameCallbacks = {
@@ -32,7 +33,7 @@ export function createRunnerGameConfig(
     antialias: true,
     roundPixels: false,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-    physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 900 }, debug: false } },
+    physics: { default: 'arcade', arcade: { gravity: { x: 0, y: RUNNER_CONFIG.gravityY }, debug: false } },
     scene: [RunnerScene],
     callbacks: {
       preBoot: (game) => {

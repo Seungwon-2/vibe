@@ -56,9 +56,11 @@ function obstacle(id: string, kind: HazardKind, offsetMeters = 0): HazardDefinit
   return {
     id, kind, offsetMeters,
     // Arcade overlap uses these boxes, independent of the decorative pixels.
-    width: kind === 'ground' ? 46 : 64,
-    height: kind === 'ground' ? 48 : 36,
-    warningColor: kind === 'ground' ? '#ffcf6b' : '#8fe5f8',
+    width: kind === 'ground' ? 46 : kind === 'double-jump'
+      ? RUNNER_CONFIG.doubleJumpBarrierWidthPx : 64,
+    height: kind === 'ground' ? 48 : kind === 'double-jump'
+      ? RUNNER_CONFIG.doubleJumpBarrierHeightPx : 36,
+    warningColor: kind === 'ground' ? '#ffcf6b' : kind === 'double-jump' ? '#ff9a66' : '#8fe5f8',
   };
 }
 
@@ -73,9 +75,9 @@ export const HAZARD_BANDS: readonly HazardBand[] = Object.freeze([
   { id: 'practice', minDistanceMeters: RUNNER_CONFIG.tutorialEndMeters,
     maxDistanceMeters: RUNNER_CONFIG.practiceEndMeters, patternIds: ['practice-jump', 'practice-slide'] },
   { id: 'combination', minDistanceMeters: RUNNER_CONFIG.denseSectionStartMeters,
-    maxDistanceMeters: 6_000, patternIds: ['combo-jump', 'combo-slide'] },
+    maxDistanceMeters: 6_000, patternIds: ['combo-jump', 'combo-slide', 'combo-double-jump'] },
   { id: 'advanced', minDistanceMeters: 6_000, maxDistanceMeters: null,
-    patternIds: ['advanced-jump', 'advanced-slide'] },
+    patternIds: ['advanced-jump', 'advanced-slide', 'advanced-double-jump'] },
 ]);
 
 export const HAZARD_PATTERNS: readonly HazardPattern[] = Object.freeze([
@@ -87,8 +89,10 @@ export const HAZARD_PATTERNS: readonly HazardPattern[] = Object.freeze([
     RUNNER_CONFIG.practiceEndMeters),
   singleActionPattern('combo-jump', 'ground', RUNNER_CONFIG.denseSectionStartMeters, 6_000),
   singleActionPattern('combo-slide', 'overhead', RUNNER_CONFIG.denseSectionStartMeters, 6_000),
+  singleActionPattern('combo-double-jump', 'double-jump', RUNNER_CONFIG.denseSectionStartMeters, 6_000),
   singleActionPattern('advanced-jump', 'ground', 6_000, null),
   singleActionPattern('advanced-slide', 'overhead', 6_000, null),
+  singleActionPattern('advanced-double-jump', 'double-jump', 6_000, null),
 ]);
 
 export function isGateClearance(
@@ -123,11 +127,12 @@ function getScheduledKind(distanceMeters: number): HazardKind {
   }
   const slotIndex = wave.patternDistances.reduce((slot, start, index) =>
     distanceMeters >= start ? index : slot, 0);
+  if (waveIndex >= 3 && (waveIndex - 3) % 4 === 0 && slotIndex === 0) return 'double-jump';
   return (waveIndex + slotIndex) % 2 === 0 ? 'ground' : 'overhead';
 }
 
 function getPatternId(band: HazardBand, kind: HazardKind): string {
-  return band.patternIds[kind === 'ground' ? 0 : 1];
+  return band.patternIds[kind === 'ground' ? 0 : kind === 'overhead' ? 1 : 2];
 }
 
 export function getPatternForDistance(distanceMeters: number): HazardPattern {

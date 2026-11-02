@@ -66,11 +66,11 @@ function expectPrimitivesInside(graphics: ReturnType<typeof makeGraphics>, width
 describe('themed hazard art', () => {
   it('keeps themed artwork inside its visual canvas and leaves the crawl-through opening', () => {
     for (const biome of RUNNER_BIOMES) {
-      for (const kind of ['ground', 'overhead'] as const) {
+      for (const kind of ['ground', 'overhead', 'double-jump'] as const) {
         const definition: HazardDefinition = {
           id: `${biome.id}-${kind}`, kind, offsetMeters: 0,
           width: kind === 'ground' ? 46 : 64,
-          height: kind === 'ground' ? 48 : 36,
+          height: kind === 'ground' ? 48 : kind === 'double-jump' ? 156 : 36,
           warningColor: '#ffffff',
         };
         const graphics = makeGraphics();
@@ -104,7 +104,7 @@ describe('themed hazard art', () => {
       const definition: HazardDefinition = {
         id: `${biome.id}-${kind}`, kind, offsetMeters: 0,
         width: kind === 'ground' ? 46 : 64,
-        height: kind === 'ground' ? 48 : 36,
+        height: kind === 'ground' ? 48 : kind === 'double-jump' ? 156 : 36,
         warningColor: '#ffffff',
       };
       drawRunnerHazard(graphics as unknown as Phaser.GameObjects.Graphics, definition, biome);
@@ -120,8 +120,9 @@ describe('themed hazard art', () => {
 
     for (const biome of RUNNER_BIOMES) {
       expect(signature(biome.id, 'ground')).not.toBe(signature(biome.id, 'overhead'));
+      expect(signature(biome.id, 'double-jump')).not.toBe(signature(biome.id, 'overhead'));
     }
-    for (const kind of ['ground', 'overhead'] as const) {
+    for (const kind of ['ground', 'overhead', 'double-jump'] as const) {
       expect(new Set(RUNNER_BIOMES.map(({ id }) => signature(id, kind))).size).toBe(RUNNER_BIOMES.length);
     }
   });

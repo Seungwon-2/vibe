@@ -3,17 +3,21 @@ import { getHazardCollisionGeometry, getHazardGeometry, getHazardVisualGeometry,
   tryResolveHazardHit, tryResolvePitFall } from './CollisionSystem';
 import { createRunnerSnapshot, startRunner } from './RunnerSimulation';
 import type { HazardDefinition } from './hazardTypes';
+import { RUNNER_CONFIG } from './runnerConfig';
 import { RUNNER_GROUND_Y } from './runnerPose';
 
 const ground: HazardDefinition = { id: 'spikes', kind: 'ground', offsetMeters: 0,
   width: 46, height: 48, warningColor: '#ffcf6b' };
 const overhead: HazardDefinition = { id: 'bar', kind: 'overhead', offsetMeters: 0,
   width: 64, height: 36, warningColor: '#8fe5f8' };
+const highBarrier: HazardDefinition = { id: 'wall', kind: 'double-jump', offsetMeters: 0,
+  width: 64, height: 156, warningColor: '#ff9a66' };
 
 describe('hazard collision', () => {
   it('uses boxes aligned to standing and sliding silhouettes', () => {
     expect(getHazardGeometry(ground, 100)).toEqual({ x: 100, y: 422, width: 46, height: 48 });
     expect(getHazardGeometry(overhead, 100)).toEqual({ x: 100, y: 380, width: 64, height: 36 });
+    expect(getHazardGeometry(highBarrier, 100)).toEqual({ x: 100, y: RUNNER_GROUND_Y - 156, width: 64, height: 156 });
     expect(getHazardGeometry(overhead, 100).y + overhead.height).toBeLessThan(430);
   });
 
@@ -34,6 +38,16 @@ describe('hazard collision', () => {
     expect(isHazardDodgedBySlide(overhead, true)).toBe(true);
     expect(isHazardDodgedBySlide(overhead, false)).toBe(false);
     expect(isHazardDodgedBySlide(ground, true)).toBe(false);
+    expect(isHazardDodgedBySlide(highBarrier, true)).toBe(false);
+  });
+
+  it('sets the tall barrier between one-jump and well-timed double-jump ceilings', () => {
+    const { gravityY, jumpImpulseY, doubleJumpBarrierHeightPx } = RUNNER_CONFIG;
+    const oneJumpHeight = Math.abs(jumpImpulseY) ** 2 / (2 * gravityY);
+    const doubleJumpHeight = oneJumpHeight * 2;
+
+    expect(oneJumpHeight).toBeLessThan(doubleJumpBarrierHeightPx);
+    expect(doubleJumpHeight).toBeGreaterThan(doubleJumpBarrierHeightPx);
   });
 
   it('applies one penalty then ignores overlaps during protection', () => {
