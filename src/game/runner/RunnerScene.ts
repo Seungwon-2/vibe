@@ -18,6 +18,7 @@ import { getHurtAnimationFrames } from './hurtAnimation';
 import { PitSpawner } from './PitSpawner';
 import type { PitFallContactResult, PitDefinition } from './PitSpawner';
 import { RunnerTrailEffect } from './RunnerTrailEffect';
+import { getRunnerAnimationPlayback } from './runnerAnimationConfig';
 
 export class RunnerScene extends Phaser.Scene {
   private inputBridge!: RunnerInputBridge;
@@ -92,14 +93,12 @@ export class RunnerScene extends Phaser.Scene {
     for (const [name, frames] of Object.entries(animationFrames)) {
       if (frames.length === 0) throw new Error(`Missing ${characterId}:${name} frames`);
       if (this.anims.exists(`${characterId}:${name}`)) continue;
-      const isFall = name === 'jump-fall' || name === 'double-jump-fall';
-      const frameRate = name === 'run' ? 20 : name === 'slide' ? 18
-        : isFall ? 6 : name === 'jump' ? 8 : 12;
+      const playback = getRunnerAnimationPlayback(name, character);
       this.anims.create({
         key: `${characterId}:${name}`,
         frames: frames.map((frame) => ({ key: frame.textureKey })),
-        frameRate,
-        repeat: name === 'run' || isFall ? -1 : 0,
+        frameRate: playback.frameRate,
+        repeat: playback.repeat,
       });
     }
 

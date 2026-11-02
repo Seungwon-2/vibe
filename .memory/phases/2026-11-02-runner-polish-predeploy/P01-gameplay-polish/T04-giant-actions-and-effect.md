@@ -58,4 +58,4 @@ Task: T04-giant-actions-and-effect
 - [x] Implementation complete
 - [x] `RunnerPlayer.test.ts` passed (15 tests); typecheck passed.
 - [ ] Manual visual verification of giant aura is unavailable in this session.
-- commit: 040ff25
+- commit: ef64cee

@@ -1,6 +1,6 @@
 # Task: T05 Terminal Animation Speed
 
-## Status: pending
+## Status: done
 
 ## Goal
 Remove accelerated playback from the victory and game-over sprites at the end of a run while preserving one-shot playback and the final pose.
@@ -31,9 +31,9 @@ Remove accelerated playback from the victory and game-over sprites at the end of
 - Verify five-character terminal actions use catalog FPS and remain non-looping.
 
 ## Acceptance Criteria
-- [ ] Victory and game-over use catalog FPS without a speed multiplier.
-- [ ] Terminal sprites play once and hold their final frame.
-- [ ] Story result delay and result action selection remain unchanged.
+- [x] Victory and game-over use the authored per-character FPS with no speed multiplier.
+- [x] Terminal sprites remain non-looping, holding their final frame.
+- [x] Story result delay and result action selection remain unchanged.
 
 ## Validation
 - `npm test -- src/game/runner/RunnerScene.test.ts src/app/screens/RunResult.test.tsx`
@@ -52,6 +52,6 @@ Task: T05-terminal-animation-speed
 ```
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] `runnerAnimationConfig.test.ts` and `RunResult.test.tsx` passed (6 tests); typecheck passed.
+- commit: 01f7bea

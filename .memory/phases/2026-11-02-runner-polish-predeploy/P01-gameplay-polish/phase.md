@@ -7,7 +7,7 @@
 | T02 | `done` | Fit all Story stage options and controls in the viewport without page scrolling. | [T02](./T02-stage-select-viewport.md) |
 | T03 | `done` | Make overhead hazards slide-only, including while airborne. | [T03](./T03-slide-only-hazards.md) |
 | T04 | `done` | Keep jump and slide animations working during giant mode and harmonize its effect. | [T04](./T04-giant-actions-and-effect.md) |
-| T05 | `pending` | Play ending animations at authored per-character speed. | [T05](./T05-terminal-animation-speed.md) |
+| T05 | `done` | Play ending animations at authored per-character speed. | [T05](./T05-terminal-animation-speed.md) |
 
 ## Progress
-- done: 4/5 (active: T05)
+- done: 5/5 (complete)
