@@ -1,6 +1,6 @@
 ﻿# Task: T03 Mary's Magnetic Passive
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 Replace Mary's +50% pickup-body expansion with a visible passive that pulls coins and time pickups toward her from within 150px over approximately 300ms in both modes, without changing runner physics or animation.
