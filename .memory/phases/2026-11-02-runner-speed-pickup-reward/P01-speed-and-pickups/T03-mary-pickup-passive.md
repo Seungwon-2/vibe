@@ -1,6 +1,6 @@
 # Task: T03 Mary Pickup Passive
 
-## Status: pending
+## Status: done
 
 ## Goal
 Raise Tokino Mary's item collection radius passive from +35% to +50% while leaving all hazard hitboxes and other characters' pickup radii unchanged.
@@ -34,13 +34,16 @@ Raise Tokino Mary's item collection radius passive from +35% to +50% while leavi
 - **Details**: Verify Mary radius increases, non-Mary stays unchanged, and elevated pickups still cannot be collected from a grounded standing position due solely to the enlarged pickup body.
 
 ## Acceptance Criteria
-- [ ] Mary's UI effect reads +50% and her pickup body size is 96px.
-- [ ] Other characters' pickup sizes and all obstacle collision tests remain unchanged.
-- [ ] Elevated coin separation remains valid after the larger Mary radius.
+- [x] Mary's UI effect reads +50% and her pickup body size is 96px.
+- [x] Other characters' pickup sizes and all obstacle collision tests remain unchanged.
+- [x] Elevated coin separation remains valid after the larger Mary radius.
 
 ## Validation
 - `npm test -- src/game/characters/characterAbilities.test.ts src/game/characters/characterRegistry.test.ts src/game/runner/CollectibleSpawner.test.ts`
 - `npm run typecheck`
+- `npm test -- src/game/characters/characterAbilities.test.ts src/game/characters/characterRegistry.test.ts src/game/runner/CollectibleSpawner.test.ts` — passed (16 tests).
+- `npm run typecheck` — passed.
+- `git diff --check` — passed.
 
 ## Commit Message
 ```text
@@ -55,6 +58,6 @@ Task: T03-mary-pickup-passive
 ```
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed
 - commit: pending

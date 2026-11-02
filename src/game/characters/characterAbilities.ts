@@ -27,8 +27,8 @@ export const CHARACTER_PASSIVES: Readonly<Record<CharacterPassiveId, CharacterPa
       icon: 'hiyori-blossom-ward', effectLabel: '충돌·낭떠러지 방어 2회',
     }),
     'mary-pickup-magnet': Object.freeze({
-      id: 'mary-pickup-magnet', pickupRadiusMultiplier: 1.35, name: '음표의 이끌림',
-      icon: 'mary-music-magnet', effectLabel: '아이템 획득 범위 +35%',
+      id: 'mary-pickup-magnet', pickupRadiusMultiplier: 1.5, name: '음표의 이끌림',
+      icon: 'mary-music-magnet', effectLabel: '아이템 획득 범위 +50%',
     }),
     'toa-ghost-glide': Object.freeze({
       id: 'toa-ghost-glide', slideGuardMs: 250, cooldownMs: 20_000, name: '고스트 슬라이드',
