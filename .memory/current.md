@@ -1,20 +1,19 @@
 ﻿# Current Context
 
 ## Active Plan
-[Runner Speed and Pickup Rewards](./plans/2026-11-02-runner-speed-pickup-reward.md)
+[Runner Density, Giant Pickup, and Mary's Magnet](./plans/2026-11-02-runner-density-giant-magnet.md)
 
 ## Active Phase
-[P01 Speed and Pickups](./phases/2026-11-02-runner-speed-pickup-reward/P01-speed-and-pickups/phase.md)
+[P01 Runner Pickup Tuning](./phases/2026-11-02-runner-density-giant-magnet/P01-runner-pickup-tuning/phase.md)
 
 ## Active Task
-None — plan complete.
+[T02 Giant Pickup Art](./phases/2026-11-02-runner-density-giant-magnet/P01-runner-pickup-tuning/T02-giant-pickup-art.md)
 
 ## Status
-- T01 completed (`bd51f44`): Story final-life loss holds the game-over pose for 1 second.
-- T02 completed (`04b310a`): start/max speed +10%; Endless pacing intervals +10%; Story authored spacing unchanged.
-- T03 completed (`c29cd2c`): Mary's pickup radius passive +50%.
-- T04 completed and committed (`ace62a6`): safe coins every 90m target; 3-coin jump and slide strings in Endless and Story courses.
-- Endless wide pits are 160m so the established double-jump challenge remains a double-jump after the speed increase. Story pit widths/routes remain unchanged.
+- Prior plan `runner-speed-pickup-reward` is complete.
+- This plan follows `.memory/decisions/2026-11-02-runner-density-giant-magnet.md`.
+- T01 Endless Course Density completed and committed as `f78c552`.
+- T02 Giant Pickup Art is now in progress.
 
 ## Next Step
-The Runner Speed and Pickup Rewards plan is complete. Continue with the next active plan or request a local play session to check the updated pacing and coin routes.
+Execute T02: redraw giant pickups as a purple-and-pink four-point comet/star while preserving coin, time-item, and gameplay behavior.
