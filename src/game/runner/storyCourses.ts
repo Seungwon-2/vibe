@@ -32,8 +32,8 @@ function placement(id: string, distanceMeters: number, kind: HazardKind): StoryH
 const STORY_COURSES: Readonly<Record<StoryStageId, readonly StoryHazardPlacement[]>> = Object.freeze({
   'dawn-city': Object.freeze([
     placement('dawn-jump-01', 360, 'ground'), placement('dawn-slide-01', 600, 'overhead'),
-    placement('dawn-wall-01', 1_100, 'double-jump'), placement('dawn-slide-02', 1_450, 'overhead'),
-    placement('dawn-jump-03', 1_760, 'ground'),
+    placement('dawn-wall-01', 1_300, 'double-jump'), placement('dawn-slide-02', 1_560, 'overhead'),
+    placement('dawn-jump-03', 1_780, 'ground'),
   ]),
   'moonlit-forest': Object.freeze([
     placement('forest-slide-01', 360, 'overhead'), placement('forest-jump-01', 620, 'ground'),

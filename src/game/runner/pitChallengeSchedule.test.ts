@@ -67,6 +67,16 @@ describe('wide double-jump pit schedule', () => {
     }
   });
 
+  it('introduces Dawn City double jump in the latter half with safe recovery to the goal', () => {
+    const stage = STORY_STAGES.find(({ id }) => id === 'dawn-city')!;
+    const hazards = getStoryHazardSchedule(stage.id);
+    const wall = hazards.find(({ definition }) => definition.kind === 'double-jump')!;
+    expect(wall.distanceMeters).toBeGreaterThanOrEqual(stage.lengthMeters / 2);
+    expect(wall.distanceMeters).toBeGreaterThanOrEqual(1_300);
+    expect(stage.lengthMeters - hazards.at(-1)!.distanceMeters).toBeGreaterThanOrEqual(500);
+    validateStoryCourses();
+  });
+
   it('sizes the pit widths so one jump falls short and a timed double jump reaches across', () => {
     const singleFlightSeconds = 2 * Math.abs(RUNNER_CONFIG.jumpImpulseY) / RUNNER_CONFIG.gravityY;
     const doubleFlightSeconds = 3 * Math.abs(RUNNER_CONFIG.jumpImpulseY) / RUNNER_CONFIG.gravityY;
