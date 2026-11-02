@@ -12,6 +12,12 @@ export function getHazardGeometry(hazard: HazardDefinition, x: number): HazardGe
   return { x, y, width: hazard.width, height: hazard.height };
 }
 
+/** Full art canvas for overhead barriers; collision and spacing still use getHazardGeometry. */
+export function getHazardVisualGeometry(hazard: HazardDefinition, x: number): HazardGeometry {
+  if (hazard.kind === 'overhead') return { x, y: 0, width: hazard.width, height: RUNNER_GROUND_Y };
+  return getHazardGeometry(hazard, x);
+}
+
 /** Overhead art stays at the ceiling, while its collision lane covers every jump height. */
 export function getHazardCollisionGeometry(hazard: HazardDefinition, x: number): HazardGeometry {
   if (hazard.kind === 'overhead') return { x, y: 0, width: hazard.width, height: RUNNER_GROUND_Y };

@@ -162,7 +162,7 @@ export class RunnerScene extends Phaser.Scene {
     this.player.setGiant(state.giantRemainingMs > 0);
     this.trailEffect.update(this.time.now, deltaMs, this.player.gameObject.x, this.player.gameObject.y - 12,
       state.phase === 'running', !this.player.isGrounded || (state.stageSpeedBoostRemainingMs ?? 0) > 0 || state.giantRemainingMs > 0);
-    this.drawPassiveEffect(state.passiveEffectRemainingMs, state.slideGuardRemainingMs, state.giantRemainingMs);
+    this.drawPassiveEffect(state.passiveEffectRemainingMs, state.slideGuardRemainingMs);
     this.spawner.update(state);
     this.collectibles.update(state);
     this.pits.update(state);
@@ -200,21 +200,13 @@ export class RunnerScene extends Phaser.Scene {
     this.eventEmitter.snapshot(snapshot, this.time.now, force);
   }
 
-  private drawPassiveEffect(remainingMs: number, slideGuardRemainingMs: number, giantRemainingMs: number): void {
+  private drawPassiveEffect(remainingMs: number, slideGuardRemainingMs: number): void {
     this.passiveEffectArt.clear();
     const hiyoriActive = this.snapshot.characterId === 'hanayo-hiyori' && remainingMs > 0;
     const toaActive = this.snapshot.characterId === 'goth-student' &&
       ((this.player.isSliding && slideGuardRemainingMs > 0) || remainingMs > 0);
     const x = RUNNER_PLAYER_X;
     const y = this.player.gameObject.y - 38;
-    if (giantRemainingMs > 0) {
-      const accent = Number.parseInt(getCharacter(this.snapshot.characterId).accentColor.slice(1), 16);
-      this.passiveEffectArt.fillStyle(accent, 0.055).fillCircle(x, y, 54);
-      this.passiveEffectArt.lineStyle(2, accent, 0.32).strokeCircle(x, y, 51);
-      this.passiveEffectArt.lineStyle(2, accent, 0.55)
-        .lineBetween(x - 42, y - 31, x - 36, y - 31).lineBetween(x - 39, y - 34, x - 39, y - 28)
-        .lineBetween(x + 39, y + 29, x + 45, y + 29).lineBetween(x + 42, y + 26, x + 42, y + 32);
-    }
     if (!hiyoriActive && !toaActive) return;
     if (toaActive) {
       this.passiveEffectArt.fillStyle(0x9b68e8, 0.24).fillEllipse(x - 30, y + 9, 56, 24)

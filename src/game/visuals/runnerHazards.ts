@@ -7,6 +7,7 @@ export function drawRunnerHazard(
   graphics: Phaser.GameObjects.Graphics,
   definition: HazardDefinition,
   biome: RunnerBiomeDefinition,
+  visualHeight = definition.height,
 ): void {
   const { width, kind } = definition;
   const p = biome.palette;
@@ -62,52 +63,67 @@ export function drawRunnerHazard(
     return;
   }
 
+  // A themed overhead barrier fills the jump-blocking lane and leaves the same low crawl gap
+  // as the slide collision pose. It is drawn independently of the collider dimensions.
+  const barrierBottom = Math.max(0, visualHeight - 54);
   switch (biome.id) {
     case 'dawn-city': {
-      // A suspended street sign on a narrow cable.
-      graphics.lineStyle(2, p.hazardContrast, 0.95).lineBetween(1, 3, width - 1, 3)
-        .lineBetween(13, 3, 13, 10).lineBetween(width - 13, 3, width - 13, 10);
-      graphics.fillStyle(p.gate, 0.98).fillRoundedRect(7, 9, width - 14, 20, 4);
-      graphics.lineStyle(2, p.hazardContrast, 0.92).strokeRoundedRect(7, 9, width - 14, 20, 4);
-      graphics.fillStyle(p.accent, 0.98).fillRoundedRect(13, 13, width - 26, 4, 2);
-      graphics.fillStyle(p.groundFace, 0.98).fillCircle(width / 2, 23, 3);
+      // A roadworks barricade wall with a lit warning stripe and steel supports.
+      graphics.fillStyle(p.middle, 0.96).fillRect(2, 0, width - 4, barrierBottom);
+      graphics.fillStyle(p.gate, 0.98).fillRect(7, 0, width - 14, barrierBottom - 5);
+      graphics.fillStyle(p.accent, 0.98).fillRect(12, 10, width - 24, 9)
+        .fillRect(12, 32, width - 24, 9);
+      for (let y = 12; y < barrierBottom - 12; y += 44) {
+        graphics.fillStyle(p.hazardContrast, 0.9).fillTriangle(14, y + 12, 27, y, 27, y + 12)
+          .fillTriangle(width - 14, y + 12, width - 27, y, width - 27, y + 12);
+      }
+      graphics.lineStyle(2, p.hazardContrast, 0.92).lineBetween(3, barrierBottom - 2, width - 3, barrierBottom - 2);
+      graphics.fillStyle(p.groundFace, 0.98).fillRect(2, barrierBottom - 8, 6, 8)
+        .fillRect(width - 8, barrierBottom - 8, 6, 8);
       break;
     }
     case 'moonlit-forest': {
-      // A bent branch with dangling vines and leaves.
-      graphics.lineStyle(5, p.middle, 0.98).lineBetween(4, 7, 60, 6);
-      graphics.lineStyle(2, p.hazardContrast, 0.84).lineBetween(4, 7, 60, 6);
-      for (const [x, endY] of [[13, 30], [31, 27], [51, 31]] as const) {
-        graphics.lineStyle(2, p.gate, 0.98).lineBetween(x, 7, x + 2, endY);
-        graphics.fillStyle(p.accent, 0.98).fillEllipse(x + 2, endY - 3, 11, 7);
-        graphics.fillStyle(p.hazardContrast, 0.82).fillCircle(x + 2, endY - 3, 1.5);
+      // Dense thorny vines and leaf clusters form an unmistakable low arch.
+      graphics.fillStyle(p.middle, 0.94).fillRoundedRect(2, 0, width - 4, barrierBottom, 9);
+      graphics.fillStyle(p.gate, 0.98).fillRoundedRect(7, 0, width - 14, barrierBottom - 7, 7);
+      for (let y = 18; y < barrierBottom - 12; y += 38) {
+        graphics.lineStyle(4, p.middle, 0.96).lineBetween(12, y, width - 12, y + 5);
+        graphics.lineStyle(2, p.hazardContrast, 0.85).lineBetween(12, y, width - 12, y + 5);
+        graphics.fillStyle(p.accent, 0.96).fillEllipse(17, y + 2, 12, 8)
+          .fillEllipse(width - 17, y + 7, 12, 8);
+        graphics.fillStyle(p.hazardContrast, 0.9).fillTriangle(26, y + 4, 34, y - 4, 33, y + 6)
+          .fillTriangle(width - 26, y + 9, width - 34, y + 17, width - 33, y + 7);
       }
+      graphics.fillStyle(p.middle, 0.98).fillEllipse(width / 2, barrierBottom - 5, width - 6, 16);
       break;
     }
     case 'crystal-mine': {
-      // Hanging stalactites with pale facet highlights.
-      graphics.fillStyle(p.middle, 0.95).fillRect(1, 1, width - 2, 5);
-      graphics.lineStyle(2, p.hazardContrast, 0.88).lineBetween(1, 6, width - 1, 6);
-      graphics.fillStyle(p.gate, 0.98).fillTriangle(7, 5, 17, 5, 12, 29)
-        .fillTriangle(23, 5, 41, 5, 32, 35)
-        .fillTriangle(47, 5, 59, 5, 53, 25);
-      graphics.fillStyle(p.pickupTime, 0.98).fillTriangle(30, 8, 36, 8, 32, 28);
-      graphics.lineStyle(1.5, 0xffffff, 0.9).lineBetween(11, 9, 13, 22)
-        .lineBetween(28, 10, 31, 26).lineBetween(52, 8, 53, 19);
+      // A solid crystal seam with large faceted shards reaching toward the slide opening.
+      graphics.fillStyle(p.middle, 0.96).fillRect(1, 0, width - 2, barrierBottom - 4);
+      graphics.fillStyle(p.gate, 0.98).fillRect(5, 0, width - 10, barrierBottom - 9);
+      for (let y = 8; y < barrierBottom - 20; y += 56) {
+        graphics.fillStyle(p.pickupTime, 0.98).fillTriangle(7, y, 22, y, 15, Math.min(y + 48, barrierBottom - 3))
+          .fillTriangle(width - 7, y + 6, width - 22, y + 6, width - 15, Math.min(y + 54, barrierBottom - 3));
+        graphics.fillStyle(p.groundFace, 0.94).fillTriangle(23, y, 42, y, 33, Math.min(y + 36, barrierBottom - 3));
+        graphics.lineStyle(1.5, 0xffffff, 0.78).lineBetween(15, y + 5, 15, Math.min(y + 36, barrierBottom - 4))
+          .lineBetween(33, y + 4, 33, Math.min(y + 27, barrierBottom - 4));
+      }
+      graphics.lineStyle(3, p.hazardContrast, 0.94).lineBetween(2, barrierBottom - 2, width - 2, barrierBottom - 2);
       break;
     }
     case 'cloud-skyway': {
-      // A floating cloud streamer with wind chimes.
-      graphics.fillStyle(0xffffff, 0.98).fillEllipse(15, 7, 22, 12)
-        .fillEllipse(27, 5, 24, 10).fillEllipse(39, 7, 19, 11);
-      graphics.lineStyle(2, p.gate, 0.98).lineBetween(8, 12, 56, 12)
-        .lineBetween(16, 11, 15, 27).lineBetween(32, 11, 32, 32)
-        .lineBetween(49, 11, 50, 25);
-      graphics.fillStyle(p.accent, 0.98).fillTriangle(12, 23, 18, 23, 15, 30)
-        .fillTriangle(28, 28, 36, 28, 32, 36)
-        .fillTriangle(46, 22, 54, 22, 50, 29);
-      graphics.lineStyle(1.5, p.hazardContrast, 0.82).lineBetween(12, 31, 18, 31)
-        .lineBetween(28, 35, 36, 35).lineBetween(46, 30, 54, 30);
+      // A packed wall of storm clouds with wind bands; the underside opens as a low tunnel.
+      graphics.fillStyle(p.middle, 0.95).fillRect(2, 0, width - 4, barrierBottom - 4);
+      graphics.fillStyle(p.gate, 0.97).fillEllipse(width / 2, 13, width - 4, 24)
+        .fillEllipse(13, 20, 26, 26).fillEllipse(width - 13, 20, 26, 26);
+      graphics.fillStyle(0xffffff, 0.98).fillEllipse(width / 2, 17, width - 12, 20)
+        .fillEllipse(14, 21, 18, 18).fillEllipse(width - 14, 21, 18, 18);
+      for (let y = 34; y < barrierBottom - 8; y += 42) {
+        graphics.lineStyle(5, p.gate, 0.96).lineBetween(8, y, width - 8, y + 4);
+        graphics.lineStyle(2, p.accent, 0.94).lineBetween(13, y + 9, width - 13, y + 13);
+        graphics.fillStyle(0xffffff, 0.86).fillCircle(width / 2, y + 4, 3);
+      }
+      graphics.lineStyle(3, p.hazardContrast, 0.88).lineBetween(3, barrierBottom - 2, width - 3, barrierBottom - 2);
       break;
     }
   }

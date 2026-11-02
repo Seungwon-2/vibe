@@ -64,7 +64,7 @@ function expectPrimitivesInside(graphics: ReturnType<typeof makeGraphics>, width
 }
 
 describe('themed hazard art', () => {
-  it('keeps every decorative primitive inside the unchanged collision footprint', () => {
+  it('keeps themed artwork inside its visual canvas and leaves the crawl-through opening', () => {
     for (const biome of RUNNER_BIOMES) {
       for (const kind of ['ground', 'overhead'] as const) {
         const definition: HazardDefinition = {
@@ -74,14 +74,24 @@ describe('themed hazard art', () => {
           warningColor: '#ffffff',
         };
         const graphics = makeGraphics();
-        drawRunnerHazard(graphics as unknown as Phaser.GameObjects.Graphics, definition, biome);
-        expectPrimitivesInside(graphics, definition.width, definition.height);
+        const visualHeight = kind === 'overhead' ? 470 : definition.height;
+        drawRunnerHazard(graphics as unknown as Phaser.GameObjects.Graphics, definition, biome, visualHeight);
+        expectPrimitivesInside(graphics, definition.width, visualHeight);
 
         for (const method of ['fillRect', 'fillRoundedRect', 'strokeRoundedRect'] as const) {
           const fullFootprintDrawn = calls(graphics, method).some(([x, y, w, h]) =>
             x <= 0 && y <= 0 && x + w >= definition.width && y + h >= definition.height,
           );
           expect(fullFootprintDrawn, `${biome.id}/${kind} draws a full hitbox panel`).toBe(false);
+        }
+        if (kind === 'overhead') {
+          const lowerEdge = Math.max(...[
+            ...calls(graphics, 'fillRect').map(([, y, , h]) => y + h),
+            ...calls(graphics, 'fillRoundedRect').map(([, y, , h]) => y + h),
+            ...calls(graphics, 'lineBetween').map(([, y1, , y2]) => Math.max(y1, y2)),
+          ]);
+          expect(lowerEdge).toBeGreaterThanOrEqual(visualHeight - 60);
+          expect(lowerEdge).toBeLessThanOrEqual(visualHeight - 54);
         }
       }
     }

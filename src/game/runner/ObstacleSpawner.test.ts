@@ -36,6 +36,7 @@ function makeScene() {
   const graphics: ReturnType<typeof makeChainObject>[] = [];
   const texts: ReturnType<typeof makeChainObject>[] = [];
   const overlaps: (() => void)[] = [];
+  const tweens: { onComplete?: () => void; [key: string]: unknown }[] = [];
   const scene = {
     add: {
       rectangle: vi.fn(() => { const item = makeChainObject(); rectangles.push(item); return item; }),
@@ -46,8 +47,9 @@ function makeScene() {
       existing: vi.fn(),
       overlap: vi.fn((_player: unknown, _box: unknown, callback: () => void) => overlaps.push(callback)),
     } },
+    tweens: { add: vi.fn((config: { onComplete?: () => void; [key: string]: unknown }) => tweens.push(config)) },
   };
-  return { scene: scene as unknown as Phaser.Scene, rectangles, graphics, texts, overlaps };
+  return { scene: scene as unknown as Phaser.Scene, rectangles, graphics, texts, overlaps, tweens };
 }
 
 function snapshotAt(distanceMeters: number, phase: 'running' | 'paused' = 'running') {
@@ -160,8 +162,15 @@ describe('ObstacleSpawner schedule', () => {
 
     mock.overlaps[1]();
     expect(onOverlap).not.toHaveBeenCalled();
+    expect(mock.rectangles[1].body.enable).toBe(false);
+    expect(mock.tweens).toHaveLength(1);
+    expect(mock.tweens[0]).toMatchObject({ alpha: 0, duration: 180, ease: 'Cubic.Out' });
+    expect(mock.graphics[1].destroy).not.toHaveBeenCalled();
     mock.overlaps[1]();
     expect(onOverlap).not.toHaveBeenCalled();
+    expect(mock.tweens).toHaveLength(1);
+    mock.tweens[0].onComplete?.();
+    expect(mock.graphics[1].destroy).toHaveBeenCalledOnce();
     spawner.destroy();
   });
 });

@@ -1,5 +1,6 @@
 import type Phaser from 'phaser';
-import { getHazardCollisionGeometry, getHazardGeometry, isHazardDodgedBySlide } from './CollisionSystem';
+import { getHazardCollisionGeometry, getHazardGeometry, getHazardVisualGeometry,
+  isHazardDodgedBySlide } from './CollisionSystem';
 import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance,
   METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { isPitClearance, getPitDefinitions } from './PitSpawner';
@@ -18,6 +19,7 @@ type ActiveHazard = {
   warning: Phaser.GameObjects.Text | null;
   atMeters: number;
   definition: HazardDefinition;
+  passed: boolean;
 };
 
 export class ObstacleSpawner {
@@ -82,8 +84,9 @@ export class ObstacleSpawner {
         (hazard.atMeters - snapshot.distanceMeters) / METERS_PER_WORLD_UNIT;
       const geometry = getHazardGeometry(hazard.definition, centerX - hazard.definition.width / 2);
       const collision = getHazardCollisionGeometry(hazard.definition, geometry.x);
+      const visual = getHazardVisualGeometry(hazard.definition, geometry.x);
       hazard.box.setPosition(centerX, collision.y + collision.height / 2);
-      hazard.art.setPosition(geometry.x, geometry.y);
+      hazard.art.setPosition(visual.x, visual.y);
       hazard.warning?.setPosition(centerX, geometry.y - 34);
       if (geometry.x + geometry.width < 0) this.remove(hazard);
     }
@@ -102,11 +105,12 @@ export class ObstacleSpawner {
     body.setAllowGravity(false);
     body.setImmovable(true);
     body.setSize(collision.width, collision.height);
+    const visual = getHazardVisualGeometry(definition, 960 - definition.width / 2);
     const art = this.scene.add.graphics();
     const biome = this.activeStoryStageId
       ? getBiomeById(getStoryStage(this.activeStoryStageId).biomeId)
       : getBiomeForDistance(atMeters);
-    drawRunnerHazard(art, definition, biome);
+    drawRunnerHazard(art, definition, biome, visual.height);
     const showWarning = this.tutorialEnabled && !this.warnedKinds.has(definition.kind);
     const warning = showWarning ? this.scene.add.text(0, 0,
       definition.kind === 'ground' ? '↑ JUMP' : '↓ SLIDE',
@@ -115,18 +119,29 @@ export class ObstacleSpawner {
         backgroundColor: '#fffffff0', padding: { x: 5, y: 2 } },
     ).setOrigin(0.5, 1) : null;
     if (showWarning) this.warnedKinds.add(definition.kind);
-    const hazard: ActiveHazard = { box, art, warning, atMeters, definition };
+    const hazard: ActiveHazard = { box, art, warning, atMeters, definition, passed: false };
     this.active.push(hazard);
     this.scene.physics.add.overlap(this.player, box, () => {
-      if (!this.active.includes(hazard)) return;
-      if (!isHazardDodgedBySlide(hazard.definition, this.isGroundedSliding())) {
-        this.onOverlap(hazard.definition);
+      if (!this.active.includes(hazard) || hazard.passed) return;
+      if (isHazardDodgedBySlide(hazard.definition, this.isGroundedSliding())) {
+        hazard.passed = true;
+        (hazard.box.body as Phaser.Physics.Arcade.Body).enable = false;
+        this.scene.tweens.add({
+          targets: hazard.art,
+          alpha: 0,
+          duration: 180,
+          ease: 'Cubic.Out',
+          onComplete: () => this.remove(hazard),
+        });
+        return;
       }
+      this.onOverlap(hazard.definition);
       this.remove(hazard);
     });
   }
 
   private remove(hazard: ActiveHazard): void {
+    if (!this.active.includes(hazard)) return;
     this.active = this.active.filter((item) => item !== hazard);
     hazard.box.destroy();
     hazard.art.destroy();

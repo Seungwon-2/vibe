@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getHazardCollisionGeometry, getHazardGeometry, isHazardDodgedBySlide,
+import { getHazardCollisionGeometry, getHazardGeometry, getHazardVisualGeometry, isHazardDodgedBySlide,
   tryResolveHazardHit, tryResolvePitFall } from './CollisionSystem';
 import { createRunnerSnapshot, startRunner } from './RunnerSimulation';
 import type { HazardDefinition } from './hazardTypes';
@@ -21,6 +21,13 @@ describe('hazard collision', () => {
     expect(getHazardCollisionGeometry(overhead, 100)).toEqual({ x: 100, y: 0, width: 64, height: RUNNER_GROUND_Y });
     expect(getHazardCollisionGeometry(ground, 100)).toEqual(getHazardGeometry(ground, 100));
     expect(getHazardGeometry(overhead, 100)).toEqual({ x: 100, y: 380, width: 64, height: 36 });
+  });
+
+  it('gives overhead artwork a full-height canvas while ground art keeps its original size', () => {
+    expect(getHazardVisualGeometry(overhead, 100)).toEqual({
+      x: 100, y: 0, width: 64, height: RUNNER_GROUND_Y,
+    });
+    expect(getHazardVisualGeometry(ground, 100)).toEqual(getHazardGeometry(ground, 100));
   });
 
   it('allows only a grounded slide to dodge overhead hazards', () => {
