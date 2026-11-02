@@ -7,7 +7,7 @@ Reduce repeated achievements, keep Story stage selection within the viewport, ma
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | P01 | `done` | Clean up achievements and refine Story selection, obstacle rules, giant-mode presentation, and end-animation timing. | [P01](../phases/2026-11-02-runner-polish-predeploy/P01-gameplay-polish/phase.md) |
-| P02 | `pending` | Replace audio files when provided, then run local release checks and report deployment blockers. | [P02](../phases/2026-11-02-runner-polish-predeploy/P02-audio-release-check/phase.md) |
+| P02 | `in_progress` | Audio replacement is waiting on user files; local release review is complete with deployment blockers documented. | [P02](../phases/2026-11-02-runner-polish-predeploy/P02-audio-release-check/phase.md) |
 
 ## Notes
 - The working tree already contains unrelated user changes; execution must preserve them and stage only files belonging to the active task.

@@ -1,6 +1,6 @@
 # Task: T06 Audio Replacement
 
-## Status: pending
+## Status: waiting for user assets
 
 ## Goal
 Integrate the user's replacement BGM and SFX files without changing sound behavior or attribution policy beyond the provided assets' supplied credits.
@@ -52,6 +52,7 @@ Task: T06-audio-replacement
 ```
 
 ## Progress
-- [ ] User audio files received
+- [ ] User audio files received; expected basenames and directories are listed above.
 - [ ] Integration and validation complete
-- commit: pending
+- No audio files were supplied in the workspace for this task; current audio files remain unchanged.
+- commit: none yet
