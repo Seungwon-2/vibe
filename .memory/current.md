@@ -1,14 +1,19 @@
-# Current Work
+# Current Context
+
+## Active Plan
+[Runner Polish and Pre-deployment Review](./plans/2026-11-02-runner-polish-predeploy.md)
+
+## Active Phase
+[P01 Gameplay Polish](./phases/2026-11-02-runner-polish-predeploy/P01-gameplay-polish/phase.md)
+
+## Active Task
+[T02 Stage Select Viewport](./phases/2026-11-02-runner-polish-predeploy/P01-gameplay-polish/T02-stage-select-viewport.md)
 
 ## Status
-
-- The 2026-10-31 Story stage maps and goal finish plan is complete on `project02`.
-
-## Last Completed
-
-- Story courses and goal finish: each Story stage keeps its own biome and authored hazard route, with a themed GOAL finish and an 800ms victory pose before results.
-- 2026-10-30 runner modes, progression, and cosmetics plan.
+- T01 is complete; achievement progress is now consolidated into unique roster and Story goals.
+- T02 is ready to implement.
+- Audio replacements are user-provided and will be integrated in P02 when received.
+- Existing unrelated working-tree changes must be preserved.
 
 ## Next Step
-
-- Play through all four Story courses locally; review hazard rhythm and goal readability, then tune as needed before Azure deployment.
+Read T02's blueprint, fit the four Story stage cards and actions within the viewport, then verify desktop and mobile layouts.
