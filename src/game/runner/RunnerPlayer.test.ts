@@ -106,7 +106,7 @@ describe('RunnerPlayer and input bridge', () => {
     expect(sprite.anims.play.mock.calls.filter(([key]) => key === 'player-default:jump-fall')).toHaveLength(1);
   });
 
-  it('keeps run frames through a giant jump descent, then restores falling frames when giant ends', () => {
+  it('keeps falling frames through giant mode and after it ends', () => {
     const { player, body, sprite } = createPlayer('player-default');
     player.setGiant(true);
     expect(player.jump()).toBe(true);
@@ -118,7 +118,7 @@ describe('RunnerPlayer and input bridge', () => {
     expect(player.isGrounded).toBe(false);
     expect(body.velocity.y).toBe(80);
     expect(sprite.scaleX).toBeCloseTo(getCharacter('player-default').qualityScale * 1.35);
-    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:run', true);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:jump-fall', true);
 
     player.setGiant(false);
     player.update(16);
@@ -175,10 +175,9 @@ describe('RunnerPlayer and input bridge', () => {
     expect(body.bottom).toBeCloseTo(470);
   });
 
-  it('enlarges giant visuals while keeping standing and sliding world hitboxes unchanged', () => {
+  it('keeps giant slide animation active while preserving world hitboxes', () => {
     const { player, body, sprite } = createPlayer('player-default');
     const standingSize = { width: body.width, height: body.height };
-    const animationCalls = sprite.anims.play.mock.calls.length;
     player.setGiant(true);
     expect(sprite.scaleX).toBeCloseTo(getCharacter('player-default').qualityScale * 1.35);
     expect(body.width).toBeCloseTo(standingSize.width, 8);
@@ -187,12 +186,35 @@ describe('RunnerPlayer and input bridge', () => {
     expect(sprite.scaleX).toBeCloseTo(getCharacter('player-default').qualityScale * 1.35);
     expect(body.width).toBeCloseTo(80, 8);
     expect(body.height).toBeCloseTo(48, 8);
-    expect(sprite.anims.play.mock.calls.length).toBe(animationCalls);
-    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:run', true);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:slide', true);
     player.setGiant(false);
     expect(sprite.scaleX).toBeCloseTo(getCharacter('player-default').qualityScale);
     expect(body.width).toBeCloseTo(80, 8);
     expect(body.height).toBeCloseTo(48, 8);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:slide', true);
+    player.setSliding(false);
+    player.update(16);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:run', true);
+  });
+
+  it('preserves giant jump, double-jump, fall, slide, and hurt animation priorities', () => {
+    const { player, body, sprite } = createPlayer('player-default');
+    player.setGiant(true);
+    expect(player.jump()).toBe(true);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:jump', true);
+    body.blocked.down = false;
+    expect(player.jump()).toBe(true);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:doubleJump', true);
+    body.velocity.y = 240;
+    player.update(16);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:double-jump-fall', true);
+    body.blocked.down = true;
+    body.velocity.y = 0;
+    player.update(16);
+    player.setSliding(true);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:slide', true);
+    player.setHurt(true);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:hurt', true);
   });
 
   it('rejects an airborne slide and restores run after landing', () => {

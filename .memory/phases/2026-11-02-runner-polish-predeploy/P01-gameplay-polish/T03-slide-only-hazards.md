@@ -59,4 +59,4 @@ Task: T03-slide-only-hazards
 - [x] Implementation complete
 - [x] `ObstacleSpawner.test.ts` and `CollisionSystem.test.ts` passed (12 tests); typecheck passed.
 - [ ] `RunnerScene.test.ts` has unrelated existing harness failures in pit-rescue/finish setup (`trailEffect` and `setProtected` mocks are missing).
-- commit: 94fa471
+- commit: c455e48

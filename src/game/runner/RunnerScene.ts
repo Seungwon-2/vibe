@@ -209,11 +209,12 @@ export class RunnerScene extends Phaser.Scene {
     const x = RUNNER_PLAYER_X;
     const y = this.player.gameObject.y - 38;
     if (giantRemainingMs > 0) {
-      this.passiveEffectArt.fillStyle(0xffd66e, 0.12).fillCircle(x, y, 58);
-      this.passiveEffectArt.lineStyle(3, 0xffdf83, 0.9).strokeCircle(x, y, 52);
-      this.passiveEffectArt.fillStyle(0xfff1b7, 0.9)
-        .fillCircle(x - 42, y - 38, 3).fillCircle(x + 44, y - 24, 2)
-        .fillCircle(x + 38, y + 40, 3);
+      const accent = Number.parseInt(getCharacter(this.snapshot.characterId).accentColor.slice(1), 16);
+      this.passiveEffectArt.fillStyle(accent, 0.055).fillCircle(x, y, 54);
+      this.passiveEffectArt.lineStyle(2, accent, 0.32).strokeCircle(x, y, 51);
+      this.passiveEffectArt.lineStyle(2, accent, 0.55)
+        .lineBetween(x - 42, y - 31, x - 36, y - 31).lineBetween(x - 39, y - 34, x - 39, y - 28)
+        .lineBetween(x + 39, y + 29, x + 45, y + 29).lineBetween(x + 42, y + 26, x + 42, y + 32);
     }
     if (!hiyoriActive && !toaActive) return;
     if (toaActive) {

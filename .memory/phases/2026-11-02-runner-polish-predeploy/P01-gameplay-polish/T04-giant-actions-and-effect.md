@@ -1,6 +1,6 @@
 # Task: T04 Giant Actions and Effect
 
-## Status: pending
+## Status: done
 
 ## Goal
 Keep the giant pickup visually harmonious and preserve the normal action animation state machine while enlarged.
@@ -32,10 +32,10 @@ Keep the giant pickup visually harmonious and preserve the normal action animati
 - Verify giant run, giant jump and double-jump ascent/descent, giant slide, giant hurt, and return to ordinary run after the effect expires. Verify slide is still rejected in air and dimensions remain undistorted.
 
 ## Acceptance Criteria
-- [ ] Giant mode no longer forces run animation during jump, slide, or hurt.
-- [ ] Grounded running remains animated and enlarged.
-- [ ] The effect uses character accent color and does not obscure gameplay.
-- [ ] Expiration restores standard scale and removes the effect.
+- [x] Giant mode preserves jump, double-jump/fall, slide, and hurt animation priorities.
+- [x] Grounded running remains animated and enlarged.
+- [x] Giant aura uses the selected character's accent color with reduced opacity and small sparkles.
+- [x] Expiration restores standard scale; the scene clears the effect each frame when inactive.
 
 ## Validation
 - `npm test -- src/game/runner/RunnerPlayer.test.ts src/game/runner/RunnerScene.test.ts`
@@ -55,6 +55,7 @@ Task: T04-giant-actions-and-effect
 ```
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] `RunnerPlayer.test.ts` passed (15 tests); typecheck passed.
+- [ ] Manual visual verification of giant aura is unavailable in this session.
+- commit: 040ff25

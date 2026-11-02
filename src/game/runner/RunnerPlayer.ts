@@ -84,7 +84,7 @@ export class RunnerPlayer {
     }
     if (held && !this.grounded) return false;
     this.slidingHeld = held;
-    if (this.isSliding) this.play(this.giantActive ? 'run' : 'slide');
+    if (this.isSliding) this.play('slide');
     else if (this.animation === 'slide') this.play('run');
     this.applyPose();
     return !wasSliding && this.isSliding;
@@ -202,7 +202,7 @@ export class RunnerPlayer {
       this.grounded = false;
     }
     if (!this.grounded && this.body.velocity.y >= 0) this.airPhase = 'descending';
-    this.play(this.hurt ? 'hurt' : this.giantActive ? 'run' : this.isSliding ? 'slide' :
+    this.play(this.hurt ? 'hurt' : this.isSliding ? 'slide' :
       !this.grounded ? this.jumpsUsed === 2
         ? this.airPhase === 'descending' ? 'double-jump-fall' : 'doubleJump'
         : this.airPhase === 'descending' ? 'jump-fall' : 'jump' : 'run');
