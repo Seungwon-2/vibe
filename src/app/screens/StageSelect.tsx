@@ -15,7 +15,7 @@ export function StageSelect({ profile, selectedStageId, onSelect, onStart, onAch
   const selected = STORY_STAGES.find((stage) => stage.id === selectedStageId) ?? STORY_STAGES[0];
 
   return (
-    <main className="progression-screen">
+    <main className="progression-screen progression-screen--stages">
       <section className="progression-panel" aria-labelledby="stage-select-title">
         <button className="progression-back" type="button" onClick={onBack}>← 캐릭터</button>
         <p className="eyebrow">STORY COURSE</p>

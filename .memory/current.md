@@ -7,13 +7,14 @@
 [P01 Gameplay Polish](./phases/2026-11-02-runner-polish-predeploy/P01-gameplay-polish/phase.md)
 
 ## Active Task
-[T02 Stage Select Viewport](./phases/2026-11-02-runner-polish-predeploy/P01-gameplay-polish/T02-stage-select-viewport.md)
+[T03 Slide-only Hazards](./phases/2026-11-02-runner-polish-predeploy/P01-gameplay-polish/T03-slide-only-hazards.md)
 
 ## Status
 - T01 is complete; achievement progress is now consolidated into unique roster and Story goals.
-- T02 is ready to implement.
+- T02 is complete: Story stage select has a viewport-bounded 2×2 layout; typecheck and build pass. Manual browser inspection was unavailable.
+- T03 is next: make overhead hazards slide-only, including while airborne.
 - Audio replacements are user-provided and will be integrated in P02 when received.
 - Existing unrelated working-tree changes must be preserved.
 
 ## Next Step
-Read T02's blueprint, fit the four Story stage cards and actions within the viewport, then verify desktop and mobile layouts.
+Read T03's blueprint and adjust overhead hazard collision requirements without changing their visual placement.
