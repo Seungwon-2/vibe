@@ -1,19 +1,19 @@
 ﻿# Current Context
 
 ## Active Plan
-[Double-Jump Challenge Obstacles](./plans/2026-11-02-double-jump-challenges.md)
+[Runner Gameplay Review Updates](./plans/2026-11-02-runner-gameplay-review.md)
 
 ## Active Phase
-[P01 Double-Jump Courses](./phases/2026-11-02-double-jump-challenges/P01-double-jump-courses/phase.md)
+[P01 Gameplay Systems](./phases/2026-11-02-runner-gameplay-review/P01-gameplay-systems/phase.md)
 
 ## Active Task
-[T01 Double-Jump Challenge Patterns](./phases/2026-11-02-double-jump-challenges/P01-double-jump-courses/T01-double-jump-challenge-patterns.md)
+[T02 Story First Course Pacing](./phases/2026-11-02-runner-gameplay-review/P01-gameplay-systems/T02-story-first-course-pacing.md)
 
-## Status: complete
-- Add high barriers and wide pits that genuinely reward two well-timed jumps in Endless and Story.
-- Keep first-run double-jump guidance brief and one-time.
-- Keep safe-slide obstacle art scrolling naturally off-screen.
-- Preserve unrelated changes already present in the working tree.
+## Status: in progress
+- Story pickup schedule now checks its own stage's fixed pits.
+- Move the first Story double-jump challenge into the late course.
+- Tie giant pickups to each mode's actual challenge schedule.
+- Add varied Story hazard sequences and progressive Endless interval tuning.
 
 ## Next Step
-The Double-Jump Challenge Obstacles plan is complete. Await the next requested task.
+Implement T02 in `storyCourses.ts`: move the Dawn City double-jump wall to 1,300m or later and retime nearby hazards while preserving pit, milestone, and goal clearance.

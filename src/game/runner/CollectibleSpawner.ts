@@ -10,7 +10,8 @@ import { getBiomeById, getBiomeForDistance, type RunnerBiomeDefinition } from '.
 import { getStoryStage } from './storyConfig';
 import { getStoryHazardSchedule } from './storyCourses';
 import { drawRunnerGate, drawRunnerGoal } from '../visuals/runnerCourseObjects';
-import { getPitDefinitions, isPitClearance } from './PitSpawner';
+import { getPitDefinitions, isPitClearance, type PitDefinition } from './PitSpawner';
+import { getStoryPitDefinitions } from './storyPitSchedule';
 import { getHazardGeometry } from './CollisionSystem';
 import type { HazardDefinition } from './hazardTypes';
 
@@ -109,7 +110,7 @@ function isPickupDistanceSafe(
   distanceMeters: number,
   heightUnits: number,
   hazards: readonly ScheduledHazard[],
-  maxDistanceMeters: number,
+  pits: readonly PitDefinition[],
 ): boolean {
   const pickupHalfExtentPx = Math.max(getPickupBodySize('tokino-mary') / 2, PICKUP_ART_RADIUS_PX);
   const pickupCenterY = RUNNER_GROUND_Y - heightUnits;
@@ -130,7 +131,7 @@ function isPickupDistanceSafe(
       pickupHalfWidthMeters + hazardHalfWidthMeters) return false;
   }
 
-  if (getPitDefinitions(maxDistanceMeters).some((pit) =>
+  if (pits.some((pit) =>
     isPitClearance(distanceMeters, pit, PICKUP_PIT_CLEARANCE_METERS + pickupHalfWidthMeters))) return false;
   return RUNNER_GATE_DISTANCES_M.every((gate) =>
     !isGateClearance(distanceMeters, gate, pickupHalfWidthMeters));
@@ -141,13 +142,13 @@ function nearestSafeDistance(
   minimumMeters: number,
   maximumMeters: number,
   hazards: readonly ScheduledHazard[],
-  maxDistanceMeters: number,
+  pits: readonly PitDefinition[],
 ): number | undefined {
   const candidates = Array.from(
     { length: Math.max(0, Math.floor(maximumMeters) - Math.ceil(minimumMeters) + 1) },
     (_, index) => Math.ceil(minimumMeters) + index,
   ).sort((left, right) => Math.abs(left - targetMeters) - Math.abs(right - targetMeters) || left - right);
-  return candidates.find((distance) => isPickupDistanceSafe(distance, 52, hazards, maxDistanceMeters));
+  return candidates.find((distance) => isPickupDistanceSafe(distance, 52, hazards, pits));
 }
 
 function getTimePickupSlotIndexes(maxDistanceMeters: number): Set<number> {
@@ -164,11 +165,16 @@ export function generatePickupSchedule(maxDistanceMeters: number,
   storyStageId: StoryStageId | null = null): readonly PickupDefinition[] {
   if (!Number.isFinite(maxDistanceMeters) || maxDistanceMeters < SAFE_PICKUP_START_METERS) return [];
   const hazards = getScheduledHazards(maxDistanceMeters + PICKUP_PIT_CLEARANCE_METERS, storyStageId);
-  const pits = getPitDefinitions(maxDistanceMeters + PICKUP_PIT_CLEARANCE_METERS);
-  // isPickupDistanceSafe accepts a horizon for pit enumeration; include the
-  // clearance beyond the requested end so a pit just outside the range counts.
-  const horizon = Math.max(maxDistanceMeters, pits.at(-1)?.distanceMeters ?? 0) +
+  const initialPitHorizon = maxDistanceMeters + PICKUP_PIT_CLEARANCE_METERS;
+  const getPits = (horizon: number) => storyStageId
+    ? getStoryPitDefinitions(storyStageId, horizon)
+    : getPitDefinitions(horizon);
+  const initialPits = getPits(initialPitHorizon);
+  // Preserve the existing Endless horizon behavior while using the same mode's
+  // pit definitions for every safety check.
+  const horizon = Math.max(maxDistanceMeters, initialPits.at(-1)?.distanceMeters ?? 0) +
     PICKUP_PIT_CLEARANCE_METERS;
+  const pits = getPits(horizon);
   const timeSlots = getTimePickupSlotIndexes(maxDistanceMeters);
   const safePickups: PickupDefinition[] = [];
   const lastIndex = Math.floor((maxDistanceMeters - SAFE_PICKUP_START_METERS) / SAFE_PICKUP_SPACING_METERS);
@@ -180,9 +186,9 @@ export function generatePickupSchedule(maxDistanceMeters: number,
     const preferredMaximum = previous === undefined ? localMaximum : Math.min(localMaximum, previous + 150);
     // Prefer the target cadence and 100–150m gaps. If a hazard blocks that
     // entire gap, keep searching the same local slot so later coins resume.
-    const distanceMeters = nearestSafeDistance(target, localMinimum, preferredMaximum, hazards, horizon) ??
+    const distanceMeters = nearestSafeDistance(target, localMinimum, preferredMaximum, hazards, pits) ??
       (preferredMaximum < localMaximum
-        ? nearestSafeDistance(target, Math.max(localMinimum, preferredMaximum + 1), localMaximum, hazards, horizon)
+        ? nearestSafeDistance(target, Math.max(localMinimum, preferredMaximum + 1), localMaximum, hazards, pits)
         : undefined);
     if (distanceMeters === undefined) continue;
     const kind = timeSlots.has(index) ? 'time' : 'coin';
@@ -207,7 +213,7 @@ export function generatePickupSchedule(maxDistanceMeters: number,
       optionalJump: true,
     }));
     const rowIsSafe = row.every((pickup) => pickup.distanceMeters <= maxDistanceMeters &&
-      isPickupDistanceSafe(pickup.distanceMeters, pickup.heightUnits, hazards, horizon) &&
+      isPickupDistanceSafe(pickup.distanceMeters, pickup.heightUnits, hazards, pits) &&
       [...safePickups, ...optionalPickups].every((existing) =>
         Math.abs(existing.distanceMeters - pickup.distanceMeters) >= RUNNER_CONFIG.pickupObjectClearanceMeters));
     if (rowIsSafe) optionalPickups.push(...row);
@@ -230,7 +236,7 @@ export function generatePickupSchedule(maxDistanceMeters: number,
     const distanceMeters = offsets.map((offset) => target + offset).find((candidate) =>
       candidate >= Math.max(SAFE_PICKUP_START_METERS, target - RUNNER_CONFIG.giantPickupSearchRadiusMeters) &&
       candidate <= Math.min(maxDistanceMeters, target + RUNNER_CONFIG.giantPickupSearchRadiusMeters, wave.waveStartMeters - 1) &&
-      isPickupDistanceSafe(candidate, 52, hazards, horizon) &&
+      isPickupDistanceSafe(candidate, 52, hazards, pits) &&
       [...existingPickups, ...giantPickups].every((pickup) =>
         Math.abs(pickup.distanceMeters - candidate) >= 30),
     );

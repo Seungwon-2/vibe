@@ -7,6 +7,9 @@ import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance,
   METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { getPitDefinitions, isPitClearance } from './PitSpawner';
+import { getStoryPitDefinitions } from './storyPitSchedule';
+import { STORY_STAGES } from './storyConfig';
+import { getStoryHazardSchedule } from './storyCourses';
 import { RUNNER_BIOMES } from '../visuals/runnerBiomes';
 import { getHazardGeometry } from './CollisionSystem';
 import type { HazardDefinition } from './hazardTypes';
@@ -189,6 +192,35 @@ describe('authored collectible schedule', () => {
           RUNNER_CONFIG.metersPerWorldUnit;
         expect(isGateClearance(pickup.distanceMeters, gate, halfWidthMeters),
           `${pickup.id} overlaps gate at ${gate}m`).toBe(false);
+      }
+    }
+  });
+
+  it('checks every Story pickup against the selected stage\'s fixed pits', () => {
+    for (const stage of STORY_STAGES) {
+      const generated = generatePickupSchedule(stage.lengthMeters, stage.id);
+      const hazards = getStoryHazardSchedule(stage.id);
+      const pits = getStoryPitDefinitions(stage.id, stage.lengthMeters + PICKUP_PIT_CLEARANCE_METERS);
+      expect(new Set(generated.map(({ id }) => id)).size).toBe(generated.length);
+      expect(generated).toEqual([...generated].sort((a, b) =>
+        a.distanceMeters - b.distanceMeters || a.id.localeCompare(b.id)));
+      for (const pickup of generated) {
+        expect(pickup.distanceMeters).toBeLessThanOrEqual(stage.lengthMeters);
+        for (const pit of pits) {
+          const halfWidthMeters = (getPickupBodySize('tokino-mary') / 2 + PICKUP_TEST_MARGIN_PX) *
+            RUNNER_CONFIG.metersPerWorldUnit;
+          expect(isPitClearance(pickup.distanceMeters, pit,
+            PICKUP_PIT_CLEARANCE_METERS + halfWidthMeters),
+          `${stage.id} ${pickup.id} overlaps pit clearance at ${pit.distanceMeters}m`).toBe(false);
+        }
+        for (const hazard of hazards) {
+          expect(pickupOverlapsHazard(pickup, hazard),
+            `${stage.id} ${pickup.id} overlaps hazard at ${hazard.distanceMeters}m`).toBe(false);
+        }
+      }
+      for (const kind of ['coin', 'time', 'giant'] as const) {
+        const pickups = generated.filter((pickup) => pickup.kind === kind);
+        expect(pickups.every((pickup) => pickup.distanceMeters <= stage.lengthMeters)).toBe(true);
       }
     }
   });
