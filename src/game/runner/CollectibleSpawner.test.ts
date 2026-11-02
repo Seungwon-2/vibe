@@ -4,8 +4,8 @@ import { drawPickupArt, generatePickupSchedule, getPickupBodySize,
   CollectibleSpawner, PICKUP_PIT_CLEARANCE_METERS, PICKUP_SCHEDULE } from './CollectibleSpawner';
 import { RUNNER_GROUND_Y, STANDING_BODY_HEIGHT } from './runnerPose';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
-import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance,
-  METERS_PER_WORLD_UNIT } from './hazardPatterns';
+import { getDenseWaveSchedule, getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance,
+  MAX_RUN_SPEED_UNITS_PER_SECOND, METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { getPitDefinitions, isPitClearance } from './PitSpawner';
 import { getStoryPitDefinitions } from './storyPitSchedule';
 import { STORY_STAGES } from './storyConfig';
@@ -142,23 +142,58 @@ describe('authored collectible schedule', () => {
     expect(giants.length).toBeGreaterThan(5);
     expect(giants).toEqual(generatePickupSchedule(15_000).filter(({ kind }) => kind === 'giant'));
     expect(giants.every(({ heightUnits, optionalJump }) => heightUnits === 52 && !optionalJump)).toBe(true);
-    const wavePeriod = (RUNNER_CONFIG.densePatternsPerSection - 1) *
-      RUNNER_CONFIG.densePatternSpacingMeters + RUNNER_CONFIG.denseRecoveryGapMeters;
-    const maxEffectiveMetersPerSecond = 469.21875 * RUNNER_CONFIG.metersPerWorldUnit;
     for (const giant of giants) {
-      const matchedWave = Array.from({ length: 20 }, (_, index) =>
-        RUNNER_CONFIG.denseSectionStartMeters + index * wavePeriod,
-      ).find((waveStart) => Math.abs(giant.distanceMeters -
-        (waveStart - RUNNER_CONFIG.giantPickupLeadMeters)) <= RUNNER_CONFIG.giantPickupSearchRadiusMeters);
+      const matchedWave = Array.from({ length: 100 }, (_, index) => getDenseWaveSchedule(index))
+        .find(({ waveStartMeters }) => Math.abs(giant.distanceMeters -
+          (waveStartMeters - RUNNER_CONFIG.giantPickupLeadMeters)) <=
+          RUNNER_CONFIG.giantPickupSearchRadiusMeters);
       expect(matchedWave, `giant at ${giant.distanceMeters}m must be tied to a dense wave`).toBeDefined();
-      expect(giant.distanceMeters).toBeLessThan(matchedWave!);
-      expect((matchedWave! + (RUNNER_CONFIG.densePatternsPerSection - 1) *
-        RUNNER_CONFIG.densePatternSpacingMeters - giant.distanceMeters) /
-        maxEffectiveMetersPerSecond).toBeLessThanOrEqual(RUNNER_CONFIG.giantDurationMs / 1_000);
+      expect(giant.distanceMeters).toBeLessThan(matchedWave!.waveStartMeters);
+      expect((matchedWave!.patternDistances.at(-1)! - giant.distanceMeters) /
+        (MAX_RUN_SPEED_UNITS_PER_SECOND * RUNNER_CONFIG.metersPerWorldUnit))
+        .toBeLessThanOrEqual(RUNNER_CONFIG.giantDurationMs / 1_000);
     }
     for (const giant of giants) {
       expect(generated.filter((item) => item.id !== giant.id).every((item) =>
         Math.abs(item.distanceMeters - giant.distanceMeters) >= 30)).toBe(true);
+    }
+  });
+
+  it('places Story giants only before authored obstacle groups covered by the effect', () => {
+    for (const stage of STORY_STAGES) {
+      const generated = generatePickupSchedule(stage.lengthMeters, stage.id);
+      const hazards = [...getStoryHazardSchedule(stage.id)].sort((a, b) =>
+        a.distanceMeters - b.distanceMeters);
+      const groups: typeof hazards[] = [];
+      for (const hazard of hazards) {
+        const group = groups.at(-1);
+        if (!group || hazard.distanceMeters - group.at(-1)!.distanceMeters > 350) groups.push([hazard]);
+        else group.push(hazard);
+      }
+      const targets = groups.filter((group) => group.length >= 2).map((group) => ({
+        startMeters: group[0].distanceMeters,
+        endMeters: group.at(-1)!.distanceMeters,
+      }));
+      const giants = generated.filter((pickup) => pickup.kind === 'giant');
+      const pits = getStoryPitDefinitions(stage.id, stage.lengthMeters + PICKUP_PIT_CLEARANCE_METERS);
+      for (const giant of giants) {
+        const target = targets.find(({ startMeters, endMeters }) =>
+          giant.distanceMeters < startMeters &&
+          Math.abs(giant.distanceMeters - (startMeters - RUNNER_CONFIG.giantPickupLeadMeters)) <=
+            RUNNER_CONFIG.giantPickupSearchRadiusMeters &&
+          (endMeters - giant.distanceMeters) /
+            (MAX_RUN_SPEED_UNITS_PER_SECOND * RUNNER_CONFIG.metersPerWorldUnit) <=
+              RUNNER_CONFIG.giantDurationMs / 1_000);
+        expect(target, `${stage.id} giant at ${giant.distanceMeters}m must cover an authored group`)
+          .toBeDefined();
+        for (const pit of pits) {
+          const halfWidthMeters = (getPickupBodySize('tokino-mary') / 2 + PICKUP_TEST_MARGIN_PX) *
+            RUNNER_CONFIG.metersPerWorldUnit;
+          expect(isPitClearance(giant.distanceMeters, pit,
+            PICKUP_PIT_CLEARANCE_METERS + halfWidthMeters)).toBe(false);
+        }
+      }
+      expect(giants.length).toBeLessThanOrEqual(targets.length);
     }
   });
 

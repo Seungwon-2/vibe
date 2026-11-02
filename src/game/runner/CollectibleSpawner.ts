@@ -23,6 +23,8 @@ export type PickupDefinition = Readonly<{
   optionalJump: boolean;
 }>;
 
+type GiantChallengeTarget = Readonly<{ startMeters: number; endMeters: number }>;
+
 export function drawPickupArt(
   art: Phaser.GameObjects.Graphics,
   kind: RunnerPickupKind,
@@ -160,6 +162,22 @@ function getTimePickupSlotIndexes(maxDistanceMeters: number): Set<number> {
   return indexes;
 }
 
+function getStoryGiantTargets(hazards: readonly ScheduledHazard[]): GiantChallengeTarget[] {
+  const groups: ScheduledHazard[][] = [];
+  for (const hazard of [...hazards].sort((left, right) => left.distanceMeters - right.distanceMeters)) {
+    const current = groups.at(-1);
+    if (!current || hazard.distanceMeters - current.at(-1)!.distanceMeters > 350) {
+      groups.push([hazard]);
+    } else {
+      current.push(hazard);
+    }
+  }
+  return groups.filter((group) => group.length >= 2).map((group) => ({
+    startMeters: group[0].distanceMeters,
+    endMeters: group.at(-1)!.distanceMeters,
+  }));
+}
+
 /** Generate stable, absolute-distance pickups for any requested course length. */
 export function generatePickupSchedule(maxDistanceMeters: number,
   storyStageId: StoryStageId | null = null): readonly PickupDefinition[] {
@@ -222,20 +240,31 @@ export function generatePickupSchedule(maxDistanceMeters: number,
   const giantPickups: PickupDefinition[] = [];
   let giantIndex = 0;
   const giantPickupLead = RUNNER_CONFIG.giantPickupLeadMeters;
-  for (let waveIndex = 0; ; waveIndex += 1) {
-    const wave = getDenseWaveSchedule(waveIndex);
-    if (wave.waveStartMeters - giantPickupLead > maxDistanceMeters) break;
-    const target = wave.waveStartMeters - giantPickupLead;
-    const finalPatternDistance = wave.patternDistances.at(-1)!;
-    const fastestMetersPerSecond = MAX_RUN_SPEED_UNITS_PER_SECOND * RUNNER_CONFIG.metersPerWorldUnit;
-    if ((finalPatternDistance - target) / fastestMetersPerSecond > RUNNER_CONFIG.giantDurationMs / 1_000) continue;
+  const giantTargets: GiantChallengeTarget[] = [];
+  if (storyStageId) {
+    giantTargets.push(...getStoryGiantTargets(hazards));
+  } else {
+    for (let waveIndex = 0; ; waveIndex += 1) {
+      const wave = getDenseWaveSchedule(waveIndex);
+      if (wave.waveStartMeters - giantPickupLead > maxDistanceMeters) break;
+      giantTargets.push({ startMeters: wave.waveStartMeters,
+        endMeters: wave.patternDistances.at(-1)! });
+    }
+  }
+  const fastestMetersPerSecond = MAX_RUN_SPEED_UNITS_PER_SECOND * RUNNER_CONFIG.metersPerWorldUnit;
+  for (const challenge of giantTargets) {
+    const target = challenge.startMeters - giantPickupLead;
+    if (target > maxDistanceMeters ||
+        (challenge.endMeters - target) / fastestMetersPerSecond > RUNNER_CONFIG.giantDurationMs / 1_000) continue;
     const offsets = Array.from(
       { length: RUNNER_CONFIG.giantPickupSearchRadiusMeters * 2 + 1 },
       (_, index) => index - RUNNER_CONFIG.giantPickupSearchRadiusMeters,
     ).sort((left, right) => Math.abs(left) - Math.abs(right) || left - right);
     const distanceMeters = offsets.map((offset) => target + offset).find((candidate) =>
       candidate >= Math.max(SAFE_PICKUP_START_METERS, target - RUNNER_CONFIG.giantPickupSearchRadiusMeters) &&
-      candidate <= Math.min(maxDistanceMeters, target + RUNNER_CONFIG.giantPickupSearchRadiusMeters, wave.waveStartMeters - 1) &&
+      candidate <= Math.min(maxDistanceMeters, target + RUNNER_CONFIG.giantPickupSearchRadiusMeters,
+        challenge.startMeters - 1) &&
+      (challenge.endMeters - candidate) / fastestMetersPerSecond <= RUNNER_CONFIG.giantDurationMs / 1_000 &&
       isPickupDistanceSafe(candidate, 52, hazards, pits) &&
       [...existingPickups, ...giantPickups].every((pickup) =>
         Math.abs(pickup.distanceMeters - candidate) >= 30),
