@@ -60,12 +60,33 @@ export function drawPickupArt(
   }
 
   if (kind === 'giant') {
-    art.fillStyle(0xffd66e).fillCircle(0, 0, 11);
-    art.lineStyle(2, p.hazardContrast, 0.96).strokeCircle(0, 0, 11);
-    art.fillStyle(0xfff4bd).fillTriangle(0, -9, 3, -2, 9, 0)
-      .fillTriangle(9, 0, 3, 2, 0, 9).fillTriangle(0, 9, -3, 2, -9, 0)
-      .fillTriangle(-9, 0, -3, -2, 0, -9);
-    art.fillStyle(0xffffff).fillCircle(0, 0, 3);
+    // A pink comet trail sits behind the larger, pointed purple star.
+    art.fillStyle(GIANT_PICKUP_PINK, 0.96)
+      .fillTriangle(-8, 4, -23, 16, -5, 12)
+      .fillTriangle(-6, 1, -17, 13, -3, 8);
+    art.lineStyle(2, GIANT_PICKUP_OUTLINE, 1)
+      .lineBetween(-8, 4, -23, 16)
+      .lineBetween(-23, 16, -5, 12);
+
+    // Eight triangular wedges form one four-point star without a coin-like disc.
+    art.fillStyle(GIANT_PICKUP_PURPLE, 1)
+      .fillTriangle(0, 0, -4, -4, 0, -18)
+      .fillTriangle(0, 0, 0, -18, 4, -4)
+      .fillTriangle(0, 0, 4, -4, 18, 0)
+      .fillTriangle(0, 0, 18, 0, 4, 4)
+      .fillTriangle(0, 0, 4, 4, 0, 18)
+      .fillTriangle(0, 0, 0, 18, -4, 4)
+      .fillTriangle(0, 0, -4, 4, -18, 0)
+      .fillTriangle(0, 0, -18, 0, -4, -4);
+    art.lineStyle(2, GIANT_PICKUP_OUTLINE, 1)
+      .lineBetween(0, -18, 4, -4)
+      .lineBetween(4, -4, 18, 0)
+      .lineBetween(18, 0, 4, 4)
+      .lineBetween(4, 4, 0, 18)
+      .lineBetween(0, 18, -4, 4)
+      .lineBetween(-4, 4, -18, 0)
+      .lineBetween(-18, 0, -4, -4)
+      .lineBetween(-4, -4, 0, -18);
     return;
   }
 
@@ -88,6 +109,9 @@ const PICKUP_BASE_RADIUS_PX = 32;
 // The standing-height row is frequent and predictable; elevated coins remain
 // optional and can be skipped when the authored course has no safe placement.
 const SAFE_PICKUP_START_METERS = 160;
+const GIANT_PICKUP_PURPLE = 0x9b5de5;
+const GIANT_PICKUP_PINK = 0xff77b7;
+const GIANT_PICKUP_OUTLINE = 0xffffff;
 
 type ScheduledHazard = Readonly<{ distanceMeters: number; definition: HazardDefinition; patternIndex: number; id: string }>;
 

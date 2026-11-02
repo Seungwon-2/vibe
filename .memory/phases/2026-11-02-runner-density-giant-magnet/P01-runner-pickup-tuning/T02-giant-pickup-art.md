@@ -1,6 +1,6 @@
 ﻿# Task: T02 Giant Pickup Art
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 Make giant pickups immediately distinguishable from standard coins by giving them a non-circular purple-and-pink comet/star silhouette with a bright outline.
@@ -43,9 +43,9 @@ Make giant pickups immediately distinguishable from standard coins by giving the
   - Assert the time-item diamond rendering remains unchanged.
 
 ## Acceptance Criteria
-- [ ] Giant pickup no longer resembles a gold circular coin.
-- [ ] The purple/pink comet/star with light outline reads clearly in all four biomes.
-- [ ] Coin and time pickup rendering and all gameplay behavior remain unchanged.
+- [x] Giant pickup no longer resembles a gold circular coin.
+- [x] The purple/pink comet/star with light outline reads clearly in all four biomes.
+- [x] Coin and time pickup rendering and all gameplay behavior remain unchanged.
 
 ## Validation
 - `npm test -- src/game/runner/CollectibleSpawner.test.ts`
@@ -64,6 +64,6 @@ Task: T02-giant-pickup-art
 ```
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed
 - commit: pending

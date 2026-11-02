@@ -364,9 +364,13 @@ describe('themed pickup art', () => {
 
       const giant = makeGraphics();
       drawPickupArt(giant as unknown as Phaser.GameObjects.Graphics, 'giant', biome);
-      expect(giant.fillCircle).toHaveBeenCalledWith(0, 0, 11);
-      expect(giant.fillTriangle).toHaveBeenCalledTimes(4);
-      expect(giant.fillStyle).toHaveBeenCalledWith(0xffd66e);
+      expect(giant.fillCircle).not.toHaveBeenCalled();
+      expect(giant.strokeCircle).not.toHaveBeenCalled();
+      expect(giant.fillTriangle).toHaveBeenCalledTimes(10);
+      expect(giant.fillStyle).toHaveBeenCalledWith(0x9b5de5, 1);
+      expect(giant.fillStyle).toHaveBeenCalledWith(0xff77b7, 0.96);
+      expect(giant.lineStyle).toHaveBeenCalledWith(2, 0xffffff, 1);
+      expect(giant.lineBetween).toHaveBeenCalledWith(0, -18, 4, -4);
     }
   });
 
