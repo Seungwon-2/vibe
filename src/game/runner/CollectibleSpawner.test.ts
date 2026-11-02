@@ -19,9 +19,10 @@ import { createRunnerSnapshot, startRunner } from './RunnerSimulation';
 const PICKUP_TEST_MARGIN_PX = 12;
 
 function pickupOverlapsHazard(
-  pickup: { distanceMeters: number; heightUnits: number },
-  hazard: { distanceMeters: number; definition: HazardDefinition },
+  pickup: { distanceMeters: number; heightUnits: number; guideAction?: 'jump' | 'slide'; guideHazardId?: string },
+  hazard: { id: string; distanceMeters: number; definition: HazardDefinition },
 ): boolean {
+  if (pickup.guideAction === 'slide' && pickup.guideHazardId === hazard.id) return false;
   const halfExtent = Math.max(getPickupBodySize('tokino-mary') / 2, 11);
   const centerY = RUNNER_GROUND_Y - pickup.heightUnits;
   const pickupTop = centerY - halfExtent - PICKUP_TEST_MARGIN_PX;
@@ -87,17 +88,18 @@ describe('authored collectible schedule', () => {
     expect(PICKUP_SCHEDULE.length).toBeGreaterThan(70);
   });
 
-  it('generates a stable safe-route stream with 100–150m cadence and time items replacing coins', () => {
+  it('generates a stable safe-route stream with 90m cadence and time items replacing coins', () => {
     const generated = generatePickupSchedule(15_000);
     expect(generated).toEqual(PICKUP_SCHEDULE);
-    const safe = generated.filter((item) => !item.optionalJump && item.kind !== 'giant');
+    const safe = generated.filter((item) => !item.optionalJump && !item.guideAction && item.kind !== 'giant');
     expect(safe[0]).toMatchObject({ distanceMeters: 160, heightUnits: 52, optionalJump: false });
-    const knownHazards: { distanceMeters: number; definition: HazardDefinition }[] = [];
+    const knownHazards: { id: string; distanceMeters: number; definition: HazardDefinition }[] = [];
     for (let patternIndex = 0; ; patternIndex += 1) {
       const start = getPatternStartDistance(patternIndex);
       if (start > 15_000) break;
       for (const hazard of getPatternForDistance(start).obstacles) {
-        knownHazards.push({ distanceMeters: getHazardDistance(patternIndex, hazard), definition: hazard });
+        knownHazards.push({ id: `endless-${patternIndex}-${hazard.id}`,
+          distanceMeters: getHazardDistance(patternIndex, hazard), definition: hazard });
       }
     }
     const knownPits = getPitDefinitions(15_000);
@@ -105,8 +107,8 @@ describe('authored collectible schedule', () => {
       const previous = safe[index - 1].distanceMeters;
       const current = safe[index].distanceMeters;
       const gap = current - previous;
-      expect(gap).toBeGreaterThanOrEqual(100);
-      if (gap > 150) {
+      expect(gap).toBeGreaterThanOrEqual(RUNNER_CONFIG.safePickupMinimumGapMeters);
+      if (gap > RUNNER_CONFIG.safePickupMaximumGapMeters) {
         const pickupHalfWidthMeters = (getPickupBodySize('tokino-mary') / 2 + PICKUP_TEST_MARGIN_PX) *
           RUNNER_CONFIG.metersPerWorldUnit;
         const nearestDistance = (distance: number) => Math.max(previous, Math.min(current, distance));
@@ -130,10 +132,51 @@ describe('authored collectible schedule', () => {
   });
 
   it('keeps optional coins elevated and omits unsafe positions', () => {
-    const optional = PICKUP_SCHEDULE.filter((pickup) => pickup.optionalJump);
+    const optional = PICKUP_SCHEDULE.filter((pickup) => pickup.guideAction === 'jump');
     expect(optional.length).toBeGreaterThan(0);
     expect(optional.every((pickup) => pickup.kind === 'coin' && pickup.heightUnits === 132)).toBe(true);
-    expect(optional.length).toBeLessThan(25); // unsafe authored slots are omitted
+    expect(optional.every((pickup) => pickup.optionalJump)).toBe(true);
+    expect(optional.length).toBeLessThan(60); // unsafe authored slots are omitted
+  });
+
+  it('adds deterministic three-coin strings for jump and slide routes in Endless and every Story course', () => {
+    const schedules = [generatePickupSchedule(15_000), ...STORY_STAGES.map((stage) =>
+      generatePickupSchedule(stage.lengthMeters, stage.id))];
+    for (const [scheduleIndex, schedule] of schedules.entries()) {
+      expect(schedule).toEqual([...schedule].sort((a, b) =>
+        a.distanceMeters - b.distanceMeters || a.id.localeCompare(b.id)));
+      for (let leftIndex = 0; leftIndex < schedule.length; leftIndex += 1) {
+        for (let rightIndex = leftIndex + 1; rightIndex < schedule.length; rightIndex += 1) {
+          const left = schedule[leftIndex];
+          const right = schedule[rightIndex];
+          const sameGuideLine = left.guideAction !== undefined &&
+            left.guideAction === right.guideAction && left.guideHazardId === right.guideHazardId;
+          const minimumGap = left.kind === 'giant' || right.kind === 'giant'
+            ? RUNNER_CONFIG.pickupObjectClearanceMeters
+            : RUNNER_CONFIG.pickupCoinVisualClearanceMeters;
+          expect(Math.abs(right.distanceMeters - left.distanceMeters) >= minimumGap || sameGuideLine,
+            `${left.id} and ${right.id} overlap in schedule ${scheduleIndex}`).toBe(true);
+        }
+      }
+      for (const action of ['jump', 'slide'] as const) {
+        const lines = new Map<string, (typeof schedule)[number][]>();
+        for (const pickup of schedule.filter((item) => item.guideAction === action)) {
+          const row = lines.get(pickup.guideHazardId!) ?? [];
+          row.push(pickup);
+          lines.set(pickup.guideHazardId!, row);
+        }
+        expect(lines.size, `${action} strings should appear in schedule ${scheduleIndex}`).toBeGreaterThan(0);
+        for (const row of lines.values()) {
+          expect(row).toHaveLength(3);
+          const distances = row.map(({ distanceMeters }) => distanceMeters).sort((a, b) => a - b);
+          expect(distances[1] - distances[0]).toBe(RUNNER_CONFIG.postJumpCoinRowSpacingMeters);
+          expect(distances[2] - distances[1]).toBe(RUNNER_CONFIG.postJumpCoinRowSpacingMeters);
+          expect(row.every(({ kind, heightUnits, optionalJump }) => kind === 'coin' &&
+            (action === 'jump' ? heightUnits === 132 && optionalJump : heightUnits === 14 && !optionalJump)))
+            .toBe(true);
+        }
+      }
+    }
   });
 
   it('schedules giant pickups deterministically outside course hazards, landmarks, and other pickups', () => {
@@ -199,12 +242,13 @@ describe('authored collectible schedule', () => {
 
   it('keeps every pickup outside low and overhead hazard art and collision bounds', () => {
     const maxDistance = PICKUP_SCHEDULE.at(-1)!.distanceMeters;
-    const hazards: { distanceMeters: number; definition: HazardDefinition }[] = [];
+    const hazards: { id: string; distanceMeters: number; definition: HazardDefinition }[] = [];
     for (let patternIndex = 0; ; patternIndex += 1) {
       const start = getPatternStartDistance(patternIndex);
       if (start > maxDistance) break;
       for (const hazard of getPatternForDistance(start).obstacles) {
-        hazards.push({ distanceMeters: getHazardDistance(patternIndex, hazard), definition: hazard });
+        hazards.push({ id: `endless-${patternIndex}-${hazard.id}`,
+          distanceMeters: getHazardDistance(patternIndex, hazard), definition: hazard });
       }
     }
 

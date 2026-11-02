@@ -6,7 +6,7 @@ Make Story failures read clearly before the result screen, raise the running pac
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | Add Story defeat feedback and tune running speed and pickup routes. | [P01](../phases/2026-11-02-runner-speed-pickup-reward/P01-speed-and-pickups/phase.md) |
+| P01 | `done` | Add Story defeat feedback and tune running speed and pickup routes. | [P01](../phases/2026-11-02-runner-speed-pickup-reward/P01-speed-and-pickups/phase.md) |
 
 ## Decisions
 - [Confirmed decisions](../decisions/2026-11-02-runner-speed-pickup-reward.md)

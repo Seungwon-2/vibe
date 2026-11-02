@@ -46,7 +46,7 @@ Increase the base course speed curve by exactly 10% at both its start and maximu
 ## Acceptance Criteria
 - [x] Initial and max course speeds are both 10% higher.
 - [x] Gate/Rin bonuses remain composed as before and all derived speed checks pass.
-- [x] Animation FPS, jump physics, collision geometry, Story routes, stage lengths, pits, and gates are unchanged.
+- [x] Animation FPS, jump physics, Story routes, stage lengths, and gates are unchanged. Endless wide-pit width was later tuned in T04 to retain the intended double-jump-only clear after the speed increase; Story pit widths remain unchanged.
 - [x] Endless obstacle and recovery intervals scale by 10% while progressive late-course tightening remains.
 
 ## Validation
@@ -71,4 +71,4 @@ Task: T02-global-speed-increase
 ## Progress
 - [x] Implementation complete
 - [x] Validation passed
-- commit: pending
+- commit: 04b310a

@@ -21,6 +21,8 @@ export type PickupDefinition = Readonly<{
   distanceMeters: number;
   heightUnits: number;
   optionalJump: boolean;
+  guideAction?: 'jump' | 'slide';
+  guideHazardId?: string;
 }>;
 
 type GiantChallengeTarget = Readonly<{ startMeters: number; endMeters: number }>;
@@ -88,13 +90,20 @@ const PICKUP_BASE_RADIUS_PX = 32;
 const SAFE_PICKUP_START_METERS = 160;
 const SAFE_PICKUP_SPACING_METERS = RUNNER_CONFIG.safePickupSpacingMeters;
 
-type ScheduledHazard = Readonly<{ distanceMeters: number; definition: HazardDefinition; patternIndex: number }>;
+type ScheduledHazard = Readonly<{ distanceMeters: number; definition: HazardDefinition; patternIndex: number; id: string }>;
+
+function hasPickupVisualClearance(existing: PickupDefinition, candidate: PickupDefinition): boolean {
+  const clearance = existing.kind === 'giant' || candidate.kind === 'giant'
+    ? RUNNER_CONFIG.pickupObjectClearanceMeters
+    : RUNNER_CONFIG.pickupCoinVisualClearanceMeters;
+  return Math.abs(existing.distanceMeters - candidate.distanceMeters) >= clearance;
+}
 
 function getScheduledHazards(maxDistanceMeters: number, storyStageId: StoryStageId | null): ScheduledHazard[] {
   if (storyStageId) {
     return getStoryHazardSchedule(storyStageId)
       .filter(({ distanceMeters }) => distanceMeters <= maxDistanceMeters)
-      .map(({ distanceMeters, definition }, patternIndex) => ({ distanceMeters, definition, patternIndex }));
+      .map(({ distanceMeters, definition, id }, patternIndex) => ({ distanceMeters, definition, patternIndex, id }));
   }
   const hazards: ScheduledHazard[] = [];
   for (let patternIndex = 0; ; patternIndex += 1) {
@@ -102,7 +111,8 @@ function getScheduledHazards(maxDistanceMeters: number, storyStageId: StoryStage
     if (patternStart > maxDistanceMeters) break;
     const pattern = getPatternForDistance(patternStart);
     for (const hazard of pattern.obstacles) {
-      hazards.push({ distanceMeters: getHazardDistance(patternIndex, hazard), definition: hazard, patternIndex });
+      hazards.push({ distanceMeters: getHazardDistance(patternIndex, hazard), definition: hazard, patternIndex,
+        id: `endless-${patternIndex}-${hazard.id}` });
     }
   }
   return hazards;
@@ -113,6 +123,7 @@ function isPickupDistanceSafe(
   heightUnits: number,
   hazards: readonly ScheduledHazard[],
   pits: readonly PitDefinition[],
+  slideGuideHazardId?: string,
 ): boolean {
   const pickupHalfExtentPx = Math.max(getPickupBodySize('tokino-mary') / 2, PICKUP_ART_RADIUS_PX);
   const pickupCenterY = RUNNER_GROUND_Y - heightUnits;
@@ -123,6 +134,13 @@ function isPickupDistanceSafe(
 
   for (const hazard of hazards) {
     const geometry = getHazardGeometry(hazard.definition, 0);
+    if (hazard.id === slideGuideHazardId) {
+      const artTop = pickupCenterY - PICKUP_ART_RADIUS_PX;
+      const artBottom = pickupCenterY + PICKUP_ART_RADIUS_PX;
+      if (hazard.definition.kind !== 'overhead' || artTop < geometry.y + geometry.height + 6 ||
+          artBottom > RUNNER_GROUND_Y) return false;
+      continue;
+    }
     const hazardTop = geometry.y - PICKUP_VISUAL_MARGIN_PX;
     const hazardBottom = geometry.y + geometry.height + PICKUP_VISUAL_MARGIN_PX;
     const verticalOverlap = pickupTop <= hazardBottom && pickupBottom >= hazardTop;
@@ -199,10 +217,12 @@ export function generatePickupSchedule(maxDistanceMeters: number,
   for (let index = 0; index <= lastIndex; index += 1) {
     const target = SAFE_PICKUP_START_METERS + index * SAFE_PICKUP_SPACING_METERS;
     const previous = safePickups.at(-1)?.distanceMeters;
-    const localMinimum = Math.max(SAFE_PICKUP_START_METERS, target - 25, previous === undefined ? target : previous + 100);
+    const localMinimum = Math.max(SAFE_PICKUP_START_METERS, target - 25,
+      previous === undefined ? target : previous + RUNNER_CONFIG.safePickupMinimumGapMeters);
     const localMaximum = Math.min(maxDistanceMeters, target + 25);
-    const preferredMaximum = previous === undefined ? localMaximum : Math.min(localMaximum, previous + 150);
-    // Prefer the target cadence and 100–150m gaps. If a hazard blocks that
+    const preferredMaximum = previous === undefined ? localMaximum : Math.min(localMaximum,
+      previous + RUNNER_CONFIG.safePickupMaximumGapMeters);
+    // Prefer the target cadence and bounded local gaps. If a hazard blocks that
     // entire gap, keep searching the same local slot so later coins resume.
     const distanceMeters = nearestSafeDistance(target, localMinimum, preferredMaximum, hazards, pits) ??
       (preferredMaximum < localMaximum
@@ -216,31 +236,55 @@ export function generatePickupSchedule(maxDistanceMeters: number,
 
   const optionalPickups: PickupDefinition[] = [];
   let groundHazardIndex = 0;
+  let overheadHazardIndex = 0;
   for (const hazard of hazards) {
-    if (hazard.definition.kind !== 'ground') continue;
-    const rowIndex = groundHazardIndex++;
-    if (rowIndex % RUNNER_CONFIG.postJumpCoinRowEveryNthHazard !== 0) continue;
-    const rowStart = hazard.distanceMeters +
-      hazard.definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit +
-      RUNNER_CONFIG.postJumpCoinLandingClearanceMeters;
     const rowOffsets = Array.from(
       { length: Math.floor(RUNNER_CONFIG.postJumpCoinRowSearchRadiusMeters /
         RUNNER_CONFIG.postJumpCoinRowSearchStepMeters) * 2 + 1 },
       (_, index) => (index === 0 ? 0 : Math.ceil(index / 2) * RUNNER_CONFIG.postJumpCoinRowSearchStepMeters *
         (index % 2 === 1 ? 1 : -1)),
     );
+    if (hazard.definition.kind === 'ground') {
+      const rowIndex = groundHazardIndex++;
+      if (rowIndex % RUNNER_CONFIG.postJumpCoinRowEveryNthHazard !== 0) continue;
+      const rowStart = hazard.distanceMeters +
+        hazard.definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit +
+        RUNNER_CONFIG.postJumpCoinLandingClearanceMeters;
+      const row = rowOffsets.map((offset) => Array.from({ length: RUNNER_CONFIG.postJumpCoinRowCount },
+        (_, index) => ({
+          id: `jump-guide-${hazard.patternIndex}-${index}`,
+          kind: 'coin' as const,
+          distanceMeters: rowStart + offset + index * RUNNER_CONFIG.postJumpCoinRowSpacingMeters,
+          heightUnits: 132,
+          optionalJump: true,
+          guideAction: 'jump' as const,
+          guideHazardId: hazard.id,
+        }))).find((candidateRow) => candidateRow.every((pickup) =>
+        pickup.distanceMeters <= maxDistanceMeters &&
+        isPickupDistanceSafe(pickup.distanceMeters, pickup.heightUnits, hazards, pits) &&
+        [...safePickups, ...optionalPickups].every((existing) => hasPickupVisualClearance(existing, pickup))));
+      if (row) optionalPickups.push(...row);
+      continue;
+    }
+
+    if (hazard.definition.kind !== 'overhead') continue;
+    const rowIndex = overheadHazardIndex++;
+    if (rowIndex % RUNNER_CONFIG.slideCoinRowEveryNthHazard !== 0) continue;
+    const rowStart = hazard.distanceMeters -
+      ((RUNNER_CONFIG.postJumpCoinRowCount - 1) * RUNNER_CONFIG.postJumpCoinRowSpacingMeters) / 2;
     const row = rowOffsets.map((offset) => Array.from({ length: RUNNER_CONFIG.postJumpCoinRowCount },
       (_, index) => ({
-        id: `post-jump-${hazard.patternIndex}-${index}`,
+        id: `slide-guide-${hazard.patternIndex}-${index}`,
         kind: 'coin' as const,
         distanceMeters: rowStart + offset + index * RUNNER_CONFIG.postJumpCoinRowSpacingMeters,
-        heightUnits: 132,
-        optionalJump: true,
+        heightUnits: 14,
+        optionalJump: false,
+        guideAction: 'slide' as const,
+        guideHazardId: hazard.id,
       }))).find((candidateRow) => candidateRow.every((pickup) =>
-      pickup.distanceMeters <= maxDistanceMeters &&
-      isPickupDistanceSafe(pickup.distanceMeters, pickup.heightUnits, hazards, pits) &&
-      [...safePickups, ...optionalPickups].every((existing) =>
-        Math.abs(existing.distanceMeters - pickup.distanceMeters) >= RUNNER_CONFIG.pickupObjectClearanceMeters)));
+      pickup.distanceMeters >= SAFE_PICKUP_START_METERS && pickup.distanceMeters <= maxDistanceMeters &&
+      isPickupDistanceSafe(pickup.distanceMeters, pickup.heightUnits, hazards, pits, hazard.id) &&
+      [...safePickups, ...optionalPickups].every((existing) => hasPickupVisualClearance(existing, pickup))));
     if (row) optionalPickups.push(...row);
   }
   const existingPickups = [...safePickups, ...optionalPickups];
