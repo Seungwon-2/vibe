@@ -1,25 +1,23 @@
 # Task: T06 Audio Replacement
 
-## Status: waiting for user assets
+## Status: done — assets integrated; manual playback check remains
 
 ## Goal
 Integrate the user's replacement BGM and SFX files without changing sound behavior or attribution policy beyond the provided assets' supplied credits.
 
 ## Decision Summary
 - The user supplies the replacement audio. Do not generate substitute files.
-- Keep current audio URLs stable by replacing files with matching names under the existing public directories.
+- Keep existing WAV fallbacks where the supplied pack has no unambiguous event match; add local OGG mappings for the supplied files.
 
 ## Implementation
 
 ### I01. Replace and validate audio assets
 - Related Files:
-  - `public/audio/music/menu.wav` — replace when supplied.
-  - `public/audio/music/dawn-city.wav` — replace when supplied.
-  - `public/audio/music/moonlit-forest.wav` — replace when supplied.
-  - `public/audio/music/crystal-mine.wav` — replace when supplied.
-  - `public/audio/music/cloud-skyway.wav` — replace when supplied.
-  - `public/audio/sfx/jump.wav`, `double-jump.wav`, `slide.wav`, `coin.wav`, `time-pickup.wav`, `gate.wav`, `hit.wav`, `fall.wav`, `hiyori-defense.wav`, `ui-click.wav` — replace corresponding supplied files.
-  - `src/audio/audioCatalog.ts` and `public/audio/CREDITS.md` — modify only if filenames or attribution details differ from current entries.
+  - `public/audio/music/title.ogg`, `city.ogg`, `forest.ogg`, `mine.ogg`, `sky.ogg` — title and four course loops.
+  - `public/audio/sfx/*.ogg` — supplied one-shot effects, organized by the event names in the supplied README.
+  - `src/audio/musicCatalog.ts`, `src/audio/RunnerMusicManager.ts`, `src/audio/audioCatalog.ts`, `src/App.tsx`, and `src/app/screens/RunScreen.tsx` — local BGM selection, playback, and event mappings.
+  - `src/app/components/AudioSettingsDialog.tsx` — expose the existing music volume preference.
+  - `public/audio/CREDITS.md` — document supplied provenance and reuse limits from the supplied README.
 
 #### Details
 - If the user provides a packed archive or directory, map files by the stable basenames listed above. Keep the existing `.wav` extension unless the user provides another supported format and the catalog is intentionally updated.
@@ -29,15 +27,16 @@ Integrate the user's replacement BGM and SFX files without changing sound behavi
 - Preserve mute/volume settings and music/effect separation.
 
 ## Acceptance Criteria
-- [ ] All supplied replacement files are mapped to the intended catalog slots.
-- [ ] Every replacement decodes and is audible in the applicable screen/game event.
-- [ ] Credits match supplied provenance; missing provenance is explicitly recorded as user-supplied/unverified.
-- [ ] Existing mute and volume controls continue to work.
+- [x] Supplied title and four theme tracks are mapped; matching effects are mapped to gameplay events.
+- [ ] Browser playback was not manually auditioned in this session; static OGG signatures and local URLs are validated.
+- [x] Credits reflect the supplied README and mark redistribution terms as unverified.
+- [x] Existing mute and separate music/effects volume controls are preserved and connected to BGM playback.
 
 ## Validation
-- `npm test -- src/audio/audioCatalog.test.ts src/audio/RunnerAudioManager.test.ts`
+- `npm test -- src/audio/audioCatalog.test.ts src/audio/RunnerAudioManager.test.ts src/audio/musicCatalog.test.ts src/audio/RunnerMusicManager.test.ts src/app/components/AudioCreditsDialog.test.tsx`
+- `npm run typecheck`
 - `npm run build`
-- Manual local checks: title BGM, each Story biome BGM, jump/slide/pickup/gate/hit/fall/defense, mute and separate volume controls.
+- Manual local checks: title BGM, each Story biome BGM, jump/slide/pickup/gate/hit/fall/defense, mute and separate volume controls. Still required in a browser.
 
 ## Commit Message
 ```text
@@ -52,7 +51,8 @@ Task: T06-audio-replacement
 ```
 
 ## Progress
-- [ ] User audio files received; expected basenames and directories are listed above.
-- [ ] Integration and validation complete
-- No audio files were supplied in the workspace for this task; current audio files remain unchanged.
-- commit: none yet
+- [x] User audio files and README found under `public/audio/music/`.
+- [x] OGG BGM and effects wired; existing WAV fallback effects retained for gate, time pickup, and fall because the supplied pack has no clear replacements.
+- [x] Focused audio tests (11), typecheck, and production build pass.
+- Manual browser playback could not be verified in this session.
+- commit: recorded in Git history

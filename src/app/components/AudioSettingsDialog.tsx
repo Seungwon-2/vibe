@@ -33,7 +33,7 @@ export function AudioSettingsDialog({ preferences, onChange, onClose, onUnlockAu
           <button ref={closeButton} className="audio-dialog__close" type="button" onClick={onClose} aria-label="설정 닫기">닫기</button>
         </div>
         <label className="audio-setting-toggle">
-          <span><strong>전체 음소거</strong><small>효과음을 모두 끕니다.</small></span>
+          <span><strong>전체 음소거</strong><small>배경음악과 효과음을 모두 끕니다.</small></span>
           <input type="checkbox" checked={preferences.muted} onChange={(event) => {
             onUnlockAudio();
             onChange({ ...preferences, muted: event.currentTarget.checked });
@@ -47,7 +47,15 @@ export function AudioSettingsDialog({ preferences, onChange, onClose, onUnlockAu
               onChange({ ...preferences, effectsVolume: Number(event.currentTarget.value) });
             }} />
         </label>
-        <p className="audio-dialog__note">배경음악은 원하는 음원을 준비한 뒤 추가할 예정입니다.</p>
+        <label className="audio-setting-volume" htmlFor="music-volume">
+          <span><strong>배경음악 크기</strong><output>{Math.round(preferences.musicVolume * 100)}%</output></span>
+          <input id="music-volume" type="range" min="0" max="1" step="0.01" value={preferences.musicVolume}
+            onChange={(event) => {
+              onUnlockAudio();
+              onChange({ ...preferences, musicVolume: Number(event.currentTarget.value) });
+            }} />
+        </label>
+        <p className="audio-dialog__note">메뉴와 달리기 테마에 맞춰 배경음악이 바뀝니다.</p>
       </section>
     </div>
   );

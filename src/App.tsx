@@ -22,6 +22,7 @@ import type { CosmeticKind } from './services/CosmeticCatalog';
 import { getCosmetic } from './services/CosmeticCatalog';
 import { shouldShowRunnerTutorial } from './game/runner/runnerTutorial';
 import { browserRunnerAudio } from './audio/RunnerAudioManager';
+import { browserRunnerMusic } from './audio/RunnerMusicManager';
 import { DEFAULT_AUDIO_PREFERENCES, loadAudioPreferences, saveAudioPreferences, type AudioPreferences } from './audio/audioPreferences';
 
 type AppScreen = 'menu' | 'mode-select' | 'character-select' | 'stage-select' | 'run' | 'result' | 'rankings' | 'achievements' | 'shop';
@@ -72,6 +73,7 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     browserRunnerAudio.setPreferences(audioPreferences);
+    browserRunnerMusic.setPreferences(audioPreferences);
     try {
       saveAudioPreferences(audioPreferences, window.localStorage);
     } catch {
@@ -80,13 +82,21 @@ function App(): React.JSX.Element {
   }, [audioPreferences]);
 
   useEffect(() => {
-    const unlock = (): void => browserRunnerAudio.unlock();
+    if (screen !== 'run') browserRunnerMusic.play('title');
+  }, [screen]);
+
+  useEffect(() => {
+    const unlock = (): void => {
+      browserRunnerAudio.unlock();
+      browserRunnerMusic.unlock();
+    };
     const handleButtonClick = (event: MouseEvent): void => {
       const target = event.target;
       if (!(target instanceof Element)) return;
       const button = target.closest('button');
       if (!button || button.disabled || button.closest('.runner-stage')) return;
       browserRunnerAudio.unlock();
+      browserRunnerMusic.unlock();
       browserRunnerAudio.playEffect('ui-click');
     };
     document.addEventListener('pointerdown', unlock, true);
@@ -219,6 +229,7 @@ function App(): React.JSX.Element {
         }}
         onFinish={(result, outcome) => {
           if (latestRunId.current !== currentRunId || submittedRunIds.current.has(currentRunId)) return;
+          browserRunnerAudio.playEffect(result.finishReason === 'stage-complete' ? 'victory' : 'game-over');
           submittedRunIds.current.add(currentRunId);
           const settlement = settleRun(browserPlayerProfileStore, `${currentRunId}:${result.finishedAtIso}`, result);
           const achievements = recordRunAndUnlock(browserPlayerProfileStore,

@@ -15,13 +15,13 @@ export function AudioCreditsDialog({ onClose }: AudioCreditsDialogProps): React.
           </div>
           <button className="audio-dialog__close" type="button" onClick={onClose}>닫기</button>
         </div>
-        <p className="audio-dialog__note">아래 효과음은 Project02에서 직접 합성했으며 외부 녹음이나 샘플을 사용하지 않았습니다.</p>
+        <p className="audio-dialog__note">효과음은 제공된 오디오 안내문 기준으로 표시합니다. 일부 효과음은 기존 파일을 사용하며, 제공 파일의 재배포 조건은 확인이 필요합니다.</p>
         <ul className="audio-credit-list">
           {Object.values(RUNNER_AUDIO_EFFECTS).map(({ credit }) => (
             <li key={credit.id}>
               <strong>{credit.title}</strong>
               <span>{credit.creator} · {credit.licenseName}</span>
-              <code>{credit.generationScript}</code>
+              <code>{credit.generationScript ?? '사용자 제공 파일'}</code>
             </li>
           ))}
         </ul>

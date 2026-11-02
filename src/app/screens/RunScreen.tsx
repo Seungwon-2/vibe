@@ -15,6 +15,8 @@ import { markRunnerTutorialSeen, shouldShowRunnerTutorial } from '../../game/run
 import { AudioSettingsDialog } from '../components/AudioSettingsDialog';
 import type { AudioPreferences } from '../../audio/audioPreferences';
 import { browserRunnerAudio } from '../../audio/RunnerAudioManager';
+import { browserRunnerMusic } from '../../audio/RunnerMusicManager';
+import { getStoryStage } from '../../game/runner/storyConfig';
 
 function isPortrait(): boolean {
   return window.matchMedia?.('(orientation: portrait)').matches ?? window.innerHeight > window.innerWidth;
@@ -48,6 +50,17 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
   const gateBurstTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [gateBurstActive, setGateBurstActive] = useState(false);
   const passiveCueSequence = useRef(0);
+
+  useEffect(() => {
+    if (snapshot.phase === 'paused') {
+      browserRunnerMusic.pause();
+      return;
+    }
+    const musicId = mode === 'story' && storyStageId
+      ? getStoryStage(storyStageId).biomeId
+      : snapshot.biomeId;
+    browserRunnerMusic.play(musicId);
+  }, [mode, snapshot.biomeId, snapshot.phase, storyStageId]);
 
   useEffect(() => {
     if (tutorialEnabled) markRunnerTutorialSeen();
