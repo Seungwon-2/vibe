@@ -14,17 +14,17 @@ describe('authored hazard patterns', () => {
       ['combination', 2_000, 6_000], ['advanced', 6_000, null],
     ]);
     expect([0, 1, 2, 3, 4, 5, 6, 7, 8].map(getPatternStartDistance))
-      .toEqual([360, 620, 1_548, 2_000, 2_330, 2_660, 3_265, 3_595, 3_925]);
+      .toEqual([360, 620, 1_548, 2_000, 2_280, 2_560, 3_075, 3_355, 3_635]);
     expect(getPatternForDistance(360).id).toBe('tutorial-jump');
     expect(getPatternForDistance(620).id).toBe('tutorial-slide');
     expect(getPatternForDistance(1_548).id).toBe('practice-jump');
     expect(getPatternForDistance(1_999).maxDistanceMeters).toBe(2_000);
     expect(getPatternForDistance(2_000).id).toBe('combo-jump');
-    expect(getPatternForDistance(2_300).id).toBe('combo-jump');
-    expect(getPatternForDistance(2_600).id).toBe('combo-slide');
+    expect(getPatternForDistance(2_300).id).toBe('combo-slide');
+    expect(getPatternForDistance(2_600).id).toBe('combo-jump');
     expect(getPatternForDistance(5_450).id).toBe('combo-jump');
     expect(getPatternForDistance(5_999).maxDistanceMeters).toBe(6_000);
-    expect(getPatternForDistance(6_000).id).toBe('advanced-jump');
+    expect(getPatternForDistance(6_000).id).toBe('advanced-slide');
     expect(getPatternForDistance(6_000)).toBe(getPatternForDistance(6_000));
     expect(() => getPatternStartDistance(-1)).toThrow(RangeError);
   });
@@ -45,12 +45,12 @@ describe('authored hazard patterns', () => {
 
   it('alternates three-action waves, introduces high barriers, and leaves recovery spans', () => {
     expect(RUNNER_CONFIG.densePatternsPerSection).toBe(3);
-    expect(RUNNER_CONFIG.densePatternSpacingMeters).toBe(330);
-    expect(RUNNER_CONFIG.denseRecoveryGapMeters).toBe(605);
+    expect(RUNNER_CONFIG.densePatternSpacingMeters).toBe(280);
+    expect(RUNNER_CONFIG.denseRecoveryGapMeters).toBe(515);
     const starts = Array.from({ length: 18 }, (_, index) => getPatternStartDistance(index + 3));
     const expectedWaves = [
-      [2_000, 2_330, 2_660], [3_265, 3_595, 3_925],
-      [4_530, 4_838, 5_146], [5_685, 5_993, 6_301],
+      [2_000, 2_280, 2_560], [3_075, 3_355, 3_635],
+      [4_150, 4_408, 4_666], [5_115, 5_373, 5_631],
     ];
     for (let wave = 0; wave < expectedWaves.length; wave += 1) {
       const start = wave * 3;
@@ -103,7 +103,7 @@ describe('authored hazard patterns', () => {
       const candidate = pattern.obstacles.map((hazard) => ({
         at: getHazardDistance(index, hazard), kind: hazard.kind,
       }));
-      const pits = getPitDefinitions(Math.max(...candidate.map(({ at }) => at)) + 215);
+      const pits = getPitDefinitions(12_500);
       if (candidate.some(({ at, kind }) => pits.some((pit) =>
         isPitClearance(at, pit, RUNNER_CONFIG.pitHazardClearanceMeters +
           (kind === 'ground' ? 46 : 64) / 2 * METERS_PER_WORLD_UNIT)))) continue;
@@ -119,7 +119,8 @@ describe('authored hazard patterns', () => {
       for (const pit of getPitDefinitions(12_500)) {
         const width = hazard.kind === 'ground' ? 46 : 64;
         expect(isPitClearance(hazard.at, pit,
-          RUNNER_CONFIG.pitHazardClearanceMeters + width / 2 * METERS_PER_WORLD_UNIT)).toBe(false);
+          RUNNER_CONFIG.pitHazardClearanceMeters + width / 2 * METERS_PER_WORLD_UNIT),
+        `${hazard.at}m hazard overlaps ${pit.id} at ${pit.distanceMeters}m`).toBe(false);
       }
       for (const gate of RUNNER_GATE_DISTANCES_M) {
         const width = hazard.kind === 'ground' ? 46 : 64;

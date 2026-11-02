@@ -88,7 +88,6 @@ const PICKUP_BASE_RADIUS_PX = 32;
 // The standing-height row is frequent and predictable; elevated coins remain
 // optional and can be skipped when the authored course has no safe placement.
 const SAFE_PICKUP_START_METERS = 160;
-const SAFE_PICKUP_SPACING_METERS = RUNNER_CONFIG.safePickupSpacingMeters;
 
 type ScheduledHazard = Readonly<{ distanceMeters: number; definition: HazardDefinition; patternIndex: number; id: string }>;
 
@@ -171,11 +170,11 @@ function nearestSafeDistance(
   return candidates.find((distance) => isPickupDistanceSafe(distance, 52, hazards, pits));
 }
 
-function getTimePickupSlotIndexes(maxDistanceMeters: number): Set<number> {
+function getTimePickupSlotIndexes(maxDistanceMeters: number, spacingMeters: number): Set<number> {
   const indexes = new Set<number>();
   for (let target = RUNNER_CONFIG.timePickupFirstDistanceMeters; target <= maxDistanceMeters;
     target += RUNNER_CONFIG.timePickupSpacingMeters) {
-    indexes.add(Math.max(0, Math.round((target - SAFE_PICKUP_START_METERS) / SAFE_PICKUP_SPACING_METERS)));
+    indexes.add(Math.max(0, Math.round((target - SAFE_PICKUP_START_METERS) / spacingMeters)));
   }
   return indexes;
 }
@@ -211,11 +210,14 @@ export function generatePickupSchedule(maxDistanceMeters: number,
   const horizon = Math.max(maxDistanceMeters, initialPits.at(-1)?.distanceMeters ?? 0) +
     PICKUP_PIT_CLEARANCE_METERS;
   const pits = getPits(horizon);
-  const timeSlots = getTimePickupSlotIndexes(maxDistanceMeters);
+  const safePickupSpacingMeters = storyStageId
+    ? RUNNER_CONFIG.safePickupSpacingMeters
+    : RUNNER_CONFIG.endlessSafePickupSpacingMeters;
+  const timeSlots = getTimePickupSlotIndexes(maxDistanceMeters, safePickupSpacingMeters);
   const safePickups: PickupDefinition[] = [];
-  const lastIndex = Math.floor((maxDistanceMeters - SAFE_PICKUP_START_METERS) / SAFE_PICKUP_SPACING_METERS);
+  const lastIndex = Math.floor((maxDistanceMeters - SAFE_PICKUP_START_METERS) / safePickupSpacingMeters);
   for (let index = 0; index <= lastIndex; index += 1) {
-    const target = SAFE_PICKUP_START_METERS + index * SAFE_PICKUP_SPACING_METERS;
+    const target = SAFE_PICKUP_START_METERS + index * safePickupSpacingMeters;
     const previous = safePickups.at(-1)?.distanceMeters;
     const localMinimum = Math.max(SAFE_PICKUP_START_METERS, target - 25,
       previous === undefined ? target : previous + RUNNER_CONFIG.safePickupMinimumGapMeters);

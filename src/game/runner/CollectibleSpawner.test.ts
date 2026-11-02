@@ -88,7 +88,7 @@ describe('authored collectible schedule', () => {
     expect(PICKUP_SCHEDULE.length).toBeGreaterThan(70);
   });
 
-  it('generates a stable safe-route stream with 90m cadence and time items replacing coins', () => {
+  it('generates a stable Endless safe-route stream with 75m cadence and time items replacing coins', () => {
     const generated = generatePickupSchedule(15_000);
     expect(generated).toEqual(PICKUP_SCHEDULE);
     const safe = generated.filter((item) => !item.optionalJump && !item.guideAction && item.kind !== 'giant');
@@ -126,8 +126,22 @@ describe('authored collectible schedule', () => {
     expect(timeItems.length).toBeGreaterThan(0);
     for (const item of timeItems) {
       const slotIndex = Number(item.id.slice('time-'.length));
-      const target = 160 + slotIndex * RUNNER_CONFIG.safePickupSpacingMeters;
+      const target = 160 + slotIndex * RUNNER_CONFIG.endlessSafePickupSpacingMeters;
       expect(Math.abs(item.distanceMeters - target)).toBeLessThanOrEqual(75);
+    }
+  });
+
+  it('keeps the authored Story safe-route cadence at 90m', () => {
+    expect(RUNNER_CONFIG.safePickupSpacingMeters).toBe(90);
+    for (const stage of STORY_STAGES) {
+      const safe = generatePickupSchedule(stage.lengthMeters, stage.id)
+        .filter((item) => !item.optionalJump && !item.guideAction && item.kind !== 'giant');
+      expect(safe.length, `${stage.id} should retain its safe-route pickups`).toBeGreaterThan(0);
+      for (const item of safe) {
+        const slotIndex = Number(item.id.slice(item.kind === 'time' ? 'time-'.length : 'safe-'.length));
+        const target = 160 + slotIndex * RUNNER_CONFIG.safePickupSpacingMeters;
+        expect(Math.abs(item.distanceMeters - target), `${stage.id}:${item.id}`).toBeLessThanOrEqual(25);
+      }
     }
   });
 
