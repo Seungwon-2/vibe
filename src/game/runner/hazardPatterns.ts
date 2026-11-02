@@ -156,7 +156,7 @@ export function getPatternStartDistance(patternIndex: number): number {
     throw new RangeError('Pattern index must be a non-negative integer');
   }
   if (patternIndex === 1) return RUNNER_CONFIG.tutorialSlideDistanceMeters;
-  const earlyCount = Math.floor(
+  const earlyCount = Math.ceil(
     (RUNNER_CONFIG.denseSectionStartMeters - RUNNER_CONFIG.earlyPatternStartMeters) /
       RUNNER_CONFIG.earlyPatternSpacingMeters,
   );

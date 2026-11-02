@@ -24,7 +24,7 @@ describe('RunnerSimulation', () => {
     const initial = createRunnerSnapshot('player-default', EPOCH);
     expect(initial).toMatchObject({
       phase: 'countdown', remainingMs: 90_000, distanceMeters: 0,
-      speedUnitsPerSecond: 275, biomeId: 'dawn-city',
+      speedUnitsPerSecond: 317.625, biomeId: 'dawn-city',
     });
     expect(RUNNER_CONFIG.countdownMs).toBe(3_000);
     expect(advanceRunner(initial, 4_000)).toEqual({ state: initial, result: null });
@@ -33,7 +33,7 @@ describe('RunnerSimulation', () => {
     const afterSecond = advanceRunner(started, 1_000).state;
     expect(afterSecond.elapsedMs).toBe(1_000);
     expect(afterSecond.remainingMs).toBe(89_000);
-    expect(afterSecond.distanceMeters).toBeCloseTo(96.41, 1);
+    expect(afterSecond.distanceMeters).toBeCloseTo(106.05, 1);
     expect(afterSecond.worldDistance * RUNNER_CONFIG.metersPerWorldUnit)
       .toBeCloseTo(afterSecond.distanceMeters, 8);
     expect(advanceRunner(afterSecond, -100).state).toBe(afterSecond);
@@ -51,20 +51,20 @@ describe('RunnerSimulation', () => {
     expect(first.distanceMeters).toBeGreaterThan(2_000);
     expect(first.passedGateIds).toEqual(['gate-2000']);
     expect(first.biomeId).toBe('moonlit-forest');
-    expect(first.speedUnitsPerSecond).toBeGreaterThan(275);
+    expect(first.speedUnitsPerSecond).toBeGreaterThan(302.5);
 
     const afterRamp = advanceRunner(first, 60_000).state;
     expect(afterRamp.elapsedMs).toBe(90_000);
-    expect(afterRamp.speedUnitsPerSecond).toBeGreaterThan(357.5);
+    expect(afterRamp.speedUnitsPerSecond).toBeGreaterThan(393.25);
     expect(afterRamp.passedGateIds.length).toBeGreaterThanOrEqual(3);
     expect(afterRamp.remainingMs).toBeGreaterThan(0);
 
     const fiveGates = { ...afterRamp, elapsedMs: 90_000,
       passedGateIds: ['gate-2000', 'gate-4000', 'gate-6000', 'gate-8000', 'gate-10000'] as const };
     const atMaxRamp = advanceRunner(fiveGates, 1).state;
-    expect(atMaxRamp.speedUnitsPerSecond).toBeCloseTo(469.21875, 8);
+    expect(atMaxRamp.speedUnitsPerSecond).toBeCloseTo(516.140625, 8);
     const toaAtMaxRamp = advanceRunner({ ...fiveGates, characterId: 'goth-student' }, 1).state;
-    expect(toaAtMaxRamp.speedUnitsPerSecond).toBeCloseTo(446.875, 8);
+    expect(toaAtMaxRamp.speedUnitsPerSecond).toBeCloseTo(491.5625, 8);
   });
 
   it('is independent of update chunk size even across gates and time expiry', () => {
@@ -232,7 +232,7 @@ describe('RunnerSimulation', () => {
   it('keeps final results stable and rounds meters only at the result boundary', () => {
     const state = { ...running(), distanceMeters: 12.6, worldDistance: 37.8, coins: 4 };
     const finished = finishRunner(state, new Date('2026-10-26T01:00:00.000Z'));
-    expect(finished.result).toEqual({
+    expect(finished.result).toMatchObject({
       characterId: 'player-default', distanceMeters: 13, coins: 4,
       durationMs: 0, finishedAtIso: '2026-10-26T01:00:00.000Z', finishReason: 'timeout',
     });

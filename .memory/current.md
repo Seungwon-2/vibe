@@ -7,11 +7,12 @@
 [P01 Speed and Pickups](./phases/2026-11-02-runner-speed-pickup-reward/P01-speed-and-pickups/phase.md)
 
 ## Active Task
-[T02 Global Speed Increase](./phases/2026-11-02-runner-speed-pickup-reward/P01-speed-and-pickups/T02-global-speed-increase.md)
+[T03 Mary's Pickup Passive](./phases/2026-11-02-runner-speed-pickup-reward/P01-speed-and-pickups/T03-mary-pickup-passive.md)
 
 ## Status
-- T01 completed and committed; Story final-life loss now holds the game-over pose for 1 second.
-- RunnerScene tests and typecheck pass. Two unrelated stale assertions in RunnerSimulation tests are documented in T01.
+- T01 completed and committed (`bd51f44`): Story final-life loss holds the game-over pose for 1 second.
+- T02 implemented and validated; commit follows this task update.
+- Story authored spacing remains unchanged. Endless speed and spacing were raised by 10%.
 
 ## Next Step
-Execute T02: raise initial and maximum course speeds by 10% while preserving the existing ramp, character animation rates, and collision geometry.
+Execute T03: raise Mary's pickup radius passive to +50%, then implement the safe and action-guided coin routes in T04.

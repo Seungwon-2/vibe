@@ -8,7 +8,7 @@
 - **Rationale**: The player should see a clear defeat beat without delaying unrelated run endings.
 
 ## D02. Global speed increase
-- **Chosen**: Increase both the configured starting speed and configured maximum speed by 10%, keeping the existing ramp duration and gate bonuses. Character animation playback and collision boxes do not scale with course speed.
+- **Chosen**: Increase both the configured starting speed and configured maximum speed by 10%, keeping the existing ramp duration and gate bonuses. Increase Endless obstacle/recovery intervals by 10% to preserve action time; leave Story routes unchanged so their pace becomes more challenging. Character animation playback and collision boxes do not scale with course speed.
 - **Rationale**: Increase perceived pace consistently from the start through the speed ramp while preserving the current progression curve.
 
 ## D03. Mary pickup passive

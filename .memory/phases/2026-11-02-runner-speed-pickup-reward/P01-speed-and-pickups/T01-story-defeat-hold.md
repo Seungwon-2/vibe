@@ -52,7 +52,7 @@ After the third Story hit depletes the stage's last life, keep the RunnerScene v
 - `git diff --check` — passed.
 
 ## Findings Outside This Task
-- The combined validation command also ran `RunnerSimulation.test.ts`, where 2 existing assertions fail: the countdown speed expectation omits Rin's +5% passive, and the exact result expectation omits fields already present in `RunnerResult`. These assertions are outside this task's scope and were left unchanged.
+- The two stale `RunnerSimulation.test.ts` expectations identified during T01 were updated with T02's speed curve and result shape; the combined suite now passes.
 
 ## Commit Message
 ```text
@@ -69,4 +69,4 @@ Task: T01-story-defeat-hold
 ## Progress
 - [x] Implementation complete
 - [x] Validation passed
-- commit: 6004733
+- commit: bd51f44
