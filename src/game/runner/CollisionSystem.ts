@@ -1,6 +1,7 @@
 import { applyCollision, applyPitFall, finishRunner } from './RunnerSimulation';
 import type { RunnerResult, RunnerSnapshot } from './runnerTypes';
 import type { HazardDefinition } from './hazardTypes';
+import { RUNNER_GROUND_Y } from './runnerPose';
 
 export type HazardGeometry = Readonly<{ x: number; y: number; width: number; height: number }>;
 
@@ -9,6 +10,16 @@ export function getHazardGeometry(hazard: HazardDefinition, x: number): HazardGe
   // The overhead bar ends at y=416, leaving a readable 6px slide clearance.
   const y = hazard.kind === 'ground' ? 470 - hazard.height : 380;
   return { x, y, width: hazard.width, height: hazard.height };
+}
+
+/** Overhead art stays at the ceiling, while its collision lane covers every jump height. */
+export function getHazardCollisionGeometry(hazard: HazardDefinition, x: number): HazardGeometry {
+  if (hazard.kind === 'overhead') return { x, y: 0, width: hazard.width, height: RUNNER_GROUND_Y };
+  return getHazardGeometry(hazard, x);
+}
+
+export function isHazardDodgedBySlide(hazard: HazardDefinition, groundedSliding: boolean): boolean {
+  return hazard.kind === 'overhead' && groundedSliding;
 }
 
 export function tryResolveHazardHit(state: RunnerSnapshot, sliding = false): {

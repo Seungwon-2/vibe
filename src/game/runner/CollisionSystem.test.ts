@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { getHazardGeometry, tryResolveHazardHit, tryResolvePitFall } from './CollisionSystem';
+import { getHazardCollisionGeometry, getHazardGeometry, isHazardDodgedBySlide,
+  tryResolveHazardHit, tryResolvePitFall } from './CollisionSystem';
 import { createRunnerSnapshot, startRunner } from './RunnerSimulation';
 import type { HazardDefinition } from './hazardTypes';
+import { RUNNER_GROUND_Y } from './runnerPose';
 
 const ground: HazardDefinition = { id: 'spikes', kind: 'ground', offsetMeters: 0,
   width: 46, height: 48, warningColor: '#ffcf6b' };
@@ -13,6 +15,18 @@ describe('hazard collision', () => {
     expect(getHazardGeometry(ground, 100)).toEqual({ x: 100, y: 422, width: 46, height: 48 });
     expect(getHazardGeometry(overhead, 100)).toEqual({ x: 100, y: 380, width: 64, height: 36 });
     expect(getHazardGeometry(overhead, 100).y + overhead.height).toBeLessThan(430);
+  });
+
+  it('extends overhead collision through the full runner lane while leaving its artwork geometry unchanged', () => {
+    expect(getHazardCollisionGeometry(overhead, 100)).toEqual({ x: 100, y: 0, width: 64, height: RUNNER_GROUND_Y });
+    expect(getHazardCollisionGeometry(ground, 100)).toEqual(getHazardGeometry(ground, 100));
+    expect(getHazardGeometry(overhead, 100)).toEqual({ x: 100, y: 380, width: 64, height: 36 });
+  });
+
+  it('allows only a grounded slide to dodge overhead hazards', () => {
+    expect(isHazardDodgedBySlide(overhead, true)).toBe(true);
+    expect(isHazardDodgedBySlide(overhead, false)).toBe(false);
+    expect(isHazardDodgedBySlide(ground, true)).toBe(false);
   });
 
   it('applies one penalty then ignores overlaps during protection', () => {

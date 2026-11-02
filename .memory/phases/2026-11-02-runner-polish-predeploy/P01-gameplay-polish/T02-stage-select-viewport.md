@@ -54,4 +54,4 @@ Task: T02-stage-select-viewport
 - [x] Implementation complete
 - [x] Typecheck and production build passed.
 - [ ] Manual viewport inspection is unavailable: CUA browser host is not available in this session.
-- commit: 5de990f
+- commit: a831c98

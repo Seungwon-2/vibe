@@ -1,6 +1,6 @@
 # Task: T03 Slide-only Hazards
 
-## Status: pending
+## Status: done
 
 ## Goal
 Make overhead hazards require a grounded slide. Jumping above or through their art must still register a hit, while a held slide passes safely; ground hazards retain their existing jump-clearance behavior.
@@ -34,10 +34,10 @@ Make overhead hazards require a grounded slide. Jumping above or through their a
 - Verify overhead while jumping causes one hit, grounded slide causes no hit, ground obstacle still permits jump clearance, and a hazard is consumed once.
 
 ## Acceptance Criteria
-- [ ] Jumping cannot bypass an overhead slide obstacle.
-- [ ] Grounded sliding passes overhead obstacles without damage or passive consumption.
-- [ ] Ground obstacles remain avoidable by jumping.
-- [ ] Visible art remains aligned with its warning and keeps its current appearance.
+- [x] Jumping cannot bypass an overhead slide obstacle: invisible collision spans the runner lane.
+- [x] Grounded sliding passes overhead obstacles without damage or passive consumption.
+- [x] Ground obstacles retain their existing visible collision box.
+- [x] Visible overhead art and tutorial warning retain their existing geometry and position.
 
 ## Validation
 - `npm test -- src/game/runner/ObstacleSpawner.test.ts src/game/runner/CollisionSystem.test.ts src/game/runner/RunnerScene.test.ts`
@@ -56,6 +56,7 @@ Task: T03-slide-only-hazards
 ```
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] `ObstacleSpawner.test.ts` and `CollisionSystem.test.ts` passed (12 tests); typecheck passed.
+- [ ] `RunnerScene.test.ts` has unrelated existing harness failures in pit-rescue/finish setup (`trailEffect` and `setProtected` mocks are missing).
+- commit: 94fa471

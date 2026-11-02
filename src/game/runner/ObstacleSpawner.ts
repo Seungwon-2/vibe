@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import { getHazardGeometry } from './CollisionSystem';
+import { getHazardCollisionGeometry, getHazardGeometry, isHazardDodgedBySlide } from './CollisionSystem';
 import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance,
   METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { isPitClearance, getPitDefinitions } from './PitSpawner';
@@ -30,8 +30,9 @@ export class ObstacleSpawner {
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly player: Phaser.Physics.Arcade.Sprite,
-    private readonly onOverlap: () => void,
+    private readonly onOverlap: (definition: HazardDefinition) => void,
     private readonly tutorialEnabled: boolean,
+    private readonly isGroundedSliding: () => boolean = () => false,
   ) {}
 
   update(snapshot: RunnerSnapshot): void {
@@ -80,7 +81,8 @@ export class ObstacleSpawner {
       const centerX = RUNNER_PLAYER_X +
         (hazard.atMeters - snapshot.distanceMeters) / METERS_PER_WORLD_UNIT;
       const geometry = getHazardGeometry(hazard.definition, centerX - hazard.definition.width / 2);
-      hazard.box.setPosition(centerX, geometry.y + geometry.height / 2);
+      const collision = getHazardCollisionGeometry(hazard.definition, geometry.x);
+      hazard.box.setPosition(centerX, collision.y + collision.height / 2);
       hazard.art.setPosition(geometry.x, geometry.y);
       hazard.warning?.setPosition(centerX, geometry.y - 34);
       if (geometry.x + geometry.width < 0) this.remove(hazard);
@@ -93,13 +95,13 @@ export class ObstacleSpawner {
   }
 
   private spawn(atMeters: number, definition: HazardDefinition): void {
-    const geometry = getHazardGeometry(definition, 960);
-    const box = this.scene.add.rectangle(0, 0, geometry.width, geometry.height, 0xffffff, 0);
+    const collision = getHazardCollisionGeometry(definition, 960 - definition.width / 2);
+    const box = this.scene.add.rectangle(0, 0, collision.width, collision.height, 0xffffff, 0);
     this.scene.physics.add.existing(box);
     const body = box.body as Phaser.Physics.Arcade.Body;
     body.setAllowGravity(false);
     body.setImmovable(true);
-    body.setSize(geometry.width, geometry.height);
+    body.setSize(collision.width, collision.height);
     const art = this.scene.add.graphics();
     const biome = this.activeStoryStageId
       ? getBiomeById(getStoryStage(this.activeStoryStageId).biomeId)
@@ -117,7 +119,9 @@ export class ObstacleSpawner {
     this.active.push(hazard);
     this.scene.physics.add.overlap(this.player, box, () => {
       if (!this.active.includes(hazard)) return;
-      this.onOverlap();
+      if (!isHazardDodgedBySlide(hazard.definition, this.isGroundedSliding())) {
+        this.onOverlap(hazard.definition);
+      }
       this.remove(hazard);
     });
   }

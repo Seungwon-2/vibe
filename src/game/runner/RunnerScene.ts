@@ -113,7 +113,7 @@ export class RunnerScene extends Phaser.Scene {
     this.player = new RunnerPlayer(sprite, characterId);
     this.trailEffect = new RunnerTrailEffect(this, this.registry.get('trailCosmeticId') as string | null);
     this.spawner = new ObstacleSpawner(this, this.player.gameObject, this.handleHazardOverlap,
-      this.registry.get('runnerTutorialEnabled') === true);
+      this.registry.get('runnerTutorialEnabled') === true, () => this.player.isSliding);
     this.collectibles = new CollectibleSpawner(this, this.player.gameObject, this.handlePickup, characterId);
     this.pits = new PitSpawner(this, this.player.gameObject, () => this.player.isGrounded,
       this.handlePitFall);

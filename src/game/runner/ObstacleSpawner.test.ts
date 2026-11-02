@@ -6,6 +6,8 @@ import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGa
   METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { getPitDefinitions, isPitClearance } from './PitSpawner';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
+import { RUNNER_GROUND_Y } from './runnerPose';
+import type { HazardDefinition } from './hazardTypes';
 
 type MockChainObject = Record<string, unknown> & {
   destroy: ReturnType<typeof vi.fn>;
@@ -132,5 +134,34 @@ describe('ObstacleSpawner schedule', () => {
     expect(regularMock.texts).toHaveLength(0);
     expect(regularMock.overlaps).toHaveLength(2);
     regularSpawner.destroy();
+  });
+
+  it('uses a full-lane collision box for overhead art and forwards its kind once', () => {
+    const mock = makeScene();
+    const onOverlap = vi.fn<(definition: HazardDefinition) => void>();
+    const spawner = new ObstacleSpawner(mock.scene, {} as Phaser.Physics.Arcade.Sprite, onOverlap, false);
+    spawner.update(snapshotAt(400));
+
+    expect(mock.rectangles[0].body.setSize).toHaveBeenCalledWith(46, 48);
+    expect(mock.rectangles[1].body.setSize).toHaveBeenCalledWith(64, RUNNER_GROUND_Y);
+    mock.overlaps[1]();
+    mock.overlaps[1]();
+    expect(onOverlap).toHaveBeenCalledOnce();
+    expect(onOverlap).toHaveBeenCalledWith(expect.objectContaining({ kind: 'overhead' }));
+    spawner.destroy();
+  });
+
+  it('consumes an overhead hazard as a safe pass only during grounded sliding', () => {
+    const mock = makeScene();
+    const onOverlap = vi.fn();
+    const spawner = new ObstacleSpawner(mock.scene, {} as Phaser.Physics.Arcade.Sprite,
+      onOverlap, false, () => true);
+    spawner.update(snapshotAt(400));
+
+    mock.overlaps[1]();
+    expect(onOverlap).not.toHaveBeenCalled();
+    mock.overlaps[1]();
+    expect(onOverlap).not.toHaveBeenCalled();
+    spawner.destroy();
   });
 });
