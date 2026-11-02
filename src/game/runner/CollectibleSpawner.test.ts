@@ -132,7 +132,7 @@ describe('authored collectible schedule', () => {
   it('keeps optional coins elevated and omits unsafe positions', () => {
     const optional = PICKUP_SCHEDULE.filter((pickup) => pickup.optionalJump);
     expect(optional.length).toBeGreaterThan(0);
-    expect(optional.every((pickup) => pickup.kind === 'coin' && pickup.heightUnits === 116)).toBe(true);
+    expect(optional.every((pickup) => pickup.kind === 'coin' && pickup.heightUnits === 132)).toBe(true);
     expect(optional.length).toBeLessThan(25); // unsafe authored slots are omitted
   });
 

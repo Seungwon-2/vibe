@@ -13,16 +13,25 @@ export const MAX_RUN_SPEED_UNITS_PER_SECOND = RUNNER_CONFIG.maxSpeedUnitsPerSeco
   (RIN_SPEED_BONUS.id === 'rin-speed' ? 1 + RIN_SPEED_BONUS.speedBonusRatio : 1);
 
 const DENSE_WAVE_FIRST_METERS = RUNNER_CONFIG.denseSectionStartMeters;
-const DENSE_SPACING_VARIANTS = Object.freeze([
-  RUNNER_CONFIG.endlessDensePatternSpacingMinMeters,
-  RUNNER_CONFIG.densePatternSpacingMeters,
-  RUNNER_CONFIG.endlessDensePatternSpacingMaxMeters,
-]);
-const DENSE_RECOVERY_VARIANTS = Object.freeze([
-  RUNNER_CONFIG.endlessDenseRecoveryGapMinMeters,
-  RUNNER_CONFIG.denseRecoveryGapMeters,
-  RUNNER_CONFIG.endlessDenseRecoveryGapMaxMeters,
-]);
+
+function getDenseDifficultyTier(waveIndex: number): number {
+  return Math.floor(waveIndex / RUNNER_CONFIG.endlessDenseWavesPerDifficultyTier);
+}
+
+function getDensePatternSpacing(waveIndex: number): number {
+  return Math.max(RUNNER_CONFIG.endlessDenseSpacingFloorMeters,
+    RUNNER_CONFIG.densePatternSpacingMeters - getDenseDifficultyTier(waveIndex) *
+      RUNNER_CONFIG.endlessDenseSpacingDecreasePerTierMeters);
+}
+
+function getDenseRecoveryGap(waveIndex: number): number {
+  if ((waveIndex + 1) % RUNNER_CONFIG.endlessDenseWidePitRecoveryIntervalWaves === 0) {
+    return RUNNER_CONFIG.endlessDenseWidePitRecoveryGapMeters;
+  }
+  return Math.max(RUNNER_CONFIG.endlessDenseRecoveryFloorMeters,
+    RUNNER_CONFIG.denseRecoveryGapMeters - getDenseDifficultyTier(waveIndex) *
+      RUNNER_CONFIG.endlessDenseRecoveryDecreasePerTierMeters);
+}
 
 export function getDenseWaveSchedule(waveIndex: number): Readonly<{
   waveStartMeters: number;
@@ -34,17 +43,15 @@ export function getDenseWaveSchedule(waveIndex: number): Readonly<{
   }
   let waveStartMeters: number = DENSE_WAVE_FIRST_METERS;
   for (let index = 0; index < waveIndex; index += 1) {
-    const firstSpacing = DENSE_SPACING_VARIANTS[index % DENSE_SPACING_VARIANTS.length];
-    const secondSpacing = DENSE_SPACING_VARIANTS[(index + 1) % DENSE_SPACING_VARIANTS.length];
-    waveStartMeters += firstSpacing + secondSpacing +
-      DENSE_RECOVERY_VARIANTS[index % DENSE_RECOVERY_VARIANTS.length];
+    waveStartMeters += getDensePatternSpacing(index) * (RUNNER_CONFIG.densePatternsPerSection - 1) +
+      getDenseRecoveryGap(index);
   }
+  const spacing = getDensePatternSpacing(waveIndex);
   const patternDistances = [waveStartMeters];
   for (let slot = 1; slot < RUNNER_CONFIG.densePatternsPerSection; slot += 1) {
-    patternDistances.push(patternDistances[slot - 1] +
-      DENSE_SPACING_VARIANTS[(waveIndex + slot - 1) % DENSE_SPACING_VARIANTS.length]);
+    patternDistances.push(patternDistances[slot - 1] + spacing);
   }
-  const recovery = DENSE_RECOVERY_VARIANTS[waveIndex % DENSE_RECOVERY_VARIANTS.length];
+  const recovery = getDenseRecoveryGap(waveIndex);
   return Object.freeze({
     waveStartMeters,
     patternDistances: Object.freeze(patternDistances),

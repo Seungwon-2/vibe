@@ -32,28 +32,32 @@ function placement(id: string, distanceMeters: number, kind: HazardKind): StoryH
 const STORY_COURSES: Readonly<Record<StoryStageId, readonly StoryHazardPlacement[]>> = Object.freeze({
   'dawn-city': Object.freeze([
     placement('dawn-jump-01', 360, 'ground'), placement('dawn-slide-01', 600, 'overhead'),
+    placement('dawn-jump-02', 1_080, 'ground'),
     placement('dawn-wall-01', 1_300, 'double-jump'), placement('dawn-slide-02', 1_560, 'overhead'),
     placement('dawn-jump-03', 1_780, 'ground'),
   ]),
   'moonlit-forest': Object.freeze([
-    placement('forest-slide-01', 360, 'overhead'), placement('forest-jump-01', 620, 'ground'),
-    placement('forest-slide-02', 1_080, 'overhead'), placement('forest-jump-02', 1_420, 'ground'),
-    placement('forest-slide-03', 1_760, 'overhead'), placement('forest-wall-01', 2_280, 'double-jump'),
+    placement('forest-slide-01', 180, 'overhead'), placement('forest-jump-01', 400, 'ground'),
+    placement('forest-slide-02', 620, 'overhead'), placement('forest-jump-02', 1_080, 'ground'),
+    placement('forest-slide-03', 1_300, 'overhead'), placement('forest-jump-03', 1_520, 'ground'),
+    placement('forest-slide-04', 1_740, 'overhead'), placement('forest-wall-01', 2_280, 'double-jump'),
   ]),
   'crystal-mine': Object.freeze([
-    placement('mine-jump-01', 390, 'ground'), placement('mine-slide-01', 620, 'overhead'),
-    placement('mine-jump-02', 1_100, 'ground'), placement('mine-jump-03', 1_390, 'ground'),
-    placement('mine-slide-02', 1_760, 'overhead'), placement('mine-jump-04', 2_280, 'ground'),
+    placement('mine-jump-01', 180, 'ground'), placement('mine-slide-01', 400, 'overhead'),
+    placement('mine-jump-02', 620, 'ground'), placement('mine-jump-03', 1_100, 'ground'),
+    placement('mine-jump-04', 1_320, 'ground'), placement('mine-slide-02', 1_540, 'overhead'),
+    placement('mine-slide-03', 1_760, 'overhead'), placement('mine-jump-05', 2_280, 'ground'),
     placement('mine-wall-01', 2_920, 'double-jump'),
     placement('mine-slide-04', 3_180, 'overhead'),
   ]),
   'cloud-skyway': Object.freeze([
-    placement('skyway-slide-01', 380, 'overhead'), placement('skyway-jump-01', 620, 'ground'),
-    placement('skyway-slide-02', 1_100, 'overhead'), placement('skyway-jump-02', 1_410, 'ground'),
-    placement('skyway-slide-03', 1_760, 'overhead'), placement('skyway-jump-03', 2_280, 'ground'),
+    placement('skyway-slide-01', 180, 'overhead'), placement('skyway-jump-01', 400, 'ground'),
+    placement('skyway-slide-02', 620, 'overhead'), placement('skyway-slide-03', 1_100, 'overhead'),
+    placement('skyway-jump-03', 1_320, 'ground'), placement('skyway-slide-04', 1_540, 'overhead'),
+    placement('skyway-jump-04', 1_760, 'ground'), placement('skyway-jump-05', 2_280, 'ground'),
     placement('skyway-wall-01', 2_920, 'double-jump'),
-    placement('skyway-slide-05', 3_220, 'overhead'), placement('skyway-jump-05', 3_550, 'ground'),
-    placement('skyway-slide-06', 3_780, 'overhead'),
+    placement('skyway-slide-06', 3_140, 'overhead'), placement('skyway-jump-06', 3_360, 'ground'),
+    placement('skyway-slide-07', 3_580, 'overhead'),
   ]),
 });
 

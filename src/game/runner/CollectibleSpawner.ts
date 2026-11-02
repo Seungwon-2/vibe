@@ -223,18 +223,25 @@ export function generatePickupSchedule(maxDistanceMeters: number,
     const rowStart = hazard.distanceMeters +
       hazard.definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit +
       RUNNER_CONFIG.postJumpCoinLandingClearanceMeters;
-    const row = Array.from({ length: RUNNER_CONFIG.postJumpCoinRowCount }, (_, index) => ({
-      id: `post-jump-${hazard.patternIndex}-${index}`,
-      kind: 'coin' as const,
-      distanceMeters: rowStart + index * RUNNER_CONFIG.postJumpCoinRowSpacingMeters,
-      heightUnits: 52,
-      optionalJump: true,
-    }));
-    const rowIsSafe = row.every((pickup) => pickup.distanceMeters <= maxDistanceMeters &&
+    const rowOffsets = Array.from(
+      { length: Math.floor(RUNNER_CONFIG.postJumpCoinRowSearchRadiusMeters /
+        RUNNER_CONFIG.postJumpCoinRowSearchStepMeters) * 2 + 1 },
+      (_, index) => (index === 0 ? 0 : Math.ceil(index / 2) * RUNNER_CONFIG.postJumpCoinRowSearchStepMeters *
+        (index % 2 === 1 ? 1 : -1)),
+    );
+    const row = rowOffsets.map((offset) => Array.from({ length: RUNNER_CONFIG.postJumpCoinRowCount },
+      (_, index) => ({
+        id: `post-jump-${hazard.patternIndex}-${index}`,
+        kind: 'coin' as const,
+        distanceMeters: rowStart + offset + index * RUNNER_CONFIG.postJumpCoinRowSpacingMeters,
+        heightUnits: 132,
+        optionalJump: true,
+      }))).find((candidateRow) => candidateRow.every((pickup) =>
+      pickup.distanceMeters <= maxDistanceMeters &&
       isPickupDistanceSafe(pickup.distanceMeters, pickup.heightUnits, hazards, pits) &&
       [...safePickups, ...optionalPickups].every((existing) =>
-        Math.abs(existing.distanceMeters - pickup.distanceMeters) >= RUNNER_CONFIG.pickupObjectClearanceMeters));
-    if (rowIsSafe) optionalPickups.push(...row);
+        Math.abs(existing.distanceMeters - pickup.distanceMeters) >= RUNNER_CONFIG.pickupObjectClearanceMeters)));
+    if (row) optionalPickups.push(...row);
   }
   const existingPickups = [...safePickups, ...optionalPickups];
   const giantPickups: PickupDefinition[] = [];

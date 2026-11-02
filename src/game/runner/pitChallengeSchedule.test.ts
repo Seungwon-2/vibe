@@ -77,6 +77,30 @@ describe('wide double-jump pit schedule', () => {
     validateStoryCourses();
   });
 
+  it('adds a compact challenge sequence and recovery stretch to every Story route', () => {
+    validateStoryCourses();
+    for (const stage of STORY_STAGES) {
+      const hazards = getStoryHazardSchedule(stage.id);
+      const groups: Array<Array<(typeof hazards)[number]>> = [];
+      for (const hazard of hazards) {
+        const group = groups.at(-1);
+        if (!group || hazard.distanceMeters - group.at(-1)!.distanceMeters > 350) groups.push([hazard]);
+        else group.push(hazard);
+      }
+      const hasChallengeAndRecovery = groups.some((group, groupIndex) => {
+        if (group.length < 3) return false;
+        const hasCompactActions = group.slice(0, 3).slice(1).every((hazard, index) => {
+          const gap = hazard.distanceMeters - group[index].distanceMeters;
+          return gap >= 220 && gap <= 320;
+        });
+        const recoveryEnd = groups[groupIndex + 1]?.[0].distanceMeters ?? stage.lengthMeters;
+        return hasCompactActions && recoveryEnd - group.at(-1)!.distanceMeters >= 400;
+      });
+      expect(hasChallengeAndRecovery, `${stage.id} needs a short combo and a readable break`)
+        .toBe(true);
+    }
+  });
+
   it('sizes the pit widths so one jump falls short and a timed double jump reaches across', () => {
     const singleFlightSeconds = 2 * Math.abs(RUNNER_CONFIG.jumpImpulseY) / RUNNER_CONFIG.gravityY;
     const doubleFlightSeconds = 3 * Math.abs(RUNNER_CONFIG.jumpImpulseY) / RUNNER_CONFIG.gravityY;

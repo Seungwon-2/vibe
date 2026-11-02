@@ -6,7 +6,7 @@ Resolve the Story pickup-versus-pit schedule mismatch, place the first double-ju
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | Correct mode-aware placement and improve Story challenge rhythm. | [P01](../phases/2026-11-02-runner-gameplay-review/P01-gameplay-systems/phase.md) |
+| P01 | `done` | Correct mode-aware placement and improve Story and Endless challenge rhythm. | [P01](../phases/2026-11-02-runner-gameplay-review/P01-gameplay-systems/phase.md) |
 
 ## Decisions
 - [Confirmed decisions](../decisions/2026-11-02-runner-gameplay-review.md)

@@ -57,9 +57,10 @@ export function getPitDefinitions(maxDistanceMeters: number): readonly PitDefini
         if (Math.abs(start - candidate) <= minimumSpacing) return true;
       }
     };
-    while (RUNNER_GATE_DISTANCES_M.some((gate) => Math.abs(gate - distanceMeters) <=
-      RUNNER_CONFIG.gateClearanceMeters + RUNNER_CONFIG.widePitWidthMeters / 2) ||
-      conflictsWithNarrowPit(distanceMeters) || conflictsWithHazard(distanceMeters)) {
+    while (distanceMeters <= maxDistanceMeters && (
+      RUNNER_GATE_DISTANCES_M.some((gate) => Math.abs(gate - distanceMeters) <=
+        RUNNER_CONFIG.gateClearanceMeters + RUNNER_CONFIG.widePitWidthMeters / 2) ||
+      conflictsWithNarrowPit(distanceMeters) || conflictsWithHazard(distanceMeters))) {
       distanceMeters += 25;
     }
     if (distanceMeters <= maxDistanceMeters) {

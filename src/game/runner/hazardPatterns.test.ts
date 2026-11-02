@@ -14,14 +14,14 @@ describe('authored hazard patterns', () => {
       ['combination', 2_000, 6_000], ['advanced', 6_000, null],
     ]);
     expect([0, 1, 2, 3, 4, 5, 6, 7, 8].map(getPatternStartDistance))
-      .toEqual([360, 600, 1_440, 2_000, 2_250, 2_550, 3_050, 3_350, 3_700]);
+      .toEqual([360, 600, 1_440, 2_000, 2_300, 2_600, 3_150, 3_450, 3_750]);
     expect(getPatternForDistance(360).id).toBe('tutorial-jump');
     expect(getPatternForDistance(600).id).toBe('tutorial-slide');
     expect(getPatternForDistance(1_440).id).toBe('practice-jump');
     expect(getPatternForDistance(1_999).maxDistanceMeters).toBe(2_000);
     expect(getPatternForDistance(2_000).id).toBe('combo-jump');
-    expect(getPatternForDistance(2_250).id).toBe('combo-slide');
-    expect(getPatternForDistance(2_550).id).toBe('combo-jump');
+    expect(getPatternForDistance(2_300).id).toBe('combo-slide');
+    expect(getPatternForDistance(2_600).id).toBe('combo-jump');
     expect(getPatternForDistance(5_450).id).toBe('combo-double-jump');
     expect(getPatternForDistance(5_999).maxDistanceMeters).toBe(6_000);
     expect(getPatternForDistance(6_000).id).toBe('advanced-slide');
@@ -49,15 +49,19 @@ describe('authored hazard patterns', () => {
     expect(RUNNER_CONFIG.denseRecoveryGapMeters).toBe(550);
     const starts = Array.from({ length: 18 }, (_, index) => getPatternStartDistance(index + 3));
     const expectedWaves = [
-      [2_000, 2_250, 2_550], [3_050, 3_350, 3_700],
-      [4_250, 4_600, 4_850], [5_450, 5_700, 6_000],
+      [2_000, 2_300, 2_600], [3_150, 3_450, 3_750],
+      [4_300, 4_580, 4_860], [5_350, 5_630, 5_910],
     ];
     for (let wave = 0; wave < expectedWaves.length; wave += 1) {
       const start = wave * 3;
       expect(starts.slice(start, start + 3)).toEqual(expectedWaves[wave]);
       if (wave < expectedWaves.length - 1) {
-        expect(starts[start + 3] - starts[start + 2]).toBeGreaterThanOrEqual(500);
-        expect(starts[start + 3] - starts[start + 2]).toBeLessThanOrEqual(600);
+        const waveIndex = wave;
+        const tier = Math.floor(waveIndex / RUNNER_CONFIG.endlessDenseWavesPerDifficultyTier);
+        const expectedRecovery = Math.max(RUNNER_CONFIG.endlessDenseRecoveryFloorMeters,
+          RUNNER_CONFIG.denseRecoveryGapMeters - tier *
+            RUNNER_CONFIG.endlessDenseRecoveryDecreasePerTierMeters);
+        expect(starts[start + 3] - starts[start + 2]).toBe(expectedRecovery);
       }
       const kinds = starts.slice(start, start + 3).map((distance) =>
         getPatternForDistance(distance).obstacles[0].kind,
@@ -67,8 +71,24 @@ describe('authored hazard patterns', () => {
         : wave % 2 === 0 ? ['ground', 'overhead', 'ground'] : ['overhead', 'ground', 'overhead']);
     }
     const fastestMetersPerSecond = MAX_RUN_SPEED_UNITS_PER_SECOND * METERS_PER_WORLD_UNIT;
-    expect(RUNNER_CONFIG.endlessDensePatternSpacingMinMeters / fastestMetersPerSecond).toBeGreaterThanOrEqual(1.5);
-    expect(RUNNER_CONFIG.endlessDenseRecoveryGapMaxMeters / fastestMetersPerSecond).toBeGreaterThanOrEqual(3.5);
+    expect(RUNNER_CONFIG.endlessDenseSpacingFloorMeters / fastestMetersPerSecond).toBeGreaterThanOrEqual(1.4);
+    expect(RUNNER_CONFIG.endlessDenseRecoveryFloorMeters / fastestMetersPerSecond).toBeGreaterThanOrEqual(2);
+    const spacingByWave = Array.from({ length: 12 }, (_, waveIndex) =>
+      getPatternStartDistance(4 + waveIndex * RUNNER_CONFIG.densePatternsPerSection) -
+      getPatternStartDistance(3 + waveIndex * RUNNER_CONFIG.densePatternsPerSection));
+    const recoveryByWave = Array.from({ length: 12 }, (_, waveIndex) => {
+      const last = getPatternStartDistance(3 + waveIndex * RUNNER_CONFIG.densePatternsPerSection +
+        RUNNER_CONFIG.densePatternsPerSection - 1);
+      const next = getPatternStartDistance(3 + (waveIndex + 1) * RUNNER_CONFIG.densePatternsPerSection);
+      return next - last;
+    });
+    expect(spacingByWave.every((spacing, index) => index === 0 || spacing <= spacingByWave[index - 1])).toBe(true);
+    const standardRecoveryGaps = recoveryByWave.filter((_, index) =>
+      (index + 1) % RUNNER_CONFIG.endlessDenseWidePitRecoveryIntervalWaves !== 0);
+    expect(standardRecoveryGaps.every((gap, index) => index === 0 || gap <= standardRecoveryGaps[index - 1]))
+      .toBe(true);
+    expect(recoveryByWave[RUNNER_CONFIG.endlessDenseWidePitRecoveryIntervalWaves - 1])
+      .toBe(RUNNER_CONFIG.endlessDenseWidePitRecoveryGapMeters);
   });
 
   it('keeps generated hazards outside pit zones and preserves one second of action recovery at fastest speed', () => {
