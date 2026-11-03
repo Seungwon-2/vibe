@@ -1,6 +1,7 @@
 import { STORY_STAGES } from '../../game/runner/storyConfig';
 import type { StoryStageId } from '../../game/runner/runnerTypes';
 import type { PlayerProfile } from '../../services/PlayerProfile';
+import { StageBackdropPreview } from '../components/StageBackdropPreview';
 
 export type StageSelectProps = {
   profile: PlayerProfile;
@@ -33,10 +34,16 @@ export function StageSelect({ profile, selectedStageId, onSelect, onStart, onAch
               <button className={'stage-option' + (chosen ? ' is-selected' : '') + (unlocked ? '' : ' is-locked')}
                 type="button" key={stage.id} disabled={!unlocked} aria-pressed={chosen}
                 onClick={() => onSelect(stage.id)}>
-                <span className="stage-option__order">STAGE {String(stage.order).padStart(2, '0')}</span>
-                <strong>{stage.name}</strong>
-                <span>{stage.lengthMeters.toLocaleString()}m 코스 · 코인 목표 {stage.coinTarget}개</span>
-                <span className="stage-option__status">{status}</span>
+                <span className="stage-option__scene">
+                  <StageBackdropPreview biomeId={stage.biomeId} stageName={stage.name} />
+                  <span className="stage-option__order">STAGE {String(stage.order).padStart(2, '0')}</span>
+                  <span className="stage-option__scene-status">{cleared ? '✓ 완주' : unlocked ? '달릴 수 있어요' : '🔒 잠김'}</span>
+                </span>
+                <span className="stage-option__details">
+                  <strong>{stage.name}</strong>
+                  <span className="stage-option__meta">{stage.lengthMeters.toLocaleString()}m 코스 <i aria-hidden="true">·</i> 코인 목표 {stage.coinTarget}개</span>
+                  <span className="stage-option__status">{status}</span>
+                </span>
               </button>
             );
           })}
