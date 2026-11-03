@@ -1,7 +1,7 @@
 ﻿# Current Context
 
 ## Active Plan
-None — `screen-content-scale-alignment` is complete.
+None — `endless-defeat-pose` is complete.
 
 ## Active Phase
 None
@@ -15,6 +15,7 @@ None
 - Prior plan `screen-frame-unification` is complete (`2b45ac3`, `4cf52a7`).
 - Prior plan `stage-mode-card-art` is complete (`f4ba6e7`, `2cb21ab`).
 - Plan `screen-content-scale-alignment` is complete.
+- Plan `endless-defeat-pose` is complete.
 
 ## Next Step
 Choose the next task or create a new plan.

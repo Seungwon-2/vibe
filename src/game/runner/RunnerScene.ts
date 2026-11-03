@@ -170,7 +170,7 @@ export class RunnerScene extends Phaser.Scene {
       this.inputBridge.clear();
       if (result.mode === 'story' && result.finishReason === 'stage-complete') {
         this.beginStoryFinish(result);
-      } else if (result.mode === 'story' && result.finishReason === 'lives-exhausted') {
+      } else if (result.finishReason === 'lives-exhausted') {
         this.beginStoryDefeat(result);
       } else {
         this.emitFinished(result);
