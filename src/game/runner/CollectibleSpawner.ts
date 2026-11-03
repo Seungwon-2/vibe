@@ -148,7 +148,7 @@ function isPickupDistanceSafe(
   pits: readonly PitDefinition[],
   slideGuideHazardId?: string,
 ): boolean {
-  const pickupHalfExtentPx = Math.max(getPickupBodySize('tokino-mary') / 2, PICKUP_ART_RADIUS_PX);
+  const pickupHalfExtentPx = Math.max(getPickupBodySize() / 2, PICKUP_ART_RADIUS_PX);
   const pickupCenterY = RUNNER_GROUND_Y - heightUnits;
   const pickupTop = pickupCenterY - pickupHalfExtentPx - PICKUP_VISUAL_MARGIN_PX;
   const pickupBottom = pickupCenterY + pickupHalfExtentPx + PICKUP_VISUAL_MARGIN_PX;
@@ -356,7 +356,7 @@ export function generatePickupSchedule(maxDistanceMeters: number,
 
 export const PICKUP_SCHEDULE = generatePickupSchedule(15_000);
 
-export function getPickupBodySize(_characterId: CharacterId): number {
+export function getPickupBodySize(): number {
   return PICKUP_BASE_RADIUS_PX * 2;
 }
 
@@ -391,7 +391,7 @@ export class CollectibleSpawner {
     private readonly scene: Phaser.Scene,
     private readonly player: Phaser.Physics.Arcade.Sprite,
     private readonly onPickup: (pickup: PickupDefinition) => void,
-    private readonly characterId: CharacterId,
+    characterId: CharacterId,
   ) {
     this.passive = getCharacterPassive(characterId);
   }
@@ -545,7 +545,7 @@ export class CollectibleSpawner {
   }
 
   private spawnPickup(definition: PickupDefinition): void {
-    const pickupSize = getPickupBodySize(this.characterId);
+    const pickupSize = getPickupBodySize();
     const box = this.scene.add.rectangle(0, 0, pickupSize, pickupSize, 0xffffff, 0);
     this.scene.physics.add.existing(box);
     const body = box.body as Phaser.Physics.Arcade.Body;

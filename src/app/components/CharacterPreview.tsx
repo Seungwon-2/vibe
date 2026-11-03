@@ -28,7 +28,9 @@ export function CharacterPreview({ character, selected, animation, loop = true, 
     : variant === 'roster' ? 'idle'
       : selected ? 'run' : character.id === 'player-default' ? 'victory' : 'idle');
   const frames = character.qualityAnimations[animationName];
-  const [frameIndex, setFrameIndex] = useState(0);
+  const animationKey = `${character.id}:${animationName}`;
+  const [playhead, setPlayhead] = useState({ animationKey, frameIndex: 0 });
+  const frameIndex = playhead.animationKey === animationKey ? playhead.frameIndex : 0;
   const frame = frames[Math.min(frameIndex, frames.length - 1)];
   const frameScale = character.qualityScale;
   const previewScaleStyle: SpriteStyle = {
@@ -36,7 +38,6 @@ export function CharacterPreview({ character, selected, animation, loop = true, 
   };
 
   useEffect(() => {
-    setFrameIndex(0);
     const preloadedFrames = frames.map(({ url }) => {
       const image = new Image();
       image.decoding = 'async';
@@ -45,15 +46,19 @@ export function CharacterPreview({ character, selected, animation, loop = true, 
     });
     const safePlaybackRate = Number.isFinite(playbackRate) ? Math.max(0.1, playbackRate) : 1;
     const interval = frames.length < 2 ? undefined : window.setInterval(() => {
-      setFrameIndex((current) => current >= frames.length - 1
-        ? loop ? 0 : current
-        : current + 1);
+      setPlayhead((current) => {
+        const currentIndex = current.animationKey === animationKey ? current.frameIndex : 0;
+        return {
+          animationKey,
+          frameIndex: currentIndex >= frames.length - 1 ? loop ? 0 : currentIndex : currentIndex + 1,
+        };
+      });
     }, 1000 / (character.qualityAnimationFps[animationName] * safePlaybackRate));
     return () => {
       if (interval !== undefined) window.clearInterval(interval);
       for (const image of preloadedFrames) image.onload = null;
     };
-  }, [animationName, character.qualityAnimationFps, frames.length, loop, playbackRate]);
+  }, [animationKey, animationName, character.qualityAnimationFps, frames, loop, playbackRate]);
 
   const variantClass = variant ? ` character-preview--${variant}` : '';
   return (

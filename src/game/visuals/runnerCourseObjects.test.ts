@@ -5,11 +5,16 @@ import { drawRunnerGate, drawRunnerPit } from './runnerCourseObjects';
 
 function makeGraphics() {
   const graphics = {
-    fillStyle: vi.fn((..._args: number[]) => graphics), lineStyle: vi.fn((..._args: number[]) => graphics),
-    fillRect: vi.fn((..._args: number[]) => graphics), fillRoundedRect: vi.fn((..._args: number[]) => graphics),
-    strokeRoundedRect: vi.fn((..._args: number[]) => graphics), fillCircle: vi.fn((..._args: number[]) => graphics),
-    strokeCircle: vi.fn((..._args: number[]) => graphics), fillEllipse: vi.fn((..._args: number[]) => graphics),
-    fillTriangle: vi.fn((..._args: number[]) => graphics), lineBetween: vi.fn((..._args: number[]) => graphics),
+    fillStyle: vi.fn((..._args: number[]) => { void _args; return graphics; }),
+    lineStyle: vi.fn((..._args: number[]) => { void _args; return graphics; }),
+    fillRect: vi.fn((..._args: number[]) => { void _args; return graphics; }),
+    fillRoundedRect: vi.fn((..._args: number[]) => { void _args; return graphics; }),
+    strokeRoundedRect: vi.fn((..._args: number[]) => { void _args; return graphics; }),
+    fillCircle: vi.fn((..._args: number[]) => { void _args; return graphics; }),
+    strokeCircle: vi.fn((..._args: number[]) => { void _args; return graphics; }),
+    fillEllipse: vi.fn((..._args: number[]) => { void _args; return graphics; }),
+    fillTriangle: vi.fn((..._args: number[]) => { void _args; return graphics; }),
+    lineBetween: vi.fn((..._args: number[]) => { void _args; return graphics; }),
   };
   return graphics;
 }

@@ -60,7 +60,7 @@ describe('RunnerGame', () => {
     const onFinished = vi.fn();
     render(<RunnerGame characterId="player-default" inputBridge={new RunnerInputBridge()} paused={false} tutorialEnabled
       onSnapshot={vi.fn()} onFinished={onFinished} />);
-    const callbacks = mocks.configArgs[3] as {
+    const callbacks = mocks.configArgs[6] as {
       onFinished(result: object, outcome: string): void;
     };
     const result = { characterId: 'player-default', distanceMeters: 100 };
@@ -71,6 +71,6 @@ describe('RunnerGame', () => {
   it('passes the captured tutorial setting into Phaser configuration', () => {
     render(<RunnerGame characterId="player-default" inputBridge={new RunnerInputBridge()} paused={false}
       tutorialEnabled onSnapshot={vi.fn()} onFinished={vi.fn()} />);
-    expect(mocks.configArgs[4]).toBe(true);
+    expect(mocks.configArgs[7]).toBe(true);
   });
 });

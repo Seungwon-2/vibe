@@ -23,7 +23,7 @@ function pickupOverlapsHazard(
   hazard: { id: string; distanceMeters: number; definition: HazardDefinition },
 ): boolean {
   if (pickup.guideAction === 'slide' && pickup.guideHazardId === hazard.id) return false;
-  const halfExtent = Math.max(getPickupBodySize('tokino-mary') / 2, 11);
+  const halfExtent = Math.max(getPickupBodySize() / 2, 11);
   const centerY = RUNNER_GROUND_Y - pickup.heightUnits;
   const pickupTop = centerY - halfExtent - PICKUP_TEST_MARGIN_PX;
   const pickupBottom = centerY + halfExtent + PICKUP_TEST_MARGIN_PX;
@@ -50,8 +50,7 @@ function makeGraphics() {
 function makeDisplayObject() {
   const calls: Record<string, ReturnType<typeof vi.fn>> = {};
   const body = { setAllowGravity: vi.fn(), setImmovable: vi.fn(), setSize: vi.fn(), setCircle: vi.fn() };
-  let proxy: Record<string, unknown>;
-  proxy = new Proxy({ body } as Record<string, unknown>, {
+  const proxy = new Proxy({ body } as Record<string, unknown>, {
     get: (_target, property) => {
       if (property === 'body') return body;
       if (typeof property !== 'string') return undefined;
@@ -109,7 +108,7 @@ describe('authored collectible schedule', () => {
       const gap = current - previous;
       expect(gap).toBeGreaterThanOrEqual(RUNNER_CONFIG.safePickupMinimumGapMeters);
       if (gap > RUNNER_CONFIG.safePickupMaximumGapMeters) {
-        const pickupHalfWidthMeters = (getPickupBodySize('tokino-mary') / 2 + PICKUP_TEST_MARGIN_PX) *
+        const pickupHalfWidthMeters = (getPickupBodySize() / 2 + PICKUP_TEST_MARGIN_PX) *
           RUNNER_CONFIG.metersPerWorldUnit;
         const nearestDistance = (distance: number) => Math.max(previous, Math.min(current, distance));
         const blocked = knownHazards.some((hazard) => pickupOverlapsHazard({
@@ -240,7 +239,7 @@ describe('authored collectible schedule', () => {
         expect(target, `${stage.id} giant at ${giant.distanceMeters}m must cover an authored group`)
           .toBeDefined();
         for (const pit of pits) {
-          const halfWidthMeters = (getPickupBodySize('tokino-mary') / 2 + PICKUP_TEST_MARGIN_PX) *
+          const halfWidthMeters = (getPickupBodySize() / 2 + PICKUP_TEST_MARGIN_PX) *
             RUNNER_CONFIG.metersPerWorldUnit;
           expect(isPitClearance(giant.distanceMeters, pit,
             PICKUP_PIT_CLEARANCE_METERS + halfWidthMeters)).toBe(false);
@@ -270,14 +269,14 @@ describe('authored collectible schedule', () => {
         ).toBe(false);
       }
       for (const pit of pits) {
-        const pickupHalfWidthMeters = (getPickupBodySize('tokino-mary') / 2 + PICKUP_TEST_MARGIN_PX) *
+        const pickupHalfWidthMeters = (getPickupBodySize() / 2 + PICKUP_TEST_MARGIN_PX) *
           RUNNER_CONFIG.metersPerWorldUnit;
         expect(isPitClearance(pickup.distanceMeters, pit,
           PICKUP_PIT_CLEARANCE_METERS + pickupHalfWidthMeters),
           `${pickup.id} overlaps pit clearance at ${pit.distanceMeters}m`).toBe(false);
       }
       for (const gate of RUNNER_GATE_DISTANCES_M) {
-        const halfWidthMeters = (getPickupBodySize('tokino-mary') / 2 + PICKUP_TEST_MARGIN_PX) *
+        const halfWidthMeters = (getPickupBodySize() / 2 + PICKUP_TEST_MARGIN_PX) *
           RUNNER_CONFIG.metersPerWorldUnit;
         expect(isGateClearance(pickup.distanceMeters, gate, halfWidthMeters),
           `${pickup.id} overlaps gate at ${gate}m`).toBe(false);
@@ -296,7 +295,7 @@ describe('authored collectible schedule', () => {
       for (const pickup of generated) {
         expect(pickup.distanceMeters).toBeLessThanOrEqual(stage.lengthMeters);
         for (const pit of pits) {
-          const halfWidthMeters = (getPickupBodySize('tokino-mary') / 2 + PICKUP_TEST_MARGIN_PX) *
+          const halfWidthMeters = (getPickupBodySize() / 2 + PICKUP_TEST_MARGIN_PX) *
             RUNNER_CONFIG.metersPerWorldUnit;
           expect(isPitClearance(pickup.distanceMeters, pit,
             PICKUP_PIT_CLEARANCE_METERS + halfWidthMeters),
@@ -317,7 +316,7 @@ describe('authored collectible schedule', () => {
   it('keeps five milestone gates separate from pickups', () => {
     expect(RUNNER_GATE_DISTANCES_M).toEqual([2000, 4000, 6000, 8000, 10000]);
     for (const distance of RUNNER_GATE_DISTANCES_M) {
-      const halfWidthMeters = (getPickupBodySize('tokino-mary') / 2 + PICKUP_TEST_MARGIN_PX) *
+      const halfWidthMeters = (getPickupBodySize() / 2 + PICKUP_TEST_MARGIN_PX) *
         RUNNER_CONFIG.metersPerWorldUnit;
       expect(PICKUP_SCHEDULE.every((pickup) =>
         !isGateClearance(pickup.distanceMeters, distance, halfWidthMeters))).toBe(true);
@@ -326,15 +325,11 @@ describe('authored collectible schedule', () => {
 });
 
 describe('pickup collision radius', () => {
-  it('uses the same pickup sensor size for every character without catching upper coins on the ground', () => {
-    expect(getPickupBodySize('player-default')).toBe(64);
-    expect(getPickupBodySize('hanayo-hiyori')).toBe(64);
-    expect(getPickupBodySize('tokino-mary')).toBe(64);
-    expect(getPickupBodySize('goth-student')).toBe(64);
-    expect(getPickupBodySize('cogane-rang')).toBe(64);
+  it('uses a fixed pickup sensor size without catching upper coins on the ground', () => {
+    expect(getPickupBodySize()).toBe(64);
     const upper = PICKUP_SCHEDULE.find((pickup) => pickup.optionalJump);
     expect(upper).toBeDefined();
-    const upperBottom = RUNNER_GROUND_Y - upper!.heightUnits + getPickupBodySize('hanayo-hiyori') / 2;
+    const upperBottom = RUNNER_GROUND_Y - upper!.heightUnits + getPickupBodySize() / 2;
     const standingTop = RUNNER_GROUND_Y - STANDING_BODY_HEIGHT;
     expect(upperBottom).toBeLessThan(standingTop);
   });
@@ -478,7 +473,7 @@ describe('themed pickup art', () => {
 
     spawner.update(snapshot(0));
     expect((mock.scene.add.rectangle as ReturnType<typeof vi.fn>)).toHaveBeenCalledWith(
-      0, 0, getPickupBodySize('player-default'), getPickupBodySize('player-default'), 0xffffff, 0,
+      0, 0, getPickupBodySize(), getPickupBodySize(), 0xffffff, 0,
     );
     const firstPickupX = RUNNER_PLAYER_X + PICKUP_SCHEDULE[0].distanceMeters / METERS_PER_WORLD_UNIT;
     expect(mock.rectangles[0].calls.setPosition).toHaveBeenCalledWith(firstPickupX,

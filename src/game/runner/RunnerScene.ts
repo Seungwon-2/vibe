@@ -16,7 +16,7 @@ import type { RunnerFinishOutcome } from './runnerTypes';
 import { RunnerBackdrop } from '../visuals/RunnerBackdrop';
 import { getHurtAnimationFrames } from './hurtAnimation';
 import { PitSpawner } from './PitSpawner';
-import type { PitFallContactResult, PitDefinition } from './PitSpawner';
+import type { PitFallContactResult } from './PitSpawner';
 import { RunnerTrailEffect } from './RunnerTrailEffect';
 import { getRunnerAnimationPlayback } from './runnerAnimationConfig';
 
@@ -260,7 +260,7 @@ export class RunnerScene extends Phaser.Scene {
     if (result) this.emitFinished(result);
   };
 
-  private readonly handlePitFall = (_pit: PitDefinition): PitFallContactResult => {
+  private readonly handlePitFall = (): PitFallContactResult => {
     if (this.finishEmitted || this.pitFallCinematicActive || this.snapshot.phase !== 'running') return 'ignored';
     const { state, blockedByPassive, result } = tryResolvePitFall(this.snapshot);
     if (blockedByPassive) {

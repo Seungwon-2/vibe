@@ -74,14 +74,14 @@ describe('PersonalBestStore', () => {
     expect(store.getBest('player-default')?.distanceMeters).toBe(0);
   });
 
-  it('rejects invalid current results and removed or unavailable characters', () => {
+  it('accepts active characters and rejects invalid results or removed characters', () => {
     const store = new PersonalBestStore(null);
     expect(() => store.record({ ...first, distanceMeters: Number.NaN })).toThrow(TypeError);
     expect(() => store.record({ ...first, coins: -1 })).toThrow(TypeError);
     expect(() => store.record({ ...first, finishedAtIso: 'invalid' })).toThrow(TypeError);
     expect(() => store.record({ ...first, finishedAtIso: '2026-99-27T00:00:00.000Z' })).toThrow(TypeError);
     expect(() => store.record({ ...first, durationMs: -1 })).toThrow(TypeError);
-    expect(() => store.record({ ...first, characterId: 'goth-student' })).toThrow(TypeError);
+    expect(store.record({ ...first, characterId: 'goth-student' })).toMatchObject({ isNewBest: true });
     expect(() => store.record({ ...first, characterId: 'removed' as RunnerResult['characterId'] }))
       .toThrow(TypeError);
   });
