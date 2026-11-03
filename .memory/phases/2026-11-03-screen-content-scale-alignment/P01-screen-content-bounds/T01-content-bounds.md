@@ -73,4 +73,4 @@ Task: T01-content-bounds
 ## Progress
 - [x] Implementation complete
 - [x] Validation passed (`npm run typecheck`, `npm run build`, `git diff --check`)
-- commit: pending
+- commit: `0595256`
