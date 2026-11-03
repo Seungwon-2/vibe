@@ -66,4 +66,4 @@ Task: T01-shared-hud-layout
 ## Progress
 - [x] Implementation complete
 - [x] Validation passed: targeted tests (17), typecheck, production build
-- commit: pending
+- commit: `3dc7d79`
