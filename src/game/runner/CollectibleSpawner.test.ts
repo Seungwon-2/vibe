@@ -88,7 +88,7 @@ describe('authored collectible schedule', () => {
     expect(PICKUP_SCHEDULE.length).toBeGreaterThan(70);
   });
 
-  it('generates a stable Endless safe-route stream with 75m cadence and time items replacing coins', () => {
+  it('generates a stable Endless safe-route coin stream with 75m cadence and no timer pickups', () => {
     const generated = generatePickupSchedule(15_000);
     expect(generated).toEqual(PICKUP_SCHEDULE);
     const safe = generated.filter((item) => !item.optionalJump && !item.guideAction && item.kind !== 'giant');
@@ -122,13 +122,8 @@ describe('authored collectible schedule', () => {
     }
     expect(Math.max(...safe.slice(1).map((item, index) => item.distanceMeters - safe[index].distanceMeters)))
       .toBeLessThanOrEqual(700); // nearby pit and gate clear zones can remove several safe-route slots.
-    const timeItems = safe.filter((item) => item.kind === 'time');
-    expect(timeItems.length).toBeGreaterThan(0);
-    for (const item of timeItems) {
-      const slotIndex = Number(item.id.slice('time-'.length));
-      const target = 160 + slotIndex * RUNNER_CONFIG.endlessSafePickupSpacingMeters;
-      expect(Math.abs(item.distanceMeters - target)).toBeLessThanOrEqual(75);
-    }
+    expect(generated.some((item) => item.kind === 'time')).toBe(false);
+    expect(safe.every((item) => item.kind === 'coin' && item.id.startsWith('safe-'))).toBe(true);
   });
 
   it('keeps the authored Story safe-route cadence at 90m', () => {
@@ -136,6 +131,7 @@ describe('authored collectible schedule', () => {
     for (const stage of STORY_STAGES) {
       const safe = generatePickupSchedule(stage.lengthMeters, stage.id)
         .filter((item) => !item.optionalJump && !item.guideAction && item.kind !== 'giant');
+      expect(safe.some((item) => item.kind === 'time'), `${stage.id} should retain speed-boost pickups`).toBe(true);
       expect(safe.length, `${stage.id} should retain its safe-route pickups`).toBeGreaterThan(0);
       for (const item of safe) {
         const slotIndex = Number(item.id.slice(item.kind === 'time' ? 'time-'.length : 'safe-'.length));

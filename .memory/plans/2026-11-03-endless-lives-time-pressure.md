@@ -6,7 +6,10 @@
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 무한 모드 생명·피격 규칙과 시간 픽업 제거 | [P01](../phases/2026-11-03-endless-lives-time-pressure/P01-endless-risk-and-pickups/phase.md) |
+| P01 | `done` | 무한 모드 생명·피격 규칙과 시간 픽업 제거 | [P01](../phases/2026-11-03-endless-lives-time-pressure/P01-endless-risk-and-pickups/phase.md) |
+
+## Status
+- Complete. T01 and T02 are implemented, validated, and committed on `project02`.
 
 ## Decisions
 - [설계 결정](../decisions/2026-11-03-endless-lives-time-pressure.md)

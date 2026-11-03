@@ -255,7 +255,7 @@ export function generatePickupSchedule(maxDistanceMeters: number,
         ? nearestSafeDistance(target, Math.max(localMinimum, preferredMaximum + 1), localMaximum, hazards, pits)
         : undefined);
     if (distanceMeters === undefined) continue;
-    const kind = timeSlots.has(index) ? 'time' : 'coin';
+    const kind = storyStageId && timeSlots.has(index) ? 'time' : 'coin';
     safePickups.push({ id: kind === 'time' ? `time-${index}` : `safe-${index}`, kind,
       distanceMeters, heightUnits: 52, optionalJump: false });
   }

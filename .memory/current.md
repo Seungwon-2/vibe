@@ -7,11 +7,13 @@
 [P01 Endless Risk and Pickups](./phases/2026-11-03-endless-lives-time-pressure/P01-endless-risk-and-pickups/phase.md)
 
 ## Active Task
-[T02 Remove Endless Time Pickups](./phases/2026-11-03-endless-lives-time-pressure/P01-endless-risk-and-pickups/T02-remove-endless-time-pickups.md)
+None — plan complete.
 
 ## Status
-- T01 Endless Lives and Hit Penalty completed and validated; commit recorded in the task blueprint.
+- T01 Endless Lives and Hit Penalty completed and validated; commit `58c6306`.
+- T02 Remove Endless Time Pickups completed and validated; commit recorded in the task blueprint.
+- Plan `endless-lives-time-pressure` is complete.
 - Prior plan `runner-density-giant-magnet` remains complete.
 
 ## Next Step
-Read T02 and remove standalone time-recovery pickups from Endless schedules while preserving Story speed-boost pickups.
+Choose the next project task when ready.
