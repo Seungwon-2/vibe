@@ -13,7 +13,7 @@ None — `stage-mode-card-art` is complete.
 - Prior plan `endless-lives-time-pressure` is complete (`58c6306`, `7ffab51`).
 - Prior plan `runner-hud-layout-unification` is complete (`3dc7d79`).
 - Prior plan `screen-frame-unification` is complete (`2b45ac3`, `4cf52a7`).
-- This plan adds biome-specific stage artwork and improves mode selection layout (`T01` complete; implementation commit pending).
+- This plan adds biome-specific stage artwork and improves mode selection layout (`T01` complete, `f4ba6e7`).
 
 ## Next Step
-Review the updated mode and stage selection screens in the local browser at desktop and mobile viewport sizes.
+The implementation is complete. Review the updated screens in the local browser at desktop and mobile viewport sizes when convenient.
