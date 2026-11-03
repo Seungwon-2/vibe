@@ -24,7 +24,8 @@ export class RunnerTrailEffect {
 
   constructor(scene: Phaser.Scene, cosmeticId: string | null) {
     this.color = cosmeticId ? TRAIL_COLORS[cosmeticId] ?? 0x9fb7ee : 0;
-    this.art = scene.add.graphics().setDepth(-2);
+    // Keep the trail above the scenery and pit art, while still behind the runner.
+    this.art = scene.add.graphics().setDepth(-0.5);
     this.motionPreference = typeof window !== 'undefined' && window.matchMedia
       ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
     this.reducedMotion = this.motionPreference?.matches === true;
@@ -36,16 +37,16 @@ export class RunnerTrailEffect {
       this.clear();
       return;
     }
-    const lifeMs = intensified ? 540 : 360;
-    const spawnEveryMs = intensified ? 48 : 92;
+    const lifeMs = intensified ? 760 : 520;
+    const spawnEveryMs = intensified ? 36 : 65;
     this.spawnElapsedMs += Math.min(deltaMs, 50);
     while (this.spawnElapsedMs >= spawnEveryMs) {
       this.spawnElapsedMs -= spawnEveryMs;
       this.particles.push({
-        x: x - 20 - Math.random() * 17,
-        y: y - 7 + Math.random() * 14,
+        x: x - 26 - Math.random() * 24,
+        y: y - 10 + Math.random() * 20,
         bornAt: now,
-        radius: intensified ? 2 + Math.random() * 2.2 : 1.3 + Math.random() * 1.4,
+        radius: intensified ? 4.2 + Math.random() * 2.4 : 3 + Math.random() * 1.8,
       });
     }
     for (let index = this.particles.length - 1; index >= 0; index -= 1) {
@@ -54,11 +55,19 @@ export class RunnerTrailEffect {
     this.art.clear();
     for (const particle of this.particles) {
       const age = Math.max(0, Math.min(1, (now - particle.bornAt) / lifeMs));
-      const alpha = (1 - age) * (intensified ? 0.58 : 0.3);
-      this.art.fillStyle(this.color, alpha);
-      this.art.fillCircle(particle.x - age * 19, particle.y - age * 9, particle.radius * (1 - age * 0.45));
-      if (intensified && age < 0.65) {
-        this.art.fillStyle(0xffffff, alpha * 0.65).fillCircle(particle.x - age * 19, particle.y - age * 9, 1);
+      const particleX = particle.x - age * 28;
+      const particleY = particle.y - age * 12;
+      const radius = particle.radius * (1 - age * 0.4);
+      const alpha = (1 - age) * (intensified ? 0.88 : 0.72);
+      this.art.fillStyle(this.color, alpha * 0.22).fillCircle(particleX, particleY, radius * 2.5);
+      this.art.fillStyle(this.color, alpha).fillCircle(particleX, particleY, radius);
+      this.art.fillStyle(0xffffff, alpha * (intensified ? 0.9 : 0.68))
+        .fillCircle(particleX, particleY, radius * 0.34);
+      if (age < (intensified ? 0.8 : 0.62)) {
+        const sparkleAlpha = alpha * (intensified ? 0.8 : 0.48);
+        this.art.lineStyle(intensified ? 2 : 1.4, 0xffffff, sparkleAlpha)
+          .lineBetween(particleX - radius * 1.35, particleY, particleX + radius * 1.35, particleY)
+          .lineBetween(particleX, particleY - radius * 1.35, particleX, particleY + radius * 1.35);
       }
     }
   }

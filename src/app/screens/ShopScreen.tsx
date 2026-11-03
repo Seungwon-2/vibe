@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { CHARACTERS } from '../../game/characters/characterCatalog';
 import type { CharacterId } from '../../game/characters/characterTypes';
 import { COSMETICS, type CosmeticKind } from '../../services/CosmeticCatalog';
@@ -14,12 +14,14 @@ export type ShopScreenProps = {
 };
 
 const KIND_LABELS: Readonly<Record<CosmeticKind, string>> = { trail: '달리기 효과', skin: '캐릭터 스킨', profile: '프로필 장식' };
+const SHOP_CATEGORIES = ['trail'] as const;
+const SHOP_TRAIL_IDS = new Set(['trail-cloud', 'trail-petal', 'trail-starlight', 'trail-golden-notes']);
+const SHOP_ITEMS = COSMETICS.filter((item) => SHOP_TRAIL_IDS.has(item.id));
 
 export function ShopScreen({ profile, initialCharacterId, onBack, onPurchase, onEquip, onUnequip }: ShopScreenProps): React.JSX.Element {
   const [characterId, setCharacterId] = useState(initialCharacterId);
   const [notice, setNotice] = useState('');
   const equipped = profile.equippedCosmeticIdsByCharacter[characterId] ?? [];
-  const categories = useMemo(() => (['trail', 'skin', 'profile'] as const), []);
 
   return (
     <main className="progression-screen shop-screen">
@@ -38,17 +40,17 @@ export function ShopScreen({ profile, initialCharacterId, onBack, onPurchase, on
         </div>
         <div className="shop-loadout" aria-label="현재 러너 장착 아이템">
           <strong>{CHARACTERS.find((character) => character.id === characterId)?.displayName} 장착 중</strong>
-          {categories.map((kind) => {
+          {SHOP_CATEGORIES.map((kind) => {
             const cosmeticId = equipped.find((id) => COSMETICS.find((item) => item.id === id)?.kind === kind);
             const cosmetic = COSMETICS.find((item) => item.id === cosmeticId);
             return <span key={kind}>{KIND_LABELS[kind]}: {cosmetic?.name ?? '기본'}</span>;
           })}
         </div>
         {notice && <p className="shop-notice" role="status">{notice}</p>}
-        {categories.map((kind) => <section className="shop-category" key={kind} aria-labelledby={`shop-${kind}`}>
+        {SHOP_CATEGORIES.map((kind) => <section className="shop-category" key={kind} aria-labelledby={`shop-${kind}`}>
           <h2 id={`shop-${kind}`}>{KIND_LABELS[kind]}</h2>
           <div className="shop-items">
-            {COSMETICS.filter((item) => item.kind === kind).map((item) => {
+            {SHOP_ITEMS.filter((item) => item.kind === kind).map((item) => {
               const owned = profile.unlockedCosmeticIds.includes(item.id);
               const compatible = item.compatibleCharacterIds.includes(characterId);
               const isEquipped = equipped.includes(item.id);
