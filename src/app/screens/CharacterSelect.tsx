@@ -75,19 +75,28 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
             const passive = getCharacterPassive(character.id);
             const unlocked = character.available && unlockedCharacterIds.includes(character.id);
             const unlockStage = profile && !unlocked
-              ? ({ 'hanayo-hiyori': '새벽 도심 완주', 'tokino-mary': '달빛 숲길 완주',
-                'goth-student': '수정 광산 완주', 'cogane-rang': '구름 위 하늘길 완주' } as Partial<Record<CharacterId, string>>)[character.id]
+              ? ({ 'hanayo-hiyori': '새벽 도심', 'tokino-mary': '달빛 숲길',
+                'goth-student': '수정 광산', 'cogane-rang': '구름 위 하늘길' } as Partial<Record<CharacterId, string>>)[character.id]
               : null;
             return (
               <button
-                className={`character-card character-card--runner${selected ? ' is-selected' : ''}${character.available ? '' : ' is-coming-soon'}`}
+                className={`character-card character-card--runner${selected ? ' is-selected' : ''}${!unlocked ? ' is-locked' : ''}${character.available ? '' : ' is-coming-soon'}`}
                 style={{ '--character-accent': character.accentColor } as React.CSSProperties}
                 type="button" key={character.id} aria-label={unlocked ? character.displayName : character.displayName + ' 잠김'}
                 aria-pressed={selected} disabled={!unlocked} onClick={() => setCandidateCharacterId(character.id)}>
                 <span className="character-card__art character-card__art--runner">
                   <img className="character-card__illustration" src={SELECTOR_ART[character.id].portrait}
                     alt="" draggable={false} />
-                  {!unlocked && <span className="character-card__coming-soon">{unlockStage ? unlockStage + ' 후 해금' : '준비 중'}</span>}
+                  {!unlocked && (
+                    <span className="character-card__lock-overlay" aria-hidden="true">
+                      <span className="character-card__lock-title">
+                        {character.available ? <><span className="character-card__lock-icon">🔒</span> 잠김</> : '준비 중'}
+                      </span>
+                      {character.available && unlockStage && (
+                        <span className="character-card__unlock-hint">{unlockStage} 완주 후 해금</span>
+                      )}
+                    </span>
+                  )}
                   {selected && <span className="character-card__selected-marker">선택됨</span>}
                 </span>
                 <span className="character-card__details">
