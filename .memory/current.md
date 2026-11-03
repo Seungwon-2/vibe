@@ -12,7 +12,7 @@ None — `screen-frame-unification` is complete.
 ## Status
 - Prior plan `endless-lives-time-pressure` is complete (`58c6306`, `7ffab51`).
 - Prior plan `runner-hud-layout-unification` is complete (`3dc7d79`).
-- This plan aligns screen framing and stage selection backdrop (`T01` complete; implementation commit pending).
+- This plan aligns screen framing and stage selection backdrop (`T01` complete, `2b45ac3`).
 
 ## Next Step
-Review the updated screens in the local browser at desktop and mobile viewport sizes.
+The implementation is complete. Review the updated screens in the local browser at desktop and mobile viewport sizes when convenient.
