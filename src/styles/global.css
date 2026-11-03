@@ -1954,6 +1954,10 @@ body:has(.selector-shell--runner),
   background: #e8eaf0;
   box-shadow: inset 0 0 0 1px rgb(76 86 112 / 8%);
 }
+.selector-shell.selector-shell--runner .character-card--runner.is-locked:hover {
+  transform: none;
+  box-shadow: inset 0 0 0 1px rgb(76 86 112 / 8%);
+}
 .selector-shell.selector-shell--runner .character-card--runner.is-locked .character-card__illustration {
   filter: grayscale(1) brightness(0.68) contrast(0.88);
 }

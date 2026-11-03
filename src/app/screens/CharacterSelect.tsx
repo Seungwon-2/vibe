@@ -75,8 +75,7 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
             const passive = getCharacterPassive(character.id);
             const unlocked = character.available && unlockedCharacterIds.includes(character.id);
             const unlockStage = profile && !unlocked
-              ? ({ 'hanayo-hiyori': '새벽 도심', 'tokino-mary': '달빛 숲길',
-                'goth-student': '수정 광산', 'cogane-rang': '구름 위 하늘길' } as Partial<Record<CharacterId, string>>)[character.id]
+              ? ({ 'goth-student': '수정 광산', 'cogane-rang': '구름 위 하늘길' } as Partial<Record<CharacterId, string>>)[character.id]
               : null;
             return (
               <button

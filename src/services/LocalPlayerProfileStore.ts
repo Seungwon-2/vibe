@@ -6,13 +6,16 @@ import type { PlayerProfile, PlayerProfileStore } from './PlayerProfile';
 
 export const PLAYER_PROFILE_STORAGE_KEY = 'running-action:profile:v1';
 const MAX_PROCESSED_RUN_IDS = 1_000;
+const STARTER_CHARACTER_IDS: readonly CharacterId[] = Object.freeze([
+  'player-default', 'hanayo-hiyori', 'tokino-mary',
+]);
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 type ProfileSnapshot = Readonly<{ version: 1; profile: PlayerProfile }>;
 
 export const DEFAULT_PLAYER_PROFILE: PlayerProfile = Object.freeze({
   version: 1,
   walletCoins: 0,
-  unlockedCharacterIds: Object.freeze(['player-default'] as CharacterId[]),
+  unlockedCharacterIds: STARTER_CHARACTER_IDS,
   unlockedStageIds: Object.freeze(['dawn-city'] as StoryStageId[]),
   clearedStageIds: Object.freeze([] as StoryStageId[]),
   completedChallengeKeys: Object.freeze([] as string[]),
@@ -87,6 +90,11 @@ function cloneProfile(profile: PlayerProfile): PlayerProfile {
   };
 }
 
+function ensureStarterCharactersUnlocked(profile: PlayerProfile): PlayerProfile {
+  const unlockedCharacterIds = [...new Set([...STARTER_CHARACTER_IDS, ...profile.unlockedCharacterIds])];
+  return { ...profile, unlockedCharacterIds };
+}
+
 export class LocalPlayerProfileStore implements PlayerProfileStore {
   private profile: PlayerProfile = cloneProfile(DEFAULT_PLAYER_PROFILE);
   private loaded = false;
@@ -98,7 +106,7 @@ export class LocalPlayerProfileStore implements PlayerProfileStore {
     this.loaded = true;
     try {
       const raw = this.getStorage()?.getItem(PLAYER_PROFILE_STORAGE_KEY);
-      if (raw) this.profile = cloneProfile(parseProfile(raw));
+      if (raw) this.profile = cloneProfile(ensureStarterCharactersUnlocked(parseProfile(raw)));
     } catch {
       this.profile = cloneProfile(DEFAULT_PLAYER_PROFILE);
     }
@@ -107,13 +115,13 @@ export class LocalPlayerProfileStore implements PlayerProfileStore {
 
   save(profile: PlayerProfile): void {
     if (!isValidProfile(profile)) throw new TypeError('Invalid player profile');
-    this.profile = cloneProfile(profile);
+    this.profile = cloneProfile(ensureStarterCharactersUnlocked(profile));
     this.loaded = true;
     this.persist();
   }
 
   update(mutator: (current: PlayerProfile) => PlayerProfile): PlayerProfile {
-    const next = mutator(this.load());
+    const next = ensureStarterCharactersUnlocked(mutator(this.load()));
     if (!isValidProfile(next)) throw new TypeError('Profile update returned invalid state');
     this.profile = cloneProfile(next);
     this.loaded = true;
