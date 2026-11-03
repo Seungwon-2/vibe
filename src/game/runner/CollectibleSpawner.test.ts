@@ -330,15 +330,110 @@ describe('authored collectible schedule', () => {
 });
 
 describe('pickup collision radius', () => {
-  it('reserves pickup-radius expansion for Mary without catching upper coins on the ground', () => {
+  it('uses the same pickup sensor size for every character without catching upper coins on the ground', () => {
     expect(getPickupBodySize('player-default')).toBe(64);
     expect(getPickupBodySize('hanayo-hiyori')).toBe(64);
-    expect(getPickupBodySize('tokino-mary')).toBe(96);
+    expect(getPickupBodySize('tokino-mary')).toBe(64);
+    expect(getPickupBodySize('goth-student')).toBe(64);
+    expect(getPickupBodySize('cogane-rang')).toBe(64);
     const upper = PICKUP_SCHEDULE.find((pickup) => pickup.optionalJump);
     expect(upper).toBeDefined();
     const upperBottom = RUNNER_GROUND_Y - upper!.heightUnits + getPickupBodySize('hanayo-hiyori') / 2;
     const standingTop = RUNNER_GROUND_Y - STANDING_BODY_HEIGHT;
     expect(upperBottom).toBeLessThan(standingTop);
+  });
+});
+
+describe('Mary pickup magnet', () => {
+  const snapshotAt = (characterId: 'tokino-mary' | 'player-default', distanceMeters: number,
+    story = false) => ({
+    ...startRunner(createRunnerSnapshot(characterId, new Date('2026-11-03T00:00:00.000Z'), story
+      ? { mode: 'story', storyStageId: 'dawn-city' }
+      : {})),
+    phase: 'running' as const,
+    distanceMeters,
+    worldDistance: distanceMeters * RUNNER_CONFIG.metersPerWorldUnit,
+  });
+
+  function activePickup(spawner: CollectibleSpawner, id: string) {
+    return (spawner as unknown as { active: Array<{
+      definition: { id: string; kind: string; distanceMeters: number };
+      box: { setPosition: ReturnType<typeof vi.fn> };
+      magnetStarted: boolean;
+      sparkle: { setVisible: ReturnType<typeof vi.fn>; destroy: ReturnType<typeof vi.fn> } | null;
+    }> }).active.find(({ definition }) => definition.id === id)!;
+  }
+
+  it('pulls a nearby coin toward Mary over 300ms, follows her moving center, and cleans its sparkle', () => {
+    const mock = makeSpawnerScene();
+    const body = { center: { x: RUNNER_PLAYER_X, y: 432 } };
+    const player = { x: RUNNER_PLAYER_X, y: RUNNER_GROUND_Y, body } as unknown as Phaser.Physics.Arcade.Sprite;
+    const spawner = new CollectibleSpawner(mock.scene, player, vi.fn(), 'tokino-mary');
+    const beforeSchedule = [...PICKUP_SCHEDULE];
+
+    spawner.update(snapshotAt('tokino-mary', 120), 100);
+    const coin = activePickup(spawner, 'safe-0');
+    expect(coin.definition).toMatchObject({ kind: 'coin', distanceMeters: 160 });
+    expect(coin.magnetStarted).toBe(true);
+    const firstPosition = coin.box.setPosition.mock.calls.at(-1)!;
+    expect(firstPosition[0]).toBeGreaterThan(RUNNER_PLAYER_X);
+    expect(firstPosition[0]).toBeLessThan(290); // Normal projected x is 290px; magnet moves it left.
+    expect(coin.sparkle).not.toBeNull();
+    expect((mock.scene.physics.add.existing as unknown as ReturnType<typeof vi.fn>).mock.calls.length)
+      .toBe(mock.rectangles.length); // The sparkle remains a display-only Graphics object.
+
+    body.center.x = RUNNER_PLAYER_X + 10;
+    body.center.y = 410;
+    spawner.update(snapshotAt('tokino-mary', 130), 200);
+    expect(coin.box.setPosition).toHaveBeenLastCalledWith(RUNNER_PLAYER_X + 10, 410);
+    expect(coin.sparkle!.setVisible).toHaveBeenCalledWith(false);
+    expect(PICKUP_SCHEDULE).toEqual(beforeSchedule);
+
+    const sparkle = coin.sparkle!;
+    spawner.destroy();
+    expect(sparkle.destroy).toHaveBeenCalledOnce();
+  });
+
+  it('pulls Story time pickups but never attracts a giant pickup', () => {
+    const storyTime = generatePickupSchedule(2_500, 'dawn-city').find(({ kind }) => kind === 'time');
+    expect(storyTime).toBeDefined();
+    const storyMock = makeSpawnerScene();
+    const storyPlayer = { x: RUNNER_PLAYER_X, y: RUNNER_GROUND_Y,
+      body: { center: { x: RUNNER_PLAYER_X, y: RUNNER_GROUND_Y - 52 } } } as unknown as Phaser.Physics.Arcade.Sprite;
+    const storySpawner = new CollectibleSpawner(storyMock.scene, storyPlayer, vi.fn(), 'tokino-mary');
+    storySpawner.update(snapshotAt('tokino-mary', storyTime!.distanceMeters - 30, true), 16);
+    expect(activePickup(storySpawner, storyTime!.id).magnetStarted).toBe(true);
+    storySpawner.destroy();
+
+    const giant = PICKUP_SCHEDULE.find(({ kind }) => kind === 'giant');
+    expect(giant).toBeDefined();
+    const endlessMock = makeSpawnerScene();
+    const endlessPlayer = { x: RUNNER_PLAYER_X, y: RUNNER_GROUND_Y,
+      body: { center: { x: RUNNER_PLAYER_X, y: RUNNER_GROUND_Y - 52 } } } as unknown as Phaser.Physics.Arcade.Sprite;
+    const endlessSpawner = new CollectibleSpawner(endlessMock.scene, endlessPlayer, vi.fn(), 'tokino-mary');
+    endlessSpawner.update(snapshotAt('tokino-mary', giant!.distanceMeters - 30), 16);
+    expect(activePickup(endlessSpawner, giant!.id).magnetStarted).toBe(false);
+    expect(activePickup(endlessSpawner, giant!.id).sparkle).toBeNull();
+    endlessSpawner.destroy();
+  });
+
+  it('does not start outside 150px or for non-Mary characters', () => {
+    const maryMock = makeSpawnerScene();
+    const maryPlayer = { x: RUNNER_PLAYER_X, y: RUNNER_GROUND_Y,
+      body: { center: { x: RUNNER_PLAYER_X, y: RUNNER_GROUND_Y - 52 } } } as unknown as Phaser.Physics.Arcade.Sprite;
+    const mary = new CollectibleSpawner(maryMock.scene, maryPlayer, vi.fn(), 'tokino-mary');
+    mary.update(snapshotAt('tokino-mary', 109), 16); // First coin is 153px horizontally and 0px vertically away.
+    expect(activePickup(mary, 'safe-0').magnetStarted).toBe(false);
+    mary.destroy();
+
+    const rinMock = makeSpawnerScene();
+    const rinPlayer = { x: RUNNER_PLAYER_X, y: RUNNER_GROUND_Y,
+      body: { center: { x: RUNNER_PLAYER_X, y: RUNNER_GROUND_Y - 52 } } } as unknown as Phaser.Physics.Arcade.Sprite;
+    const rin = new CollectibleSpawner(rinMock.scene, rinPlayer, vi.fn(), 'player-default');
+    rin.update(snapshotAt('player-default', 120), 100);
+    expect(activePickup(rin, 'safe-0').magnetStarted).toBe(false);
+    expect(activePickup(rin, 'safe-0').sparkle).toBeNull();
+    rin.destroy();
   });
 });
 

@@ -164,7 +164,7 @@ export class RunnerScene extends Phaser.Scene {
       state.phase === 'running', !this.player.isGrounded || (state.stageSpeedBoostRemainingMs ?? 0) > 0 || state.giantRemainingMs > 0);
     this.drawPassiveEffect(state.passiveEffectRemainingMs, state.slideGuardRemainingMs);
     this.spawner.update(state);
-    this.collectibles.update(state);
+    this.collectibles.update(state, deltaMs);
     this.pits.update(state);
     if (result) {
       this.inputBridge.clear();

@@ -10,8 +10,9 @@ describe('central character passive tuning', () => {
       id: 'hiyori-guard', chargesPerRun: 2, name: '벚꽃 수호', icon: 'hiyori-blossom-ward',
     });
     expect(getCharacterPassive('tokino-mary')).toMatchObject({
-      id: 'mary-pickup-magnet', pickupRadiusMultiplier: 1.5, name: '음표의 이끌림', icon: 'mary-music-magnet',
-      effectLabel: '아이템 획득 범위 +50%',
+      id: 'mary-pickup-magnet', magnetRadiusPx: 150, magnetPullDurationMs: 300,
+      name: '음표의 이끌림', icon: 'mary-music-magnet',
+      effectLabel: '코인·시간 아이템 150px 자석 흡인',
     });
     expect(getCharacterPassive('goth-student')).toMatchObject({ id: 'toa-ghost-glide', slideGuardMs: 250, cooldownMs: 20_000 });
     expect(getCharacterPassive('cogane-rang')).toMatchObject({ id: 'rang-double-jump', doubleJumpVelocityMultiplier: 1.058 });

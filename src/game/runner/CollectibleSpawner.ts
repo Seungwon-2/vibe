@@ -356,12 +356,8 @@ export function generatePickupSchedule(maxDistanceMeters: number,
 
 export const PICKUP_SCHEDULE = generatePickupSchedule(15_000);
 
-export function getPickupBodySize(characterId: CharacterId): number {
-  const passive = getCharacterPassive(characterId);
-  const radius = passive.id === 'mary-pickup-magnet'
-    ? PICKUP_BASE_RADIUS_PX * passive.pickupRadiusMultiplier
-    : PICKUP_BASE_RADIUS_PX;
-  return Math.round(radius * 2);
+export function getPickupBodySize(_characterId: CharacterId): number {
+  return PICKUP_BASE_RADIUS_PX * 2;
 }
 
 type ActivePickup = {
@@ -369,6 +365,12 @@ type ActivePickup = {
   box: Phaser.GameObjects.Rectangle;
   art: Phaser.GameObjects.Graphics;
   collected: boolean;
+  magnetStarted: boolean;
+  magnetElapsedMs: number;
+  magnetStartX: number;
+  magnetStartY: number;
+  magnetLastProjectedX: number;
+  sparkle: Phaser.GameObjects.Graphics | null;
 };
 
 type GateArt = { distanceMeters: number; art: Phaser.GameObjects.Graphics; label: Phaser.GameObjects.Text };
@@ -383,15 +385,18 @@ export class CollectibleSpawner {
   private goal: GoalArt | null = null;
   private createdGates = new Set<number>();
   private activeStoryBiome: RunnerBiomeDefinition | null = null;
+  private readonly passive: ReturnType<typeof getCharacterPassive>;
 
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly player: Phaser.Physics.Arcade.Sprite,
     private readonly onPickup: (pickup: PickupDefinition) => void,
     private readonly characterId: CharacterId,
-  ) {}
+  ) {
+    this.passive = getCharacterPassive(characterId);
+  }
 
-  update(snapshot: RunnerSnapshot): void {
+  update(snapshot: RunnerSnapshot, deltaMs = 0): void {
     if (snapshot.phase !== 'running') return;
     const storyStage = snapshot.mode === 'story' && snapshot.storyStageId
       ? getStoryStage(snapshot.storyStageId) : null;
@@ -411,11 +416,42 @@ export class CollectibleSpawner {
       this.spawnPickup(this.activePickupSchedule[this.nextPickupIndex]);
       this.nextPickupIndex += 1;
     }
+    const frameDeltaMs = Number.isFinite(deltaMs) ? Math.max(0, deltaMs) : 0;
     for (const pickup of [...this.active]) {
       if (pickup.collected) continue;
-      const x = this.screenX(pickup.definition.distanceMeters, snapshot.distanceMeters);
-      pickup.box.setPosition(x, RUNNER_GROUND_Y - pickup.definition.heightUnits);
-      pickup.art.setPosition(x, RUNNER_GROUND_Y - pickup.definition.heightUnits);
+      const projectedX = this.screenX(pickup.definition.distanceMeters, snapshot.distanceMeters);
+      const projectedY = RUNNER_GROUND_Y - pickup.definition.heightUnits;
+      const target = this.playerPickupCenter();
+      const eligibleForMagnet = this.passive.id === 'mary-pickup-magnet' &&
+        (pickup.definition.kind === 'coin' || pickup.definition.kind === 'time');
+      let x = projectedX;
+      let y = projectedY;
+
+      if (!pickup.magnetStarted && eligibleForMagnet && Math.hypot(
+        projectedX - target.x, projectedY - target.y,
+      ) <= this.passive.magnetRadiusPx) {
+        pickup.magnetStarted = true;
+        pickup.magnetElapsedMs = 0;
+        pickup.magnetStartX = projectedX;
+        pickup.magnetStartY = projectedY;
+        pickup.magnetLastProjectedX = projectedX;
+        pickup.sparkle = this.scene.add.graphics().setDepth(4);
+      }
+
+      if (pickup.magnetStarted && this.passive.id === 'mary-pickup-magnet') {
+        pickup.magnetStartX += projectedX - pickup.magnetLastProjectedX;
+        pickup.magnetLastProjectedX = projectedX;
+        pickup.magnetElapsedMs = Math.min(this.passive.magnetPullDurationMs,
+          pickup.magnetElapsedMs + frameDeltaMs);
+        const progress = pickup.magnetElapsedMs / this.passive.magnetPullDurationMs;
+        const easedProgress = 1 - (1 - progress) ** 2;
+        x = pickup.magnetStartX + (target.x - pickup.magnetStartX) * easedProgress;
+        y = pickup.magnetStartY + (target.y - pickup.magnetStartY) * easedProgress;
+        this.drawMagnetSparkle(pickup, x, y, target.x, target.y, progress);
+      }
+
+      pickup.box.setPosition(x, y);
+      pickup.art.setPosition(x, y);
       if (x < -20 || snapshot.collectedPickupIds.includes(pickup.definition.id)) this.removePickup(pickup);
     }
 
@@ -478,6 +514,36 @@ export class CollectibleSpawner {
     return RUNNER_PLAYER_X + (atMeters - currentMeters) / METERS_PER_WORLD_UNIT;
   }
 
+  private playerPickupCenter(): { x: number; y: number } {
+    const body = this.player.body as Phaser.Physics.Arcade.Body | undefined;
+    return body?.center
+      ? { x: body.center.x, y: body.center.y }
+      : { x: this.player.x, y: this.player.y };
+  }
+
+  private drawMagnetSparkle(
+    pickup: ActivePickup,
+    pickupX: number,
+    pickupY: number,
+    targetX: number,
+    targetY: number,
+    progress: number,
+  ): void {
+    if (!pickup.sparkle) return;
+    if (progress >= 1) {
+      pickup.sparkle.clear().setVisible(false);
+      return;
+    }
+    const sparkleProgress = (pickup.magnetElapsedMs % 180) / 180;
+    const sparkleX = pickupX + (targetX - pickupX) * sparkleProgress;
+    const sparkleY = pickupY + (targetY - pickupY) * sparkleProgress;
+    pickup.sparkle.setVisible(true).clear()
+      .lineStyle(2, 0xcab4ff, 0.28).lineBetween(pickupX, pickupY, targetX, targetY)
+      .lineStyle(1.5, 0xffffff, 0.72)
+      .lineBetween(sparkleX - 3, sparkleY, sparkleX + 3, sparkleY)
+      .lineBetween(sparkleX, sparkleY - 3, sparkleX, sparkleY + 3);
+  }
+
   private spawnPickup(definition: PickupDefinition): void {
     const pickupSize = getPickupBodySize(this.characterId);
     const box = this.scene.add.rectangle(0, 0, pickupSize, pickupSize, 0xffffff, 0);
@@ -491,7 +557,8 @@ export class CollectibleSpawner {
       ? this.activeStoryBiome
       : getBiomeForDistance(definition.distanceMeters);
     drawPickupArt(art, definition.kind, biome);
-    const active: ActivePickup = { definition, box, art, collected: false };
+    const active: ActivePickup = { definition, box, art, collected: false, magnetStarted: false,
+      magnetElapsedMs: 0, magnetStartX: 0, magnetStartY: 0, magnetLastProjectedX: 0, sparkle: null };
     this.active.push(active);
     this.scene.physics.add.overlap(this.player, box, () => {
       if (!this.active.includes(active) || active.collected) return;
@@ -510,5 +577,6 @@ export class CollectibleSpawner {
     this.active = this.active.filter((item) => item !== pickup);
     pickup.box.destroy();
     pickup.art.destroy();
+    pickup.sparkle?.destroy();
   }
 }

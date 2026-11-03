@@ -1,6 +1,6 @@
 ﻿# Task: T03 Mary's Magnetic Passive
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 Replace Mary's +50% pickup-body expansion with a visible passive that pulls coins and time pickups toward her from within 150px over approximately 300ms in both modes, without changing runner physics or animation.
@@ -62,10 +62,10 @@ Replace Mary's +50% pickup-body expansion with a visible passive that pulls coin
   - Keep existing elevated-pickup reachability, hazard/pit/gate clearance, and schedule tests passing.
 
 ## Acceptance Criteria
-- [ ] Mary's old +50% pickup-body expansion is replaced by a visible 150px magnet effect.
-- [ ] Coins and time items move toward Mary over about 300ms in Endless and Story; giant pickups and other characters are unchanged.
-- [ ] Magnet effect is cosmetic except for the already-defined pickup overlap; runner animations, physics, and obstacle collision remain unchanged.
-- [ ] Attraction boundaries, cleanup, schedule clearance, and existing pickup callback behavior pass tests.
+- [x] Mary's old +50% pickup-body expansion is replaced by a visible 150px magnet effect.
+- [x] Coins and time items move toward Mary over about 300ms in Endless and Story; giant pickups and other characters are unchanged.
+- [x] Magnet effect is cosmetic except for the already-defined pickup overlap; runner animations, physics, and obstacle collision remain unchanged.
+- [x] Attraction boundaries, cleanup, schedule clearance, and existing pickup callback behavior pass tests.
 
 ## Validation
 - `npm test -- src/game/characters/characterAbilities.test.ts src/game/characters/characterRegistry.test.ts src/game/runner/CollectibleSpawner.test.ts src/game/runner/RunnerScene.test.ts`
@@ -85,6 +85,6 @@ Task: T03-mary-magnetic-passive
 ```
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed (`29 tests`, `typecheck`, `build`)
 - commit: pending

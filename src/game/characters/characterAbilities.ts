@@ -11,7 +11,7 @@ export type CharacterPassiveId =
 export type CharacterPassiveDefinition =
   | Readonly<{ id: 'rin-speed'; speedBonusRatio: number; name: string; icon: 'rin-cloud-tailwind'; effectLabel: string }>
   | Readonly<{ id: 'hiyori-guard'; chargesPerRun: number; name: string; icon: 'hiyori-blossom-ward'; effectLabel: string }>
-  | Readonly<{ id: 'mary-pickup-magnet'; pickupRadiusMultiplier: number; name: string; icon: 'mary-music-magnet'; effectLabel: string }>
+  | Readonly<{ id: 'mary-pickup-magnet'; magnetRadiusPx: number; magnetPullDurationMs: number; name: string; icon: 'mary-music-magnet'; effectLabel: string }>
   | Readonly<{ id: 'toa-ghost-glide'; slideGuardMs: number; cooldownMs: number; name: string; icon: 'toa-ghost-glide'; effectLabel: string }>
   | Readonly<{ id: 'rang-double-jump'; doubleJumpVelocityMultiplier: number; name: string; icon: 'rang-tiger-spring'; effectLabel: string }>
   | Readonly<{ id: 'unassigned'; name: string; icon: null; effectLabel: string }>;
@@ -27,8 +27,8 @@ export const CHARACTER_PASSIVES: Readonly<Record<CharacterPassiveId, CharacterPa
       icon: 'hiyori-blossom-ward', effectLabel: '충돌·낭떠러지 방어 2회',
     }),
     'mary-pickup-magnet': Object.freeze({
-      id: 'mary-pickup-magnet', pickupRadiusMultiplier: 1.5, name: '음표의 이끌림',
-      icon: 'mary-music-magnet', effectLabel: '아이템 획득 범위 +50%',
+      id: 'mary-pickup-magnet', magnetRadiusPx: 150, magnetPullDurationMs: 300, name: '음표의 이끌림',
+      icon: 'mary-music-magnet', effectLabel: '코인·시간 아이템 150px 자석 흡인',
     }),
     'toa-ghost-glide': Object.freeze({
       id: 'toa-ghost-glide', slideGuardMs: 250, cooldownMs: 20_000, name: '고스트 슬라이드',
