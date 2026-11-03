@@ -6,7 +6,7 @@ Raise Endless-mode activity without changing Story course layouts, make the gian
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | Tune Endless-only density, distinguish the giant pickup, and implement Mary's magnet passive. | [P01](../phases/2026-11-02-runner-density-giant-magnet/P01-runner-pickup-tuning/phase.md) |
+| P01 | `done` | Tune Endless-only density, distinguish the giant pickup, and implement Mary's magnet passive. | [P01](../phases/2026-11-02-runner-density-giant-magnet/P01-runner-pickup-tuning/phase.md) |
 
 ## Decisions
 - [Confirmed decisions](../decisions/2026-11-02-runner-density-giant-magnet.md)
