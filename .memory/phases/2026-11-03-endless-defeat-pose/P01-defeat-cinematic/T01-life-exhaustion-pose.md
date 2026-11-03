@@ -35,4 +35,4 @@ Task: T01-life-exhaustion-pose
 ## Progress
 - [x] Implementation complete
 - [x] Validation passed (`npm run typecheck`, `npm run build`, `git diff --check`)
-- commit: pending
+- commit: `86d2b47`
