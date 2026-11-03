@@ -63,4 +63,11 @@ describe('RunResult', () => {
     expect(screen.getByText('1,234')).toBeInTheDocument();
     expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-animation', 'gameOver');
   });
+
+  it('shows a game-over pose when all Endless lives are depleted, even with a personal best', () => {
+    render(<RunResult result={{ ...result, finishReason: 'lives-exhausted' }} outcome="personal-best"
+      bestDistanceMeters={1234} onRetry={vi.fn()} onChooseCharacter={vi.fn()} onRankings={vi.fn()} />);
+    expect(screen.getByRole('heading', { name: '새로운 최고 기록!' })).toBeInTheDocument();
+    expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-animation', 'gameOver');
+  });
 });

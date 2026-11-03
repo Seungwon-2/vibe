@@ -1,20 +1,17 @@
 ﻿# Current Context
 
 ## Active Plan
-[Runner Density, Giant Pickup, and Mary's Magnet](./plans/2026-11-02-runner-density-giant-magnet.md)
+[Endless Lives and Time Pressure](./plans/2026-11-03-endless-lives-time-pressure.md)
 
 ## Active Phase
-[P01 Runner Pickup Tuning](./phases/2026-11-02-runner-density-giant-magnet/P01-runner-pickup-tuning/phase.md)
+[P01 Endless Risk and Pickups](./phases/2026-11-03-endless-lives-time-pressure/P01-endless-risk-and-pickups/phase.md)
 
 ## Active Task
-None — plan complete.
+[T02 Remove Endless Time Pickups](./phases/2026-11-03-endless-lives-time-pressure/P01-endless-risk-and-pickups/T02-remove-endless-time-pickups.md)
 
 ## Status
-- Prior plan `runner-speed-pickup-reward` is complete.
-- This plan follows `.memory/decisions/2026-11-02-runner-density-giant-magnet.md`.
-- T01 Endless Course Density completed and committed as `f78c552`.
-- T02 Giant Pickup Art completed and committed as `67fbf3b`.
-- T03 Mary's Magnetic Passive completed and validated; plan `runner-density-giant-magnet` is complete.
+- T01 Endless Lives and Hit Penalty completed and validated; commit recorded in the task blueprint.
+- Prior plan `runner-density-giant-magnet` remains complete.
 
 ## Next Step
-The `runner-density-giant-magnet` plan is complete. Choose the next project task when ready.
+Read T02 and remove standalone time-recovery pickups from Endless schedules while preserving Story speed-boost pickups.

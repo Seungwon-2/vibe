@@ -41,7 +41,8 @@ export function RunResult({ result, outcome, bestDistanceMeters, submittedRank =
             </span>
             <CharacterPreview character={character} selected={false}
               playbackRate={0.6}
-              animation={result.finishReason !== 'pit' && isNewBest ? 'victory' : 'gameOver'} />
+              animation={result.finishReason !== 'pit' && result.finishReason !== 'lives-exhausted' && isNewBest
+                ? 'victory' : 'gameOver'} />
           </div>
           <span className="result-character__name">{character.displayName}</span>
         </div>

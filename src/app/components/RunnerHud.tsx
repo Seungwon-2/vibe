@@ -1,7 +1,7 @@
 ﻿import type { CharacterDefinition } from '../../game/characters/characterTypes';
 import { getCharacterPassive } from '../../game/characters/characterAbilities';
 import { CharacterAbilityIcon } from './CharacterAbilityIcon';
-import { RUNNER_GATE_DISTANCES_M } from '../../game/runner/runnerConfig';
+import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from '../../game/runner/runnerConfig';
 import { getStoryStage } from '../../game/runner/storyConfig';
 import type { RunnerSnapshot } from '../../game/runner/runnerTypes';
 
@@ -50,6 +50,8 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
       ? `${passive.name} · 장애물 통과 · 재사용 대기`
       : `${passive.name} · ${recentBonus.trigger === 'pit' ? '낭떠러지' : '장애물'} 방어 · 남은 ${recentBonus.remainingCharges}회`
     : null;
+  const livesMaximum = storyStage ? RUNNER_CONFIG.storyLivesPerStage : RUNNER_CONFIG.endlessLivesPerRun;
+  const livesRemaining = Math.max(0, Math.min(livesMaximum, snapshot.livesRemaining ?? livesMaximum));
 
   return (
     <div className="runner-hud" data-mode={snapshot.mode ?? 'endless'} aria-label="게임 정보">
@@ -76,10 +78,10 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
         <div className="runner-hud__distance" aria-live="off">
           <strong>{Math.round(snapshot.distanceMeters).toLocaleString()}</strong><span>m</span>
         </div>
-        {storyStage && <div className="runner-hud__lives" role="img"
-          aria-label={`남은 생명 ${snapshot.livesRemaining ?? 0}개`}>
+        {(storyStage || snapshot.mode === 'endless') && <div className="runner-hud__lives" role="img"
+          aria-label={`남은 생명 ${livesRemaining}개`}>
           <span>생명</span>
-          <strong>{'♥'.repeat(snapshot.livesRemaining ?? 0)}{'♡'.repeat(Math.max(0, 3 - (snapshot.livesRemaining ?? 0)))}</strong>
+          <strong>{'♥'.repeat(livesRemaining)}{'♡'.repeat(Math.max(0, livesMaximum - livesRemaining))}</strong>
         </div>}
         <div className="runner-hud__actions">
           <span className="runner-hud__coins" aria-label={`코인 ${snapshot.coins}개`}>🟡 {snapshot.coins}</span>

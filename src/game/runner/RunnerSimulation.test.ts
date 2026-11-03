@@ -44,6 +44,31 @@ describe('RunnerSimulation', () => {
     expect(startRunner(afterSecond)).toBe(afterSecond);
   });
 
+  it('gives Endless three lives and escalates collision time penalties by distance', () => {
+    const initial = running();
+    expect(initial.livesRemaining).toBe(RUNNER_CONFIG.endlessLivesPerRun);
+    const tiers = [
+      [0, 5_000], [1_999, 5_000], [2_000, 7_000], [3_999, 7_000], [4_000, 9_000],
+      [6_000, 11_000], [8_000, 13_000],
+    ] as const;
+    for (const [distanceMeters, penaltyMs] of tiers) {
+      const hit = applyCollision({ ...initial, distanceMeters });
+      expect(hit.remainingMs).toBe(initial.remainingMs - penaltyMs);
+      expect(hit.livesRemaining).toBe(2);
+      expect(hit.hitsTaken).toBe(1);
+    }
+  });
+
+  it('ends Endless after the third unprotected collision regardless of remaining time', () => {
+    let state = running();
+    state = applyCollision(state);
+    expect(state).toMatchObject({ phase: 'running', livesRemaining: 2, remainingMs: 85_000 });
+    state = applyCollision({ ...state, protectionRemainingMs: 0 });
+    expect(state).toMatchObject({ phase: 'running', livesRemaining: 1, remainingMs: 80_000 });
+    state = applyCollision({ ...state, protectionRemainingMs: 0 });
+    expect(state).toMatchObject({ phase: 'finished', livesRemaining: 0, finishReason: 'lives-exhausted', remainingMs: 0 });
+  });
+
   it('crosses five gates once, changes biome at the first three, and adds speed per gate', () => {
     expect(RUNNER_GATE_DISTANCES_M).toEqual([2_000, 4_000, 6_000, 8_000, 10_000]);
     expect(RUNNER_CONFIG.gateSpeedBonusRatio).toBe(0.05);

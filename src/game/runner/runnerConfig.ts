@@ -6,6 +6,7 @@ export const RUNNER_CONFIG = Object.freeze({
   storySpeedBoostMs: 3_000,
   storySpeedBoostRatio: 0.15,
   storyLivesPerStage: 3,
+  endlessLivesPerRun: 3,
   storyHitProtectionMs: 800,
   storyVictoryHoldMs: 800,
   storyDefeatHoldMs: 1_000,
@@ -64,8 +65,21 @@ export const RUNNER_CONFIG = Object.freeze({
   doubleJumpBarrierHeightPx: 156,
   metersPerWorldUnit: 1 / 3,
   collisionPenaltyMs: 5_000,
+  endlessCollisionPenaltyTiers: [
+    { maxDistanceMeters: 2_000, penaltyMs: 5_000 },
+    { maxDistanceMeters: 4_000, penaltyMs: 7_000 },
+    { maxDistanceMeters: 6_000, penaltyMs: 9_000 },
+    { maxDistanceMeters: 8_000, penaltyMs: 11_000 },
+    { maxDistanceMeters: null, penaltyMs: 13_000 },
+  ],
   staggerMs: 1_200,
   protectionMs: 1_200,
 } as const);
+
+export function getEndlessCollisionPenaltyMs(distanceMeters: number): number {
+  const tier = RUNNER_CONFIG.endlessCollisionPenaltyTiers.find(({ maxDistanceMeters }) =>
+    maxDistanceMeters === null || distanceMeters < maxDistanceMeters);
+  return tier?.penaltyMs ?? RUNNER_CONFIG.collisionPenaltyMs;
+}
 
 export const RUNNER_GATE_DISTANCES_M = Object.freeze([2_000, 4_000, 6_000, 8_000, 10_000] as const);

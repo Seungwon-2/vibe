@@ -1,6 +1,6 @@
 import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterId } from '../characters/characterTypes';
-import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
+import { getEndlessCollisionPenaltyMs, RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import { getStoryStage } from './storyConfig';
 import { getBiomeForDistance } from '../visuals/runnerBiomes';
 import type {
@@ -149,7 +149,7 @@ export function createRunnerSnapshot(
     characterId,
     mode,
     storyStageId,
-    livesRemaining: mode === 'story' ? RUNNER_CONFIG.storyLivesPerStage : 0,
+    livesRemaining: mode === 'story' ? RUNNER_CONFIG.storyLivesPerStage : RUNNER_CONFIG.endlessLivesPerRun,
     nearMissScore: 0,
     hitsTaken: 0,
     stageSpeedBoostRemainingMs: 0,
@@ -371,13 +371,17 @@ export function applyCollision(state: RunnerSnapshot, sliding = false): RunnerSn
     };
     return livesRemaining === 0 ? finishRunner(hit, undefined, 'lives-exhausted').state : hit;
   }
-  const remainingMs = Math.max(0, state.remainingMs - RUNNER_CONFIG.collisionPenaltyMs);
+  const remainingMs = Math.max(0, state.remainingMs - getEndlessCollisionPenaltyMs(state.distanceMeters));
+  const livesRemaining = Math.max(0, (state.livesRemaining ?? RUNNER_CONFIG.endlessLivesPerRun) - 1);
   const hit: RunnerSnapshot = {
     ...state,
     remainingMs,
+    livesRemaining,
+    hitsTaken: (state.hitsTaken ?? 0) + 1,
     staggerRemainingMs: RUNNER_CONFIG.staggerMs,
     protectionRemainingMs: RUNNER_CONFIG.protectionMs,
   };
+  if (livesRemaining === 0) return finishRunner(hit, undefined, 'lives-exhausted').state;
   return remainingMs === 0 ? finishRunner(hit).state : hit;
 }
 

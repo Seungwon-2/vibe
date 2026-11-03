@@ -55,6 +55,7 @@ describe('hazard collision', () => {
     const first = tryResolveHazardHit(initial);
     expect(first.hit).toBe(true);
     expect(first.state.remainingMs).toBe(85_000);
+    expect(first.state.livesRemaining).toBe(2);
     expect(first.state.protectionRemainingMs).toBe(1_200);
     expect(tryResolveHazardHit(first.state)).toEqual({ state: first.state, hit: false, blockedByPassive: false, passiveId: null, result: null });
     const mary = startRunner(createRunnerSnapshot('tokino-mary'));

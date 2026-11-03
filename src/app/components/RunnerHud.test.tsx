@@ -32,6 +32,15 @@ describe('RunnerHud', () => {
     expect(onPause).toHaveBeenCalledOnce();
   });
 
+  it('shows three remaining lives in Endless and updates the accessible heart count', () => {
+    const { rerender } = render(<RunnerHud snapshot={snapshot()} character={getCharacter('player-default')}
+      recentBonus={null} onPause={vi.fn()} />);
+    expect(screen.getByRole('img', { name: '남은 생명 3개' })).toHaveTextContent('♥♥♥');
+    rerender(<RunnerHud snapshot={snapshot({ livesRemaining: 1 })} character={getCharacter('player-default')}
+      recentBonus={null} onPause={vi.fn()} />);
+    expect(screen.getByRole('img', { name: '남은 생명 1개' })).toHaveTextContent('♥♡♡');
+  });
+
   it('warns at ten seconds, hides zero rewards, and shows actual awarded bonus only', () => {
     const { rerender } = render(<RunnerHud snapshot={snapshot({ remainingMs: 10_000 })}
       character={getCharacter('player-default')} recentBonus={{ id: 'capped', kind: 'pickup', awardedMs: 0 }}
