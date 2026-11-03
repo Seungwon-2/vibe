@@ -34,7 +34,8 @@ export function StoryResult({ result, settlement, newlyUnlockedAchievementIds, a
             <img className="result-character__portrait" src={character.portraitUrl} alt="" />
             <span className="result-character__veil" aria-hidden="true" />
             <span className="result-character__badge">{cleared ? 'COURSE CLEAR' : 'TRY AGAIN'}</span>
-            <CharacterPreview character={character} selected={false} animation={cleared ? 'victory' : 'gameOver'} />
+            <CharacterPreview character={character} selected={false} playbackRate={0.6}
+              animation={cleared ? 'victory' : 'gameOver'} />
           </div>
           <span className="result-character__name">{character.displayName}</span>
         </div>

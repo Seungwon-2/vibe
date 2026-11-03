@@ -40,6 +40,7 @@ export function RunResult({ result, outcome, bestDistanceMeters, submittedRank =
               {isNewBest ? 'NEW PERSONAL BEST' : 'RUN COMPLETE'}
             </span>
             <CharacterPreview character={character} selected={false}
+              playbackRate={0.6}
               animation={result.finishReason !== 'pit' && isNewBest ? 'victory' : 'gameOver'} />
           </div>
           <span className="result-character__name">{character.displayName}</span>

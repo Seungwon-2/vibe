@@ -6,6 +6,7 @@ export type CharacterPreviewProps = {
   selected: boolean;
   animation?: CharacterAnimationName;
   loop?: boolean;
+  playbackRate?: number;
   variant?: 'showcase' | 'roster' | 'runway';
 };
 
@@ -22,7 +23,7 @@ const CONTENT_HEIGHT: Readonly<Record<CharacterDefinition['id'], number>> = {
   'tokino-mary': 72.75,
 };
 
-export function CharacterPreview({ character, selected, animation, loop = true, variant }: CharacterPreviewProps): React.JSX.Element {
+export function CharacterPreview({ character, selected, animation, loop = true, playbackRate = 1, variant }: CharacterPreviewProps): React.JSX.Element {
   const animationName = animation ?? (variant === 'showcase' ? 'run'
     : variant === 'roster' ? 'idle'
       : selected ? 'run' : character.id === 'player-default' ? 'victory' : 'idle');
@@ -42,16 +43,17 @@ export function CharacterPreview({ character, selected, animation, loop = true, 
       image.src = url;
       return image;
     });
+    const safePlaybackRate = Number.isFinite(playbackRate) ? Math.max(0.1, playbackRate) : 1;
     const interval = frames.length < 2 ? undefined : window.setInterval(() => {
       setFrameIndex((current) => current >= frames.length - 1
         ? loop ? 0 : current
         : current + 1);
-    }, 1000 / character.qualityAnimationFps[animationName]);
+    }, 1000 / (character.qualityAnimationFps[animationName] * safePlaybackRate));
     return () => {
       if (interval !== undefined) window.clearInterval(interval);
       for (const image of preloadedFrames) image.onload = null;
     };
-  }, [animationName, character.qualityAnimationFps, frames.length, loop]);
+  }, [animationName, character.qualityAnimationFps, frames.length, loop, playbackRate]);
 
   const variantClass = variant ? ` character-preview--${variant}` : '';
   return (
