@@ -1,19 +1,17 @@
 ﻿# Current Context
 
 ## Active Plan
-[Endless Lives and Time Pressure](./plans/2026-11-03-endless-lives-time-pressure.md)
+[Runner HUD Layout Unification](./plans/2026-11-03-runner-hud-layout-unification.md)
 
 ## Active Phase
-[P01 Endless Risk and Pickups](./phases/2026-11-03-endless-lives-time-pressure/P01-endless-risk-and-pickups/phase.md)
+[P01 Shared Runner HUD](./phases/2026-11-03-runner-hud-layout-unification/P01-shared-runner-hud/phase.md)
 
 ## Active Task
-None — plan complete.
+None. The Runner HUD Layout Unification plan is complete.
 
 ## Status
-- T01 Endless Lives and Hit Penalty completed and validated; commit `58c6306`.
-- T02 Remove Endless Time Pickups completed and validated; commit recorded in the task blueprint.
-- Plan `endless-lives-time-pressure` is complete.
-- Prior plan `runner-density-giant-magnet` remains complete.
+- Prior plan `endless-lives-time-pressure` is complete (`58c6306`, `7ffab51`).
+- This plan records the confirmed shared-HUD layout and canvas separation.
 
 ## Next Step
-Choose the next project task when ready.
+Review the shared Story/Endless HUD in the local browser, then choose the next task.

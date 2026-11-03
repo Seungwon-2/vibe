@@ -32,6 +32,28 @@ describe('RunnerHud', () => {
     expect(onPause).toHaveBeenCalledOnce();
   });
 
+  it('uses the same four HUD slots for Story and Endless while changing the first metric', () => {
+    const endlessSnapshot = snapshot();
+    const storySnapshot = {
+      ...startRunner(createRunnerSnapshot('player-default', new Date(), { mode: 'story', storyStageId: 'dawn-city' })),
+      distanceMeters: 460,
+      coins: 4,
+    };
+    const { rerender } = render(<RunnerHud snapshot={endlessSnapshot} character={getCharacter('player-default')}
+      recentBonus={null} onPause={vi.fn()} />);
+    const hud = document.querySelector('.runner-hud__main');
+    const slotOrder = Array.from(hud?.children ?? []).map((child) => child.className.split(' ')[0]);
+    expect(slotOrder).toEqual(['runner-hud__timer', 'runner-hud__distance', 'runner-hud__lives', 'runner-hud__actions']);
+    expect(screen.getByText('남은 시간')).toBeInTheDocument();
+
+    rerender(<RunnerHud snapshot={storySnapshot} character={getCharacter('player-default')}
+      recentBonus={null} onPause={vi.fn()} />);
+    expect(Array.from(hud?.children ?? []).map((child) => child.className.split(' ')[0])).toEqual(slotOrder);
+    expect(screen.getByText('코스 진행')).toBeInTheDocument();
+    expect(screen.getByText('460 / 2,500m')).toBeInTheDocument();
+    expect(screen.getByLabelText('코인 4개')).toBeInTheDocument();
+  });
+
   it('shows three remaining lives in Endless and updates the accessible heart count', () => {
     const { rerender } = render(<RunnerHud snapshot={snapshot()} character={getCharacter('player-default')}
       recentBonus={null} onPause={vi.fn()} />);

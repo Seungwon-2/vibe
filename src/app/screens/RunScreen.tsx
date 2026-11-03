@@ -210,6 +210,9 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
         <div><span className="eyebrow">RUNNING ACTION</span><strong>{character.displayName}</strong></div>
         <button type="button" onClick={requestExit}>나가기</button>
       </header>
+      <div className="run-screen__hud">
+        <RunnerHud snapshot={snapshot} character={character} recentBonus={recentBonus} onPause={pauseRun} />
+      </div>
       <div className={`runner-stage${gateBurstActive ? ' is-gate-boosting' : ''}${snapshot.giantRemainingMs > 0 ? ' is-giant-active' : ''}`}
         role="region" aria-label="러닝 게임 화면">
         <RunnerGame characterId={characterId} mode={mode} storyStageId={storyStageId} trailCosmeticId={trailCosmeticId}
@@ -221,7 +224,6 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
           }}
           onFinished={onFinish}
           onEvent={handleEvent} />
-        <RunnerHud snapshot={snapshot} character={character} recentBonus={recentBonus} onPause={pauseRun} />
         <TouchControls inputBridge={inputBridge}
           disabled={paused || snapshot.phase !== 'running'} />
         {snapshot.phase === 'countdown' && countdownValue !== null &&

@@ -58,6 +58,20 @@ afterEach(() => {
 beforeEach(() => localStorage.removeItem('runner-action:tutorial:v1:seen'));
 
 describe('RunScreen', () => {
+  it.each(['story', 'endless'] as const)('keeps the %s HUD outside the gameplay stage', (mode) => {
+    render(<RunScreen {...audioProps} characterId="player-default" mode={mode}
+      storyStageId={mode === 'story' ? 'dawn-city' : null} onFinish={vi.fn()} onExit={vi.fn()} />);
+    const hud = document.querySelector('.runner-hud');
+    const hudRow = document.querySelector('.run-screen__hud');
+    const stage = document.querySelector('.runner-stage');
+    expect(hud).toBeInTheDocument();
+    expect(hud?.parentElement).toBe(hudRow);
+    expect(hud?.closest('.runner-stage')).toBeNull();
+    expect(stage?.querySelector('.runner-hud')).toBeNull();
+    expect(hudRow?.nextElementSibling).toBe(stage);
+    expect(within(hud as HTMLElement).getByRole('button', { name: '일시정지' })).toBeInTheDocument();
+  });
+
   it('routes gameplay events to effects and ignores zero-award pickups', () => {
     audioMock.playEffect.mockClear();
     render(<RunScreen {...audioProps} characterId="hanayo-hiyori" onFinish={vi.fn()} onExit={vi.fn()} />);
