@@ -65,4 +65,5 @@ Task: T02-character-and-stage-selection
 - [x] Stage screen now has one bottom-left `← 캐릭터` action; duplicate upper-right navigation removed.
 - [x] Character selection test (4 tests), lint, typecheck, production build, and diff check passed.
 - [ ] Browser screenshot review remains pending; local browser host is unavailable in this session.
+- Follow-up: lowered the character heading cap to 2.5rem and explicitly anchored the title/shop group at the left and the start action at the right. Revalidated after the reported mismatch.
 - commit: pending
