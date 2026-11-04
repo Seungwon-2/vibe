@@ -163,6 +163,7 @@ button {
   position: relative;
   z-index: 3;
   width: 100%;
+  box-sizing: border-box;
   min-height: 0;
   padding: clamp(6px, 0.8cqw, 10px) clamp(8px, 1.45cqw, 18px);
   border: 1px solid var(--ui-border);
@@ -174,8 +175,10 @@ button {
   font-size: clamp(0.68rem, 1.8cqw, 1rem);
   text-shadow: none;
 }
-.runner-hud__main { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; min-height: clamp(42px, 5cqw, 60px); gap: clamp(5px, 1cqw, 12px); }
+.runner-hud__main { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; min-width: 0; min-height: clamp(42px, 5cqw, 60px); gap: clamp(5px, 1cqw, 12px); }
 .runner-hud__timer { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 2px 8px; justify-self: start; }
+.runner-hud__timer, .runner-hud__distance, .runner-hud__lives, .runner-hud__actions { min-width: 0; }
+.runner-hud__timer > span, .runner-hud__timer > strong, .runner-hud__distance { white-space: nowrap; }
 .runner-hud__timer > span:first-child { color: var(--ui-muted); }
 .runner-hud__timer strong { font-size: 1.45em; font-variant-numeric: tabular-nums; }
 .runner-hud__timer.is-warning strong { color: var(--ui-danger); animation: runner-time-warning 650ms ease-in-out infinite alternate; }
@@ -192,10 +195,10 @@ button {
 .runner-hud__pause { width: 40px; height: 40px; border: 1px solid var(--ui-border); border-radius: 12px; color: var(--ui-primary-strong); background: var(--ui-surface); font-size: 1.25rem; cursor: pointer; pointer-events: auto; }
 .runner-hud__details { display: flex; min-width: 0; justify-content: space-between; align-items: center; gap: 10px; color: var(--ui-muted); font-size: 0.78em; }
 .runner-hud__details > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.runner-hud__passive { display: inline-flex; align-items: center; gap: 6px; text-align: right; color: var(--character-accent, var(--ui-primary-strong)); }
+.runner-hud__passive { display: inline-flex; min-width: 0; max-width: min(48%, 340px); align-items: center; gap: 6px; text-align: right; color: var(--character-accent, var(--ui-primary-strong)); }
 .runner-hud__powerup { align-self: center; padding: 4px 9px; border: 1px solid #e3b94e; border-radius: 999px; background: #fff3c7; color: #795414; font-weight: 800; white-space: nowrap; }
-.runner-hud__passive > span:nth-child(2) { display: grid; line-height: 1.15; }
-.runner-hud__passive small { color: var(--ui-muted); font-size: 0.9em; }
+.runner-hud__passive > span:nth-child(2) { display: grid; min-width: 0; line-height: 1.15; }
+.runner-hud__passive small { overflow: hidden; color: var(--ui-muted); font-size: 0.9em; text-overflow: ellipsis; white-space: nowrap; }
 .runner-hud__charges { display: inline-flex; gap: 3px; margin-left: 2px; }
 .runner-hud__charges i { width: 9px; height: 9px; border: 1px solid #dc7aab; border-radius: 50%; background: transparent; }
 .runner-hud__charges i.is-ready { background: #ed8db9; box-shadow: 0 0 5px rgb(237 141 185 / 40%); }
@@ -203,8 +206,8 @@ button {
 .runner-hud__cooldown { color: var(--ui-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .runner-hud__bonus { position: absolute; top: 50%; right: 50%; z-index: 1; max-width: min(72%, 360px); padding: 2px 8px; border: 1px solid #e8d59a; border-radius: 999px; background: #fff2c6; color: #634b10; font-weight: 800; text-align: center; transform: translate(50%, -50%); animation: runner-bonus-cue 1.8s ease-out forwards; }
 .runner-hud__bonus.is-passive-cue { max-width: min(72%, 360px); border-color: #ec91bd; background: #fff0f7; color: #77324f; text-align: center; }
-.runner-touch-controls { position: absolute; z-index: 4; inset: 0; display: flex; align-items: end; justify-content: space-between; padding: 0 12px 4px; pointer-events: none; }
-.runner-touch-control { display: flex; width: clamp(64px, 8cqw, 80px); aspect-ratio: 1; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border: 2px solid rgb(255 255 255 / 92%); border-radius: 50%; color: white; background: var(--ui-primary-strong); box-shadow: 0 4px 14px rgb(37 57 93 / 28%); touch-action: none; user-select: none; -webkit-user-select: none; cursor: pointer; pointer-events: auto; }
+.runner-touch-controls { position: absolute; z-index: 4; inset: 0; display: flex; align-items: end; justify-content: space-between; padding: 0 clamp(8px, 1.2cqw, 18px) clamp(8px, 1.2cqw, 14px); pointer-events: none; }
+.runner-touch-control { display: flex; flex: 0 0 auto; width: clamp(64px, 8cqw, 80px); min-width: 44px; aspect-ratio: 1; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border: 2px solid rgb(255 255 255 / 92%); border-radius: 50%; color: white; background: var(--ui-primary-strong); box-shadow: 0 4px 14px rgb(37 57 93 / 28%); touch-action: none; user-select: none; -webkit-user-select: none; cursor: pointer; pointer-events: auto; }
 .runner-touch-control--slide { border-color: #fff; color: #382c61; background: #e6def8; }
 .runner-touch-control > span { font-size: 1.35rem; line-height: 1; }
 .runner-touch-control strong { font-size: clamp(0.62rem, 1.15cqw, 0.85rem); }
@@ -215,10 +218,12 @@ button {
 .runner-countdown { position: absolute; z-index: 5; inset: 0; display: grid; align-content: center; justify-items: center; gap: 4px; color: var(--ui-text); background: rgb(243 248 255 / 86%); text-shadow: 0 3px 18px rgb(54 83 128 / 16%); }
 .runner-countdown > span { font-size: clamp(0.8rem, 2.2cqw, 1.2rem); letter-spacing: 0.15em; }
 .runner-countdown strong { color: var(--ui-primary-strong); font-size: clamp(4rem, 14cqw, 8rem); line-height: 1; animation: runner-countdown-pop 850ms ease-out both; }
-.runner-overlay--pause { z-index: 6; padding: 16px; background: rgb(37 57 93 / 46%); }
-.runner-pause-card { display: flex; width: min(90%, 360px); flex-direction: column; align-items: center; gap: 10px; padding: clamp(14px, 3cqw, 28px); border: 1px solid var(--ui-border); border-radius: 18px; background: var(--ui-surface-raised); color: var(--ui-text); box-shadow: var(--ui-shadow); font-size: clamp(0.85rem, 2.4cqw, 1.2rem); }
+.runner-overlay--pause { z-index: 6; box-sizing: border-box; overflow: auto; padding: 16px; background: rgb(37 57 93 / 46%); }
+.runner-pause-card { display: flex; box-sizing: border-box; width: min(100%, 420px); max-height: 100%; flex-direction: column; align-items: center; gap: 10px; overflow: auto; padding: clamp(14px, 3cqw, 28px); border: 1px solid var(--ui-border); border-radius: 18px; background: var(--ui-surface-raised); color: var(--ui-text); box-shadow: var(--ui-shadow); font-size: clamp(0.85rem, 2.4cqw, 1.2rem); }
 .runner-pause-card strong { color: var(--ui-text); }
 .runner-pause-card p { margin: 0; color: var(--ui-muted); font-size: 0.85em; }
+.runner-pause-card .runner-result-actions { width: 100%; justify-content: center; gap: 8px; }
+.runner-pause-card .runner-result-actions button { min-height: 44px; flex: 1 1 120px; white-space: normal; }
 .runner-pause-card .runner-result-actions button { border-color: var(--ui-border); background: var(--ui-surface-soft); color: var(--ui-text); }
 .runner-pause-card .runner-result-actions button:first-child:not(:last-child) { border-color: var(--ui-primary-strong); background: var(--ui-primary-strong); color: white; }
 .runner-pause-card button:disabled { opacity: 0.5; cursor: not-allowed; }
