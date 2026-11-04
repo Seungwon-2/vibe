@@ -18,7 +18,6 @@ export function StageSelect({ profile, selectedStageId, onSelect, onStart, onAch
   return (
     <main className="progression-screen progression-screen--stages">
       <section className="progression-panel" aria-labelledby="stage-select-title">
-        <button className="progression-back" type="button" onClick={onBack}>← 캐릭터</button>
         <p className="eyebrow">STORY COURSE</p>
         <h1 id="stage-select-title">달릴 스테이지를 선택하세요</h1>
         <p className="progression-intro">코인을 모으고 도전을 완료해 다음 코스와 러너를 해금하세요.</p>
@@ -49,7 +48,7 @@ export function StageSelect({ profile, selectedStageId, onSelect, onStart, onAch
           })}
         </div>
         <div className="stage-select-footer">
-          <button className="progression-secondary" type="button" onClick={onBack}>뒤로</button>
+          <button className="progression-secondary" type="button" onClick={onBack}>← 캐릭터</button>
           <button className="progression-secondary" type="button" onClick={onAchievements}>업적</button>
           <button className="progression-primary" type="button" disabled={!profile.unlockedStageIds.includes(selected.id)}
             onClick={onStart}>{selected.name} 시작</button>

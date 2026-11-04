@@ -129,8 +129,10 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
         </section>
 
         <footer className="selector-footer selector-footer--runner">
-          <button className="selector-back selector-back--runner" type="button" onClick={onBack}>← 타이틀로</button>
-          {onShop && <button className="selector-back selector-back--runner" type="button" onClick={onShop}>코인 상점</button>}
+          <div className="selector-footer__navigation">
+            <button className="selector-back selector-back--runner" type="button" onClick={onBack}>← 타이틀로</button>
+            {onShop && <button className="selector-back selector-back--runner selector-shop-button" type="button" onClick={onShop}>코인 상점</button>}
+          </div>
           <button className="selector-confirm selector-confirm--runner" type="button"
             onClick={() => onConfirm(candidateCharacterId)}>
             {SHORT_NAMES[candidateCharacterId]} · 달리기 시작 ▶
