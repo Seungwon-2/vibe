@@ -61,9 +61,9 @@ export function MainMenu({ onStart, onRankings, onAchievements, onShop, topRun, 
             </button>
             {onAchievements && <button className="main-menu-secondary" type="button" onClick={onAchievements}>업적</button>}
             {onShop && <button className="main-menu-secondary" type="button" onClick={onShop}>코인 상점</button>}
-            <button className="main-menu-secondary" type="button"
+            <button className="main-menu-secondary main-menu-sound" type="button"
               onClick={() => { onUnlockAudio(); setDialog('settings'); }}>사운드 설정</button>
-            <button className="main-menu-secondary" type="button" onClick={() => setDialog('credits')}>
+            <button className="main-menu-secondary main-menu-credits" type="button" onClick={() => setDialog('credits')}>
               효과음 크레딧
             </button>
           </div>

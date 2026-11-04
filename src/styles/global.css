@@ -1460,6 +1460,8 @@ h1 {
   box-shadow: 0 10px 28px rgb(15 9 46 / 32%);
   color: #34254c;
   font-size: clamp(0.92rem, 1.25vw, 1.08rem);
+  white-space: nowrap;
+  word-break: keep-all;
 }
 .main-menu-actions .main-menu-secondary {
   min-width: 0;
@@ -1897,7 +1899,7 @@ body:has(.selector-shell--runner),
 }
 
 .selector-shell.selector-shell--runner .selector-header--runner h1 {
-  font-size: clamp(1.6rem, 4.1vw, 4rem);
+  font-size: clamp(1.65rem, 3.2vw, 3rem);
   line-height: 1.1;
 }
 
@@ -2148,6 +2150,131 @@ body:has(.selector-shell--runner),
   .selector-shell.selector-shell--runner .selector-runner-frame { max-height: 72px; }
 }
 
+/* Final layout polish: keep menu actions, selector navigation, and result metrics grouped. */
+.main-menu-actions {
+  display: grid;
+  grid-template-columns: minmax(0, .78fr) repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, clamp(54px, 8vh, 72px));
+  align-items: stretch;
+  gap: 9px;
+}
+.main-menu-actions .home-start {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: stretch;
+  min-height: 0;
+}
+.main-menu-actions .main-menu-secondary {
+  grid-column: auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 6px 8px;
+  white-space: normal;
+  line-height: 1.25;
+}
+.main-menu-actions .main-menu-sound { grid-column: 4; grid-row: 2; }
+.main-menu-actions .main-menu-credits { grid-column: 3; grid-row: 2; }
+
+.selector-footer.selector-footer--runner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+}
+.selector-footer__navigation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.selector-footer .selector-shop-button {
+  border-color: #d8c9ed;
+  background: linear-gradient(135deg, #fff, #f5f0ff);
+  color: #57447a;
+  box-shadow: 0 4px 12px rgb(67 49 99 / 8%);
+}
+.selector-footer .selector-shop-button:hover { border-color: #a98bd3; background: #f6f0ff; }
+
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 128px), 1fr));
+  gap: 10px;
+  margin: 18px 0 24px;
+}
+.result-stats div {
+  min-width: 0;
+  align-content: start;
+  gap: 7px;
+  padding: 13px 15px;
+  border: 1px solid color-mix(in srgb, var(--ui-border), white 18%);
+  border-radius: 15px;
+  background: linear-gradient(150deg, #fff, #f4f6ff);
+  box-shadow: 0 5px 16px rgb(45 71 119 / 6%);
+}
+.result-stats dt { font-size: .78rem; font-weight: 700; letter-spacing: .02em; }
+.result-stats dd { color: var(--ui-text); font-size: clamp(1rem, 1.5vw, 1.2rem); line-height: 1.25; }
+.result-stats div:last-child dd { overflow-wrap: anywhere; }
+
+@media (max-width: 900px) {
+  .selector-footer.selector-footer--runner { grid-template-columns: minmax(0, 1fr) auto; }
+}
+@media (max-width: 600px) {
+  .main-menu-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+  .main-menu-actions { grid-template-rows: auto; }
+  .main-menu-actions .home-start { grid-column: 1 / -1; grid-row: auto; min-height: 48px; }
+  .main-menu-actions .main-menu-secondary { grid-column: span 1; min-height: 38px; padding: 5px 6px; }
+  .main-menu-actions .main-menu-sound,
+  .main-menu-actions .main-menu-credits { grid-column: auto; grid-row: auto; }
+  .selector-footer.selector-footer--runner { grid-template-columns: minmax(0, 1fr); }
+  .selector-footer__navigation { justify-content: flex-start; }
+  .selector-footer .selector-confirm--runner { justify-self: stretch; width: 100%; min-width: 0; }
+  .result-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .result-stats div { padding: 10px 11px; }
+}
+
+/* Keep the title action dock compact when the artwork and copy stack on tablets. */
+@media (max-width: 900px) {
+  .main-menu-dock { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+  .main-menu-actions {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(2, clamp(42px, 7vh, 58px));
+  }
+  .main-menu-actions .home-start {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+  .main-menu-actions .main-menu-sound { grid-column: 4; grid-row: 2; }
+  .main-menu-actions .main-menu-credits { grid-column: 3; grid-row: 2; }
+}
+
+/* Mode cards use a bounded art band and content-led height instead of stretching. */
+.progression-panel--mode .mode-options { align-items: stretch; }
+.progression-panel--mode .mode-option {
+  min-height: 270px;
+  grid-template-rows: 96px auto auto 1fr auto;
+}
+.progression-panel--mode .mode-option__art {
+  min-height: 96px;
+  margin-bottom: 4px;
+}
+.progression-panel--mode .mode-option__description { min-height: 2.9em; }
+
+@media (max-width: 760px) {
+  .progression-panel--mode .mode-option {
+    min-height: 248px;
+    grid-template-rows: 82px auto auto 1fr auto;
+  }
+  .progression-panel--mode .mode-option__art { min-height: 82px; }
+}
+
+@media (max-height: 620px) and (orientation: landscape) {
+  .progression-panel--mode .mode-option { min-height: 220px; grid-template-rows: 76px auto auto 1fr auto; }
+  .progression-panel--mode .mode-option__art { min-height: 76px; }
+}
+
 /* Mode and Story stage selection screens share the responsive pastel presentation. */
 .progression-screen {
   position: fixed;
@@ -2178,12 +2305,10 @@ body:has(.selector-shell--runner),
   padding: clamp(16px, 2.8vh, 30px) clamp(16px, 3vw, 40px);
 }
 .progression-screen--stages .progression-panel > .progression-back {
-  position: absolute;
-  top: clamp(12px, 2vh, 22px);
-  right: clamp(12px, 2vw, 24px);
+  display: none;
 }
 .progression-screen--stages .progression-panel h1 {
-  max-width: calc(100% - 120px);
+  max-width: 100%;
   font-size: clamp(1.5rem, 4vh, 3rem);
 }
 .progression-screen--stages .progression-intro {
@@ -2319,8 +2444,7 @@ body:has(.selector-shell--runner),
     padding: 14px 10px;
     border-radius: 18px;
   }
-  .progression-screen--stages .progression-panel > .progression-back { top: 10px; right: 10px; padding: 6px 10px; }
-  .progression-screen--stages .progression-panel h1 { max-width: calc(100% - 78px); font-size: clamp(1.3rem, 4vh, 2rem); }
+  .progression-screen--stages .progression-panel h1 { max-width: 100%; font-size: clamp(1.3rem, 4vh, 2rem); }
   .progression-screen--stages .stage-options { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); }
   .progression-screen--stages .stage-option { padding: 7px; }
   .progression-screen--stages .stage-option strong { font-size: clamp(.84rem, 2.2vh, 1.05rem); }
