@@ -20,7 +20,11 @@ export function AchievementsScreen({ profile, onBack }: AchievementsScreenProps)
             const progress = Math.min(achievement.threshold, profile.achievementProgress[metricKey] ?? 0);
             return <article className={'achievement-card' + (unlocked ? ' is-unlocked' : '')} key={achievement.id}>
               <span className="achievement-card__medal" aria-hidden="true">{unlocked ? '✦' : '◇'}</span>
-              <div><strong>{achievement.name}</strong><p>{achievement.description}</p>
+              <div><strong>{achievement.name}</strong>
+                <span className={'achievement-card__mode achievement-card__mode--' + achievement.modeScope}>
+                  {achievement.modeScope === 'endless' ? '무한 모드' : achievement.modeScope === 'story' ? '스토리 모드' : '무한 · 스토리'}
+                </span>
+                <p>{achievement.description}</p>
                 {!unlocked && <small>{Math.floor(progress).toLocaleString()} / {achievement.threshold.toLocaleString()}</small>}
               </div>
               <span className="achievement-card__reward">{unlocked ? '달성' : `🪙 ${achievement.rewardCoins}`}</span>

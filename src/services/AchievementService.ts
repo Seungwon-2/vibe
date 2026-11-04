@@ -18,7 +18,9 @@ export function recordRunAndUnlock(
   const progressKey = `achievement-run:${runId}`;
   const wasRecorded = profileStore.claimReward(progressKey, (profile) => {
     const progress = { ...profile.achievementProgress };
-    progress.distance = Math.max(progress.distance ?? 0, result.distanceMeters);
+    if (result.mode === 'endless') {
+      progress['endless-distance'] = Math.max(progress['endless-distance'] ?? 0, result.distanceMeters);
+    }
     progress['wallet-coins-collected'] = (progress['wallet-coins-collected'] ?? 0) + result.coins;
     progress['gates-passed'] = (progress['gates-passed'] ?? 0) + (result.passedGateCount ?? 0);
     const characterMetric = `character-distance:${result.characterId}`;
