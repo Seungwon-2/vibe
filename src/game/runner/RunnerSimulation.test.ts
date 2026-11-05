@@ -19,6 +19,10 @@ function running(characterId: CharacterId = 'player-default') {
   return startRunner(createRunnerSnapshot(characterId, EPOCH));
 }
 
+function storyRunning(characterId: CharacterId = 'player-default') {
+  return startRunner(createRunnerSnapshot(characterId, EPOCH, { mode: 'story', storyStageId: 'dawn-city' }));
+}
+
 describe('RunnerSimulation', () => {
   it('starts after a separate countdown and advances only active running time', () => {
     const initial = createRunnerSnapshot('player-default', EPOCH);
@@ -114,21 +118,59 @@ describe('RunnerSimulation', () => {
     expect(advanceRunner(oneStep.state, 1_000)).toEqual({ state: oneStep.state, result: null });
   });
 
-  it('applies unique coin and time pickups, character bonuses, and the timer cap', () => {
+  it('keeps Endless time recovery at gates and preserves Story time pickup speed', () => {
     const rin = running();
     const rinTime = collectPickup(rin, { id: 'time-a', kind: 'time' });
-    expect(rinTime.remainingMs).toBe(94_000);
-    expect(collectPickup(rinTime, { id: 'time-a', kind: 'time' })).toBe(rinTime);
+    expect(rinTime).toBe(rin);
     const withCoin = collectPickup(rinTime, { id: 'coin-a', kind: 'coin' });
     expect(withCoin.coins).toBe(1);
-    expect(withCoin.remainingMs).toBe(94_000);
+    expect(withCoin.remainingMs).toBe(90_000);
     expect(rin.coins).toBe(0);
 
-    expect(collectPickup(running('cogane-rang'), { id: 'time-a', kind: 'time' }).remainingMs)
-      .toBe(93_000);
-    const almostFull = { ...rin, remainingMs: 119_000 };
-    expect(collectPickup(almostFull, { id: 'time-b', kind: 'time' }).remainingMs).toBe(120_000);
+    const storyTime = collectPickup(storyRunning(), { id: 'story-time', kind: 'time' });
+    expect(storyTime).toMatchObject({ stageSpeedBoostRemainingMs: 3_000 });
+    expect(storyTime.speedUnitsPerSecond).toBeCloseTo(rin.speedUnitsPerSecond * 1.15, 8);
     expect(collectPickup(pauseRunner(rin), { id: 'coin-b', kind: 'coin' }).coins).toBe(0);
+  });
+
+  it('applies the speed pickup to current speed for three seconds and refreshes without stacking', () => {
+    const initial = running();
+    const boosted = collectPickup(initial, { id: 'speed-a', kind: 'speed' });
+    expect(boosted).toMatchObject({ speedPickupRemainingMs: 3_000, giantRemainingMs: 0 });
+    expect(boosted.speedUnitsPerSecond).toBeCloseTo(initial.speedUnitsPerSecond * 2.5, 8);
+    const halfway = advanceRunner(boosted, 1_500).state;
+    expect(halfway.speedPickupRemainingMs).toBe(1_500);
+    const refreshed = collectPickup(halfway, { id: 'speed-b', kind: 'speed' });
+    expect(refreshed.speedPickupRemainingMs).toBe(3_000);
+    expect(collectPickup(refreshed, { id: 'speed-b', kind: 'speed' })).toBe(refreshed);
+
+    const oneStep = advanceRunner(boosted, 3_500).state;
+    let chunks = boosted;
+    for (let index = 0; index < 35; index += 1) chunks = advanceRunner(chunks, 100).state;
+    expect(oneStep.distanceMeters).toBeCloseTo(chunks.distanceMeters, 7);
+    expect(oneStep.speedPickupRemainingMs).toBe(0);
+    expect(oneStep.speedUnitsPerSecond).toBeCloseTo(
+      advanceRunner(initial, 3_500).state.speedUnitsPerSecond, 8,
+    );
+  });
+
+  it('uses one capped multiplier when speed pickup and giant overlap, with independent timers', () => {
+    const initial = running();
+    const giant = collectPickup(initial, { id: 'giant-speed', kind: 'giant' });
+    const giantAndSpeed = collectPickup(giant, { id: 'speed-overlap', kind: 'speed' });
+    expect(giantAndSpeed.speedUnitsPerSecond).toBeCloseTo(initial.speedUnitsPerSecond * 2.5, 8);
+
+    const onlyGiant = advanceRunner(giant, 3_500).state;
+    const overlap = advanceRunner(giantAndSpeed, 3_500).state;
+    expect(overlap.distanceMeters).toBeCloseTo(onlyGiant.distanceMeters, 7);
+    expect(overlap).toMatchObject({ giantRemainingMs: 2_500, speedPickupRemainingMs: 0 });
+    expect(overlap.speedUnitsPerSecond).toBeCloseTo(onlyGiant.speedUnitsPerSecond, 8);
+
+    const expired = advanceRunner(overlap, 2_500).state;
+    expect(expired).toMatchObject({ giantRemainingMs: 0, speedPickupRemainingMs: 0 });
+    expect(expired.speedUnitsPerSecond).toBeCloseTo(
+      advanceRunner(initial, 6_000).state.speedUnitsPerSecond, 8,
+    );
   });
 
   it('activates and refreshes giant for six seconds without changing score or timer', () => {
@@ -153,6 +195,19 @@ describe('RunnerSimulation', () => {
     expect(fatal.state).toMatchObject({ phase: 'finished', finishReason: 'pit', giantRemainingMs: 0 });
     const rescue = applyPitFall({ ...running('hanayo-hiyori'), giantRemainingMs: 2_000 });
     expect(rescue.state).toMatchObject({ phase: 'running', passiveChargesRemaining: 1, giantRemainingMs: 0 });
+  });
+
+  it('decrements temporary speed timers during stagger and keeps pause frozen', () => {
+    const boosted = collectPickup(running(), { id: 'stagger-speed', kind: 'speed' });
+    const staggered = { ...boosted, staggerRemainingMs: 1_200 };
+    const paused = pauseRunner(staggered);
+    expect(advanceRunner(paused, 1_000).state.speedPickupRemainingMs).toBe(3_000);
+    const recovered = advanceRunner(staggered, 1_200).state;
+    expect(recovered.speedPickupRemainingMs).toBe(1_800);
+    expect(recovered.distanceMeters).toBe(staggered.distanceMeters);
+    expect(recovered.speedUnitsPerSecond).toBeCloseTo(
+      advanceRunner(running(), 1_200).state.speedUnitsPerSecond * 2.5, 8,
+    );
   });
 
   it('keeps standard collision penalties for non-guard characters', () => {

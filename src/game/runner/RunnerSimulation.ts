@@ -45,20 +45,48 @@ function baseTraveledWorldUnits(elapsedMs: number, deltaMs: number, gateCount: n
 
 function getSpeed(state: RunnerSnapshot, elapsedMs = state.elapsedMs, gateCount = state.passedGateIds.length): number {
   const base = getBaseSpeed(elapsedMs, gateCount, state.characterId, state.mode ?? 'endless');
-  return state.mode === 'story' && state.stageSpeedBoostRemainingMs
+  const powerUpMultiplier = Math.min(RUNNER_CONFIG.maxSpeedPowerUpMultiplier, Math.max(
+    state.giantRemainingMs > 0 ? RUNNER_CONFIG.giantSpeedMultiplier : 1,
+    state.speedPickupRemainingMs > 0 ? RUNNER_CONFIG.speedPickupMultiplier : 1,
+  ));
+  if (powerUpMultiplier > 1) return base * powerUpMultiplier;
+  return state.mode === 'story' && (state.stageSpeedBoostRemainingMs ?? 0) > 0
     ? base * (1 + RUNNER_CONFIG.storySpeedBoostRatio)
     : base;
 }
 
 function traveledWorldUnits(state: RunnerSnapshot, deltaMs: number, gateCount = state.passedGateIds.length): number {
   const mode = state.mode ?? 'endless';
-  const boostedMs = mode === 'story'
-    ? Math.min(deltaMs, state.stageSpeedBoostRemainingMs ?? 0)
-    : 0;
-  const normalMs = Math.max(0, deltaMs - boostedMs);
-  const base = baseTraveledWorldUnits(state.elapsedMs, boostedMs, gateCount, state.characterId, mode) *
-    (boostedMs > 0 ? 1 + RUNNER_CONFIG.storySpeedBoostRatio : 1);
-  return base + baseTraveledWorldUnits(state.elapsedMs + boostedMs, normalMs, gateCount, state.characterId, mode);
+  let elapsedMs = state.elapsedMs;
+  let remainingMs = Math.max(0, deltaMs);
+  let giantRemainingMs = state.giantRemainingMs;
+  let speedPickupRemainingMs = state.speedPickupRemainingMs;
+  let stageSpeedBoostRemainingMs = mode === 'story' ? state.stageSpeedBoostRemainingMs ?? 0 : 0;
+  let distance = 0;
+
+  while (remainingMs > EPSILON) {
+    const powerUpMultiplier = Math.min(RUNNER_CONFIG.maxSpeedPowerUpMultiplier, Math.max(
+      giantRemainingMs > 0 ? RUNNER_CONFIG.giantSpeedMultiplier : 1,
+      speedPickupRemainingMs > 0 ? RUNNER_CONFIG.speedPickupMultiplier : 1,
+    ));
+    const multiplier = powerUpMultiplier > 1
+      ? powerUpMultiplier
+      : stageSpeedBoostRemainingMs > 0 ? 1 + RUNNER_CONFIG.storySpeedBoostRatio : 1;
+    const activeTimers = [
+      giantRemainingMs,
+      speedPickupRemainingMs,
+      ...(mode === 'story' ? [stageSpeedBoostRemainingMs] : []),
+    ].filter((timer) => timer > EPSILON);
+    const segmentMs = Math.min(remainingMs, ...activeTimers);
+    distance += baseTraveledWorldUnits(elapsedMs, segmentMs, gateCount, state.characterId, mode) * multiplier;
+    elapsedMs += segmentMs;
+    remainingMs = Math.max(0, remainingMs - segmentMs);
+    giantRemainingMs = Math.max(0, giantRemainingMs - segmentMs);
+    speedPickupRemainingMs = Math.max(0, speedPickupRemainingMs - segmentMs);
+    stageSpeedBoostRemainingMs = Math.max(0, stageSpeedBoostRemainingMs - segmentMs);
+  }
+
+  return distance;
 }
 
 function advanceSegment(state: RunnerSnapshot, deltaMs: number, gateCount = state.passedGateIds.length): RunnerSnapshot {
@@ -72,6 +100,8 @@ function advanceSegment(state: RunnerSnapshot, deltaMs: number, gateCount = stat
     worldDistance,
     distanceMeters,
     speedUnitsPerSecond: getSpeed({ ...state, elapsedMs,
+      giantRemainingMs: Math.max(0, state.giantRemainingMs - deltaMs),
+      speedPickupRemainingMs: Math.max(0, state.speedPickupRemainingMs - deltaMs),
       stageSpeedBoostRemainingMs: Math.max(0, (state.stageSpeedBoostRemainingMs ?? 0) - deltaMs) }, elapsedMs, gateCount),
     staggerRemainingMs: Math.max(0, state.staggerRemainingMs - deltaMs),
     protectionRemainingMs: Math.max(0, state.protectionRemainingMs - deltaMs),
@@ -79,6 +109,7 @@ function advanceSegment(state: RunnerSnapshot, deltaMs: number, gateCount = stat
     slideGuardRemainingMs: Math.max(0, state.slideGuardRemainingMs - deltaMs),
     slideGuardCooldownRemainingMs: Math.max(0, state.slideGuardCooldownRemainingMs - deltaMs),
     giantRemainingMs: Math.max(0, state.giantRemainingMs - deltaMs),
+    speedPickupRemainingMs: Math.max(0, state.speedPickupRemainingMs - deltaMs),
     stageSpeedBoostRemainingMs: Math.max(0, (state.stageSpeedBoostRemainingMs ?? 0) - deltaMs),
     biomeId: getBiomeForDistance(distanceMeters).id,
   };
@@ -153,6 +184,7 @@ export function createRunnerSnapshot(
     nearMissScore: 0,
     hitsTaken: 0,
     stageSpeedBoostRemainingMs: 0,
+    speedPickupRemainingMs: 0,
     elapsedMs: 0,
     remainingMs: mode === 'story' ? Number.POSITIVE_INFINITY : RUNNER_CONFIG.initialTimerMs,
     distanceMeters: 0,
@@ -211,6 +243,7 @@ export function finishRunner(
       ...state,
       phase: 'finished' as const,
       giantRemainingMs: 0,
+      speedPickupRemainingMs: 0,
       remainingMs: 0,
       finishedAtElapsedMs: state.elapsedMs,
       finishReason: reason,
@@ -238,6 +271,8 @@ export function advanceRunner(
         elapsedMs: current.elapsedMs + frozenMs,
         remainingMs: current.mode === 'story' ? Number.POSITIVE_INFINITY : Math.max(0, current.remainingMs - frozenMs),
         speedUnitsPerSecond: getSpeed({ ...current,
+          giantRemainingMs: Math.max(0, current.giantRemainingMs - frozenMs),
+          speedPickupRemainingMs: Math.max(0, current.speedPickupRemainingMs - frozenMs),
           stageSpeedBoostRemainingMs: Math.max(0, (current.stageSpeedBoostRemainingMs ?? 0) - frozenMs) },
         current.elapsedMs + frozenMs, current.passedGateIds.length),
         staggerRemainingMs: Math.max(0, current.staggerRemainingMs - frozenMs),
@@ -246,6 +281,7 @@ export function advanceRunner(
         slideGuardRemainingMs: Math.max(0, current.slideGuardRemainingMs - frozenMs),
         slideGuardCooldownRemainingMs: Math.max(0, current.slideGuardCooldownRemainingMs - frozenMs),
         giantRemainingMs: Math.max(0, current.giantRemainingMs - frozenMs),
+        speedPickupRemainingMs: Math.max(0, current.speedPickupRemainingMs - frozenMs),
         stageSpeedBoostRemainingMs: Math.max(0, (current.stageSpeedBoostRemainingMs ?? 0) - frozenMs),
       };
       unspentMs = Math.max(0, unspentMs - frozenMs);
@@ -311,28 +347,30 @@ export function collectPickup(
 
   const collectedPickupIds = [...state.collectedPickupIds, pickup.id];
   if (pickup.kind === 'giant') {
-    return { ...state, giantRemainingMs: RUNNER_CONFIG.giantDurationMs, collectedPickupIds };
+    const giant = { ...state, giantRemainingMs: RUNNER_CONFIG.giantDurationMs, collectedPickupIds };
+    return { ...giant, speedUnitsPerSecond: getSpeed(giant) };
   }
   if (pickup.kind === 'coin') {
     return { ...state, coins: state.coins + 1, collectedPickupIds };
   }
-  const passive = getCharacterPassive(state.characterId);
+  if (pickup.kind === 'speed') {
+    const boosted = {
+      ...state,
+      speedPickupRemainingMs: RUNNER_CONFIG.speedPickupDurationMs,
+      collectedPickupIds,
+    };
+    return { ...boosted, speedUnitsPerSecond: getSpeed(boosted) };
+  }
   if (state.mode === 'story') {
-    return {
+    const boosted = {
       ...state,
       stageSpeedBoostRemainingMs: RUNNER_CONFIG.storySpeedBoostMs,
       collectedPickupIds,
     };
+    return { ...boosted, speedUnitsPerSecond: getSpeed(boosted) };
   }
-  const bonusMs = passive.id === 'rin-speed' ? 1_000 : 0;
-  return {
-    ...state,
-    remainingMs: Math.min(
-      RUNNER_CONFIG.maxTimerMs,
-      state.remainingMs + RUNNER_CONFIG.timePickupMs + bonusMs,
-    ),
-    collectedPickupIds,
-  };
+  // Endless mode only restores time at gates. A stray time pickup cannot bypass that rule.
+  return state;
 }
 
 export function applyCollision(state: RunnerSnapshot, sliding = false): RunnerSnapshot {
