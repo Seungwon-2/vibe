@@ -184,6 +184,14 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
       }, 1_200);
     } else if (event.type === 'pickup' && event.kind === 'coin') {
       browserRunnerAudio.playEffect('coin');
+    } else if (event.type === 'pickup' && event.kind === 'speed') {
+      browserRunnerAudio.playEffect('time-pickup');
+      if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
+      setRecentBonus({ id: event.pickupId, kind: 'speed-pickup' });
+      bonusTimeout.current = setTimeout(() => {
+        bonusTimeout.current = null;
+        setRecentBonus(null);
+      }, 1_200);
     } else if (event.type === 'pickup' && event.kind === 'time') {
       if (event.awardedMs > 0) browserRunnerAudio.playEffect('time-pickup');
       if (event.awardedMs > 0) showBonusCue(event.pickupId, mode === 'story' ? 'speed-boost' : 'pickup', event.awardedMs);

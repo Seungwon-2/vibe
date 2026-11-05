@@ -195,8 +195,11 @@ button {
 .runner-hud__pause { width: 40px; height: 40px; border: 1px solid var(--ui-border); border-radius: 12px; color: var(--ui-primary-strong); background: var(--ui-surface); font-size: 1.25rem; cursor: pointer; pointer-events: auto; }
 .runner-hud__details { display: flex; min-width: 0; justify-content: space-between; align-items: center; gap: 10px; color: var(--ui-muted); font-size: 0.78em; }
 .runner-hud__details > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.runner-hud__effects { display: flex; min-width: 0; flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px; }
 .runner-hud__passive { display: inline-flex; min-width: 0; max-width: min(48%, 340px); align-items: center; gap: 6px; text-align: right; color: var(--character-accent, var(--ui-primary-strong)); }
 .runner-hud__powerup { align-self: center; padding: 4px 9px; border: 1px solid #e3b94e; border-radius: 999px; background: #fff3c7; color: #795414; font-weight: 800; white-space: nowrap; }
+.runner-hud__powerup--speed { border-color: #75c9ed; background: #e5f8ff; color: #126b9b; }
+.runner-hud__powerup--story-speed { border-color: #a5b7ef; background: #eef2ff; color: #455b9a; }
 .runner-hud__passive > span:nth-child(2) { display: grid; min-width: 0; line-height: 1.15; }
 .runner-hud__passive small { overflow: hidden; color: var(--ui-muted); font-size: 0.9em; text-overflow: ellipsis; white-space: nowrap; }
 .runner-hud__charges { display: inline-flex; gap: 3px; margin-left: 2px; }

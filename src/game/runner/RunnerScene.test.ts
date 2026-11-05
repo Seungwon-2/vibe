@@ -71,6 +71,49 @@ describe('RunnerScene finish boundary', () => {
     expect(collectiblesUpdate).toHaveBeenCalledWith(expect.objectContaining({ phase: 'running' }), 16);
   });
 
+  it('activates the running trail while the separate speed pickup is active', () => {
+    const scene = new RunnerScene();
+    const state = { ...startRunner(createRunnerSnapshot('player-default')), speedPickupRemainingMs: 2_000 };
+    const sprite = { x: 170, y: 470 };
+    const trailUpdate = vi.fn();
+    const harness = scene as unknown as {
+      snapshot: RunnerSnapshot;
+      inputBridge: { consumeFrame(): { slideHeld: boolean; jumpPressed: boolean } };
+      player: {
+        gameObject: typeof sprite; isGrounded: boolean; setSliding(held: boolean): boolean; jump(): boolean;
+        update(deltaMs: number): void; setHurt(active: boolean): void; setProtected(durationMs: number): void;
+        setPassiveEffect(durationMs: number): void; setGiant(active: boolean): void;
+      };
+      backdrop: { update(snapshot: RunnerSnapshot, deltaMs: number): void };
+      trailEffect: { update(...args: unknown[]): void };
+      eventEmitter: { gate(...args: unknown[]): void };
+      spawner: { update(snapshot: RunnerSnapshot): void };
+      collectibles: { update(snapshot: RunnerSnapshot, deltaMs: number): void };
+      pits: { update(snapshot: RunnerSnapshot): void };
+      time: { now: number };
+      drawPassiveEffect(...args: number[]): void;
+      publish(snapshot: RunnerSnapshot, force?: boolean): void;
+      update(time: number, deltaMs: number): void;
+    };
+    harness.snapshot = state;
+    harness.inputBridge = { consumeFrame: () => ({ slideHeld: false, jumpPressed: false }) };
+    harness.player = { gameObject: sprite, isGrounded: true, setSliding: () => false, jump: () => false,
+      update: vi.fn(), setHurt: vi.fn(), setProtected: vi.fn(), setPassiveEffect: vi.fn(), setGiant: vi.fn() };
+    harness.backdrop = { update: vi.fn() };
+    harness.trailEffect = { update: trailUpdate };
+    harness.eventEmitter = { gate: vi.fn() };
+    harness.spawner = { update: vi.fn() };
+    harness.collectibles = { update: vi.fn() };
+    harness.pits = { update: vi.fn() };
+    harness.time = { now: 16 };
+    harness.drawPassiveEffect = vi.fn();
+    harness.publish = (next) => { harness.snapshot = next; };
+
+    harness.update(0, 16);
+
+    expect(trailUpdate).toHaveBeenCalledWith(16, 16, 170, 458, true, true);
+  });
+
   it('loads only the selected character quality frames for gameplay', () => {
     const scene = new RunnerScene();
     const images: [string, string][] = [];

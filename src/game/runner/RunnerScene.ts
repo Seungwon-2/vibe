@@ -161,7 +161,8 @@ export class RunnerScene extends Phaser.Scene {
     this.player.setPassiveEffect(state.passiveEffectRemainingMs);
     this.player.setGiant(state.giantRemainingMs > 0);
     this.trailEffect.update(this.time.now, deltaMs, this.player.gameObject.x, this.player.gameObject.y - 12,
-      state.phase === 'running', !this.player.isGrounded || (state.stageSpeedBoostRemainingMs ?? 0) > 0 || state.giantRemainingMs > 0);
+      state.phase === 'running', !this.player.isGrounded || state.speedPickupRemainingMs > 0 ||
+      (state.stageSpeedBoostRemainingMs ?? 0) > 0 || state.giantRemainingMs > 0);
     this.drawPassiveEffect(state.passiveEffectRemainingMs, state.slideGuardRemainingMs);
     this.spawner.update(state);
     this.collectibles.update(state, deltaMs);

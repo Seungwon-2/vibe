@@ -1,7 +1,7 @@
 # Runner Speed Power-Ups
 
 - Date: 2026-11-05
-- Status: Planned
+- Status: Complete
 - Decision record: [Runner Speed Power-Ups](../decisions/2026-11-05-runner-speed-powerups.md)
 
 ## Goal
@@ -21,7 +21,7 @@ Make the existing giant pickup a satisfying 2.5x speed burst, add a separate 3-s
 
 | Phase | Scope | Tasks | Status |
 |---|---|---:|---|
-| [P01 Speed Power-Ups](../phases/2026-11-05-runner-speed-powerups/P01-speed-powerups/phase.md) | Simulation, pickup placement and collision reliability, HUD feedback | 3 | planned |
+| [P01 Speed Power-Ups](../phases/2026-11-05-runner-speed-powerups/P01-speed-powerups/phase.md) | Simulation, pickup placement and collision reliability, HUD feedback | 3 | complete |
 
 ## Execution order
 

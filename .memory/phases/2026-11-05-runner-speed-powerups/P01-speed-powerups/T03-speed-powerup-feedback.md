@@ -1,6 +1,6 @@
 # T03 HUD and Pickup Feedback
 
-- Status: planned
+- Status: done
 - Plan: `2026-11-05-runner-speed-powerups`
 - Phase: `P01-speed-powerups`
 
@@ -65,6 +65,6 @@ Task: T03-speed-powerup-feedback
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation complete
-- [ ] Task status set to done\n
+- [x] Implementation complete
+- [x] Validation complete
+- [x] Task status set to done

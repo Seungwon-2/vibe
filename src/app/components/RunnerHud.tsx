@@ -14,6 +14,7 @@ export type RunnerHudProps = {
 
 export type RunnerHudCue =
   | Readonly<{ id: string; kind: 'pickup' | 'gate' | 'speed-boost'; awardedMs: number }>
+  | Readonly<{ id: string; kind: 'speed-pickup' }>
   | Readonly<{ id: string; kind: 'giant' }>
   | Readonly<{ id: string; kind: 'passive-triggered'; passiveId: 'hiyori-guard'; remainingCharges: number; trigger: 'obstacle' | 'pit' }>
   | Readonly<{ id: string; kind: 'passive-triggered'; passiveId: 'toa-ghost-glide'; remainingCharges: 0; trigger: 'slide' }>;
@@ -42,8 +43,9 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
   const warning = !storyStage && snapshot.remainingMs <= 10_000;
   const passive = getCharacterPassive(character.id);
   const showBonus = recentBonus !== null && (recentBonus.kind === 'passive-triggered' ||
-    recentBonus.kind === 'giant' || recentBonus.awardedMs > 0);
-  const bonusSeconds = recentBonus && recentBonus.kind !== 'passive-triggered' && recentBonus.kind !== 'giant'
+    recentBonus.kind === 'giant' || recentBonus.kind === 'speed-pickup' || recentBonus.awardedMs > 0);
+  const bonusSeconds = recentBonus && recentBonus.kind !== 'passive-triggered' &&
+    recentBonus.kind !== 'giant' && recentBonus.kind !== 'speed-pickup'
     ? Math.max(1, Math.floor(recentBonus.awardedMs / 1_000)) : 0;
   const passiveCue = recentBonus?.kind === 'passive-triggered'
     ? recentBonus.passiveId === 'toa-ghost-glide'
@@ -90,30 +92,38 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
       </div>
       <div className="runner-hud__details">
         <span>{landmark}</span>
-        {snapshot.giantRemainingMs > 0 && (
-          <span className="runner-hud__powerup" role="timer" aria-label={`거대화 ${Math.ceil(snapshot.giantRemainingMs / 1_000)}초 남음`}>
-            ✦ 거대화 · {Math.ceil(snapshot.giantRemainingMs / 1_000)}초
+        <div className="runner-hud__effects">
+          {snapshot.giantRemainingMs > 0 && (
+            <span className="runner-hud__powerup runner-hud__powerup--giant" role="timer" aria-label={`거대화 ${Math.ceil(snapshot.giantRemainingMs / 1_000)}초 남음`}>
+              ✦ 거대화 · {Math.ceil(snapshot.giantRemainingMs / 1_000)}초
+            </span>
+          )}
+          {snapshot.speedPickupRemainingMs > 0 && (
+            <span className="runner-hud__powerup runner-hud__powerup--speed" role="timer" aria-label={`2.5배 속도 ${Math.ceil(snapshot.speedPickupRemainingMs / 1_000)}초 남음`}>
+              ⚡ 2.5배 속도 · {Math.ceil(snapshot.speedPickupRemainingMs / 1_000)}초
+            </span>
+          )}
+          {(snapshot.stageSpeedBoostRemainingMs ?? 0) > 0 && (
+            <span className="runner-hud__powerup runner-hud__powerup--story-speed" role="timer" aria-label={'속도 증가 ' + Math.ceil((snapshot.stageSpeedBoostRemainingMs ?? 0) / 1_000) + '초 남음'}>
+              ✧ 속도 +15% · {Math.ceil((snapshot.stageSpeedBoostRemainingMs ?? 0) / 1_000)}초
+            </span>
+          )}
+          <span className="runner-hud__passive" style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
+            {passive.icon && <CharacterAbilityIcon icon={passive.icon} accentColor={character.accentColor} size={28} />}
+            <span><strong>{passive.name}</strong><small>{passive.effectLabel}</small></span>
+            {passive.id === 'hiyori-guard' && <span className="runner-hud__charges"
+              role="img" aria-label={`남은 방어 ${snapshot.passiveChargesRemaining}회`}>
+              {[0, 1].map((charge) => <i key={charge} className={charge < snapshot.passiveChargesRemaining ? 'is-ready' : ''} />)}
+            </span>}
+            {passive.id === 'toa-ghost-glide' && snapshot.slideGuardCooldownRemainingMs > 0 &&
+              <small className="runner-hud__cooldown">{Math.ceil(snapshot.slideGuardCooldownRemainingMs / 1_000)}초</small>}
           </span>
-        )}
-        {(snapshot.stageSpeedBoostRemainingMs ?? 0) > 0 && (
-          <span className="runner-hud__powerup" role="timer" aria-label={'속도 증가 ' + Math.ceil((snapshot.stageSpeedBoostRemainingMs ?? 0) / 1_000) + '초 남음'}>
-            ✧ 속도 +15% · {Math.ceil((snapshot.stageSpeedBoostRemainingMs ?? 0) / 1_000)}초
-          </span>
-        )}
-        <span className="runner-hud__passive" style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
-          {passive.icon && <CharacterAbilityIcon icon={passive.icon} accentColor={character.accentColor} size={28} />}
-          <span><strong>{passive.name}</strong><small>{passive.effectLabel}</small></span>
-          {passive.id === 'hiyori-guard' && <span className="runner-hud__charges"
-            role="img" aria-label={`남은 방어 ${snapshot.passiveChargesRemaining}회`}>
-            {[0, 1].map((charge) => <i key={charge} className={charge < snapshot.passiveChargesRemaining ? 'is-ready' : ''} />)}
-          </span>}
-          {passive.id === 'toa-ghost-glide' && snapshot.slideGuardCooldownRemainingMs > 0 &&
-            <small className="runner-hud__cooldown">{Math.ceil(snapshot.slideGuardCooldownRemainingMs / 1_000)}초</small>}
-        </span>
+        </div>
       </div>
       {showBonus && (
         <span key={recentBonus.id} className={`runner-hud__bonus${passiveCue ? ' is-passive-cue' : ''}`} role="status">
           {passiveCue ?? (recentBonus.kind === 'giant' ? '거대화!'
+            : recentBonus.kind === 'speed-pickup' ? '⚡ 2.5배 속도 · 3초'
             : recentBonus.kind === 'speed-boost' ? '속도 +15% · ' + bonusSeconds + '초'
               : '+' + bonusSeconds + '초')}
         </span>

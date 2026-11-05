@@ -96,6 +96,22 @@ describe('RunnerHud', () => {
     expect(screen.getByRole('status')).toHaveTextContent('거대화!');
     expect(screen.queryByText('+0초')).not.toBeInTheDocument();
   });
+
+  it('distinguishes the 2.5x speed pickup from Story speed and giant timers', () => {
+    const { rerender } = render(<RunnerHud snapshot={snapshot({
+      speedPickupRemainingMs: 2_200, stageSpeedBoostRemainingMs: 1_100, giantRemainingMs: 3_000,
+    })} character={getCharacter('player-default')} recentBonus={null} onPause={vi.fn()} />);
+    expect(screen.getByRole('timer', { name: '2.5배 속도 3초 남음' })).toHaveTextContent('2.5배 속도 · 3초');
+    expect(screen.getByRole('timer', { name: '속도 증가 2초 남음' })).toHaveTextContent('속도 +15% · 2초');
+    expect(screen.getByRole('timer', { name: '거대화 3초 남음' })).toBeInTheDocument();
+    expect(document.querySelector('.runner-hud__powerup--speed')).toBeInTheDocument();
+
+    rerender(<RunnerHud snapshot={snapshot({ speedPickupRemainingMs: 0, stageSpeedBoostRemainingMs: 0,
+      giantRemainingMs: 0 })} character={getCharacter('player-default')}
+    recentBonus={{ id: 'speed-1', kind: 'speed-pickup' }} onPause={vi.fn()} />);
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('2.5배 속도 · 3초');
+  });
 });
 
 describe('overlays', () => {

@@ -25,6 +25,9 @@ vi.mock('../../game/runner/RunnerGame', () => ({
       </button>
       <button type="button" onClick={() => onEvent({ type: 'passive-triggered', passiveId: 'hiyori-guard',
         remainingCharges: 1, trigger: 'pit' })}>trigger passive</button>
+      <button type="button" onClick={() => onEvent({ type: 'pickup', pickupId: 'speed-1', kind: 'speed', awardedMs: 0 })}>
+        trigger speed pickup
+      </button>
       <button type="button" onClick={() => {
         onEvent({ type: 'player-action', action: 'jump' });
         onEvent({ type: 'player-action', action: 'double-jump' });
@@ -79,6 +82,19 @@ describe('RunScreen', () => {
     expect(audioMock.playEffect.mock.calls).toEqual([
       ['jump'], ['double-jump'], ['slide'], ['coin'], ['time-pickup'], ['time-pickup'], ['gate'], ['hit'], ['fall'], ['hiyori-defense'],
     ]);
+  });
+
+  it('shows a distinct speed pickup cue, reuses its pickup sound, and clears the cue after 1,200ms', () => {
+    vi.useFakeTimers();
+    audioMock.playEffect.mockClear();
+    render(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'trigger speed pickup' }));
+    expect(audioMock.playEffect).toHaveBeenCalledExactlyOnceWith('time-pickup');
+    expect(document.querySelector('.runner-hud__bonus')).toHaveTextContent('2.5배 속도 · 3초');
+    act(() => vi.advanceTimersByTime(1_199));
+    expect(document.querySelector('.runner-hud__bonus')).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(1));
+    expect(document.querySelector('.runner-hud__bonus')).not.toBeInTheDocument();
   });
 
   it('shows a brief gate speed burst and restarts its duration on another gate', () => {
