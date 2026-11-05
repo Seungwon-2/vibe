@@ -165,6 +165,27 @@ describe('PitSpawner', () => {
     spawner.destroy();
   });
 
+  it('resolves a floor gap crossed between high-speed updates while grounded', () => {
+    const mock = makeScene();
+    const player = makePlayer();
+    player.body.left = 150;
+    player.body.right = 190;
+    player.body.bottom = RUNNER_GROUND_Y;
+    const onPitFall = vi.fn(() => 'fatal' as const);
+    const spawner = new PitSpawner(mock.scene, player as unknown as Phaser.Physics.Arcade.Sprite,
+      onPitFall);
+    const running = { ...startRunner(createRunnerSnapshot('player-default')),
+      distanceMeters: 600, worldDistance: 1_800 };
+
+    spawner.update(running);
+    spawner.update({ ...running, distanceMeters: 1_000, worldDistance: 3_000 });
+
+    expect(onPitFall).toHaveBeenCalledOnce();
+    expect(onPitFall).toHaveBeenCalledWith(expect.objectContaining({ id: 'pit-850' }));
+    expect(mock.graphicsObjects[0].destroy).not.toHaveBeenCalled();
+    spawner.destroy();
+  });
+
   it('removes pit art after a guarded contact instead of retaining it for a fatal fall', () => {
     const mock = makeScene();
     const onPitFall = vi.fn(() => 'rescued' as const);

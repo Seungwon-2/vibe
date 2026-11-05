@@ -14,6 +14,7 @@ import { getPitDefinitions, isPitClearance, type PitDefinition } from './PitSpaw
 import { getStoryPitDefinitions } from './storyPitSchedule';
 import { getHazardGeometry } from './CollisionSystem';
 import type { HazardDefinition } from './hazardTypes';
+import { boundsCenter, getCollisionBounds, sweptAabbIntersects, type CollisionBounds } from './sweptCollision';
 
 export type PickupDefinition = Readonly<{
   id: string;
@@ -90,6 +91,24 @@ export function drawPickupArt(
     return;
   }
 
+  if (kind === 'speed') {
+    // A cool-blue lightning bolt is visually separate from the warm coin and
+    // the violet-pink giant comet pickup.
+    art.fillStyle(0x68d8ff, 1)
+      .fillTriangle(2, -19, -11, 1, -1, 1)
+      .fillTriangle(-1, -1, 11, -1, -7, 19);
+    art.lineStyle(2.5, 0x123d70, 1)
+      .lineBetween(2, -19, -11, 1)
+      .lineBetween(-11, 1, -1, 1)
+      .lineBetween(-1, 1, -7, 19)
+      .lineBetween(-7, 19, 11, -1)
+      .lineBetween(11, -1, -1, -1);
+    art.lineStyle(1.5, 0xffffff, 0.95)
+      .lineBetween(1, -13, -7, 0)
+      .lineBetween(-7, 0, -1, 0);
+    return;
+  }
+
   art.fillStyle(p.pickupTime).fillTriangle(0, -11, 10, 0, 0, 11)
     .fillTriangle(0, -11, 0, 11, -10, 0);
   art.lineStyle(2, p.hazardContrast, 0.96).lineBetween(0, -11, 10, 0)
@@ -118,6 +137,8 @@ type ScheduledHazard = Readonly<{ distanceMeters: number; definition: HazardDefi
 function hasPickupVisualClearance(existing: PickupDefinition, candidate: PickupDefinition): boolean {
   const clearance = existing.kind === 'giant' || candidate.kind === 'giant'
     ? RUNNER_CONFIG.pickupObjectClearanceMeters
+    : existing.kind === 'speed' || candidate.kind === 'speed'
+      ? RUNNER_CONFIG.speedPickupClearanceMeters
     : RUNNER_CONFIG.pickupCoinVisualClearanceMeters;
   return Math.abs(existing.distanceMeters - candidate.distanceMeters) >= clearance;
 }
@@ -350,7 +371,26 @@ export function generatePickupSchedule(maxDistanceMeters: number,
     giantPickups.push({ id: `giant-${giantIndex++}`, kind: 'giant', distanceMeters,
       heightUnits: 52, optionalJump: false });
   }
-  return Object.freeze([...existingPickups, ...giantPickups]
+  const scheduledPickups = [...existingPickups, ...giantPickups];
+  const speedPickups: PickupDefinition[] = [];
+  for (let target = RUNNER_CONFIG.speedPickupFirstDistanceMeters;
+    target <= maxDistanceMeters; target += RUNNER_CONFIG.speedPickupSpacingMeters) {
+    const minimum = Math.max(SAFE_PICKUP_START_METERS, target - RUNNER_CONFIG.speedPickupSearchRadiusMeters);
+    const maximum = Math.min(maxDistanceMeters, target + RUNNER_CONFIG.speedPickupSearchRadiusMeters);
+    const candidates = Array.from({ length: Math.max(0, maximum - minimum + 1) },
+      (_, index) => minimum + index)
+      .sort((left, right) => Math.abs(left - target) - Math.abs(right - target) || left - right);
+    const distanceMeters = candidates.find((candidate) =>
+      isPickupDistanceSafe(candidate, 52, hazards, pits) &&
+      [...scheduledPickups, ...speedPickups].every((pickup) =>
+        Math.abs(pickup.distanceMeters - candidate) >= RUNNER_CONFIG.speedPickupClearanceMeters),
+    );
+    if (distanceMeters !== undefined) {
+      speedPickups.push({ id: `speed-${speedPickups.length}`, kind: 'speed', distanceMeters,
+        heightUnits: 52, optionalJump: false });
+    }
+  }
+  return Object.freeze([...scheduledPickups, ...speedPickups]
     .sort((left, right) => left.distanceMeters - right.distanceMeters || left.id.localeCompare(right.id)));
 }
 
@@ -370,6 +410,8 @@ type ActivePickup = {
   magnetStartX: number;
   magnetStartY: number;
   magnetLastProjectedX: number;
+  lastX: number | null;
+  lastY: number | null;
   sparkle: Phaser.GameObjects.Graphics | null;
 };
 
@@ -385,6 +427,8 @@ export class CollectibleSpawner {
   private goal: GoalArt | null = null;
   private createdGates = new Set<number>();
   private activeStoryBiome: RunnerBiomeDefinition | null = null;
+  private previousDistanceMeters: number | null = null;
+  private previousPlayerBounds: CollisionBounds | null = null;
   private readonly passive: ReturnType<typeof getCharacterPassive>;
 
   constructor(
@@ -417,9 +461,15 @@ export class CollectibleSpawner {
       this.nextPickupIndex += 1;
     }
     const frameDeltaMs = Number.isFinite(deltaMs) ? Math.max(0, deltaMs) : 0;
+    const playerBounds = getCollisionBounds(this.player, 20, 38);
+    const previousPlayerBounds = this.previousPlayerBounds ?? playerBounds;
+    const previousDistanceMeters = this.previousDistanceMeters ?? snapshot.distanceMeters;
+    const previousPlayerCenter = boundsCenter(previousPlayerBounds);
+    const playerCenter = boundsCenter(playerBounds);
     for (const pickup of [...this.active]) {
       if (pickup.collected) continue;
       const projectedX = this.screenX(pickup.definition.distanceMeters, snapshot.distanceMeters);
+      const previousProjectedX = this.screenX(pickup.definition.distanceMeters, previousDistanceMeters);
       const projectedY = RUNNER_GROUND_Y - pickup.definition.heightUnits;
       const target = this.playerPickupCenter();
       const eligibleForMagnet = this.passive.id === 'mary-pickup-magnet' &&
@@ -452,8 +502,25 @@ export class CollectibleSpawner {
 
       pickup.box.setPosition(x, y);
       pickup.art.setPosition(x, y);
+      const previousX = pickup.lastX ?? previousProjectedX;
+      const previousY = pickup.lastY ?? projectedY;
+      const pickupRadius = getPickupBodySize() / 2;
+      if (sweptAabbIntersects(
+        previousX - previousPlayerCenter.x,
+        previousY - previousPlayerCenter.y,
+        x - playerCenter.x,
+        y - playerCenter.y,
+        pickupRadius + (playerBounds.right - playerBounds.left) / 2,
+        pickupRadius + (playerBounds.bottom - playerBounds.top) / 2,
+      )) {
+        this.collectPickup(pickup);
+      }
+      pickup.lastX = x;
+      pickup.lastY = y;
       if (x < -20 || snapshot.collectedPickupIds.includes(pickup.definition.id)) this.removePickup(pickup);
     }
+    this.previousDistanceMeters = snapshot.distanceMeters;
+    this.previousPlayerBounds = playerBounds;
 
     for (const distanceMeters of RUNNER_GATE_DISTANCES_M) {
       if (storyStage && distanceMeters >= storyStage.lengthMeters) continue;
@@ -558,18 +625,22 @@ export class CollectibleSpawner {
       : getBiomeForDistance(definition.distanceMeters);
     drawPickupArt(art, definition.kind, biome);
     const active: ActivePickup = { definition, box, art, collected: false, magnetStarted: false,
-      magnetElapsedMs: 0, magnetStartX: 0, magnetStartY: 0, magnetLastProjectedX: 0, sparkle: null };
+      magnetElapsedMs: 0, magnetStartX: 0, magnetStartY: 0, magnetLastProjectedX: 0,
+      lastX: null, lastY: null, sparkle: null };
     this.active.push(active);
     this.scene.physics.add.overlap(this.player, box, () => {
-      if (!this.active.includes(active) || active.collected) return;
-      active.collected = true;
-      // Do not notify React or destroy Arcade bodies while the physics world
-      // is iterating overlap pairs. Defer both until the next scene tick.
-      this.scene.time.delayedCall(0, () => {
-        if (!this.active.includes(active)) return;
-        this.onPickup(definition);
-        this.removePickup(active);
-      });
+      this.collectPickup(active);
+    });
+  }
+
+  private collectPickup(pickup: ActivePickup): void {
+    if (!this.active.includes(pickup) || pickup.collected) return;
+    pickup.collected = true;
+    // Defer body removal until Arcade has finished its overlap iteration.
+    this.scene.time.delayedCall(0, () => {
+      if (!this.active.includes(pickup)) return;
+      this.onPickup(pickup.definition);
+      this.removePickup(pickup);
     });
   }
 

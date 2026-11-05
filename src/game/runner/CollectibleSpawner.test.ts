@@ -90,7 +90,8 @@ describe('authored collectible schedule', () => {
   it('generates a stable Endless safe-route coin stream with 75m cadence and no timer pickups', () => {
     const generated = generatePickupSchedule(15_000);
     expect(generated).toEqual(PICKUP_SCHEDULE);
-    const safe = generated.filter((item) => !item.optionalJump && !item.guideAction && item.kind !== 'giant');
+    const safe = generated.filter((item) => !item.optionalJump && !item.guideAction &&
+      item.kind !== 'giant' && item.kind !== 'speed');
     expect(safe[0]).toMatchObject({ distanceMeters: 160, heightUnits: 52, optionalJump: false });
     const knownHazards: { id: string; distanceMeters: number; definition: HazardDefinition }[] = [];
     for (let patternIndex = 0; ; patternIndex += 1) {
@@ -129,7 +130,7 @@ describe('authored collectible schedule', () => {
     expect(RUNNER_CONFIG.safePickupSpacingMeters).toBe(90);
     for (const stage of STORY_STAGES) {
       const safe = generatePickupSchedule(stage.lengthMeters, stage.id)
-        .filter((item) => !item.optionalJump && !item.guideAction && item.kind !== 'giant');
+        .filter((item) => !item.optionalJump && !item.guideAction && item.kind !== 'giant' && item.kind !== 'speed');
       expect(safe.some((item) => item.kind === 'time'), `${stage.id} should retain speed-boost pickups`).toBe(true);
       expect(safe.length, `${stage.id} should retain its safe-route pickups`).toBeGreaterThan(0);
       for (const item of safe) {
@@ -162,7 +163,9 @@ describe('authored collectible schedule', () => {
             left.guideAction === right.guideAction && left.guideHazardId === right.guideHazardId;
           const minimumGap = left.kind === 'giant' || right.kind === 'giant'
             ? RUNNER_CONFIG.pickupObjectClearanceMeters
-            : RUNNER_CONFIG.pickupCoinVisualClearanceMeters;
+            : left.kind === 'speed' || right.kind === 'speed'
+              ? RUNNER_CONFIG.speedPickupClearanceMeters
+              : RUNNER_CONFIG.pickupCoinVisualClearanceMeters;
           expect(Math.abs(right.distanceMeters - left.distanceMeters) >= minimumGap || sameGuideLine,
             `${left.id} and ${right.id} overlap in schedule ${scheduleIndex}`).toBe(true);
         }
@@ -321,6 +324,57 @@ describe('authored collectible schedule', () => {
       expect(PICKUP_SCHEDULE.every((pickup) =>
         !isGateClearance(pickup.distanceMeters, distance, halfWidthMeters))).toBe(true);
     }
+  });
+
+  it('places deterministic speed pickups in Endless and Story while keeping their visual clearance', () => {
+    const endless = generatePickupSchedule(15_000);
+    const story = STORY_STAGES.map((stage) => generatePickupSchedule(stage.lengthMeters, stage.id));
+    const schedules = [endless, ...story];
+    expect(endless.filter(({ kind }) => kind === 'speed').length).toBeGreaterThan(0);
+    expect(endless).toEqual(generatePickupSchedule(15_000));
+    for (const [index, schedule] of schedules.entries()) {
+      const speeds = schedule.filter(({ kind }) => kind === 'speed');
+      expect(speeds.length, `schedule ${index} should contain speed pickups`).toBeGreaterThan(0);
+      for (const speed of speeds) {
+        expect(speed.id).toMatch(/^speed-\d+$/);
+        const targetIndex = Math.max(0, Math.round((speed.distanceMeters -
+          RUNNER_CONFIG.speedPickupFirstDistanceMeters) / RUNNER_CONFIG.speedPickupSpacingMeters));
+        const target = RUNNER_CONFIG.speedPickupFirstDistanceMeters +
+          targetIndex * RUNNER_CONFIG.speedPickupSpacingMeters;
+        expect(Math.abs(speed.distanceMeters - target)).toBeLessThanOrEqual(
+          RUNNER_CONFIG.speedPickupSearchRadiusMeters,
+        );
+        expect(speed.heightUnits).toBe(52);
+        expect(speed.optionalJump).toBe(false);
+        expect(schedule.filter(({ id }) => id !== speed.id).every((other) =>
+          Math.abs(other.distanceMeters - speed.distanceMeters) >= RUNNER_CONFIG.speedPickupClearanceMeters),
+        `${speed.id} overlaps another pickup`).toBe(true);
+      }
+    }
+  });
+});
+
+describe('swept pickup collection', () => {
+  it('collects a speed pickup crossed between high-speed updates only once', () => {
+    const mock = makeSpawnerScene();
+    const player = { x: RUNNER_PLAYER_X, y: RUNNER_GROUND_Y - STANDING_BODY_HEIGHT / 2,
+      body: { left: RUNNER_PLAYER_X - 20, right: RUNNER_PLAYER_X + 20,
+        top: RUNNER_GROUND_Y - STANDING_BODY_HEIGHT, bottom: RUNNER_GROUND_Y } };
+    const onPickup = vi.fn();
+    const spawner = new CollectibleSpawner(mock.scene, player as unknown as Phaser.Physics.Arcade.Sprite,
+      onPickup, 'player-default');
+    const speed = generatePickupSchedule(2_000).find(({ kind }) => kind === 'speed')!;
+    const snapshotAt = (distanceMeters: number) => ({
+      ...startRunner(createRunnerSnapshot('player-default')), distanceMeters,
+      worldDistance: distanceMeters / RUNNER_CONFIG.metersPerWorldUnit,
+    });
+
+    spawner.update(snapshotAt(speed.distanceMeters - 40));
+    spawner.update(snapshotAt(speed.distanceMeters + 40));
+
+    expect(onPickup.mock.calls.filter(([pickup]) => pickup.id === speed.id)).toHaveLength(1);
+    expect(onPickup).toHaveBeenCalledWith(expect.objectContaining({ id: speed.id, kind: 'speed' }));
+    spawner.destroy();
   });
 });
 

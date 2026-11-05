@@ -12,6 +12,7 @@ import { getStoryStage } from './storyConfig';
 import { getStoryHazardSchedule } from './storyCourses';
 import { getBiomeById, getBiomeForDistance } from '../visuals/runnerBiomes';
 import { drawRunnerHazard } from '../visuals/runnerHazards';
+import { boundsCenter, getCollisionBounds, sweptAabbIntersects, type CollisionBounds } from './sweptCollision';
 
 type ActiveHazard = {
   box: Phaser.GameObjects.Rectangle;
@@ -34,6 +35,8 @@ export class ObstacleSpawner {
   private warnedKinds = new Set<HazardDefinition['kind']>();
   private activeStoryStageId: RunnerSnapshot['storyStageId'] = null;
   private skipPatternAfterDoubleJump = false;
+  private previousDistanceMeters: number | null = null;
+  private previousPlayerBounds: CollisionBounds | null = null;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -90,6 +93,11 @@ export class ObstacleSpawner {
       return false;
     });
 
+    const playerBounds = getCollisionBounds(this.player, 20, 38);
+    const previousPlayerBounds = this.previousPlayerBounds ?? playerBounds;
+    const previousPlayerCenter = boundsCenter(previousPlayerBounds);
+    const playerCenter = boundsCenter(playerBounds);
+    const previousDistanceMeters = this.previousDistanceMeters ?? snapshot.distanceMeters;
     for (const hazard of [...this.active]) {
       const centerX = RUNNER_PLAYER_X +
         (hazard.atMeters - snapshot.distanceMeters) / METERS_PER_WORLD_UNIT;
@@ -99,8 +107,23 @@ export class ObstacleSpawner {
       hazard.box.setPosition(centerX, collision.y + collision.height / 2);
       hazard.art.setPosition(visual.x, visual.y);
       hazard.warning?.setPosition(centerX, geometry.y - 34);
+      const previousCenterX = RUNNER_PLAYER_X +
+        (hazard.atMeters - previousDistanceMeters) / METERS_PER_WORLD_UNIT;
+      const hazardCenterY = collision.y + collision.height / 2;
+      if (sweptAabbIntersects(
+        previousCenterX - previousPlayerCenter.x,
+        hazardCenterY - previousPlayerCenter.y,
+        centerX - playerCenter.x,
+        hazardCenterY - playerCenter.y,
+        collision.width / 2 + (playerBounds.right - playerBounds.left) / 2,
+        collision.height / 2 + (playerBounds.bottom - playerBounds.top) / 2,
+      )) {
+        this.resolveHazard(hazard);
+      }
       if (geometry.x + geometry.width < 0) this.remove(hazard);
     }
+    this.previousDistanceMeters = snapshot.distanceMeters;
+    this.previousPlayerBounds = playerBounds;
   }
 
   destroy(): void {
@@ -133,15 +156,19 @@ export class ObstacleSpawner {
     const hazard: ActiveHazard = { box, art, warning, atMeters, definition, passed: false };
     this.active.push(hazard);
     this.scene.physics.add.overlap(this.player, box, () => {
-      if (!this.active.includes(hazard) || hazard.passed) return;
-      if (isHazardDodgedBySlide(hazard.definition, this.isGroundedSliding())) {
-        hazard.passed = true;
-        (hazard.box.body as Phaser.Physics.Arcade.Body).enable = false;
-        return;
-      }
-      this.onOverlap(hazard.definition);
-      this.remove(hazard);
+      this.resolveHazard(hazard);
     });
+  }
+
+  private resolveHazard(hazard: ActiveHazard): void {
+    if (!this.active.includes(hazard) || hazard.passed) return;
+    if (isHazardDodgedBySlide(hazard.definition, this.isGroundedSliding())) {
+      hazard.passed = true;
+      (hazard.box.body as Phaser.Physics.Arcade.Body).enable = false;
+      return;
+    }
+    this.onOverlap(hazard.definition);
+    this.remove(hazard);
   }
 
   private remove(hazard: ActiveHazard): void {

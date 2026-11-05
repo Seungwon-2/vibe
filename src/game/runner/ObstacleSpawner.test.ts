@@ -156,6 +156,24 @@ describe('ObstacleSpawner schedule', () => {
     spawner.destroy();
   });
 
+  it('resolves a ground hazard crossed between high-speed updates exactly once', () => {
+    const mock = makeScene();
+    const player = { x: 170, y: RUNNER_GROUND_Y - 38,
+      body: { left: 150, right: 190, top: RUNNER_GROUND_Y - 76, bottom: RUNNER_GROUND_Y } };
+    const onOverlap = vi.fn();
+    const spawner = new ObstacleSpawner(mock.scene, player as unknown as Phaser.Physics.Arcade.Sprite,
+      onOverlap, false);
+
+    spawner.update(snapshotAt(300));
+    spawner.update(snapshotAt(420)); // The first ground hazard is at 360m.
+
+    expect(onOverlap).toHaveBeenCalledOnce();
+    expect(onOverlap).toHaveBeenCalledWith(expect.objectContaining({ kind: 'ground' }));
+    mock.overlaps[0]?.();
+    expect(onOverlap).toHaveBeenCalledOnce();
+    spawner.destroy();
+  });
+
   it('consumes an overhead hazard as a safe pass only during grounded sliding', () => {
     const mock = makeScene();
     const onOverlap = vi.fn();

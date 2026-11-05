@@ -1,6 +1,6 @@
 # T02 Pickup Placement and High-Speed Collision
 
-- Status: planned
+- Status: done
 - Plan: `2026-11-05-runner-speed-powerups`
 - Phase: `P01-speed-powerups`
 
@@ -67,6 +67,12 @@ Task: T02-speed-pickup-placement-collision
 
 ## Progress
 
-- [ ] Implementation complete
-- [ ] Validation complete
-- [ ] Task status set to done\n
+- [x] Implementation complete
+- [x] Validation complete
+- [x] Task status set to done
+
+## Completion notes
+
+- Added deterministic speed pickup placement near the configured 1,200m cadence in Endless and Story, with hazard/pit/gate and pickup separation checks.
+- Added a sky-blue lightning silhouette and swept collision checks for pickups and hazards. Pit crossing is resolved before off-screen cleanup so a large distance update cannot skip a pit.
+- Validation passed: the three runner spawner Vitest files (32 tests) and `npm run typecheck`.

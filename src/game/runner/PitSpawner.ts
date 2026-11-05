@@ -8,6 +8,7 @@ import type { PitDefinition } from './pitTypes';
 import { getPatternStartDistance } from './hazardPatterns';
 import { getStoryStage } from './storyConfig';
 import { getStoryPitDefinitions } from './storyPitSchedule';
+import { boundsCenter, getCollisionBounds, type CollisionBounds } from './sweptCollision';
 
 export type { PitDefinition } from './pitTypes';
 
@@ -84,6 +85,8 @@ export class PitSpawner {
   private nextPitIndex = 0;
   private active: ActivePit[] = [];
   private activeStoryBiome: RunnerBiomeDefinition | null = null;
+  private previousDistanceMeters: number | null = null;
+  private previousPlayerBounds: CollisionBounds | null = null;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -115,6 +118,11 @@ export class PitSpawner {
       this.spawn(pit);
     }
 
+    const playerBounds = getCollisionBounds(this.player, 20, 38);
+    const previousPlayerBounds = this.previousPlayerBounds ?? playerBounds;
+    const currentFootX = boundsCenter(playerBounds).x;
+    const previousFootX = boundsCenter(previousPlayerBounds).x;
+    const previousDistanceMeters = this.previousDistanceMeters ?? snapshot.distanceMeters;
     for (const pit of [...this.active]) {
       if (pit.resolved && pit.retainArtUntilDestroy) continue;
       if (pit.resolved) {
@@ -132,12 +140,22 @@ export class PitSpawner {
         pit.warning.setVisible(visible);
         pit.warning.setPosition(Math.min(900, Math.max(52, x)), RUNNER_GROUND_Y - 48);
       }
-      if (x + pit.definition.widthMeters / RUNNER_CONFIG.metersPerWorldUnit / 2 < -24) {
+      const previousOpeningX = this.screenX(pit.definition.distanceMeters, previousDistanceMeters);
+      const relativeStart = previousOpeningX - previousFootX;
+      const relativeEnd = x - currentFootX;
+      const crossedOpening = Math.min(relativeStart, relativeEnd) <=
+        pit.definition.widthMeters / RUNNER_CONFIG.metersPerWorldUnit / 2 &&
+        Math.max(relativeStart, relativeEnd) >=
+        -pit.definition.widthMeters / RUNNER_CONFIG.metersPerWorldUnit / 2;
+      const body = this.player.body as Phaser.Physics.Arcade.Body;
+      const reachedPitFloor = body.bottom >= RUNNER_GROUND_Y - 2 && body.velocity.y >= 0;
+      if (this.hasDroppedInto(pit) || (crossedOpening && reachedPitFloor)) this.resolveContact(pit);
+      else if (x + pit.definition.widthMeters / RUNNER_CONFIG.metersPerWorldUnit / 2 < -24) {
         this.remove(pit);
-        continue;
       }
-      if (this.hasDroppedInto(pit)) this.resolveContact(pit);
     }
+    this.previousDistanceMeters = snapshot.distanceMeters;
+    this.previousPlayerBounds = playerBounds;
   }
 
   destroy(): void {
