@@ -1,4 +1,4 @@
-﻿import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getCharacter } from '../../game/characters/characterCatalog';
 import { createRunnerSnapshot, startRunner } from '../../game/runner/RunnerSimulation';
@@ -125,9 +125,9 @@ describe('overlays', () => {
   it('prevents resuming in portrait but provides resume and exit in landscape', () => {
     const onResume = vi.fn();
     const onExit = vi.fn();
-    const { rerender } = render(<PauseOverlay onResume={onResume} onExit={onExit} onOpenAudioSettings={vi.fn()} portrait />);
+    const { rerender } = render(<PauseOverlay onResume={onResume} onExit={onExit} onOpenAudioSettings={vi.fn()} onOpenGuide={vi.fn()} portrait />);
     expect(screen.getByRole('button', { name: '계속하기' })).toBeDisabled();
-    rerender(<PauseOverlay onResume={onResume} onExit={onExit} onOpenAudioSettings={vi.fn()} portrait={false} />);
+    rerender(<PauseOverlay onResume={onResume} onExit={onExit} onOpenAudioSettings={vi.fn()} onOpenGuide={vi.fn()} portrait={false} />);
     fireEvent.click(screen.getByRole('button', { name: '계속하기' }));
     fireEvent.click(screen.getByRole('button', { name: '나가기' }));
     expect(onResume).toHaveBeenCalledOnce();

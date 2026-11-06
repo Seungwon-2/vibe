@@ -13,6 +13,7 @@ import type { RunnerHudCue } from '../components/RunnerHud';
 import { TouchControls } from '../components/TouchControls';
 import { markRunnerTutorialSeen, shouldShowRunnerTutorial } from '../../game/runner/runnerTutorial';
 import { AudioSettingsDialog } from '../components/AudioSettingsDialog';
+import { RunnerGuideDialog } from '../components/RunnerGuideDialog';
 import type { AudioPreferences } from '../../audio/audioPreferences';
 import { browserRunnerAudio } from '../../audio/RunnerAudioManager';
 import { browserRunnerMusic } from '../../audio/RunnerMusicManager';
@@ -37,19 +38,22 @@ export type RunScreenProps = {
 export function RunScreen({ characterId, mode = 'endless', storyStageId = null, trailCosmeticId = null, onFinish, onExit, audioPreferences, onAudioPreferencesChange,
   onUnlockAudio }: RunScreenProps): React.JSX.Element {
   const character = getCharacter(characterId);
+  const [tutorialEnabled] = useState(() => shouldShowRunnerTutorial());
   const [portrait, setPortrait] = useState(isPortrait);
-  const [paused, setPaused] = useState(isPortrait);
+  const [paused, setPaused] = useState(() => isPortrait() || tutorialEnabled);
+  const [guideOpen, setGuideOpen] = useState(tutorialEnabled);
+  const [guideVariant, setGuideVariant] = useState<'first-run' | 'pause-review'>(tutorialEnabled ? 'first-run' : 'pause-review');
   const [snapshot, setSnapshot] = useState<RunnerSnapshot>(() => createRunnerSnapshot(characterId, new Date(), { mode, storyStageId }));
   const [countdownValue, setCountdownValue] = useState<number | null>(3);
   const [recentBonus, setRecentBonus] = useState<RunnerHudCue | null>(null);
   const [exitConfirmation, setExitConfirmation] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [inputBridge] = useState(() => new RunnerInputBridge());
-  const [tutorialEnabled] = useState(() => shouldShowRunnerTutorial());
   const bonusTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gateBurstTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [gateBurstActive, setGateBurstActive] = useState(false);
   const passiveCueSequence = useRef(0);
+  const pauseGuideButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (snapshot.phase === 'paused') {
@@ -61,10 +65,6 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
       : snapshot.biomeId;
     browserRunnerMusic.play(musicId);
   }, [mode, snapshot.biomeId, snapshot.phase, storyStageId]);
-
-  useEffect(() => {
-    if (tutorialEnabled) markRunnerTutorialSeen();
-  }, [tutorialEnabled]);
 
   function clearBonus(): void {
     if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
@@ -111,6 +111,23 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
     setPaused(true);
   }
 
+  function startAfterGuide(): void {
+    markRunnerTutorialSeen();
+    setGuideOpen(false);
+    setPaused(portrait);
+  }
+
+  function openGuideFromPause(): void {
+    setSettingsOpen(false);
+    setGuideVariant('pause-review');
+    setGuideOpen(true);
+  }
+
+  function closeGuideToPause(): void {
+    setGuideOpen(false);
+    window.requestAnimationFrame(() => pauseGuideButtonRef.current?.focus());
+  }
+
   useEffect(() => {
     const media = window.matchMedia?.('(orientation: portrait)');
     const updateOrientation = (): void => {
@@ -142,7 +159,8 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
   useEffect(() => {
     const onPauseShortcut = (event: KeyboardEvent): void => {
       if (event.code !== 'KeyP' || event.repeat) return;
-      if (paused && !portrait && !exitConfirmation && !settingsOpen) {
+      if (guideOpen || exitConfirmation || settingsOpen) return;
+      if (paused && !portrait) {
         setPaused(false);
       } else if (!paused && snapshot.phase === 'running') {
         if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
@@ -157,7 +175,7 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
     };
     window.addEventListener('keydown', onPauseShortcut);
     return () => window.removeEventListener('keydown', onPauseShortcut);
-  }, [exitConfirmation, inputBridge, paused, portrait, settingsOpen, snapshot.phase]);
+  }, [exitConfirmation, guideOpen, inputBridge, paused, portrait, settingsOpen, snapshot.phase]);
 
   function handleEvent(event: RunnerEvent): void {
     if (event.type === 'countdown') {
@@ -209,6 +227,7 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
 
   function requestExit(): void {
     pauseRun();
+    setGuideOpen(false);
     setExitConfirmation(true);
   }
 
@@ -236,12 +255,16 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
           disabled={paused || snapshot.phase !== 'running'} />
         {snapshot.phase === 'countdown' && countdownValue !== null &&
           <CountdownOverlay value={countdownValue} />}
-        {paused && (
+        {paused && !guideOpen && !settingsOpen && !exitConfirmation && (
           <PauseOverlay onResume={() => setPaused(false)} onExit={requestExit} portrait={portrait}
+            onOpenGuide={openGuideFromPause} guideButtonRef={pauseGuideButtonRef}
             onOpenAudioSettings={() => { onUnlockAudio(); setSettingsOpen(true); }} />
         )}
         {paused && settingsOpen && <AudioSettingsDialog preferences={audioPreferences}
           onChange={onAudioPreferencesChange} onUnlockAudio={onUnlockAudio} onClose={() => setSettingsOpen(false)} />}
+        {guideOpen && <RunnerGuideDialog mode={mode} character={character}
+          variant={guideVariant} portrait={portrait}
+          onStart={startAfterGuide} onClose={closeGuideToPause} />}
         {exitConfirmation && (
           <div className="runner-overlay runner-overlay--confirm" role="alertdialog" aria-modal="true"
             aria-labelledby="exit-confirm-title">
@@ -256,11 +279,6 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
           </div>
         )}
       </div>
-      {tutorialEnabled && <footer className="run-screen__help">
-        <span><kbd>Space</kbd> / <kbd>↑</kbd> 점프</span>
-        <span><kbd>↓</kbd> 누르고 있기: 슬라이딩</span>
-        <span><kbd>P</kbd> 일시정지</span>
-      </footer>}
     </main>
   );
 }

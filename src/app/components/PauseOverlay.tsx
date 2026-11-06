@@ -1,11 +1,15 @@
+import type { RefObject } from 'react';
+
 export type PauseOverlayProps = {
   onResume(): void;
   onExit(): void;
   onOpenAudioSettings(): void;
+  onOpenGuide(): void;
   portrait: boolean;
+  guideButtonRef?: RefObject<HTMLButtonElement | null>;
 };
 
-export function PauseOverlay({ onResume, onExit, onOpenAudioSettings, portrait }: PauseOverlayProps): React.JSX.Element {
+export function PauseOverlay({ onResume, onExit, onOpenAudioSettings, onOpenGuide, portrait, guideButtonRef }: PauseOverlayProps): React.JSX.Element {
   return (
     <div className={`runner-overlay runner-overlay--pause${portrait ? ' is-portrait' : ''}`} role="dialog"
       aria-modal="true" aria-labelledby="runner-pause-title">
@@ -14,6 +18,7 @@ export function PauseOverlay({ onResume, onExit, onOpenAudioSettings, portrait }
         <p>{portrait ? '가로 화면으로 바꾸면 계속할 수 있어요.' : '잠시 쉬었다가 계속할 수 있어요.'}</p>
         <div className="runner-result-actions">
           <button type="button" onClick={onResume} disabled={portrait}>계속하기</button>
+          <button ref={guideButtonRef} type="button" onClick={onOpenGuide} disabled={portrait}>설명서 보기</button>
           <button type="button" onClick={onOpenAudioSettings} disabled={portrait}>사운드 설정</button>
           <button type="button" onClick={onExit}>나가기</button>
         </div>
