@@ -24,7 +24,55 @@ export type PickupDefinition = Readonly<{
   optionalJump: boolean;
   guideAction?: 'jump' | 'slide';
   guideHazardId?: string;
+  motifId?: CoinMotifId;
+  motifSectionId?: string;
 }>;
+
+export type CoinMotifId = 'star' | 'flower' | 'music-note' | 'cloud';
+export type MotifPoint = Readonly<{ x: number; y: number }>;
+
+const COIN_MOTIF_BY_BIOME = Object.freeze({
+  'dawn-city': 'star',
+  'moonlit-forest': 'flower',
+  'crystal-mine': 'music-note',
+  'cloud-skyway': 'cloud',
+} as const satisfies Readonly<Record<RunnerBiomeDefinition['id'], CoinMotifId>>);
+
+/** Stable normalized outlines used to lay out collectible coin formations. */
+export function getCoinMotifPoints(motifId: CoinMotifId): readonly MotifPoint[] {
+  const points: readonly MotifPoint[] = {
+    star: [
+      { x: 0.50, y: 0.98 }, { x: 0.61, y: 0.64 }, { x: 0.96, y: 0.62 },
+      { x: 0.68, y: 0.42 }, { x: 0.79, y: 0.08 }, { x: 0.50, y: 0.29 },
+      { x: 0.21, y: 0.08 }, { x: 0.32, y: 0.42 }, { x: 0.04, y: 0.62 },
+      { x: 0.39, y: 0.64 },
+    ],
+    flower: [
+      { x: 0.50, y: 0.98 }, { x: 0.62, y: 0.73 }, { x: 0.88, y: 0.84 },
+      { x: 0.77, y: 0.58 }, { x: 0.98, y: 0.40 }, { x: 0.70, y: 0.38 },
+      { x: 0.62, y: 0.08 }, { x: 0.40, y: 0.27 }, { x: 0.22, y: 0.16 },
+      { x: 0.30, y: 0.45 }, { x: 0.04, y: 0.56 }, { x: 0.31, y: 0.72 },
+      { x: 0.50, y: 0.48 }, { x: 0.82, y: 0.52 }, { x: 0.57, y: 0.65 },
+      { x: 0.43, y: 0.65 }, { x: 0.38, y: 0.53 },
+    ],
+    'music-note': [
+      { x: 0.05, y: 0.12 }, { x: 0.15, y: 0.04 }, { x: 0.26, y: 0.12 },
+      { x: 0.20, y: 0.28 }, { x: 0.08, y: 0.32 }, { x: 0.48, y: 0.28 },
+      { x: 0.58, y: 0.20 }, { x: 0.70, y: 0.29 }, { x: 0.64, y: 0.44 },
+      { x: 0.52, y: 0.47 }, { x: 0.26, y: 0.62 }, { x: 0.26, y: 0.98 },
+      { x: 0.70, y: 0.70 }, { x: 0.70, y: 0.98 },
+      { x: 0.83, y: 0.80 },
+    ],
+    cloud: [
+      { x: 0.05, y: 0.28 }, { x: 0.10, y: 0.46 }, { x: 0.20, y: 0.52 },
+      { x: 0.29, y: 0.76 }, { x: 0.42, y: 0.84 }, { x: 0.53, y: 0.68 },
+      { x: 0.66, y: 0.93 }, { x: 0.80, y: 0.81 }, { x: 0.84, y: 0.57 },
+      { x: 0.96, y: 0.49 }, { x: 0.92, y: 0.28 }, { x: 0.76, y: 0.20 },
+      { x: 0.57, y: 0.18 }, { x: 0.37, y: 0.20 }, { x: 0.18, y: 0.20 },
+    ],
+  }[motifId];
+  return Object.freeze(points.map((point) => Object.freeze({ ...point })));
+}
 
 type GiantChallengeTarget = Readonly<{ startMeters: number; endMeters: number }>;
 
@@ -224,6 +272,138 @@ function getTimePickupSlotIndexes(maxDistanceMeters: number, spacingMeters: numb
   return indexes;
 }
 
+function getMotifSectionPickups(
+  motifId: CoinMotifId,
+  sectionId: string,
+  centerMeters: number,
+): readonly PickupDefinition[] {
+  const width = RUNNER_CONFIG.coinMotifSafeWindowMeters;
+  return getCoinMotifPoints(motifId).map(({ x, y }, pointIndex) => {
+    const heightUnits = Math.round(48 + y * 84);
+    return Object.freeze({
+      id: `motif-${sectionId}-${pointIndex}`,
+      kind: 'coin' as const,
+      distanceMeters: Math.round(centerMeters - width / 2 + x * width),
+      heightUnits,
+      optionalJump: heightUnits > 68,
+      motifId,
+      motifSectionId: sectionId,
+    });
+  });
+}
+
+function hasMotifPointClearance(
+  candidates: readonly PickupDefinition[],
+  retainedPickups: readonly PickupDefinition[],
+): boolean {
+  const minCoinCenterGapPx = PICKUP_ART_RADIUS_PX * 2;
+  for (let index = 0; index < candidates.length; index += 1) {
+    const candidate = candidates[index];
+    for (const previous of candidates.slice(0, index)) {
+      const dxPx = (candidate.distanceMeters - previous.distanceMeters) / METERS_PER_WORLD_UNIT;
+      const dyPx = candidate.heightUnits - previous.heightUnits;
+      if (Math.hypot(dxPx, dyPx) < minCoinCenterGapPx) return false;
+    }
+    for (const existing of retainedPickups) {
+      const dxPx = (candidate.distanceMeters - existing.distanceMeters) / METERS_PER_WORLD_UNIT;
+      const dyPx = candidate.heightUnits - existing.heightUnits;
+      const clearanceMeters = existing.kind === 'giant'
+        ? RUNNER_CONFIG.pickupObjectClearanceMeters
+        : existing.kind === 'speed' ? RUNNER_CONFIG.speedPickupClearanceMeters
+          : RUNNER_CONFIG.pickupCoinVisualClearanceMeters;
+      if (Math.hypot(dxPx, dyPx) < clearanceMeters / METERS_PER_WORLD_UNIT) return false;
+    }
+  }
+  return true;
+}
+
+function isMotifSectionClear(
+  centerMeters: number,
+  expectedBiomeId: RunnerBiomeDefinition['id'],
+  isStoryCourse: boolean,
+  maxDistanceMeters: number,
+  hazards: readonly ScheduledHazard[],
+  pits: readonly PitDefinition[],
+): boolean {
+  const halfWindow = RUNNER_CONFIG.coinMotifSafeWindowMeters / 2;
+  const startMeters = centerMeters - halfWindow;
+  const endMeters = centerMeters + halfWindow;
+  if (startMeters < SAFE_PICKUP_START_METERS || endMeters > maxDistanceMeters) return false;
+  if (!isStoryCourse && (getBiomeForDistance(startMeters).id !== expectedBiomeId ||
+      getBiomeForDistance(endMeters - 0.01).id !== expectedBiomeId)) return false;
+
+  const hazardMarginMeters = (PICKUP_ART_RADIUS_PX + PICKUP_VISUAL_MARGIN_PX) *
+    RUNNER_CONFIG.metersPerWorldUnit;
+  if (hazards.some(({ distanceMeters, definition }) =>
+    distanceMeters + definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit + hazardMarginMeters >= startMeters &&
+    distanceMeters - definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit - hazardMarginMeters <= endMeters)) {
+    return false;
+  }
+  if (pits.some((pit) => isPitClearance(centerMeters, pit,
+    halfWindow + PICKUP_PIT_CLEARANCE_METERS))) return false;
+  if (RUNNER_GATE_DISTANCES_M.some((gate) => isGateClearance(centerMeters, gate, halfWindow))) return false;
+  return true;
+}
+
+function addCoinMotifSections(
+  pickups: readonly PickupDefinition[],
+  maxDistanceMeters: number,
+  storyStageId: StoryStageId | null,
+  hazards: readonly ScheduledHazard[],
+  pits: readonly PitDefinition[],
+): readonly PickupDefinition[] {
+  const anchors: number[] = [];
+  if (storyStageId) {
+    anchors.push(getStoryStage(storyStageId).lengthMeters / 2);
+  } else {
+    for (let anchor = RUNNER_CONFIG.coinMotifEndlessIntervalMeters;
+      anchor <= maxDistanceMeters; anchor += RUNNER_CONFIG.coinMotifEndlessIntervalMeters) {
+      anchors.push(anchor);
+    }
+  }
+
+  let scheduled = [...pickups];
+  const searchOffsets = Array.from(
+    { length: Math.floor(RUNNER_CONFIG.coinMotifSearchRadiusMeters /
+      RUNNER_CONFIG.coinMotifSearchStepMeters) * 2 + 1 },
+    (_, index) => (index - Math.floor(RUNNER_CONFIG.coinMotifSearchRadiusMeters /
+      RUNNER_CONFIG.coinMotifSearchStepMeters)) * RUNNER_CONFIG.coinMotifSearchStepMeters,
+  ).sort((left, right) => Math.abs(left) - Math.abs(right) || left - right);
+
+  for (const anchor of anchors) {
+    const anchorBiome = storyStageId
+      ? getBiomeById(getStoryStage(storyStageId).biomeId)
+      : getBiomeForDistance(anchor);
+    const motifId = COIN_MOTIF_BY_BIOME[anchorBiome.id];
+    const center = searchOffsets.map((offset) => anchor + offset).find((candidateCenter) => {
+      if (!isMotifSectionClear(candidateCenter, anchorBiome.id, storyStageId !== null,
+        maxDistanceMeters, hazards, pits)) return false;
+      const sectionId = `${storyStageId ?? anchorBiome.id}-${anchor}-${candidateCenter}`;
+      const candidates = getMotifSectionPickups(motifId, sectionId, candidateCenter);
+      const start = candidateCenter - RUNNER_CONFIG.coinMotifSafeWindowMeters / 2;
+      const end = candidateCenter + RUNNER_CONFIG.coinMotifSafeWindowMeters / 2;
+      if (candidates.some((pickup) => pickup.distanceMeters < SAFE_PICKUP_START_METERS ||
+          pickup.distanceMeters > maxDistanceMeters ||
+          !isPickupDistanceSafe(pickup.distanceMeters, pickup.heightUnits, hazards, pits))) return false;
+
+      const replaceableSafeCoin = (pickup: PickupDefinition) => pickup.kind === 'coin' &&
+        pickup.id.startsWith('safe-') && pickup.guideAction === undefined &&
+        pickup.distanceMeters >= start && pickup.distanceMeters <= end;
+      const retained = scheduled.filter((pickup) => !replaceableSafeCoin(pickup));
+      return hasMotifPointClearance(candidates, retained);
+    });
+    if (center === undefined) continue;
+
+    const start = center - RUNNER_CONFIG.coinMotifSafeWindowMeters / 2;
+    const end = center + RUNNER_CONFIG.coinMotifSafeWindowMeters / 2;
+    const sectionId = `${storyStageId ?? anchorBiome.id}-${anchor}-${center}`;
+    scheduled = scheduled.filter((pickup) => !(pickup.kind === 'coin' && pickup.id.startsWith('safe-') &&
+      pickup.guideAction === undefined && pickup.distanceMeters >= start && pickup.distanceMeters <= end));
+    scheduled.push(...getMotifSectionPickups(motifId, sectionId, center));
+  }
+  return scheduled;
+}
+
 function getStoryGiantTargets(hazards: readonly ScheduledHazard[]): GiantChallengeTarget[] {
   const groups: ScheduledHazard[][] = [];
   for (const hazard of [...hazards].sort((left, right) => left.distanceMeters - right.distanceMeters)) {
@@ -390,7 +570,9 @@ export function generatePickupSchedule(maxDistanceMeters: number,
         heightUnits: 52, optionalJump: false });
     }
   }
-  return Object.freeze([...scheduledPickups, ...speedPickups]
+  const withMotifs = addCoinMotifSections([...scheduledPickups, ...speedPickups], maxDistanceMeters,
+    storyStageId, hazards, pits);
+  return Object.freeze([...withMotifs]
     .sort((left, right) => left.distanceMeters - right.distanceMeters || left.id.localeCompare(right.id)));
 }
 

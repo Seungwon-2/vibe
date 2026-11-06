@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type Phaser from 'phaser';
 import { drawPickupArt, generatePickupSchedule, getPickupBodySize,
-  CollectibleSpawner, PICKUP_PIT_CLEARANCE_METERS, PICKUP_SCHEDULE } from './CollectibleSpawner';
+  CollectibleSpawner, getCoinMotifPoints, PICKUP_PIT_CLEARANCE_METERS, PICKUP_SCHEDULE } from './CollectibleSpawner';
 import { RUNNER_GROUND_Y, STANDING_BODY_HEIGHT } from './runnerPose';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import { getDenseWaveSchedule, getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance,
@@ -10,7 +10,7 @@ import { getPitDefinitions, isPitClearance } from './PitSpawner';
 import { getStoryPitDefinitions } from './storyPitSchedule';
 import { STORY_STAGES } from './storyConfig';
 import { getStoryHazardSchedule } from './storyCourses';
-import { RUNNER_BIOMES } from '../visuals/runnerBiomes';
+import { getBiomeForDistance, RUNNER_BIOMES } from '../visuals/runnerBiomes';
 import { getHazardGeometry } from './CollisionSystem';
 import type { HazardDefinition } from './hazardTypes';
 import { RUNNER_PLAYER_X } from './RunnerPlayer';
@@ -90,7 +90,7 @@ describe('authored collectible schedule', () => {
   it('generates a stable Endless safe-route coin stream with 75m cadence and no timer pickups', () => {
     const generated = generatePickupSchedule(15_000);
     expect(generated).toEqual(PICKUP_SCHEDULE);
-    const safe = generated.filter((item) => !item.optionalJump && !item.guideAction &&
+    const safe = generated.filter((item) => item.id.startsWith('safe-') && !item.optionalJump && !item.guideAction &&
       item.kind !== 'giant' && item.kind !== 'speed');
     expect(safe[0]).toMatchObject({ distanceMeters: 160, heightUnits: 52, optionalJump: false });
     const knownHazards: { id: string; distanceMeters: number; definition: HazardDefinition }[] = [];
@@ -130,7 +130,8 @@ describe('authored collectible schedule', () => {
     expect(RUNNER_CONFIG.safePickupSpacingMeters).toBe(90);
     for (const stage of STORY_STAGES) {
       const safe = generatePickupSchedule(stage.lengthMeters, stage.id)
-        .filter((item) => !item.optionalJump && !item.guideAction && item.kind !== 'giant' && item.kind !== 'speed');
+        .filter((item) => !item.motifSectionId && !item.optionalJump && !item.guideAction &&
+          item.kind !== 'giant' && item.kind !== 'speed');
       expect(safe.some((item) => item.kind === 'time'), `${stage.id} should retain speed-boost pickups`).toBe(true);
       expect(safe.length, `${stage.id} should retain its safe-route pickups`).toBeGreaterThan(0);
       for (const item of safe) {
@@ -161,12 +162,19 @@ describe('authored collectible schedule', () => {
           const right = schedule[rightIndex];
           const sameGuideLine = left.guideAction !== undefined &&
             left.guideAction === right.guideAction && left.guideHazardId === right.guideHazardId;
+          const motifPair = left.motifSectionId !== undefined && left.motifSectionId === right.motifSectionId;
           const minimumGap = left.kind === 'giant' || right.kind === 'giant'
             ? RUNNER_CONFIG.pickupObjectClearanceMeters
             : left.kind === 'speed' || right.kind === 'speed'
               ? RUNNER_CONFIG.speedPickupClearanceMeters
               : RUNNER_CONFIG.pickupCoinVisualClearanceMeters;
-          expect(Math.abs(right.distanceMeters - left.distanceMeters) >= minimumGap || sameGuideLine,
+          const distanceGap = Math.abs(right.distanceMeters - left.distanceMeters);
+          const motifDistanceGap = Math.hypot(distanceGap / METERS_PER_WORLD_UNIT,
+            right.heightUnits - left.heightUnits);
+          expect((motifPair ? motifDistanceGap >= 22
+            : left.motifSectionId !== undefined || right.motifSectionId !== undefined
+              ? motifDistanceGap >= minimumGap / METERS_PER_WORLD_UNIT
+              : distanceGap >= minimumGap) || sameGuideLine,
             `${left.id} and ${right.id} overlap in schedule ${scheduleIndex}`).toBe(true);
         }
       }
@@ -188,6 +196,102 @@ describe('authored collectible schedule', () => {
             .toBe(true);
         }
       }
+    }
+  });
+
+  it('places one deterministic, safe, theme-shaped coin section in each Story course', () => {
+    const motifByBiome = {
+      'dawn-city': 'star', 'moonlit-forest': 'flower', 'crystal-mine': 'music-note', 'cloud-skyway': 'cloud',
+    } as const;
+    for (const stage of STORY_STAGES) {
+      const schedule = generatePickupSchedule(stage.lengthMeters, stage.id);
+      const motifs = schedule.filter((pickup) => pickup.motifSectionId);
+      expect(new Set(motifs.map(({ motifSectionId }) => motifSectionId)).size, stage.id).toBe(1);
+      expect(new Set(motifs.map(({ motifId }) => motifId)), stage.id).toEqual(new Set([motifByBiome[stage.biomeId]]));
+      expect(schedule).toEqual(generatePickupSchedule(stage.lengthMeters, stage.id));
+      expect(motifs.every(({ kind, distanceMeters }) => kind === 'coin' &&
+        distanceMeters >= 0 && distanceMeters <= stage.lengthMeters), stage.id).toBe(true);
+      const hazards = getStoryHazardSchedule(stage.id).map(({ distanceMeters, definition, id }) => ({
+        id, distanceMeters, definition,
+      }));
+      const pits = getStoryPitDefinitions(stage.id, stage.lengthMeters);
+      const sectionId = motifs[0].motifSectionId;
+      const center = Number(sectionId?.slice(sectionId.lastIndexOf('-') + 1));
+      expect(Number.isFinite(center), stage.id).toBe(true);
+      const start = center - RUNNER_CONFIG.coinMotifSafeWindowMeters / 2;
+      const end = center + RUNNER_CONFIG.coinMotifSafeWindowMeters / 2;
+      const sectionHalfWidth = RUNNER_CONFIG.coinMotifSafeWindowMeters / 2 + PICKUP_PIT_CLEARANCE_METERS;
+      expect(hazards.some(({ distanceMeters, definition }) =>
+        distanceMeters + definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit >= start &&
+        distanceMeters - definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit <= end), stage.id).toBe(false);
+      expect(pits.some((pit) => isPitClearance(center, pit, sectionHalfWidth)), stage.id).toBe(false);
+      expect(RUNNER_GATE_DISTANCES_M.some((gate) => isGateClearance(
+        center, gate, RUNNER_CONFIG.coinMotifSafeWindowMeters / 2)), stage.id).toBe(false);
+      for (const pickup of motifs) {
+        expect(hazards.some((hazard) => pickupOverlapsHazard(pickup, hazard)), `${stage.id}/${pickup.id}`)
+          .toBe(false);
+        const pickupHalfWidthMeters = (getPickupBodySize() / 2 + PICKUP_TEST_MARGIN_PX) *
+          RUNNER_CONFIG.metersPerWorldUnit;
+        expect(pits.some((pit) => isPitClearance(pickup.distanceMeters, pit,
+          PICKUP_PIT_CLEARANCE_METERS + pickupHalfWidthMeters)), `${stage.id}/${pickup.id}`).toBe(false);
+        expect(RUNNER_GATE_DISTANCES_M.some((gate) => isGateClearance(pickup.distanceMeters, gate,
+          pickupHalfWidthMeters)), `${stage.id}/${pickup.id}`).toBe(false);
+      }
+      expect(schedule.some((pickup) => pickup.id.startsWith('safe-') &&
+        pickup.distanceMeters >= start && pickup.distanceMeters <= end), stage.id).toBe(false);
+      expect(motifs.some(({ optionalJump }) => optionalJump), `${stage.id} has optional elevated coins`).toBe(true);
+      expect(motifs.some(({ optionalJump }) => !optionalJump), `${stage.id} has safe-route coins`).toBe(true);
+    }
+  });
+
+  it('generates stable, bounded normalized outlines for all four motifs', () => {
+    for (const motifId of ['star', 'flower', 'music-note', 'cloud'] as const) {
+      const points = getCoinMotifPoints(motifId);
+      expect(points.length).toBeGreaterThanOrEqual(10);
+      expect(points.every(({ x, y }) => Number.isFinite(x) && Number.isFinite(y) &&
+        x >= 0 && x <= 1 && y >= 0 && y <= 1)).toBe(true);
+      expect(points).toEqual(getCoinMotifPoints(motifId));
+    }
+  });
+
+  it('adds Endless motif sections on the 2,500m cadence without changing power-up timing', () => {
+    const baseline = generatePickupSchedule(15_000);
+    const extended = generatePickupSchedule(20_000);
+    const motifs = baseline.filter(({ motifSectionId }) => motifSectionId);
+    const hazards = Array.from({ length: 100 }, (_, patternIndex) => {
+      const start = getPatternStartDistance(patternIndex);
+      return getPatternForDistance(start).obstacles.map((definition) => ({
+        id: `endless-${patternIndex}-${definition.id}`,
+        distanceMeters: getHazardDistance(patternIndex, definition),
+        definition,
+      }));
+    }).flat();
+    const pits = getPitDefinitions(15_000);
+    expect(new Set(motifs.map(({ motifSectionId }) => motifSectionId)).size).toBeGreaterThanOrEqual(4);
+    expect(new Set(motifs.map(({ id }) => id)).size).toBe(motifs.length);
+    for (const motif of motifs) {
+      const center = Number(motif.motifSectionId!.slice(motif.motifSectionId!.lastIndexOf('-') + 1));
+      const start = center - RUNNER_CONFIG.coinMotifSafeWindowMeters / 2;
+      const end = center + RUNNER_CONFIG.coinMotifSafeWindowMeters / 2;
+      const biome = getBiomeForDistance(center);
+      const motifByBiome = {
+        'dawn-city': 'star', 'moonlit-forest': 'flower', 'crystal-mine': 'music-note', 'cloud-skyway': 'cloud',
+      } as const;
+      expect(motif.motifId).toBe(motifByBiome[biome.id]);
+      expect(hazards.some(({ distanceMeters, definition }) =>
+        distanceMeters + definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit >= start &&
+        distanceMeters - definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit <= end)).toBe(false);
+      expect(pits.some((pit) => isPitClearance(center, pit,
+        RUNNER_CONFIG.coinMotifSafeWindowMeters / 2 + PICKUP_PIT_CLEARANCE_METERS))).toBe(false);
+      expect(RUNNER_GATE_DISTANCES_M.some((gate) => isGateClearance(center, gate,
+        RUNNER_CONFIG.coinMotifSafeWindowMeters / 2))).toBe(false);
+      expect(hazards.some((hazard) => pickupOverlapsHazard(motif, hazard))).toBe(false);
+    }
+    expect(extended.filter(({ distanceMeters }) => distanceMeters < 13_000))
+      .toEqual(baseline.filter(({ distanceMeters }) => distanceMeters < 13_000));
+    for (const kind of ['time', 'giant', 'speed'] as const) {
+      expect(extended.filter((pickup) => pickup.kind === kind && pickup.distanceMeters <= 15_000))
+        .toEqual(baseline.filter((pickup) => pickup.kind === kind));
     }
   });
 
