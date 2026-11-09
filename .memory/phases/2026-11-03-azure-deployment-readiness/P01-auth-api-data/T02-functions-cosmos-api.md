@@ -1,6 +1,6 @@
 # Task: T02 Functions and Cosmos API
 
-## Status: pending
+## Status: done
 
 ## Goal
 Implement the authenticated Functions APIs that save each signed-in player's runs privately, expose the player's own history and best run, and publish only one best endless run per player in the public leaderboard. Keep profile/reward settlement idempotent and isolated by the Entra identity-derived Cosmos partition.
@@ -90,6 +90,6 @@ Task: T02-functions-cosmos-api
 ```
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed
+- commit: `2740953`

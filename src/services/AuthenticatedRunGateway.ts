@@ -38,7 +38,8 @@ function validHistoryRecord(value: unknown): value is PersonalRunHistoryRecord {
   const validStage = value.mode === 'story'
     ? isStoryStageId(value.storyStageId)
     : value.mode === 'endless' && value.storyStageId === null;
-  return typeof value.id === 'string' && value.id.length > 0 && isCharacterId(value.characterId) &&
+  const id = value.id ?? value.runId;
+  return typeof id === 'string' && id.length > 0 && isCharacterId(value.characterId) &&
     isMode(value.mode) && validStage &&
     Number.isSafeInteger(value.distanceMeters) && (value.distanceMeters as number) >= 0 &&
     Number.isSafeInteger(value.coins) && (value.coins as number) >= 0 &&
@@ -46,6 +47,16 @@ function validHistoryRecord(value: unknown): value is PersonalRunHistoryRecord {
     isReason(value.finishReason) && Number.isSafeInteger(value.hitsTaken) && (value.hitsTaken as number) >= 0 &&
     Number.isSafeInteger(value.passedGateCount) && (value.passedGateCount as number) >= 0 &&
     typeof value.completedStage === 'boolean';
+}
+function parseHistoryRecord(value: unknown): PersonalRunHistoryRecord {
+  if (!validHistoryRecord(value)) throw new TypeError('Invalid personal run-history DTO');
+  const row = value as unknown as Record<string, unknown>;
+  return { id: (row.id ?? row.runId) as string, characterId: row.characterId as CharacterId,
+    mode: row.mode as RunnerMode, storyStageId: row.storyStageId as StoryStageId | null,
+    distanceMeters: row.distanceMeters as number, coins: row.coins as number, durationMs: row.durationMs as number,
+    finishedAtIso: row.finishedAtIso as string, finishReason: row.finishReason as RunnerFinishReason,
+    hitsTaken: row.hitsTaken as number, passedGateCount: row.passedGateCount as number,
+    completedStage: row.completedStage as boolean };
 }
 function parsePublic(value: unknown): PublicLeaderboardRecord {
   if (!validPublicRecord(value)) throw new TypeError('Invalid public leaderboard DTO');
@@ -58,19 +69,20 @@ function parseHistoryPage(value: unknown): PersonalRunHistoryPage {
       !(value.nextCursor === null || typeof value.nextCursor === 'string') || !value.items.every(validHistoryRecord)) {
     throw new TypeError('Invalid personal run-history DTO');
   }
-  return { items: value.items as PersonalRunHistoryRecord[], nextCursor: value.nextCursor as string | null };
+  return { items: value.items.map(parseHistoryRecord), nextCursor: value.nextCursor as string | null };
 }
 function parseReceipt(value: unknown): RunSubmissionReceipt {
   if (!isObject(value) || !validHistoryRecord(value.savedRun) ||
       !(value.personalBest === null || validPublicRecord(value.personalBest)) ||
       typeof value.personalBestUpdated !== 'boolean') throw new TypeError('Invalid run-submission DTO');
-  return { savedRun: value.savedRun as PersonalRunHistoryRecord,
+  return { savedRun: parseHistoryRecord(value.savedRun),
     personalBest: value.personalBest === null ? null : parsePublic(value.personalBest),
     personalBestUpdated: value.personalBestUpdated };
 }
 
 export class AuthenticatedRunGateway implements RunGateway {
   private readonly baseUrl: string;
+  private readonly runIds = new WeakMap<RunnerResult, string>();
   constructor(baseUrl: string, private readonly acquireToken: () => Promise<string>, private readonly fetcher: typeof fetch = fetch) {
     this.baseUrl = baseUrl.replace(/\/+$/, '');
   }
@@ -90,7 +102,21 @@ export class AuthenticatedRunGateway implements RunGateway {
     return parseHistoryPage(await this.request(`/runs${query.size ? `?${query.toString()}` : ''}`));
   }
   async submitRun(result: RunnerResult): Promise<RunSubmissionReceipt> {
-    return parseReceipt(await this.request('/runs', { method: 'POST', body: JSON.stringify(result) }));
+    let runId = this.runIds.get(result);
+    if (!runId) {
+      runId = globalThis.crypto?.randomUUID?.() ?? `run-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+      this.runIds.set(result, runId);
+    }
+    const mode = result.mode ?? 'endless';
+    const submission = {
+      runId, characterId: result.characterId, mode,
+      storyStageId: mode === 'story' ? result.storyStageId ?? null : null,
+      distanceMeters: Math.round(result.distanceMeters), coins: result.coins, durationMs: Math.round(result.durationMs),
+      finishedAtIso: result.finishedAtIso, finishReason: result.finishReason, hitsTaken: result.hitsTaken ?? 0,
+      passedGateCount: result.passedGateCount ?? 0,
+      completedStage: result.completedStage ?? result.finishReason === 'stage-complete',
+    };
+    return parseReceipt(await this.request('/runs', { method: 'POST', body: JSON.stringify(submission) }));
   }
   private async request(path: string, init: RequestInit = {}): Promise<unknown> {
     const token = await this.acquireToken();

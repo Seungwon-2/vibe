@@ -5,9 +5,13 @@ import { AuthenticatedRunGateway, RunApiError } from './AuthenticatedRunGateway'
 const finishedAtIso = '2026-11-09T12:00:00.000Z';
 const publicBest = { rank: 2, displayName: 'Runner Name', characterId: 'player-default',
   distanceMeters: 1200, coins: 8, finishedAtIso };
-const savedRun = { id: 'private-run-id', characterId: 'player-default', mode: 'endless', storyStageId: null,
+const savedRun = { runId: 'private-run-id', characterId: 'player-default', mode: 'endless', storyStageId: null,
   distanceMeters: 1200, coins: 8, durationMs: 90_000, finishedAtIso, finishReason: 'timeout',
   hitsTaken: 1, passedGateCount: 0, completedStage: false };
+const parsedSavedRun = { id: savedRun.runId, characterId: savedRun.characterId, mode: savedRun.mode,
+  storyStageId: savedRun.storyStageId, distanceMeters: savedRun.distanceMeters, coins: savedRun.coins,
+  durationMs: savedRun.durationMs, finishedAtIso: savedRun.finishedAtIso, finishReason: savedRun.finishReason,
+  hitsTaken: savedRun.hitsTaken, passedGateCount: savedRun.passedGateCount, completedStage: savedRun.completedStage };
 const result: RunnerResult = { characterId: 'player-default', mode: 'endless', storyStageId: null,
   distanceMeters: 1200, coins: 8, durationMs: 90_000, finishedAtIso, finishReason: 'timeout',
   hitsTaken: 1, passedGateCount: 0, completedStage: false };
@@ -35,19 +39,32 @@ describe('AuthenticatedRunGateway', () => {
     const fetcher = vi.fn().mockResolvedValue(jsonResponse(page));
     const gateway = new AuthenticatedRunGateway('/api', async () => 'token', fetcher);
 
-    expect(await gateway.getPersonalHistory({ limit: 25, cursor: 'opaque cursor/+=' })).toEqual(page);
+    expect(await gateway.getPersonalHistory({ limit: 25, cursor: 'opaque cursor/+=' })).toEqual({
+      items: [parsedSavedRun], nextCursor: page.nextCursor,
+    });
     expect(fetcher).toHaveBeenCalledWith('/api/runs?limit=25&cursor=opaque+cursor%2F%2B%3D', expect.any(Object));
   });
 
   it('submits a run and returns the private receipt and public best projection', async () => {
     const receipt = { savedRun, personalBest: publicBest, personalBestUpdated: false };
-    const fetcher = vi.fn().mockResolvedValue(jsonResponse(receipt));
+    const fetcher = vi.fn().mockImplementation(() => Promise.resolve(jsonResponse(receipt)));
     const gateway = new AuthenticatedRunGateway('/api', async () => 'token', fetcher);
 
-    expect(await gateway.submitRun(result)).toEqual(receipt);
+    expect(await gateway.submitRun(result)).toEqual({ ...receipt, savedRun: parsedSavedRun });
     const [, init] = fetcher.mock.calls[0];
     expect(fetcher.mock.calls[0][0]).toBe('/api/runs');
-    expect(init).toMatchObject({ method: 'POST', body: JSON.stringify(result) });
+    expect(init).toMatchObject({ method: 'POST' });
+    const submission = JSON.parse(init.body as string) as Record<string, unknown>;
+    expect(submission).toMatchObject({ characterId: result.characterId, mode: result.mode,
+      distanceMeters: result.distanceMeters, coins: result.coins, durationMs: result.durationMs,
+      finishedAtIso: result.finishedAtIso, finishReason: result.finishReason,
+      hitsTaken: result.hitsTaken, passedGateCount: result.passedGateCount, completedStage: result.completedStage });
+    expect(submission.runId).toEqual(expect.any(String));
+    expect(submission).not.toHaveProperty('playerId');
+    expect(submission).not.toHaveProperty('displayName');
+    await gateway.submitRun(result);
+    const retrySubmission = JSON.parse(fetcher.mock.calls[1][1].body as string) as Record<string, unknown>;
+    expect(retrySubmission.runId).toBe(submission.runId);
     expect(new Headers(init.headers).get('Authorization')).toBe('Bearer token');
     expect(new Headers(init.headers).get('Content-Type')).toBe('application/json');
   });

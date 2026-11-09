@@ -1,0 +1,28 @@
+{
+  "name": "stella-runner-api",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/src/index.js",
+  "engines": { "node": ">=22 <25" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src test",
+    "start": "func start"
+  },
+  "dependencies": {
+    "@azure/cosmos": "^4.10.1",
+    "@azure/functions": "^4.7.2",
+    "@azure/identity": "^4.13.0",
+    "jose": "^6.1.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^22.19.1",
+    "eslint": "^9.39.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.1",
+    "vitest": "^3.2.4"
+  }
+}
