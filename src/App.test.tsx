@@ -66,7 +66,10 @@ beforeEach(() => {
   runGatewayMock.getRanking.mockResolvedValue([]);
   runGatewayMock.submitRun.mockImplementation(async (result: {
     characterId: string; distanceMeters: number; coins: number; durationMs: number; finishedAtIso: string;
-  }) => ({ ...result, id: 'run-1', rank: 1 }));
+  }) => ({ savedRun: { ...result, id: 'run-1', rank: 1, mode: 'endless', storyStageId: null,
+    finishReason: 'timeout', hitsTaken: 0, passedGateCount: 0, completedStage: false },
+    personalBest: { rank: 1, displayName: 'Local Player', characterId: 'hanayo-hiyori',
+      distanceMeters: 1250, coins: 4, finishedAtIso: '2026-10-27T00:00:00.000Z' }, personalBestUpdated: true }));
   runGatewayMock.getBest.mockClear();
   runGatewayMock.getRanking.mockClear();
   runGatewayMock.submitRun.mockClear();
@@ -86,13 +89,14 @@ describe('App flow', () => {
     expect(audioMock.setPreferences).toHaveBeenLastCalledWith(expect.objectContaining({ effectsVolume: 0.3 }));
   });
 
-  it('shows menu controls before the first run and hides them after returning', () => {
+  it('shows menu controls before the first run and hides them after returning', async () => {
     render(<App />);
     expect(document.querySelector('.main-menu-help')).toBeInTheDocument();
     openEndlessCharacterSelect();
     fireEvent.click(screen.getByRole('button', { name: '하나요 히요리' }));
     fireEvent.click(document.querySelector('.selector-footer .selector-confirm')!);
-    expect(screen.getByTestId('runner-mock')).toHaveAttribute('data-tutorial-enabled', 'true');
+    expect(await screen.findByTestId('runner-mock')).toHaveAttribute('data-tutorial-enabled', 'true');
+    fireEvent.click(screen.getByRole('button', { name: '안내를 확인하고 시작' }));
     expect(localStorage.getItem('runner-action:tutorial:v1:seen')).toBe('1');
 
     const header = screen.getByRole('banner');
@@ -110,7 +114,7 @@ describe('App flow', () => {
     expect(screen.getByRole('heading', { name: '누구와 달려볼까요?' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '하나요 히요리' }));
     fireEvent.click(document.querySelector('.selector-footer .selector-confirm')!);
-    expect(screen.getByTestId('runner-mock')).toHaveAttribute('data-character', 'hanayo-hiyori');
+    expect(await screen.findByTestId('runner-mock')).toHaveAttribute('data-character', 'hanayo-hiyori');
     expect(screen.getByRole('region', { name: '러닝 게임 화면' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'mock time out' }));
     expect(screen.getByRole('heading', { name: '새로운 최고 기록!' })).toBeInTheDocument();
@@ -120,7 +124,7 @@ describe('App flow', () => {
     expect(runGatewayMock.submitRun).toHaveBeenCalledOnce();
     expect(runnerMock.destroys).toBe(1);
     fireEvent.click(screen.getByRole('button', { name: '같은 캐릭터로 다시 달리기' }));
-    expect(screen.getByTestId('runner-mock')).toHaveAttribute('data-character', 'hanayo-hiyori');
+    expect(await screen.findByTestId('runner-mock')).toHaveAttribute('data-character', 'hanayo-hiyori');
     expect(runnerMock.mounts).toBe(2);
     expect(runnerMock.destroys).toBe(1);
   });
@@ -130,6 +134,7 @@ describe('App flow', () => {
     openEndlessCharacterSelect();
     fireEvent.click(screen.getByRole('button', { name: '하나요 히요리' }));
     fireEvent.click(document.querySelector('.selector-footer .selector-confirm')!);
+    await screen.findByTestId('runner-mock');
     await act(async () => {
       runnerMock.finish?.('hanayo-hiyori', 'personal-best');
       runnerMock.finish?.('hanayo-hiyori', 'personal-best');
@@ -139,13 +144,13 @@ describe('App flow', () => {
 
   it('loads the unified top-ten list from the menu and keeps stage routes out of the app flow', async () => {
     runGatewayMock.getRanking.mockResolvedValue([{
-      id: 'run-1', characterId: 'hanayo-hiyori', distanceMeters: 1250, coins: 4,
-      durationMs: 90_000, finishedAtIso: '2026-10-27T00:00:00.000Z', rank: 1,
+      rank: 1, displayName: 'Runner A', characterId: 'hanayo-hiyori', distanceMeters: 1250, coins: 4,
+      finishedAtIso: '2026-10-27T00:00:00.000Z',
     }]);
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: '로컬 기록 보기' }));
     expect(screen.getByRole('heading', { name: '로컬 랭킹' })).toBeInTheDocument();
-    expect(await screen.findByText('하나요 히요리')).toBeInTheDocument();
+    expect(await screen.findByText(/하나요 히요리/)).toBeInTheDocument();
     expect(screen.getByText('1,250m')).toBeInTheDocument();
     expect(runGatewayMock.getRanking).toHaveBeenCalledOnce();
     expect(screen.queryByText(/월드 선택|스테이지 선택|체크포인트/)).not.toBeInTheDocument();

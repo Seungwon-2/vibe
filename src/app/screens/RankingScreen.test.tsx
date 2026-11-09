@@ -1,15 +1,15 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { RankedRunRecord } from '../../services/RunGateway';
+import type { PublicLeaderboardRecord } from '../../services/RunGateway';
 import { RankingScreen } from './RankingScreen';
 
 afterEach(cleanup);
 
-const rows: RankedRunRecord[] = [
-  { id: 'run-1', characterId: 'hanayo-hiyori', distanceMeters: 2500, coins: 8,
-    durationMs: 90_000, finishedAtIso: '2026-10-27T00:00:00.000Z', rank: 1 },
-  { id: 'run-2', characterId: 'cogane-rang', distanceMeters: 1900, coins: 3,
-    durationMs: 90_000, finishedAtIso: '2026-10-26T00:00:00.000Z', rank: 2 },
+const rows: PublicLeaderboardRecord[] = [
+  { rank: 1, displayName: 'Runner A', characterId: 'hanayo-hiyori', distanceMeters: 2500, coins: 8,
+    finishedAtIso: '2026-10-27T00:00:00.000Z' },
+  { rank: 2, displayName: 'Runner B', characterId: 'cogane-rang', distanceMeters: 1900, coins: 3,
+    finishedAtIso: '2026-10-26T00:00:00.000Z' },
 ];
 
 describe('RankingScreen', () => {

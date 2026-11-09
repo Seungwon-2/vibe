@@ -19,6 +19,8 @@
     "assets:validate": "node scripts/build-motion-atlases.mjs --check"
   },
   "dependencies": {
+    "@azure/msal-browser": "^5.29.0",
+    "@azure/msal-react": "^5.8.1",
     "phaser": "^3.90.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"

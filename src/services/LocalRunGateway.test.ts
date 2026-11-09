@@ -21,8 +21,8 @@ describe('LocalRunGateway', () => {
     const storage = memoryStorage();
     const gateway = new LocalRunGateway(storage);
     const submitted = await gateway.submitRun(first);
-    expect(submitted.distanceMeters).toBe(12);
-    expect(submitted.rank).toBe(1);
+    expect(submitted.savedRun.distanceMeters).toBe(12);
+    expect(submitted.personalBest?.rank).toBe(1);
     expect(storage.setItem).toHaveBeenCalledWith(RUN_RECORDS_STORAGE_KEY, expect.any(String));
     expect(JSON.parse(storage.value()!)).toMatchObject({ version: 1, records: [
       { characterId: 'player-default', distanceMeters: 12, coins: 2, durationMs: 10_000,
@@ -64,7 +64,7 @@ describe('LocalRunGateway', () => {
         durationMs: 1_000, finishedAtIso: date },
     ] }));
     const ranking = await new LocalRunGateway(storage).getRanking();
-    expect(ranking.map(({ id, rank }) => [id, rank])).toEqual([['a-run', 1], ['z-run', 2]]);
+    expect(ranking.map(({ characterId, rank }) => [characterId, rank])).toEqual([['hanayo-hiyori', 1], ['player-default', 2]]);
   });
 
   it('stores only the best ten rows and returns rank 11 for a result outside the list', async () => {
@@ -73,7 +73,7 @@ describe('LocalRunGateway', () => {
       await gateway.submitRun({ ...first, distanceMeters: distance });
     }
     const outside = await gateway.submitRun({ ...first, distanceMeters: 0 });
-    expect(outside.rank).toBe(11);
+    expect(outside.personalBest?.rank).toBe(1);
     const ranking = await gateway.getRanking();
     expect(ranking).toHaveLength(10);
     expect(ranking.map((record) => record.distanceMeters)).toEqual([10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
@@ -93,7 +93,7 @@ describe('LocalRunGateway', () => {
     for (const raw of snapshots) {
       const gateway = new LocalRunGateway(memoryStorage(raw));
       expect(await gateway.getRanking()).toEqual([]);
-      expect((await gateway.submitRun(first)).rank).toBe(1);
+      expect((await gateway.submitRun(first)).personalBest?.rank).toBe(1);
     }
   });
 
@@ -101,7 +101,7 @@ describe('LocalRunGateway', () => {
     const readDenied = { getItem: vi.fn(() => { throw new Error('denied'); }),
       setItem: vi.fn(() => { throw new Error('quota'); }) };
     const gateway = new LocalRunGateway(readDenied);
-    expect((await gateway.submitRun(first)).rank).toBe(1);
+    expect((await gateway.submitRun(first)).personalBest?.rank).toBe(1);
     expect((await gateway.getBest())?.distanceMeters).toBe(12);
     expect(await gateway.getRanking()).toHaveLength(1);
   });
@@ -119,6 +119,6 @@ describe('LocalRunGateway', () => {
       .rejects.toThrow(TypeError);
     const firstSaved = await gateway.submitRun(first);
     const secondSaved = await gateway.submitRun(first);
-    expect(firstSaved.id).not.toBe(secondSaved.id);
+    expect(firstSaved.savedRun.id).not.toBe(secondSaved.savedRun.id);
   });
 });

@@ -1,8 +1,8 @@
 import { getCharacter } from '../../game/characters/characterCatalog';
-import type { RankedRunRecord } from '../../services/RunGateway';
+import type { PublicLeaderboardRecord } from '../../services/RunGateway';
 
 export type RankingScreenProps = {
-  rows: readonly RankedRunRecord[];
+  rows: readonly PublicLeaderboardRecord[];
   loading: boolean;
   error: string | null;
   onBack(): void;
@@ -27,10 +27,10 @@ export function RankingScreen({ rows, loading, error, onBack }: RankingScreenPro
                 {rows.map((row) => {
                   const character = getCharacter(row.characterId);
                   return (
-                    <li key={row.id} className={`ranking-record${row.rank <= 3 ? ` is-podium is-podium-${row.rank}` : ''}`}
+                    <li key={`${row.rank}:${row.finishedAtIso}`} className={`ranking-record${row.rank <= 3 ? ` is-podium is-podium-${row.rank}` : ''}`}
                       style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
                       <span className="ranking-record__rank">{row.rank}위</span>
-                      <span className="ranking-record__character">{character.displayName}</span>
+                      <span className="ranking-record__character">{row.displayName} · {character.displayName}</span>
                       <strong className="ranking-record__distance">{row.distanceMeters.toLocaleString()}m</strong>
                       <small className="ranking-record__meta">{row.coins.toLocaleString()} 코인 <span aria-hidden="true">·</span> <time dateTime={row.finishedAtIso}>{formatRunDate(row.finishedAtIso)}</time></small>
                     </li>
