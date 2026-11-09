@@ -121,4 +121,4 @@ Task: T01-entra-spa-auth
 ## Progress
 - [x] Implementation complete
 - [x] Validation passed
-- commit: pending
+- commit: `f8a9230`
