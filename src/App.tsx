@@ -3,6 +3,7 @@ import { CharacterSelect } from './app/screens/CharacterSelect';
 import { MainMenu } from './app/screens/MainMenu';
 import { ModeSelect } from './app/screens/ModeSelect';
 import { RankingScreen } from './app/screens/RankingScreen';
+import { PersonalHistoryScreen } from './app/screens/PersonalHistoryScreen';
 import { RunResult } from './app/screens/RunResult';
 import { StoryResult } from './app/screens/StoryResult';
 import { AchievementsScreen } from './app/screens/AchievementsScreen';
@@ -12,7 +13,7 @@ import type { CharacterId } from './game/characters/characterTypes';
 import type { RunnerFinishOutcome, RunnerMode, RunnerResult, StoryStageId } from './game/runner/runnerTypes';
 import { browserPersonalBestStore } from './services/PersonalBestStore';
 import { browserRunGateway } from './services/LocalRunGateway';
-import type { PersonalBestRecord, PublicLeaderboardRecord, RunGateway } from './services/RunGateway';
+import type { PersonalBestRecord, PersonalRunHistoryRecord, PublicLeaderboardRecord, RunGateway } from './services/RunGateway';
 import { AuthenticatedRunGateway, RunApiError } from './services/AuthenticatedRunGateway';
 import { readEntraSettings } from './auth/entraConfig';
 import { useRunnerAuth } from './auth/AuthProvider';
@@ -32,7 +33,7 @@ const RunScreen = lazy(async () => {
   return { default: module.RunScreen };
 });
 
-type AppScreen = 'menu' | 'mode-select' | 'character-select' | 'stage-select' | 'run' | 'result' | 'rankings' | 'achievements' | 'shop';
+type AppScreen = 'menu' | 'mode-select' | 'character-select' | 'stage-select' | 'run' | 'result' | 'rankings' | 'personal-history' | 'achievements' | 'shop';
 type FinishedRun = {
   runId: number;
   result: RunnerResult;
@@ -46,6 +47,7 @@ type FinishedRun = {
 };
 type BestLoadState = { key: string; record: PersonalBestRecord | null; error: string | null };
 type RankingLoadState = { requestId: number; rows: PublicLeaderboardRecord[]; error: string | null };
+type PersonalHistoryLoadState = { requestId: number; rows: PersonalRunHistoryRecord[]; cursor: string | null; error: string | null; loading: boolean };
 
 function App(): React.JSX.Element {
   const auth = useRunnerAuth();
@@ -72,6 +74,10 @@ function App(): React.JSX.Element {
   const submittedRunIds = useRef(new Set<number>());
   const [bestState, setBestState] = useState<BestLoadState>({ key: '', record: null, error: null });
   const [rankingRequestId, setRankingRequestId] = useState(0);
+  const [historyRequestId, setHistoryRequestId] = useState(0);
+  const [historyState, setHistoryState] = useState<PersonalHistoryLoadState>({ requestId: -1, rows: [], cursor: null, error: null, loading: false });
+  const historyRequestCounter = useRef(0);
+  const historyPageInFlight = useRef(false);
   const [achievementsReturnTo, setAchievementsReturnTo] = useState<'menu' | 'stage-select'>('menu');
   const [shopReturnTo, setShopReturnTo] = useState<'menu' | 'character-select'>('menu');
   const [rankingState, setRankingState] = useState<RankingLoadState>({ requestId: -1, rows: [], error: null });
@@ -148,9 +154,53 @@ function App(): React.JSX.Element {
     return () => { current = false; };
   }, [screen, rankingRequestId, runGateway, canUseRecords, signIn]);
 
+  useEffect(() => {
+    if (screen !== 'personal-history') return;
+    let current = true;
+    void runGateway.getPersonalHistory({ limit: 20, cursor: null }).then((page) => {
+      if (current) setHistoryState({ requestId: historyRequestId, rows: [...page.items], cursor: page.nextCursor, error: null, loading: false });
+    }).catch((error: unknown) => {
+      if (error instanceof RunApiError && error.status === 401) void signIn();
+      if (current) setHistoryState({ requestId: historyRequestId, rows: [], cursor: null,
+        error: error instanceof RunApiError ? error.message : '내 기록을 불러오지 못했습니다. 다시 시도해 주세요.', loading: false });
+    });
+    return () => { current = false; };
+  }, [screen, historyRequestId, runGateway, signIn]);
+
   function openRankings(): void {
     setRankingRequestId((requestId) => requestId + 1);
     setScreen('rankings');
+  }
+
+  function openPersonalHistory(): void {
+    if (!canUseRecords) return;
+    const requestId = historyRequestCounter.current + 1;
+    historyRequestCounter.current = requestId;
+    historyPageInFlight.current = false;
+    setHistoryRequestId(requestId);
+    setHistoryState({ requestId, rows: [], cursor: null, error: null, loading: true });
+    setScreen('personal-history');
+  }
+
+  async function loadMorePersonalHistory(): Promise<void> {
+    const cursor = historyState.cursor;
+    const requestId = historyRequestId;
+    if (!cursor || historyState.loading || historyPageInFlight.current || historyState.requestId !== requestId) return;
+    historyPageInFlight.current = true;
+    setHistoryState((current) => current.requestId === requestId ? { ...current, loading: true, error: null } : current);
+    try {
+      const page = await runGateway.getPersonalHistory({ limit: 20, cursor });
+      setHistoryState((current) => current.requestId === requestId
+        ? { ...current, rows: [...current.rows, ...page.items], cursor: page.nextCursor, error: null, loading: false }
+        : current);
+    } catch (error) {
+      if (error instanceof RunApiError && error.status === 401) void signIn();
+      setHistoryState((current) => current.requestId === requestId
+        ? { ...current, error: error instanceof RunApiError ? error.message : '기록을 더 불러오지 못했습니다. 다시 시도해 주세요.', loading: false }
+        : current);
+    } finally {
+      historyPageInFlight.current = false;
+    }
   }
 
   function openAchievements(from: 'menu' | 'stage-select'): void {
@@ -191,7 +241,7 @@ function App(): React.JSX.Element {
     setScreen('run');
   }
 
-  const menu = <MainMenu onStart={() => setScreen('mode-select')} onRankings={openRankings}
+  const menu = <MainMenu onStart={() => setScreen('mode-select')} onRankings={openRankings} onHistory={openPersonalHistory}
     onAchievements={() => openAchievements('menu')} onShop={() => openShop('menu')}
     topRun={overallBest} topRunLoading={bestLoading} topRunError={bestError}
     showControlsHelp={shouldShowRunnerTutorial()} audioPreferences={audioPreferences}
@@ -314,9 +364,18 @@ function App(): React.JSX.Element {
 
   if (screen === 'rankings') {
     return (
-      <RankingScreen rows={rankingRows} loading={rankingLoading} error={rankingError}
+      <RankingScreen rows={rankingRows} loading={rankingLoading} error={rankingError} source={auth.mode === 'cloud' ? 'cloud' : 'local'}
         onBack={() => setScreen('menu')} />
     );
+  }
+
+  if (screen === 'personal-history') {
+    const historyIsCurrent = historyState.requestId === historyRequestId;
+    return <PersonalHistoryScreen rows={historyIsCurrent ? historyState.rows : []}
+      loading={!historyIsCurrent || historyState.loading} error={historyIsCurrent ? historyState.error : null}
+      hasMore={historyIsCurrent && historyState.cursor !== null} onLoadMore={() => { void loadMorePersonalHistory(); }}
+      onRetry={openPersonalHistory}
+      onBack={() => setScreen('menu')} />;
   }
 
   return menu;

@@ -9,6 +9,7 @@ import type { RunnerAuthMode, RunnerAuthStatus } from '../../auth/AuthProvider';
 export type MainMenuProps = {
   onStart(): void;
   onRankings(): void;
+  onHistory?(): void;
   onAchievements?(): void;
   onShop?(): void;
   topRun: PersonalBestRecord | null;
@@ -26,7 +27,7 @@ export type MainMenuProps = {
   onSignOut?(): void;
 };
 
-export function MainMenu({ onStart, onRankings, onAchievements, onShop, topRun, topRunLoading, topRunError,
+export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onShop, topRun, topRunLoading, topRunError,
   showControlsHelp, audioPreferences, onAudioPreferencesChange, onUnlockAudio, authMode = 'local',
   authStatus = 'signed-in', authError = null, accountName = null, onSignIn, onSignOut }: MainMenuProps): React.JSX.Element {
   const [dialog, setDialog] = useState<'settings' | 'credits' | null>(null);
@@ -73,6 +74,10 @@ export function MainMenu({ onStart, onRankings, onAchievements, onShop, topRun, 
               disabled={cloudNeedsSignIn || configurationFailed}>
               {authMode === 'cloud' ? '유저 랭킹' : '로컬 기록 보기'}
             </button>
+            {onHistory && <button className="main-menu-secondary" type="button" onClick={onHistory}
+              disabled={cloudNeedsSignIn || configurationFailed}>
+              {authMode === 'cloud' ? '내 플레이 기록' : '플레이 기록'}
+            </button>}
             {onAchievements && <button className="main-menu-secondary" type="button" onClick={onAchievements}>업적</button>}
             {onShop && <button className="main-menu-secondary" type="button" onClick={onShop}>코인 상점</button>}
             <button className="main-menu-secondary main-menu-sound" type="button"

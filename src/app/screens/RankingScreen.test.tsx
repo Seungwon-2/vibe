@@ -13,30 +13,26 @@ const rows: PublicLeaderboardRecord[] = [
 ];
 
 describe('RankingScreen', () => {
-  it('shows one unified list with rank, character, meters, coins, and date', () => {
-    render(<RankingScreen rows={rows} loading={false} error={null} onBack={vi.fn()} />);
-    expect(screen.getByRole('heading', { name: '로컬 랭킹' })).toBeInTheDocument();
-    expect(screen.getByRole('list', { name: '통합 달리기 랭킹' })).toBeInTheDocument();
-    expect(screen.getByText('하나요 히요리')).toBeInTheDocument();
-    expect(screen.getByText('코가네 랑')).toBeInTheDocument();
+  it('shows the public cloud ranking without claiming records are local', () => {
+    render(<RankingScreen rows={rows} loading={false} error={null} source="cloud" onBack={vi.fn()} />);
+    expect(screen.getByRole('heading', { name: '유저 랭킹' })).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: '유저 랭킹' })).toBeInTheDocument();
+    expect(screen.getByText('Runner A · 하나요 히요리')).toBeInTheDocument();
+    expect(screen.getByText('Runner B · 코가네 랑')).toBeInTheDocument();
     expect(screen.getByText('2,500m')).toBeInTheDocument();
     expect(screen.getByText('1,900m')).toBeInTheDocument();
     expect(screen.getByText(/8 코인/)).toBeInTheDocument();
-    expect(screen.getAllByText('2026. 10. 27.').length).toBe(1);
-    const topRecord = screen.getByText('1위').closest('li');
-    expect(topRecord).toHaveClass('ranking-record', 'is-podium', 'is-podium-1');
-    expect(topRecord?.style.getPropertyValue('--character-accent')).toBeTruthy();
-    expect(screen.getByText('2,500m')).toHaveClass('ranking-record__distance');
-    expect(screen.getByText(/8 코인/)).toHaveClass('ranking-record__meta');
+    expect(screen.queryByText(/LOCAL RUNS|THIS BROWSER|로컬 기록/)).not.toBeInTheDocument();
   });
 
-  it('shows empty, loading, and read-error states without hiding the back action', () => {
+  it('labels the browser fallback clearly and exposes loading, empty, and error states', () => {
     const onBack = vi.fn();
-    const { rerender } = render(<RankingScreen rows={[]} loading={false} error={null} onBack={onBack} />);
-    expect(screen.getByText(/완주하면 첫 랭킹 기록/)).toBeInTheDocument();
-    rerender(<RankingScreen rows={[]} loading error={null} onBack={onBack} />);
+    const { rerender } = render(<RankingScreen rows={[]} loading={false} error={null} source="local" onBack={onBack} />);
+    expect(screen.getByRole('heading', { name: '로컬 기록' })).toBeInTheDocument();
+    expect(screen.getByText(/아직 저장된 기록이 없습니다/)).toBeInTheDocument();
+    rerender(<RankingScreen rows={[]} loading error={null} source="local" onBack={onBack} />);
     expect(screen.getByRole('status')).toHaveTextContent('기록을 불러오는 중입니다');
-    rerender(<RankingScreen rows={[]} loading={false} error="읽기 실패" onBack={onBack} />);
+    rerender(<RankingScreen rows={[]} loading={false} error="읽기 실패" source="local" onBack={onBack} />);
     expect(screen.getByRole('alert')).toHaveTextContent('읽기 실패');
     fireEvent.click(screen.getByRole('button', { name: '메인 메뉴로' }));
     expect(onBack).toHaveBeenCalledOnce();

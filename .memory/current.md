@@ -1,24 +1,23 @@
 # Current Context
 
 ## Active Plan
-[Azure Deployment Readiness](./plans/2026-11-03-azure-deployment-readiness.md)
+[Azure Static Web Apps and GitHub Deployment](./plans/2026-11-11-azure-swa-github-deployment.md)
 
 ## Active Phase
-[P01 Entra Auth, API, and Data](./phases/2026-11-03-azure-deployment-readiness/P01-auth-api-data/phase.md)
+[P01 App Readiness](./phases/2026-11-11-azure-swa-github-deployment/P01-app-readiness/phase.md)
 
 ## Active Task
-[T03 Personal History and Public Ranking UI](./phases/2026-11-03-azure-deployment-readiness/P01-auth-api-data/T03-personal-history-and-public-ranking-ui.md)
+[T02 Signed-in Account Area](./phases/2026-11-11-azure-swa-github-deployment/P01-app-readiness/T02-account-area.md)
 
 ## Status
-- Pre-Run Controls and Items Guide P01-T01 and Coin Motif Pickup Sections P01-T01 are complete. Azure Deployment Readiness P01-T01 is complete and committed as `f8a9230`; P01-T02 now adds the protected Functions/Cosmos API.
-- Confirmed behavior is recorded in `./decisions/2026-11-06-pre-run-guide.md`.
-- UI/UX interview decisions are confirmed in `./decisions/2026-11-04-predeploy-ui-ux-polish.md`.
-- Speed power-up decisions are confirmed in `./decisions/2026-11-05-runner-speed-powerups.md`.
-- Private run history and public best-ranking decisions are confirmed in `./decisions/2026-11-06-private-run-history-public-best-ranking.md`; Azure readiness P01 now includes the API, Cosmos projection, and separate UI contracts. Public names use validated Entra `name` or `Runner`, with no Graph permission or email exposure.
-- Runner Speed Power-Ups P01 is complete: simulation, safe pickup placement/high-speed collision handling, and distinct HUD/audio feedback are implemented. Focused tests, typecheck, and production build pass.
-- P01-T01 added single-tenant MSAL PKCE auth, an authenticated run gateway, private-history/public-best DTO contracts, signed-in UI gating, and kept the local gateway for local development. Focused tests, typecheck, lint, and build pass.
-- P01-T02 implements token-validated Functions routes, owner-partitioned Cosmos records, idempotent rewards, and a single public best projection per player. API tests, lint, build, client service tests, and production dependency audit pass. Committed as `2740953`; no Azure resource was provisioned.
-- Coin Motif Pickup Sections P01-T01 is complete: safe, deterministic themed coin formations are implemented for Endless and Story courses.
+- The 2026-11-03 Azure Deployment Readiness plan delivered the MSAL SPA authentication foundation (`f8a9230`) and protected Functions/Cosmos API routes (`2740953`). Its remaining personal-history/ranking UI, account-area, and managed API credential setup are carried into the active plan.
+- Coin Motif Pickup Sections and Runner Speed Power-Ups work are recorded as complete in the prior plan/history.
+- Current branch is `project02`. Existing unrelated working-tree changes are preserved; planning has not staged, committed, or reverted them.
+- Confirmed deployment target: GitHub `Seungwon-2/vibe`, branch `project02`; Azure subscription `CR-Project-01`, resource group `grill-me-edu`; new Free SWA `stella-runner-project02`; existing Cosmos account `maze-rescue-ms-b7af62a9` with only `stella-runner` / `PlayerRecords` to be added.
+- The dedicated single-tenant Entra registrations, SWA resource, Cosmos child resources, GitHub secret/workflow, and deployment have not yet been created. The earlier observed GitHub connector was read-only; write permission must be rechecked before adding/pushing a workflow.
+- Cosmos owner approval for use of the account-scoped key is reported by the user. Because this key is account-wide and managed API has no managed identity, cloud API connection is gated on secure server-side SWA setting configuration and no-secret logging.
+- Plan execution includes live checks for SWA/API region/runtime support, app-name availability, shared Cosmos capacity and incremental cost, Entra configuration, what-if isolation, successful Actions deployment, real app URL, privacy validation, employee guide, and versioned release notes.
+- No Azure resources were provisioned during planning.
 
 ## Next Step
-Read `./phases/2026-11-03-azure-deployment-readiness/P01-auth-api-data/T03-personal-history-and-public-ranking-ui.md`; connect the private history and public ranking screens to the authenticated API while retaining the local-only path. No Azure resources have been provisioned.
+Read T02's blueprint and complete the signed-in account area with Entra name, username/email, and logout. Do not begin Azure resource creation or secret configuration until P01 is complete and the P02 preflight/cost/what-if results have been reviewed.
