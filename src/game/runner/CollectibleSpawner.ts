@@ -172,6 +172,8 @@ export const PICKUP_PIT_CLEARANCE_METERS = 40;
 const PICKUP_VISUAL_MARGIN_PX = 12;
 const PICKUP_ART_RADIUS_PX = 11;
 const PICKUP_BASE_RADIUS_PX = 32;
+const ENDLESS_PICKUP_SCHEDULE_CHUNK_METERS = 5_000;
+const ENDLESS_PICKUP_SCHEDULE_LOOKAHEAD_METERS = 2_000;
 
 // The standing-height row is frequent and predictable; elevated coins remain
 // optional and can be skipped when the authored course has no safe placement.
@@ -179,6 +181,26 @@ const SAFE_PICKUP_START_METERS = 160;
 const GIANT_PICKUP_PURPLE = 0x9b5de5;
 const GIANT_PICKUP_PINK = 0xff77b7;
 const GIANT_PICKUP_OUTLINE = 0xffffff;
+
+function getPowerUpClearanceMeters(kind: 'giant' | 'speed'): number {
+  const durationMs = kind === 'giant' ? RUNNER_CONFIG.giantDurationMs : RUNNER_CONFIG.speedPickupDurationMs;
+  return Math.ceil(MAX_RUN_SPEED_UNITS_PER_SECOND * RUNNER_CONFIG.metersPerWorldUnit *
+    RUNNER_CONFIG.speedPickupMultiplier * durationMs / 1_000) + RUNNER_CONFIG.powerUpPickupRecoveryMeters;
+}
+
+function hasPowerUpSpacing(
+  candidateMeters: number,
+  candidateKind: 'giant' | 'speed',
+  pickups: readonly PickupDefinition[],
+): boolean {
+  return pickups.every((pickup) => {
+    if (pickup.kind !== 'giant' && pickup.kind !== 'speed') return true;
+    const gap = candidateMeters - pickup.distanceMeters;
+    return gap >= 0
+      ? gap >= getPowerUpClearanceMeters(pickup.kind)
+      : -gap >= getPowerUpClearanceMeters(candidateKind);
+  });
+}
 
 type ScheduledHazard = Readonly<{ distanceMeters: number; definition: HazardDefinition; patternIndex: number; id: string }>;
 
@@ -545,7 +567,8 @@ export function generatePickupSchedule(maxDistanceMeters: number,
       (challenge.endMeters - candidate) / fastestMetersPerSecond <= RUNNER_CONFIG.giantDurationMs / 1_000 &&
       isPickupDistanceSafe(candidate, 52, hazards, pits) &&
       [...existingPickups, ...giantPickups].every((pickup) =>
-        Math.abs(pickup.distanceMeters - candidate) >= 30),
+        Math.abs(pickup.distanceMeters - candidate) >= 30) &&
+      (storyStageId !== null || hasPowerUpSpacing(candidate, 'giant', giantPickups)),
     );
     if (distanceMeters === undefined) continue;
     giantPickups.push({ id: `giant-${giantIndex++}`, kind: 'giant', distanceMeters,
@@ -563,7 +586,8 @@ export function generatePickupSchedule(maxDistanceMeters: number,
     const distanceMeters = candidates.find((candidate) =>
       isPickupDistanceSafe(candidate, 52, hazards, pits) &&
       [...scheduledPickups, ...speedPickups].every((pickup) =>
-        Math.abs(pickup.distanceMeters - candidate) >= RUNNER_CONFIG.speedPickupClearanceMeters),
+        Math.abs(pickup.distanceMeters - candidate) >= RUNNER_CONFIG.speedPickupClearanceMeters) &&
+        (storyStageId !== null || hasPowerUpSpacing(candidate, 'speed', [...scheduledPickups, ...speedPickups])),
     );
     if (distanceMeters !== undefined) {
       speedPickups.push({ id: `speed-${speedPickups.length}`, kind: 'speed', distanceMeters,
@@ -603,6 +627,7 @@ type GoalArt = { art: Phaser.GameObjects.Graphics; label: Phaser.GameObjects.Tex
 export class CollectibleSpawner {
   private nextPickupIndex = 0;
   private activePickupSchedule: readonly PickupDefinition[] = PICKUP_SCHEDULE;
+  private endlessPickupScheduleHorizonMeters = 15_000;
   private scheduledStoryStageId: StoryStageId | null = null;
   private active: ActivePickup[] = [];
   private gates: GateArt[] = [];
@@ -637,6 +662,15 @@ export class CollectibleSpawner {
       this.nextPickupIndex = 0;
     }
     const visibleLead = (960 - RUNNER_PLAYER_X) * METERS_PER_WORLD_UNIT;
+    const requiredPickupHorizon = snapshot.distanceMeters + visibleLead;
+    if (!storyStage && requiredPickupHorizon >
+        this.endlessPickupScheduleHorizonMeters - ENDLESS_PICKUP_SCHEDULE_LOOKAHEAD_METERS) {
+      this.endlessPickupScheduleHorizonMeters = Math.ceil(
+        (requiredPickupHorizon + ENDLESS_PICKUP_SCHEDULE_LOOKAHEAD_METERS) /
+          ENDLESS_PICKUP_SCHEDULE_CHUNK_METERS,
+      ) * ENDLESS_PICKUP_SCHEDULE_CHUNK_METERS;
+      this.activePickupSchedule = generatePickupSchedule(this.endlessPickupScheduleHorizonMeters);
+    }
     while (this.nextPickupIndex < this.activePickupSchedule.length &&
       this.activePickupSchedule[this.nextPickupIndex].distanceMeters <= snapshot.distanceMeters + visibleLead) {
       this.spawnPickup(this.activePickupSchedule[this.nextPickupIndex]);

@@ -43,6 +43,13 @@ describe('authored hazard patterns', () => {
     }
   });
 
+  it('continues scheduling hazards well beyond the original 15,000m pickup horizon', () => {
+    const starts = Array.from({ length: 80 }, (_, index) => getPatternStartDistance(index));
+    expect(starts.at(-1)).toBeGreaterThan(15_000);
+    expect(starts).toEqual([...starts].sort((left, right) => left - right));
+    expect(getPatternForDistance(starts.at(-1)!).obstacles).toHaveLength(1);
+  });
+
   it('alternates three-action waves, introduces high barriers, and leaves recovery spans', () => {
     expect(RUNNER_CONFIG.densePatternsPerSection).toBe(3);
     expect(RUNNER_CONFIG.densePatternSpacingMeters).toBe(280);

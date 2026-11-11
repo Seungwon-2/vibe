@@ -60,6 +60,8 @@ export const RUNNER_CONFIG = Object.freeze({
   speedPickupSpacingMeters: 1_200,
   speedPickupSearchRadiusMeters: 180,
   speedPickupClearanceMeters: 36,
+  // Add a short recovery beat after either 2.5x speed effect expires.
+  powerUpPickupRecoveryMeters: 300,
   safePickupSpacingMeters: 90,
   safePickupMinimumGapMeters: 65,
   safePickupMaximumGapMeters: 115,

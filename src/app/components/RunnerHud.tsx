@@ -108,17 +108,17 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
               ✧ 속도 +15% · {Math.ceil((snapshot.stageSpeedBoostRemainingMs ?? 0) / 1_000)}초
             </span>
           )}
-          <span className="runner-hud__passive" style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
-            {passive.icon && <CharacterAbilityIcon icon={passive.icon} accentColor={character.accentColor} size={28} />}
-            <span><strong>{passive.name}</strong><small>{passive.effectLabel}</small></span>
-            {passive.id === 'hiyori-guard' && <span className="runner-hud__charges"
-              role="img" aria-label={`남은 방어 ${snapshot.passiveChargesRemaining}회`}>
-              {[0, 1].map((charge) => <i key={charge} className={charge < snapshot.passiveChargesRemaining ? 'is-ready' : ''} />)}
-            </span>}
-            {passive.id === 'toa-ghost-glide' && snapshot.slideGuardCooldownRemainingMs > 0 &&
-              <small className="runner-hud__cooldown">{Math.ceil(snapshot.slideGuardCooldownRemainingMs / 1_000)}초</small>}
-          </span>
         </div>
+        <span className="runner-hud__passive" style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
+          {passive.icon && <CharacterAbilityIcon icon={passive.icon} accentColor={character.accentColor} size={28} />}
+          <span><strong>{passive.name}</strong><small>{passive.effectLabel}</small></span>
+          {passive.id === 'hiyori-guard' && <span className="runner-hud__charges"
+            role="img" aria-label={`남은 방어 ${snapshot.passiveChargesRemaining}회`}>
+            {[0, 1].map((charge) => <i key={charge} className={charge < snapshot.passiveChargesRemaining ? 'is-ready' : ''} />)}
+          </span>}
+          {passive.id === 'toa-ghost-glide' && snapshot.slideGuardCooldownRemainingMs > 0 &&
+            <small className="runner-hud__cooldown">{Math.ceil(snapshot.slideGuardCooldownRemainingMs / 1_000)}초</small>}
+        </span>
       </div>
       {showBonus && (
         <span key={recentBonus.id} className={`runner-hud__bonus${passiveCue ? ' is-passive-cue' : ''}`} role="status">

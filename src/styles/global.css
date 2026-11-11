@@ -988,6 +988,40 @@ h1 {
 .runner-hud__passive { max-width: min(45%, 320px); padding: 4px 8px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--character-accent), transparent 72%); border-radius: 12px; background: rgb(255 255 255 / 74%); text-align: left; }
 .runner-hud__passive > span:nth-child(2) { min-width: 0; }
 .runner-hud__passive small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.runner-hud__details {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(24px, auto) minmax(34px, auto);
+  align-items: center;
+  row-gap: 4px;
+}
+.runner-hud__details > span:first-child { grid-column: 1; grid-row: 1; }
+.runner-hud__effects {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.runner-hud__effects::-webkit-scrollbar { display: none; }
+.runner-hud__passive {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: end;
+  width: max-content;
+  max-width: 100%;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.runner-hud__passive > span:nth-child(2) { flex: 0 1 auto; }
+.runner-hud__passive strong { white-space: nowrap; }
+.runner-hud__passive small { white-space: normal; }
 .runner-hud__bonus { z-index: 3; box-shadow: 0 6px 18px rgb(70 78 111 / 15%); }
 .runner-hud__bonus.is-passive-cue { border-width: 1px 1px 1px 4px; border-left-color: #df6da7; box-shadow: 0 7px 20px rgb(133 57 95 / 18%); }
 .result-panel { border-color: color-mix(in srgb, var(--ui-primary), var(--ui-border) 68%); }

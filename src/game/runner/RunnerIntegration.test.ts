@@ -52,7 +52,7 @@ describe('offline runner integration', () => {
     const gateway = new LocalRunGateway(storage);
     const submitted = await gateway.submitRun(result!);
     const reloadedRanking = await new LocalRunGateway(storage).getRanking();
-    expect(submitted.rank).toBe(1);
+    expect(submitted.personalBest?.rank).toBe(1);
     expect(reloadedRanking).toHaveLength(1);
     expect(reloadedRanking[0]).toMatchObject({
       rank: 1, characterId: 'player-default', coins: 1, distanceMeters: result!.distanceMeters,

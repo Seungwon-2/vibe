@@ -298,7 +298,7 @@ describe('authored collectible schedule', () => {
   it('schedules giant pickups deterministically outside course hazards, landmarks, and other pickups', () => {
     const generated = generatePickupSchedule(15_000);
     const giants = generated.filter(({ kind }) => kind === 'giant');
-    expect(giants.length).toBeGreaterThan(5);
+    expect(giants.length).toBeGreaterThan(3);
     expect(giants).toEqual(generatePickupSchedule(15_000).filter(({ kind }) => kind === 'giant'));
     expect(giants.every(({ heightUnits, optionalJump }) => heightUnits === 52 && !optionalJump)).toBe(true);
     for (const giant of giants) {
@@ -455,6 +455,30 @@ describe('authored collectible schedule', () => {
         `${speed.id} overlaps another pickup`).toBe(true);
       }
     }
+  });
+
+  it('keeps speed and giant power-ups outside each other’s active window', () => {
+    const schedule = generatePickupSchedule(20_000);
+    const powerUps = schedule.filter(({ kind }) => kind === 'speed' || kind === 'giant');
+    expect(powerUps.some(({ distanceMeters }) => distanceMeters > 15_000)).toBe(true);
+    for (let index = 1; index < powerUps.length; index += 1) {
+      const previous = powerUps[index - 1];
+      const previousDurationMs = previous.kind === 'giant'
+        ? RUNNER_CONFIG.giantDurationMs : RUNNER_CONFIG.speedPickupDurationMs;
+      const previousEffectDistance = Math.ceil(MAX_RUN_SPEED_UNITS_PER_SECOND * METERS_PER_WORLD_UNIT *
+        RUNNER_CONFIG.speedPickupMultiplier * previousDurationMs / 1_000);
+      expect(powerUps[index].distanceMeters - powerUps[index - 1].distanceMeters)
+        .toBeGreaterThanOrEqual(previousEffectDistance + RUNNER_CONFIG.powerUpPickupRecoveryMeters);
+    }
+  });
+
+  it('keeps pickup coverage after the 8,000m gate and preserves the scheduled prefix when extending', () => {
+    const initial = generatePickupSchedule(15_000);
+    const extended = generatePickupSchedule(20_000);
+    const afterGate = initial.filter(({ distanceMeters }) => distanceMeters >= 8_000 && distanceMeters < 10_000);
+    expect(afterGate.length).toBeGreaterThan(10);
+    expect(extended.filter(({ distanceMeters }) => distanceMeters < 13_000))
+      .toEqual(initial.filter(({ distanceMeters }) => distanceMeters < 13_000));
   });
 });
 

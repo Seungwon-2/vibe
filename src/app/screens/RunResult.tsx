@@ -2,7 +2,7 @@ import { CharacterPreview } from '../components/CharacterPreview';
 import { getCharacter } from '../../game/characters/characterCatalog';
 import type { CharacterId } from '../../game/characters/characterTypes';
 import type { RunnerFinishOutcome, RunnerResult } from '../../game/runner/runnerTypes';
-import type { RankedRunRecord } from '../../services/RunGateway';
+import type { PersonalBestRecord } from '../../services/RunGateway';
 import type { SettlementResult } from '../../services/PlayerProgression';
 import { ACHIEVEMENTS } from '../../services/AchievementCatalog';
 
@@ -13,7 +13,7 @@ export type RunResultProps = {
   submittedRank?: number | null;
   recordPending?: boolean;
   recordError?: string | null;
-  overallBest?: RankedRunRecord | null;
+  overallBest?: PersonalBestRecord | null;
   settlement?: SettlementResult;
   newlyUnlockedAchievementIds?: readonly string[];
   achievementBonusCoins?: number;
@@ -27,7 +27,6 @@ export function RunResult({ result, outcome, bestDistanceMeters, submittedRank =
   newlyUnlockedAchievementIds = [], achievementBonusCoins = 0,
   onRetry, onChooseCharacter, onRankings }: RunResultProps): React.JSX.Element {
   const character = getCharacter(result.characterId as CharacterId);
-  const overallBestCharacter = overallBest ? getCharacter(overallBest.characterId) : null;
   const isNewBest = outcome === 'personal-best';
   return (
     <main className="result-shell">
@@ -66,8 +65,8 @@ export function RunResult({ result, outcome, bestDistanceMeters, submittedRank =
             <div><dt>수집 코인</dt><dd>{result.coins.toLocaleString()}</dd></div>
             {(result.nearMissScore ?? 0) > 0 && <div><dt>아슬아슬 회피 점수</dt><dd>+{result.nearMissScore!.toLocaleString()}</dd></div>}
             {submittedRank !== null && <div><dt>통합 랭킹</dt><dd>{submittedRank <= 10 ? `${submittedRank}위` : '10위 밖'}</dd></div>}
-            {overallBest && overallBestCharacter && (
-              <div><dt>전체 최고</dt><dd>{overallBest.distanceMeters.toLocaleString()}m · {overallBestCharacter.displayName}</dd></div>
+            {overallBest && (
+              <div><dt>전체 최고</dt><dd>{overallBest.distanceMeters.toLocaleString()}m · {overallBest.displayName}</dd></div>
             )}
           </dl>
           {recordPending && <p className="record-feedback" role="status">로컬 기록 저장 중…</p>}
