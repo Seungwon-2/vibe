@@ -19,6 +19,18 @@ export interface RunnerRepository {
 }
 
 function cosmos(): CosmosClient {
+  const configuredConnectionString = process.env.COSMOS_CONNECTION_STRING;
+  if (configuredConnectionString !== undefined) {
+    const connectionString = configuredConnectionString.trim();
+    if (!connectionString) throw new ApiException(503, 'DATA_NOT_CONFIGURED', 'DATA_NOT_CONFIGURED');
+    try {
+      return new CosmosClient(connectionString);
+    } catch {
+      // Cosmos SDK errors may include the supplied connection string. Keep the API error generic.
+      throw new ApiException(503, 'DATA_NOT_CONFIGURED', 'DATA_NOT_CONFIGURED');
+    }
+  }
+
   const endpoint = process.env.COSMOS_ENDPOINT?.trim();
   if (!endpoint) throw new ApiException(503, 'DATA_NOT_CONFIGURED', 'DATA_NOT_CONFIGURED');
   return new CosmosClient({ endpoint, aadCredentials: new DefaultAzureCredential() });

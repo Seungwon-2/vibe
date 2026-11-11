@@ -19,7 +19,7 @@ No database or container is created automatically. Configure an existing runner-
 - `GET /api/runs/best` returns the player's public endless best and current rank.
 - `GET /api/leaderboard?limit=20` returns public best-run rows only.
 
-All data access is authorized with the verified `tid` + `oid` token claims. Public rows contain the verified Entra `name` claim or `Runner`, never email or account identifiers. Cosmos uses managed identity in Azure and developer credentials locally; there are no Cosmos keys in the browser bundle.
+All data access is authorized with the verified `tid` + `oid` token claims. Public rows contain the verified Entra `name` claim or `Runner`, never email or account identifiers. Locally, Cosmos uses `COSMOS_ENDPOINT` with `DefaultAzureCredential` so developers can sign in with Azure CLI. In the SWA managed API, use the server-only `COSMOS_CONNECTION_STRING` application setting because the managed API does not provide a managed identity. Configure that secret in the backend application settings; never add it to `VITE_*` variables, source files, local examples, logs, or client bundles. The repository converts invalid credential configuration into a generic `DATA_NOT_CONFIGURED` response so SDK parse errors cannot reveal the supplied value.
 
 The initial global ranking reads only `leaderboardBest` projections. Review Cosmos request units and query latency after deployment; if the number of players grows materially, replace the projection scan with a server-maintained leaderboard index. Client-sent runs receive basic plausibility validation but are not cheat-proof because the simulation remains client-side.
 

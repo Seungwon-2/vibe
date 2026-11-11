@@ -4,10 +4,10 @@
 [Azure Static Web Apps and GitHub Deployment](./plans/2026-11-11-azure-swa-github-deployment.md)
 
 ## Active Phase
-[P01 App Readiness](./phases/2026-11-11-azure-swa-github-deployment/P01-app-readiness/phase.md)
+[P02 Cloud Delivery](./phases/2026-11-11-azure-swa-github-deployment/P02-cloud-delivery/phase.md)
 
 ## Active Task
-[T03 SWA Managed API Cosmos Configuration](./phases/2026-11-11-azure-swa-github-deployment/P01-app-readiness/T03-managed-api-cosmos-config.md)
+[T01 Preflight and Infrastructure Preview](./phases/2026-11-11-azure-swa-github-deployment/P02-cloud-delivery/T01-preflight-and-infrastructure.md)
 
 ## Status
 - The 2026-11-03 Azure Deployment Readiness plan delivered the MSAL SPA authentication foundation (`f8a9230`) and protected Functions/Cosmos API routes (`2740953`). Its remaining personal-history/ranking UI, account-area, and managed API credential setup are carried into the active plan.
@@ -18,6 +18,7 @@
 - Cosmos owner approval for use of the account-scoped key is reported by the user. Because this key is account-wide and managed API has no managed identity, cloud API connection is gated on secure server-side SWA setting configuration and no-secret logging.
 - Plan execution includes live checks for SWA/API region/runtime support, app-name availability, shared Cosmos capacity and incremental cost, Entra configuration, what-if isolation, successful Actions deployment, real app URL, privacy validation, employee guide, and versioned release notes.
 - No Azure resources were provisioned during planning.
+- T03 SWA managed API Cosmos configuration is implemented and validated. Azure access setup was cancelled at the user's request; no Azure resource was changed.
 
 ## Next Step
-Implement T03's protected server-side Cosmos connection-string mode for the SWA managed API while retaining local AAD credentials. Do not add the real secret to source, logs, examples, or client configuration. Do not begin Azure resource creation or secret configuration until P01 is complete and the P02 preflight/cost/what-if results have been reviewed.
+Complete T01's read-only preflight for the approved subscription/resource group, confirm SWA availability, Cosmos capacity/cost, and isolated infrastructure preview. Do not begin Azure resource creation or secret configuration until the preflight/cost/what-if results have been reviewed.
