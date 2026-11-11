@@ -9,12 +9,12 @@ Prepare Stella Runner for a dedicated Azure Static Web App deployment that autom
 - Repository: `https://github.com/Seungwon-2/vibe.git`; branch: `project02`.
 - App: React 19 + TypeScript + Vite 8 + Phaser; root `/`; `npm run build`; output `dist/`.
 - API: Azure Functions v4 Node API from `api/`, hosted as the Static Web Apps managed API (no separate Function App).
-- Azure: subscription `CR-Project-01`; resource group `grill-me-edu`; new Free SWA `stella-runner-project02` (availability to verify); managed API in East Asia.
+- Azure: subscription `CR-Project-01`; resource group `grill-me-edu`; new Standard SWA `stella-runner-project02` (availability to verify); managed API in East Asia. Standard was selected by the user on 2026-11-11 to avoid the subscription's exhausted Free-plan quota; verify recurring cost before apply.
 - Data: existing Cosmos account `maze-rescue-ms-b7af62a9` in Korea Central; add only database `stella-runner` and container `PlayerRecords`, partition key `/playerId`; do not change existing account configuration or data.
 - Identity: new dedicated single-tenant Entra app registration; company tenant including guest accounts; MSAL; private account panel shows name and username/email and supports logout; public ranking uses `name` or `Runner` and never exposes email or identifiers.
 - Public leaderboard: one best endless record per player, distance descending then coins descending. Personal history is accessible only to its authenticated owner. Browser-local records are not migrated.
 - Cosmos access: SWA managed API has no managed identity; use a server-only account connection string setting. User reports owner approval for the account-scoped key. Since it grants account-wide access, plan execution must preserve that boundary and stop if secure configuration or approval cannot be verified.
-- Cost: Free SWA has no base charge, but Cosmos throughput/storage and API consumption can incur charges. The existing account is shared; determine its actual capacity and estimate this app's incremental use before provisioning.
+- Cost: Standard SWA has recurring usage charges; Cosmos throughput/storage and API consumption can also incur charges. The existing Cosmos account is shared; determine its actual capacity and estimate this app's incremental use before provisioning.
 
 ## Phases
 
@@ -26,7 +26,7 @@ Prepare Stella Runner for a dedicated Azure Static Web App deployment that autom
 
 ## Gates and Scope
 
-- Do not create Azure resources, Entra registrations, GitHub secrets, or deploy until P01 is implemented and the user has reviewed the concrete P02 preflight/what-if results.
+- Azure resource creation is complete per the user's supplied successful ARM result. Do not create further cloud resources, Entra registrations, GitHub secrets, or deploy until each remaining phase's access, target, and secret-handling gates have been reviewed.
 - Proceed only if refreshed GitHub access can write to the requested repository and branch. Prior observed GitHub permissions were read-only; this remains unverified.
 - Verify tenant/app registration permissions, SWA name availability, managed API region/runtime support, Cosmos account capacity/usage, and incremental cost at execution time.
 - Use an infrastructure preview before applying. The preview must show only the new SWA and the new app-owned Cosmos database/container; no existing apps, databases, containers, or shared account settings may be altered.

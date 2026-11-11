@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f7ff">
-  <title>Stella Runner · Azure 배포 사전 점검</title>
+  <title>Stella Runner · Azure 배포 현황</title>
   <style>
-    :root{color-scheme:light;--ink:#202a49;--muted:#667391;--line:#dbe4f4;--blue:#3975c9;--lav:#8978cf;--pink:#e889b5;--paper:#fff;--wash:#f4f7ff;--amber:#a96812;--amber-bg:#fff5df;--green:#28765f;--green-bg:#e9f8f2}
+    :root{color-scheme:light;--ink:#202a49;--muted:#667391;--line:#dbe4f4;--blue:#3975c9;--paper:#fff;--wash:#f4f7ff;--green:#28765f;--green-bg:#e9f8f2;--amber:#a96812;--amber-bg:#fff5df}
     *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 8% 0%,#e4efff 0,transparent 35%),linear-gradient(145deg,#f8f6ff,#fff8fa);color:var(--ink);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
-    main{width:min(100% - 32px,1040px);margin:38px auto 64px}.hero,section{border:1px solid var(--line);border-radius:26px;background:rgba(255,255,255,.93);box-shadow:0 18px 55px #26365b0b}.hero{padding:clamp(26px,5vw,52px)}.eyebrow{margin:0 0 10px;color:var(--blue);font-size:.78rem;font-weight:800;letter-spacing:.17em;text-transform:uppercase}h1{margin:0;font-size:clamp(2rem,5vw,3.3rem);line-height:1.12;letter-spacing:-.045em}.lead{max-width:760px;color:var(--muted);font-size:1.08rem}.chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}.chip{padding:5px 12px;border:1px solid var(--line);border-radius:99px;background:#fff;color:#4d5b7b;font-size:.84rem;font-weight:700}.chip.warn{border-color:#f0d49a;background:var(--amber-bg);color:var(--amber)}
-    section{margin-top:20px;padding:clamp(20px,4vw,34px)}h2{margin:0 0 16px;font-size:1.35rem;letter-spacing:-.025em}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{padding:19px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#fff,#f7f8ff)}.card h3{margin:0 0 5px;font-size:1rem}.card p{margin:0;color:var(--muted)}.label{display:block;margin-bottom:4px;color:var(--muted);font-size:.8rem;font-weight:750;letter-spacing:.04em}.status{padding:20px;border-radius:18px}.status.blocked{border:1px solid #f0d49a;background:var(--amber-bg)}.status.ready{border:1px solid #c3eadb;background:var(--green-bg)}.status strong{display:block;margin-bottom:4px;font-size:1.12rem}.status p{margin:0;color:#59647d}.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:16px}table{width:100%;border-collapse:collapse;min-width:600px;background:#fff}th,td{padding:12px 15px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{width:31%;background:#f6f8ff;color:#52617f;font-size:.9rem}tr:last-child th,tr:last-child td{border-bottom:0}.money{color:var(--blue);font-size:1.45rem;font-weight:850}.steps{margin:0;padding-left:1.25rem}.steps li+li{margin-top:9px}.foot{margin:20px 4px 0;color:var(--muted);font-size:.9rem;text-align:center}a{color:#2e68b6;text-underline-offset:3px}code{padding:.12em .35em;border-radius:5px;background:#edf1fa;font-size:.92em}.actions{display:flex;justify-content:flex-end;margin-top:16px}.print{padding:9px 14px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--ink);font:inherit;cursor:pointer}
+    main{width:min(100% - 32px,1040px);margin:38px auto 64px}.hero,section{border:1px solid var(--line);border-radius:26px;background:rgba(255,255,255,.95);box-shadow:0 18px 55px #26365b0b}.hero{padding:clamp(26px,5vw,52px)}.eyebrow{margin:0 0 10px;color:var(--blue);font-size:.78rem;font-weight:800;letter-spacing:.17em;text-transform:uppercase}h1{margin:0;font-size:clamp(2rem,5vw,3.3rem);line-height:1.12;letter-spacing:-.045em}.lead{max-width:760px;color:var(--muted);font-size:1.08rem}.chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}.chip{padding:5px 12px;border:1px solid var(--line);border-radius:99px;background:#fff;color:#4d5b7b;font-size:.84rem;font-weight:700}.chip.ok{border-color:#c3eadb;background:var(--green-bg);color:var(--green)}
+    section{margin-top:20px;padding:clamp(20px,4vw,34px)}h2{margin:0 0 16px;font-size:1.35rem;letter-spacing:-.025em}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{padding:19px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#fff,#f7f8ff)}.card h3{margin:0 0 5px;font-size:1rem}.card p{margin:0;color:var(--muted)}.status{padding:20px;border:1px solid #c3eadb;border-radius:18px;background:var(--green-bg)}.status strong{display:block;margin-bottom:4px;font-size:1.12rem;color:var(--green)}.status p{margin:0;color:#59647d}.pending{padding:18px;border:1px solid #f1dba9;border-radius:18px;background:var(--amber-bg)}.pending p{margin:0;color:#795a2e}.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:16px}table{width:100%;border-collapse:collapse;min-width:600px;background:#fff}th,td{padding:12px 15px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{width:31%;background:#f6f8ff;color:#52617f;font-size:.9rem}tr:last-child th,tr:last-child td{border-bottom:0}.steps{margin:0;padding-left:1.25rem}.steps li+li{margin-top:9px}.foot{margin:20px 4px 0;color:var(--muted);font-size:.9rem;text-align:center}a{color:#2e68b6;text-underline-offset:3px}code{padding:.12em .35em;border-radius:5px;background:#edf1fa;font-size:.92em;overflow-wrap:anywhere}.actions{display:flex;justify-content:flex-end;margin-top:16px}.print{padding:9px 14px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--ink);font:inherit;cursor:pointer}
     @media(max-width:680px){main{width:min(100% - 18px,1040px);margin:10px auto 28px}.hero,section{border-radius:20px}.grid{grid-template-columns:1fr}.card{padding:16px}.actions{justify-content:center}}
     @media print{body{background:#fff}.hero,section{box-shadow:none;break-inside:avoid}main{width:100%;margin:0}.actions{display:none}}
   </style>
@@ -17,61 +17,47 @@
 <body>
   <main>
     <header class="hero">
-      <p class="eyebrow">STELLA RUNNER · DEPLOYMENT READINESS</p>
-      <h1>Azure 배포 사전 점검</h1>
-      <p class="lead">전용 Static Web App과 기존 Cosmos DB 계정의 앱 전용 데이터베이스를 준비하기 전에 확인한 대상, 비용 범위, 남은 차단 사항을 정리했습니다.</p>
-      <div class="chips"><span class="chip">확인일 · 2026년 11월 11일</span><span class="chip">Git 브랜치 · project02</span><span class="chip warn">배포 전 점검 · 미완료</span></div>
+      <p class="eyebrow">STELLA RUNNER · AZURE DEPLOYMENT</p>
+      <h1>배포 리소스 생성 완료</h1>
+      <p class="lead">Azure 배포 결과의 ARM 상태가 <strong>Succeeded</strong>로 확인됐습니다. 전용 웹 앱과 Stella Runner 데이터베이스 리소스가 생성됐으며, Entra 로그인과 자동 배포 설정은 다음 단계입니다.</p>
+      <div class="chips"><span class="chip ok">ARM 배포 성공</span><span class="chip">Standard Static Web App</span><span class="chip">Cosmos DB 연결 설정 대기</span><span class="chip">GitHub Actions 설정 대기</span></div>
       <div class="actions"><button class="print" onclick="window.print()">인쇄 / PDF 저장</button></div>
     </header>
 
     <section>
-      <h2>현재 상태</h2>
-      <div class="status blocked"><strong>무료 Static Web Apps 할당량 때문에 생성 미리보기가 중단됐습니다.</strong><p>구독에 이미 무료 앱 10개가 있어 새 Free 앱을 추가할 수 없습니다. ARM what-if는 전체 작업 목록을 만들지 못했으며, Azure 리소스는 생성하거나 변경하지 않았습니다.</p></div>
+      <h2>생성 결과</h2>
+      <div class="status"><strong>배포 작업 `stella-runner-create-20261111` 성공</strong><p>제공된 ARM 결과에서 `provisioningState: Succeeded`, 오류 없음, 아래 세 리소스 ID를 확인했습니다. 기존 공유 Cosmos 계정 자체는 새로 만들거나 변경하는 대상이 아닙니다.</p></div>
+      <div class="table-wrap" style="margin-top:14px"><table>
+        <tbody>
+          <tr><th>Static Web App</th><td><code>stella-runner-project02</code><br>Standard · East Asia</td></tr>
+          <tr><th>Cosmos SQL database</th><td><code>maze-rescue-ms-b7af62a9 / stella-runner</code><br>공유 수동 처리량 400 RU/s</td></tr>
+          <tr><th>Cosmos SQL container</th><td><code>PlayerRecords</code><br>파티션 키 <code>/playerId</code></td></tr>
+          <tr><th>배포 범위</th><td><code>CR-Project-01</code> 구독 · <code>grill-me-edu</code> 리소스 그룹</td></tr>
+        </tbody>
+      </table></div>
     </section>
 
     <section>
-      <h2>배포 대상</h2>
-      <div class="table-wrap"><table><tbody>
-        <tr><th>GitHub 저장소</th><td><a href="https://github.com/Seungwon-2/vibe">Seungwon-2/vibe</a></td></tr>
-        <tr><th>배포 브랜치</th><td><code>project02</code> (저장소 기본 브랜치: <code>main</code>)</td></tr>
-        <tr><th>GitHub 권한</th><td>저장소 권한 <code>ADMIN</code>; 로컬 GitHub CLI의 <code>repo</code>, <code>workflow</code> 범위 확인 완료</td></tr>
-        <tr><th>Azure 구독 / 리소스 그룹</th><td>CR-Project-01 / grill-me-edu (Korea Central)</td></tr>
-        <tr><th>새 앱 제안</th><td><code>stella-runner-project02</code> · Static Web Apps Free · 관리형 API East Asia</td></tr>
-        <tr><th>Cosmos DB</th><td>기존 <code>maze-rescue-ms-b7af62a9</code> 계정에 <code>stella-runner</code> 데이터베이스와 <code>PlayerRecords</code> 컨테이너만 추가하는 안</td></tr>
-      </tbody></table></div>
-    </section>
-
-    <section>
-      <h2>비용 추정</h2>
+      <h2>비용 확인</h2>
       <div class="grid">
-        <article class="card"><span class="label">SWA Free</span><h3>호스팅 비용 $0</h3><p>무료 플랜 할당량 내에서 사용하는 경우입니다. 현재 구독은 무료 앱 최대 개수에 도달했습니다.</p></article>
-        <article class="card"><span class="label">Cosmos DB · 조건부 상한 추정</span><div class="money">약 $23.36 / 월</div><p>새 데이터베이스에 400 RU/s를 배정한다고 가정한 최대 추정치입니다. 계정 Free Tier 잔여량이 충분하면 추가 처리량 비용은 $0일 수 있습니다. 세금·할인·실사용량은 별도입니다.</p></article>
+        <article class="card"><h3>Static Web Apps Standard</h3><p>사용량에 따른 비용이 발생할 수 있습니다. 구독 할인·통화·지역 조건을 반영한 실제 청구액은 아직 확인하지 않았습니다.</p></article>
+        <article class="card"><h3>Cosmos DB</h3><p>데이터베이스에는 400 RU/s 공유 수동 처리량이 설정됐습니다. Free Tier 잔여량에 따라 추가 처리량 비용은 $0부터 약 $23.36 USD/월까지 달라질 수 있습니다. 세금·할인·실제 사용량은 별도입니다.</p></article>
       </div>
-      <p class="foot">스토리지는 기존 계정 사용량에 따라 달라집니다. 계정 집계 지표만으로 Free Tier 잔여량과 실제 청구액을 확정할 수 없습니다.</p>
+      <p class="foot">금액은 사전 추정이며 실제 청구액은 Azure Cost Management에서 확인해야 합니다.</p>
     </section>
 
     <section>
-      <h2>안전 범위와 미확인 사항</h2>
-      <div class="grid">
-        <article class="card"><h3>리소스 격리</h3><p>Bicep 템플릿은 새 SWA, 새 SQL 데이터베이스, 새 컨테이너만 선언합니다. 기존 Cosmos 계정 자체, 타 앱 데이터, 계정 설정은 변경하지 않습니다.</p></article>
-        <article class="card"><h3>비밀 정보 보호</h3><p>사전 점검 중 Cosmos 계정 키와 배포 토큰을 읽지 않았습니다. GitHub 토큰 값도 문서에 저장하지 않았습니다.</p></article>
-        <article class="card"><h3>앱 이름</h3><p><code>stella-runner-project02</code>의 전역 SWA 호스트명 사용 가능 여부는 확인되지 않았습니다. 생성 단계에서 확인해야 합니다.</p></article>
-        <article class="card"><h3>전체 미리보기</h3><p>Bicep 빌드는 통과했지만, 무료 앱 할당량 오류로 ARM what-if가 완료되지 않았습니다. 정확한 리소스 추가 목록은 아직 승인 가능한 상태가 아닙니다.</p></article>
-      </div>
-    </section>
-
-    <section>
-      <h2>다음 단계</h2>
+      <h2>남은 배포 단계</h2>
       <ol class="steps">
-        <li>다른 사용 가능한 승인 구독을 선택하거나, Standard 플랜의 반복 비용을 검토해 선택합니다.</li>
-        <li>Cosmos 비용 범위와 배포 대상 이름을 확인하고 승인합니다.</li>
-        <li>격리된 리소스 템플릿으로 what-if를 다시 실행하고, 세 가지 신규 리소스만 표시되는지 검토합니다.</li>
-        <li>미리보기 검토 전에는 Azure에 리소스를 적용하지 않습니다.</li>
+        <li>회사 테넌트에 전용 단일 테넌트 Entra SPA 및 API 등록을 만들고 리디렉션 주소와 API 권한을 맞춥니다.</li>
+        <li>Entra 등록 정보를 연결하고 Cosmos 접속 값은 Static Web Apps 관리형 API의 서버 전용 설정에 입력합니다. 비밀 값은 코드·문서·로그에 저장하지 않습니다.</li>
+        <li>GitHub Actions를 <code>Seungwon-2/vibe</code>의 <code>project02</code> 브랜치와 연결하고 배포 토큰은 GitHub Secrets에 둡니다.</li>
+        <li>실제 앱 주소 접속, 로그인, API·랭킹 동작, GitHub Actions 자동 배포를 확인한 뒤 직원용 안내와 릴리즈 노트를 갱신합니다.</li>
       </ol>
-      <p class="foot"><a href="azure-deployment-preflight.md">전체 점검 기록과 공식 출처 보기</a></p>
+      <div class="pending" style="margin-top:16px"><p><strong>아직 확인되지 않은 항목:</strong> 앱의 실제 접속 주소와 배포 상태, Entra 인증, API 설정, 랭킹 기능, 실제 청구액. 이번 ARM 결과는 리소스 생성 성공을 확인하며 이 기능들의 동작까지 증명하지는 않습니다.</p></div>
+      <p class="foot"><a href="azure-deployment-preflight.md">상세 사전 점검 및 리소스 ID 보기</a></p>
     </section>
-
-    <footer class="foot">이 문서는 사전 점검 기록입니다. 배포 완료나 Azure 리소스 생성 사실을 의미하지 않습니다.</footer>
+    <footer class="foot">이 현황은 사용자가 제공한 Azure 배포 JSON을 바탕으로 2026-11-11에 기록했습니다. 비밀 값은 문서에 포함하지 않았습니다.</footer>
   </main>
 </body>
 </html>

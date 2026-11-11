@@ -4,14 +4,14 @@
 
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `in_progress` | Inspect target access, SWA availability, Cosmos capacity/cost, and produce an isolated infrastructure preview. | [T01](./T01-preflight-and-infrastructure.md) |
-| T02 | `pending` | Configure the dedicated single-tenant Entra SPA/API registration and approved redirect/scope settings. | [T02](./T02-entra-registration.md) |
-| T03 | `pending` | Provision the app-specific Free SWA and only its Cosmos DB/database/container; configure server-side settings after reviewed preview. | [T03](./T03-provision-and-secure-settings.md) |
+| T01 | `done` | Review target access, cost assumptions, isolated Standard infrastructure preview, and successful resource deployment. | [T01](./T01-preflight-and-infrastructure.md) |
+| T02 | `in_progress` | Configure the dedicated single-tenant Entra SPA/API registration and approved redirect/scope settings. | [T02](./T02-entra-registration.md) |
+| T03 | `in_progress` | Infrastructure creation succeeded; configure the managed API's server-side settings after Entra identifiers are ready. | [T03](./T03-provision-and-secure-settings.md) |
 | T04 | `pending` | Connect GitHub Actions to deploy root app and managed API from `project02`, keeping deployment secrets protected. | [T04](./T04-github-actions.md) |
 
 ## Progress
 
-- done: 0/4 (active: T01)
+- done: 1/4 (active: T02; T03 infrastructure apply completed, API settings pending)
 
 ## Exit Criteria
 
