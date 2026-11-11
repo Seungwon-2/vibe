@@ -5,12 +5,12 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done` | Finish owner-only run history and public best-run leaderboard screens using existing gateway contracts. | [T01](./T01-history-and-ranking-ui.md) |
-| T02 | `in_progress` | Complete the signed-in account area with Entra name, username/email, and logout. | [T02](./T02-account-area.md) |
-| T03 | `pending` | Support secure server-side Cosmos connection-string configuration for the SWA managed API and document local/Azure modes. | [T03](./T03-managed-api-cosmos-config.md) |
+| T02 | `done` | Complete the signed-in account area with Entra name, username/email, and logout. | [T02](./T02-account-area.md) |
+| T03 | `in_progress` | Support secure server-side Cosmos connection-string configuration for the SWA managed API and document local/Azure modes. | [T03](./T03-managed-api-cosmos-config.md) |
 
 ## Progress
 
-- done: 1/3 (active: T02)
+- done: 2/3 (active: T03)
 
 ## Exit Criteria
 

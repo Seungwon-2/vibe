@@ -247,7 +247,8 @@ function App(): React.JSX.Element {
     showControlsHelp={shouldShowRunnerTutorial()} audioPreferences={audioPreferences}
     onAudioPreferencesChange={setAudioPreferences} onUnlockAudio={() => browserRunnerAudio.unlock()}
     authMode={auth.mode} authStatus={auth.status} authError={auth.error}
-    accountName={auth.account?.name ?? null} onSignIn={() => { void auth.signIn(); }}
+    accountName={auth.account?.name ?? null} accountUsername={auth.account?.username ?? null}
+    onSignIn={() => { void auth.signIn(); }}
     onSignOut={() => { void auth.signOut(); }} />;
 
   if (auth.mode === 'configuration-error' || (auth.mode === 'cloud' && auth.status !== 'signed-in')) return menu;

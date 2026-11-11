@@ -1,0 +1,37 @@
+.main-menu-account {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 1px solid rgb(237 234 255 / 30%);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 8%);
+}
+
+.main-menu-account__identity { display: grid; min-width: 0; gap: 2px; }
+.main-menu-account__name { overflow: hidden; color: #fff8e7; font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
+.main-menu-account__username { min-width: 0; color: #d8d5ec; font-size: .72rem; overflow-wrap: anywhere; }
+.main-menu-account__logout {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid rgb(237 234 255 / 36%);
+  border-radius: 9px;
+  background: rgb(255 255 255 / 10%);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: .76rem;
+}
+.main-menu-account__logout:hover { border-color: #ffe1a7; background: rgb(255 255 255 / 17%); }
+.main-menu-account__logout:focus-visible { outline: 2px solid #ffe1a7; outline-offset: 2px; }
+
+@media (max-width: 600px) {
+  .main-menu-account { gap: 8px; padding: 7px 8px; }
+  .main-menu-account__name { font-size: .76rem; }
+  .main-menu-account__username { font-size: .65rem; }
+  .main-menu-account__logout { padding-inline: 9px; font-size: .7rem; }
+}

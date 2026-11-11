@@ -7,7 +7,7 @@
 [P01 App Readiness](./phases/2026-11-11-azure-swa-github-deployment/P01-app-readiness/phase.md)
 
 ## Active Task
-[T02 Signed-in Account Area](./phases/2026-11-11-azure-swa-github-deployment/P01-app-readiness/T02-account-area.md)
+[T03 SWA Managed API Cosmos Configuration](./phases/2026-11-11-azure-swa-github-deployment/P01-app-readiness/T03-managed-api-cosmos-config.md)
 
 ## Status
 - The 2026-11-03 Azure Deployment Readiness plan delivered the MSAL SPA authentication foundation (`f8a9230`) and protected Functions/Cosmos API routes (`2740953`). Its remaining personal-history/ranking UI, account-area, and managed API credential setup are carried into the active plan.
@@ -20,4 +20,4 @@
 - No Azure resources were provisioned during planning.
 
 ## Next Step
-Read T02's blueprint and complete the signed-in account area with Entra name, username/email, and logout. Do not begin Azure resource creation or secret configuration until P01 is complete and the P02 preflight/cost/what-if results have been reviewed.
+Implement T03's protected server-side Cosmos connection-string mode for the SWA managed API while retaining local AAD credentials. Do not add the real secret to source, logs, examples, or client configuration. Do not begin Azure resource creation or secret configuration until P01 is complete and the P02 preflight/cost/what-if results have been reviewed.

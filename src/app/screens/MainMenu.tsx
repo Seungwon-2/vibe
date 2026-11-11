@@ -5,6 +5,7 @@ import { AudioSettingsDialog } from '../components/AudioSettingsDialog';
 import { getCharacter } from '../../game/characters/characterCatalog';
 import type { PersonalBestRecord } from '../../services/RunGateway';
 import type { RunnerAuthMode, RunnerAuthStatus } from '../../auth/AuthProvider';
+import './MainMenuAccount.css';
 
 export type MainMenuProps = {
   onStart(): void;
@@ -23,13 +24,14 @@ export type MainMenuProps = {
   authStatus?: RunnerAuthStatus;
   authError?: string | null;
   accountName?: string | null;
+  accountUsername?: string | null;
   onSignIn?(): void;
   onSignOut?(): void;
 };
 
 export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onShop, topRun, topRunLoading, topRunError,
   showControlsHelp, audioPreferences, onAudioPreferencesChange, onUnlockAudio, authMode = 'local',
-  authStatus = 'signed-in', authError = null, accountName = null, onSignIn, onSignOut }: MainMenuProps): React.JSX.Element {
+  authStatus = 'signed-in', authError = null, accountName = null, accountUsername = null, onSignIn, onSignOut }: MainMenuProps): React.JSX.Element {
   const [dialog, setDialog] = useState<'settings' | 'credits' | null>(null);
   const topCharacter = topRun ? getCharacter(topRun.characterId) : null;
   const cloudNeedsSignIn = authMode === 'cloud' && authStatus !== 'signed-in';
@@ -64,6 +66,15 @@ export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onSho
                     : `${authMode === 'cloud' ? '내 기록' : '로컬 기록'}이 없습니다. 첫 달리기를 시작해보세요!`}
             </p>
             {showControlsHelp && <p className="main-menu-help">Space / ↑ 점프 · ↓ 슬라이딩 · P 일시정지</p>}
+            {authMode === 'cloud' && authStatus === 'signed-in' && (
+              <div className="main-menu-account" aria-label="로그인 계정 정보">
+                <div className="main-menu-account__identity">
+                  <strong className="main-menu-account__name">{accountName?.trim() || 'Runner'}</strong>
+                  <span className="main-menu-account__username">{accountUsername?.trim() || '계정 정보 없음'}</span>
+                </div>
+                {onSignOut && <button className="main-menu-account__logout" type="button" onClick={onSignOut}>로그아웃</button>}
+              </div>
+            )}
           </div>
           <div className="main-menu-actions">
             <button className="selector-confirm home-start" type="button" onClick={onStart}
@@ -85,10 +96,6 @@ export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onSho
             <button className="main-menu-secondary main-menu-credits" type="button" onClick={() => setDialog('credits')}>
               효과음 크레딧
             </button>
-            {authMode === 'cloud' && authStatus === 'signed-in' && onSignOut &&
-              <button className="main-menu-secondary" type="button" onClick={onSignOut}>
-                {accountName ? `${accountName} · 로그아웃` : '로그아웃'}
-              </button>}
             {cloudNeedsSignIn && onSignIn && <button className="main-menu-secondary" type="button"
               onClick={onSignIn} disabled={authStatus === 'loading'}>
               {authStatus === 'loading' ? '계정 확인 중…' : '회사 계정으로 로그인'}
