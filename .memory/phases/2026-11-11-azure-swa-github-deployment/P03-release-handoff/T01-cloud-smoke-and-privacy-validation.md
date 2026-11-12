@@ -56,7 +56,7 @@ Verify the deployed frontend, company OIDC sign-in experience, browser-local dat
 - [x] Browser-local records and static-bundle secret/API-scope checks recorded.
 - [x] Manual company-account sign-in, logout/re-login, and in-game browser smoke check confirmed by user.
 - [ ] Authenticated browser network inspection confirmed by user.
-- commit: pending
+- commit: 0ae31c2
 ## Commit Message
 
 ```text
