@@ -92,6 +92,12 @@ describe('themed hazard art', () => {
           ]);
           expect(lowerEdge).toBeGreaterThanOrEqual(visualHeight - 60);
           expect(lowerEdge).toBeLessThanOrEqual(visualHeight - 54);
+          expect(calls(graphics, 'lineBetween')).toContainEqual([
+            2, visualHeight - 54 - 2, definition.width - 2, visualHeight - 54 - 2,
+          ]);
+        }
+        if (kind === 'double-jump') {
+          expect(calls(graphics, 'lineBetween')).toContainEqual([2, 2, definition.width - 2, 2]);
         }
       }
     }

@@ -99,6 +99,8 @@ describe('biome course landmark art', () => {
       expectInside(graphics, { left: -width / 2, right: width / 2, top: 0, bottom: 36 });
       expect(graphics.fillRect).toHaveBeenCalledWith(-width / 2, 2, width, 34);
       expect(graphics.fillStyle).toHaveBeenCalledWith(biome.palette.hazardContrast, 0.96);
+      expect(graphics.lineBetween).toHaveBeenCalledWith(-width / 2, 2, -width / 2, 35);
+      expect(graphics.lineBetween).toHaveBeenCalledWith(width / 2, 2, width / 2, 35);
       return getSignature(graphics);
     });
     expect(new Set(signatures).size).toBe(RUNNER_BIOMES.length);

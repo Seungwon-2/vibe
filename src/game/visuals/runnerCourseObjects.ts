@@ -128,6 +128,17 @@ export function drawRunnerPit(
 
   // Preserve the dark open center. Only the rim and nearby details vary by biome.
   graphics.fillStyle(p.hazardContrast, 0.96).fillRect(-half, 2, width, 34);
+  // Outline both lips and the vertical cut so the opening reads as a drop,
+  // rather than a dark floor marking, across all biome palettes.
+  graphics.lineStyle(3, p.groundTop, 0.98)
+    .lineBetween(-half, 1, -half + edge, 1)
+    .lineBetween(half, 1, half - edge, 1);
+  graphics.lineStyle(3, p.hazardContrast, 0.98)
+    .lineBetween(-half, 2, -half, 35)
+    .lineBetween(half, 2, half, 35);
+  graphics.lineStyle(1.5, 0xffffff, 0.72)
+    .lineBetween(-half + 2, 6, -half + 2, 20)
+    .lineBetween(half - 2, 6, half - 2, 20);
   switch (biome.id) {
     case 'dawn-city': {
       graphics.fillStyle(p.groundFace, 0.98).fillRect(-half, 2, width * 0.24, 3)

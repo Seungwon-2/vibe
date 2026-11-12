@@ -116,6 +116,10 @@ export function drawRunnerHazard(
         break;
       }
     }
+    // A crisp shared cap makes the required double jump readable even when the
+    // biome fill is close in value to the distant background.
+    graphics.lineStyle(5, p.hazardContrast, 0.96).lineBetween(2, 2, width - 2, 2);
+    graphics.lineStyle(2, 0xffffff, 0.94).lineBetween(4, 6, width - 4, 6);
     return;
   }
 
@@ -183,5 +187,12 @@ export function drawRunnerHazard(
       break;
     }
   }
+
+  // Keep the tunnel's lower edge visible in every biome. This is the boundary
+  // that separates the blocked jump lane from the actual slide clearance.
+  graphics.lineStyle(4, p.hazardContrast, 0.98)
+    .lineBetween(2, barrierBottom - 2, width - 2, barrierBottom - 2);
+  graphics.lineStyle(2, 0xffffff, 0.92)
+    .lineBetween(5, barrierBottom - 7, width - 5, barrierBottom - 7);
 
 }
