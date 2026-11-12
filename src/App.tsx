@@ -392,18 +392,23 @@ function App(): React.JSX.Element {
     setScreen('run');
   }
 
+  const localSignInPreview = import.meta.env.DEV
+    && new URLSearchParams(window.location.search).get('preview') === 'sign-in';
+
   const menu = <MainMenu onStart={() => setScreen('mode-select')} onRankings={openRankings} onHistory={openPersonalHistory}
     onAchievements={() => openAchievements('menu')} onShop={() => openShop('menu')}
     topRun={overallBest} topRunLoading={bestLoading} topRunError={bestError}
     showControlsHelp={shouldShowRunnerTutorial()} audioPreferences={audioPreferences}
     onAudioPreferencesChange={setAudioPreferences} onUnlockAudio={() => browserRunnerAudio.unlock()}
-    authMode={auth.mode} recordSource="local" authStatus={auth.status} authError={auth.error}
+    authMode={localSignInPreview ? 'cloud' : auth.mode} recordSource="local"
+    authStatus={localSignInPreview ? 'signed-out' : auth.status}
+    authError={localSignInPreview ? null : auth.error}
     accountName={auth.account?.name ?? null} accountUsername={auth.account?.username ?? null}
-    onSignIn={() => { void auth.signIn(); }}
+    onSignIn={() => { if (!localSignInPreview) void auth.signIn(); }}
     onSignOut={() => { void auth.signOut(); }} />;
 
   const showResumePrompt = sessionRecoveryReady && screen === 'menu' && sessionEnvelope?.kind === 'active'
-    && !resumePromptDismissed;
+    && !resumePromptDismissed && !localSignInPreview;
 
   const menuWithRecovery = <>
     {menu}

@@ -58,7 +58,7 @@ export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onSho
           <div className="dock-copy">
             <strong>구름길을 지나 별빛까지 달려요.</strong>
             <span>함께 달릴 러너를 고르고 모험을 시작하세요.</span>
-            <p className="main-menu-record" aria-live="polite">
+            {(!cloudNeedsSignIn || authError) && <p className="main-menu-record" aria-live="polite">
               {configurationFailed ? authError ?? 'Entra 설정이 필요합니다.'
                 : cloudNeedsSignIn ? authError ?? (authStatus === 'loading' ? '회사 계정 확인 중…' : '회사 계정으로 로그인해 주세요.')
                 : topRunLoading ? '기록 불러오는 중…'
@@ -66,7 +66,7 @@ export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onSho
                   : topRun && topCharacter
                     ? `${cloudRecords ? '내 최고 기록' : '이 브라우저의 최고 기록'} ${topRun.distanceMeters.toLocaleString()}m · ${topCharacter.displayName}`
                     : `${cloudRecords ? '내 기록' : '이 브라우저에 저장된 기록'}이 없습니다. 첫 달리기를 시작해보세요!`}
-            </p>
+            </p>}
             {showControlsHelp && <p className="main-menu-help">Space / ↑ 점프 · ↓ 슬라이딩 · P 일시정지</p>}
             {authMode === 'cloud' && authStatus === 'signed-in' && (
               <div className="main-menu-account" aria-label="로그인 계정 정보">
