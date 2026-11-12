@@ -9,11 +9,12 @@ type ResumeSessionDialogProps = {
   onRequestNewRun(): void;
   onConfirmNewRun(): void;
   onCancelNewRun(): void;
+  onDismiss(): void;
   onDismissWarning(): void;
 };
 
 export function ResumeSessionDialog({ envelope, warning, confirmingNewRun, onResume, onRequestNewRun,
-  onConfirmNewRun, onCancelNewRun, onDismissWarning }: ResumeSessionDialogProps): React.JSX.Element | null {
+  onConfirmNewRun, onCancelNewRun, onDismiss, onDismissWarning }: ResumeSessionDialogProps): React.JSX.Element | null {
   const activeEnvelope = envelope?.kind === 'active' ? envelope : null;
   const character = activeEnvelope ? getCharacter(activeEnvelope.payload.characterId) : null;
 
@@ -34,11 +35,12 @@ export function ResumeSessionDialog({ envelope, warning, confirmingNewRun, onRes
             <button type="button" onClick={onConfirmNewRun}>저장 삭제 후 새로 시작</button>
           </div>
         </> : <>
-          <strong id="resume-session-title">이어서 달릴까요?</strong>
+          <strong id="resume-session-title">이어 달릴까요?</strong>
           <p>{character.displayName} · {activeEnvelope.payload.mode === 'story' ? '스토리 스테이지' : '끝없는 달리기'} · {Math.floor(activeEnvelope.payload.snapshot.distanceMeters).toLocaleString()}m</p>
           <div className="runner-result-actions">
             <button type="button" onClick={onResume}>이어하기</button>
             <button type="button" onClick={onRequestNewRun}>새로 시작</button>
+            <button type="button" onClick={onDismiss}>닫기</button>
           </div>
         </>}
       </div>

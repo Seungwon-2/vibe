@@ -86,6 +86,7 @@ function App(): React.JSX.Element {
   const [sessionRecoveryReady, setSessionRecoveryReady] = useState(false);
   const [sessionStorageWarning, setSessionStorageWarning] = useState<string | null>(null);
   const [confirmingNewRun, setConfirmingNewRun] = useState(false);
+  const [resumePromptDismissed, setResumePromptDismissed] = useState(false);
   const [initialRunSession, setInitialRunSession] = useState<RunnerActiveSession | null>(null);
   const [bestState, setBestState] = useState<BestLoadState>({ key: '', record: null, error: null });
   const [rankingRequestId, setRankingRequestId] = useState(0);
@@ -109,6 +110,7 @@ function App(): React.JSX.Element {
     setSessionRecoveryReady(false);
     setSessionEnvelope(null);
     setConfirmingNewRun(false);
+    setResumePromptDismissed(false);
     if (!sessionScope) return;
     const read = browserRunnerSessionStore.read(sessionScope);
     if (read.ok) {
@@ -340,6 +342,7 @@ function App(): React.JSX.Element {
     setSelectedMode(payload.mode);
     setSelectedStageId(payload.storyStageId ?? 'dawn-city');
     setInitialRunSession(payload);
+    setResumePromptDismissed(false);
     latestRunId.current += 1;
     setRunId(latestRunId.current);
     setFinishedRun(null);
@@ -358,6 +361,7 @@ function App(): React.JSX.Element {
     setSessionEnvelope(null);
     setSessionStorageWarning(null);
     setConfirmingNewRun(false);
+    setResumePromptDismissed(false);
     startRun(payload.characterId, payload.mode, payload.storyStageId);
   }
 
@@ -399,14 +403,18 @@ function App(): React.JSX.Element {
     onSignIn={() => { void auth.signIn(); }}
     onSignOut={() => { void auth.signOut(); }} />;
 
+  const showResumePrompt = sessionRecoveryReady && screen === 'menu' && sessionEnvelope?.kind === 'active'
+    && !resumePromptDismissed;
+
   const menuWithRecovery = <>
     {menu}
-    {sessionRecoveryReady && screen === 'menu' && sessionEnvelope?.kind === 'active' &&
+    {showResumePrompt &&
       <ResumeSessionDialog envelope={sessionEnvelope} warning={sessionStorageWarning}
         confirmingNewRun={confirmingNewRun} onResume={resumeSavedRun}
         onRequestNewRun={() => setConfirmingNewRun(true)} onConfirmNewRun={confirmDiscardAndStart}
-        onCancelNewRun={() => setConfirmingNewRun(false)} onDismissWarning={() => setSessionStorageWarning(null)} />}
-    {sessionStorageWarning && !(sessionRecoveryReady && screen === 'menu' && sessionEnvelope?.kind === 'active') &&
+        onCancelNewRun={() => setConfirmingNewRun(false)} onDismiss={() => setResumePromptDismissed(true)}
+        onDismissWarning={() => setSessionStorageWarning(null)} />}
+    {sessionStorageWarning && !showResumePrompt &&
       <div className="runner-session-warning" role="alert">{sessionStorageWarning}
         <button type="button" onClick={() => setSessionStorageWarning(null)} aria-label="안내 닫기">×</button>
       </div>}

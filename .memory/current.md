@@ -1,19 +1,19 @@
 ﻿# Current Context
 
 ## Active Plan
-[Azure Static Web Apps and GitHub Deployment](./plans/2026-11-11-azure-swa-github-deployment.md)
+[P0 Feedback Recovery](./plans/2026-11-12-p0-feedback-recovery.md)
 
 ## Active Phase
-[P02 Cloud Delivery](./phases/2026-11-11-azure-swa-github-deployment/P02-cloud-delivery/phase.md)
+[P01 Critical Flow Guards](./phases/2026-11-12-p0-feedback-recovery/P01-critical-flow-guards/phase.md)
 
 ## Active Task
-[T04 GitHub Actions Deployment from project02](./phases/2026-11-11-azure-swa-github-deployment/P02-cloud-delivery/T04-github-actions.md)
+[T02 Cloud Sign-In Gate](./phases/2026-11-12-p0-feedback-recovery/P01-critical-flow-guards/T02-cloud-sign-in-gate.md)
 
 ## Status
-- Runner session resume was locally verified by the user; its plan is complete.
-- Deploy the static client with company OIDC login. Run history and rankings remain browser-local; do not deploy or call the Cosmos API.
-- Azure Static Web App exists at the approved target and GitHub repo write access is verified.
+- P0 feedback recovery is the active work plan. T01 (safe dismissal of the resume prompt) is complete.
+- The Azure deployment plan and pending live-browser smoke/privacy validation remain intact and are deferred while P0 work is completed.
+- Current release uses single-tenant OIDC login and browser-local history/rankings. API scopes, Cosmos integration, and cross-user ranking remain deferred.
 - Preserve unrelated working-tree edits.
 
 ## Next Step
-Configure a `project02` GitHub Actions workflow for frontend-only deployment, then verify the successful run and live app. Keep API consent and cloud records deferred.
+Execute P01-T02 from the P0 Feedback Recovery plan. After the five P0 tasks are completed, resume the deferred Azure live-browser smoke/privacy validation; do not configure or call the Cosmos API.

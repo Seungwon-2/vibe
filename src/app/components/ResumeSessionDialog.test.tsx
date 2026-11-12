@@ -23,12 +23,18 @@ const envelope: RunnerSessionEnvelope = {
 };
 
 const handlers = () => ({ onResume: vi.fn(), onRequestNewRun: vi.fn(), onConfirmNewRun: vi.fn(),
-  onCancelNewRun: vi.fn(), onDismissWarning: vi.fn() });
+  onCancelNewRun: vi.fn(), onDismiss: vi.fn(), onDismissWarning: vi.fn() });
 
 describe('ResumeSessionDialog', () => {
   it('offers resume and a separately confirmed new-run choice', () => {
     const props = { envelope, confirmingNewRun: false, ...handlers() };
     const view = render(<ResumeSessionDialog {...props} />);
+    fireEvent.click(screen.getByRole('button', { name: '닫기' }));
+    expect(props.onDismiss).toHaveBeenCalledOnce();
+    expect(props.onResume).not.toHaveBeenCalled();
+    expect(props.onRequestNewRun).not.toHaveBeenCalled();
+    expect(props.onConfirmNewRun).not.toHaveBeenCalled();
+
     fireEvent.click(screen.getByRole('button', { name: '이어하기' }));
     expect(props.onResume).toHaveBeenCalledOnce();
 
