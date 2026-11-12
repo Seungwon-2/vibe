@@ -54,7 +54,7 @@ export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onSho
           <p className="eyebrow">별빛을 따라 달리는 러닝 액션</p>
           <h1 id="game-title">스텔라 <em>러너</em><span aria-hidden="true">✦</span></h1>
         </div>
-        <footer className="main-menu-dock">
+        <footer className={`main-menu-dock${cloudNeedsSignIn ? ' main-menu-dock--sign-in' : ''}`}>
           <div className="dock-copy">
             <strong>구름길을 지나 별빛까지 달려요.</strong>
             <span>함께 달릴 러너를 고르고 모험을 시작하세요.</span>

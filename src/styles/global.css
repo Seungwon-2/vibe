@@ -2257,6 +2257,27 @@ body:has(.selector-shell--runner),
   justify-self: center;
   width: min(100%, 440px);
 }
+.main-menu-dock--sign-in {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+.main-menu-dock--sign-in .dock-copy {
+  align-items: center;
+  text-align: center;
+}
+.main-menu-dock--sign-in .main-menu-actions {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto;
+  justify-items: center;
+  width: min(100%, 560px);
+  margin-inline: auto;
+}
+.main-menu-dock--sign-in .main-menu-actions .main-menu-sign-in {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  min-height: clamp(58px, 9vh, 78px);
+}
 
 .selector-footer.selector-footer--runner {
   display: grid;
