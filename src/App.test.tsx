@@ -19,6 +19,11 @@ const audioMock = vi.hoisted(() => ({
   playEffect: vi.fn(),
 }));
 
+const sessionMock = vi.hoisted(() => ({
+  getKey: (scope: { kind: 'guest' } | { kind: 'account'; id: string }) => scope.kind === 'guest'
+    ? 'stella-runner:session:v1:guest' : `stella-runner:session:v1:account:${encodeURIComponent(scope.id)}`,
+}));
+
 vi.mock('./services/PersonalBestStore', () => ({
   browserPersonalBestStore: { getBest: vi.fn(() => null) },
 }));
@@ -29,9 +34,11 @@ vi.mock('./audio/RunnerAudioManager', () => ({ browserRunnerAudio: audioMock }))
 vi.mock('./game/runner/RunnerGame', async () => {
   const React = await import('react');
   return {
-    RunnerGame: ({ characterId, tutorialEnabled, onFinished }: {
+    RunnerGame: ({ characterId, tutorialEnabled, paused, initialSession, onFinished }: {
       characterId: string;
       tutorialEnabled: boolean;
+      paused?: boolean;
+      initialSession?: { snapshot: { distanceMeters: number } } | null;
       onFinished(result: { characterId: string; distanceMeters: number; coins: number; durationMs: number; finishedAtIso: string }, outcome: 'personal-best' | 'completed'): void;
     }) => {
       React.useEffect(() => {
@@ -41,7 +48,8 @@ vi.mock('./game/runner/RunnerGame', async () => {
       runnerMock.finish = (id, outcome) => onFinished({ characterId: id, distanceMeters: 1250,
         coins: 4, durationMs: 90_000, finishedAtIso: '2026-10-27T00:00:00.000Z' }, outcome);
       return <div data-testid="runner-mock" data-character={characterId}
-        data-tutorial-enabled={tutorialEnabled}>
+        data-tutorial-enabled={tutorialEnabled} data-paused={paused}
+        data-session-distance={initialSession?.snapshot.distanceMeters}>
         <button type="button" onClick={() => runnerMock.finish?.(characterId, 'personal-best')}>mock time out</button>
       </div>;
     },
@@ -57,6 +65,7 @@ function openEndlessCharacterSelect(): void {
 
 afterEach(cleanup);
 beforeEach(() => {
+  localStorage.removeItem(sessionMock.getKey({ kind: 'guest' }));
   localStorage.removeItem('runner-action:tutorial:v1:seen');
   localStorage.removeItem('runner-audio:preferences:v1');
   runnerMock.finish = null;
@@ -79,6 +88,31 @@ beforeEach(() => {
 });
 
 describe('App flow', () => {
+  it('offers to resume an active checkpoint and restores it paused without countdown', async () => {
+    const savedAt = new Date().toISOString();
+    const snapshot = {
+      phase: 'paused', characterId: 'player-default', mode: 'endless', storyStageId: null,
+      speedPickupRemainingMs: 0, elapsedMs: 1_000, remainingMs: 89_000, distanceMeters: 240,
+      worldDistance: 240, speedUnitsPerSecond: 255, coins: 3, giantRemainingMs: 0,
+      collectedPickupIds: [], passedGateIds: [], staggerRemainingMs: 0, protectionRemainingMs: 0,
+      passiveChargesRemaining: 0, passiveEffectRemainingMs: 0, slideGuardRemainingMs: 0,
+      slideGuardCooldownRemainingMs: 0, biomeId: 'dawn-city', finishedAtElapsedMs: null,
+      finishReason: null, startedAtIso: savedAt, finishedAtIso: null,
+    };
+    localStorage.setItem(sessionMock.getKey({ kind: 'guest' }), JSON.stringify({
+      schemaVersion: 1, kind: 'active', savedAt, accountScope: { kind: 'guest' }, runId: 'resume-test',
+      payload: { characterId: 'player-default', mode: 'endless', storyStageId: null,
+        snapshot, engine: { version: 1 } },
+    }));
+    render(<App />);
+    expect(screen.getByRole('alertdialog')).toHaveTextContent('이어서 달릴까요?');
+    expect(screen.getByRole('button', { name: '새로 시작' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '이어하기' }));
+    expect(await screen.findByTestId('runner-mock')).toHaveAttribute('data-paused', 'true');
+    expect(screen.getByTestId('runner-mock')).toHaveAttribute('data-session-distance', '240');
+    expect(screen.getByTestId('runner-mock')).toHaveAttribute('data-tutorial-enabled', 'false');
+  });
+
   it('opens sound settings, unlocks effects on a user gesture, and persists effect volume', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /사운드 설정/ }));
@@ -149,7 +183,7 @@ describe('App flow', () => {
     }]);
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: '로컬 기록 보기' }));
-    expect(screen.getByRole('heading', { name: '로컬 랭킹' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '로컬 기록' })).toBeInTheDocument();
     expect(await screen.findByText(/하나요 히요리/)).toBeInTheDocument();
     expect(screen.getByText('1,250m')).toBeInTheDocument();
     expect(runGatewayMock.getRanking).toHaveBeenCalledOnce();

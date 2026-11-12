@@ -19,7 +19,7 @@ import { PitSpawner } from './PitSpawner';
 import type { PitFallContactResult } from './PitSpawner';
 import { RunnerTrailEffect } from './RunnerTrailEffect';
 import { getRunnerAnimationPlayback } from './runnerAnimationConfig';
-import type { RunnerEngineCheckpoint, RunnerWorldEntityCheckpoint } from './runnerSessionTypes';
+import type { RunnerActiveSession, RunnerEngineCheckpoint, RunnerWorldEntityCheckpoint } from './runnerSessionTypes';
 
 export class RunnerScene extends Phaser.Scene {
   private inputBridge!: RunnerInputBridge;
@@ -66,7 +66,8 @@ export class RunnerScene extends Phaser.Scene {
       onFinished: this.registry.get('onFinished') as (result: RunnerResult, outcome: RunnerFinishOutcome) => void,
       onEvent: this.registry.get('onEvent') as ((event: RunnerEvent) => void) | undefined,
     });
-    this.snapshot = createRunnerSnapshot(characterId, new Date(), {
+    const initialSession = this.registry.get('initialRunnerSession') as RunnerActiveSession | null;
+    this.snapshot = initialSession?.snapshot ?? createRunnerSnapshot(characterId, new Date(), {
       mode: this.registry.get('runnerMode') as RunnerMode,
       storyStageId: this.registry.get('storyStageId') as StoryStageId | null,
     });
@@ -122,9 +123,22 @@ export class RunnerScene extends Phaser.Scene {
     window.addEventListener('blur', this.handleBlur);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.cleanup, this);
     this.events.once(Phaser.Scenes.Events.DESTROY, this.cleanup, this);
-    this.publish(this.snapshot, true);
-    this.eventEmitter.countdown(3);
-    if (this.registry.get('paused')) this.setPaused(true);
+    if (initialSession && this.restoreCheckpoint(initialSession.engine, initialSession.snapshot)) {
+      this.publish(this.snapshot, true);
+      this.setPaused(true);
+    } else {
+      if (initialSession) {
+        const onError = this.registry.get('onError') as (error: Error) => void;
+        onError(new Error('저장된 달리기를 복원하지 못했습니다. 새 달리기로 시작합니다.'));
+        this.snapshot = createRunnerSnapshot(characterId, new Date(), {
+          mode: this.registry.get('runnerMode') as RunnerMode,
+          storyStageId: this.registry.get('storyStageId') as StoryStageId | null,
+        });
+      }
+      this.publish(this.snapshot, true);
+      this.eventEmitter.countdown(3);
+      if (this.registry.get('paused')) this.setPaused(true);
+    }
   }
 
   update(_time: number, deltaMs: number): void {
@@ -200,7 +214,30 @@ export class RunnerScene extends Phaser.Scene {
   }
 
   createCheckpoint(): RunnerEngineCheckpoint | null {
-    if (!this.snapshot || this.snapshot.phase !== 'paused' || this.finishEmitted || this.finishPending ||
+    return this.createCheckpointFor(this.snapshot);
+  }
+
+  createSessionCheckpoint(): RunnerActiveSession | null {
+    if (!this.canCreateSessionCheckpoint()) return null;
+    const snapshot = this.snapshot.phase === 'paused' ? this.snapshot : pauseRunner(this.snapshot);
+    const engine = this.createCheckpointFor(snapshot);
+    if (!engine) return null;
+    return {
+      characterId: snapshot.characterId,
+      mode: snapshot.mode,
+      storyStageId: snapshot.mode === 'story' ? snapshot.storyStageId ?? null : null,
+      snapshot,
+      engine,
+    };
+  }
+
+  canCreateSessionCheckpoint(): boolean {
+    return Boolean(this.snapshot && ['running', 'paused'].includes(this.snapshot.phase) && !this.finishEmitted &&
+      !this.finishPending && !this.pitFallCinematicActive);
+  }
+
+  private createCheckpointFor(snapshot: RunnerSnapshot): RunnerEngineCheckpoint | null {
+    if (!snapshot || snapshot.phase !== 'paused' || this.finishEmitted || this.finishPending ||
       this.pitFallCinematicActive || !this.player || !this.spawner || !this.collectibles || !this.pits) return null;
     const obstacles = this.spawner.createCheckpoint();
     const collectibles = this.collectibles.createCheckpoint();
@@ -211,7 +248,7 @@ export class RunnerScene extends Phaser.Scene {
     return {
       version: 1,
       player: this.player.createCheckpoint(),
-      worldDistance: this.snapshot.worldDistance,
+      worldDistance: snapshot.worldDistance,
       // Current course generation is deterministic from distance and cursors;
       // keep an explicit seed slot for future randomized schedules.
       randomSeed: 0,
@@ -225,8 +262,8 @@ export class RunnerScene extends Phaser.Scene {
       createdGateDistances: collectibles.createdGateDistances,
       pitCursor: pits.pitCursor,
       entities,
-      collectedPickupIds: [...this.snapshot.collectedPickupIds],
-      passedGateIds: [...this.snapshot.passedGateIds],
+      collectedPickupIds: [...snapshot.collectedPickupIds],
+      passedGateIds: [...snapshot.passedGateIds],
     };
   }
 
@@ -405,6 +442,7 @@ export class RunnerScene extends Phaser.Scene {
     }
     if (!result) return 'ignored';
     this.pitFallCinematicActive = true;
+    this.checkpointTerminal(result, 'completed');
     this.trailEffect.clear();
     this.eventEmitter.pitFallStarted();
     this.pendingPitFinish = { state, result };
@@ -441,6 +479,7 @@ export class RunnerScene extends Phaser.Scene {
   private beginStoryFinish(result: RunnerResult): void {
     if (this.finishEmitted || this.finishPending) return;
     this.finishPending = true;
+    this.checkpointTerminal(result, 'completed');
     this.inputBridge.clear();
     this.heldKeyboardActions.clear();
     this.trailEffect.clear();
@@ -455,6 +494,7 @@ export class RunnerScene extends Phaser.Scene {
   private beginStoryDefeat(result: RunnerResult): void {
     if (this.finishEmitted || this.finishPending) return;
     this.finishPending = true;
+    this.checkpointTerminal(result, 'completed');
     this.inputBridge.clear();
     this.heldKeyboardActions.clear();
     this.trailEffect.clear();
@@ -477,7 +517,14 @@ export class RunnerScene extends Phaser.Scene {
       ? result.completedStage ? 'victory' : 'gameOver'
       : result.finishReason === 'pit' || !decision.isNewBest ? 'gameOver' : 'victory';
     this.player.finish(animation);
+    this.checkpointTerminal(result, outcome);
     this.eventEmitter.finish(result, outcome);
+  }
+
+  private checkpointTerminal(result: RunnerResult, outcome: RunnerFinishOutcome): void {
+    const onTerminalCheckpoint = this.registry.get('onTerminalCheckpoint') as
+      ((result: RunnerResult, outcome: RunnerFinishOutcome) => void) | undefined;
+    onTerminalCheckpoint?.(result, outcome);
   }
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {

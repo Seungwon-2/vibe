@@ -14,10 +14,10 @@ Save an active run when the browser is left or closed, then let the player resum
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | Account-scoped session store, exact Phaser state restore, and browser resume flow | [P01](./phases/2026-11-12-runner-session-resume/P01-session-recovery/phase.md) |
+| P01 | `done ✅` | Account-scoped session store, exact Phaser state restore, and browser resume flow | [P01](./phases/2026-11-12-runner-session-resume/P01-session-recovery/phase.md) |
 
-## Active Task
-P01-T02 — define the Phaser engine checkpoint needed for exact run restoration.
+## Status
+Complete. The browser-local session store, exact Phaser checkpoint restore, and resume/terminal recovery flow are implemented.
 
 ## Preserved Work / Pause Note
 - The Azure Static Web Apps and GitHub deployment plan remains paused at P02-T02; its files are preserved.
@@ -30,4 +30,4 @@ P01-T02 — define the Phaser engine checkpoint needed for exact run restoration
 - Phaser checkpoint data must preserve player pose/body state, active obstacle/pickup/pit/gate state, and enough deterministic generation state to continue without duplicates or skipped objects.
 
 ## Progress
-- done: 1/3 tasks (active: P01-T02)
+- done: 3/3 tasks (plan complete)

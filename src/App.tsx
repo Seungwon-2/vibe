@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CharacterSelect } from './app/screens/CharacterSelect';
 import { MainMenu } from './app/screens/MainMenu';
 import { ModeSelect } from './app/screens/ModeSelect';
@@ -27,6 +27,9 @@ import { shouldShowRunnerTutorial } from './game/runner/runnerTutorial';
 import { browserRunnerAudio } from './audio/RunnerAudioManager';
 import { browserRunnerMusic } from './audio/RunnerMusicManager';
 import { DEFAULT_AUDIO_PREFERENCES, loadAudioPreferences, saveAudioPreferences, type AudioPreferences } from './audio/audioPreferences';
+import { ResumeSessionDialog } from './app/components/ResumeSessionDialog';
+import { browserRunnerSessionStore } from './services/RunnerSessionStore';
+import type { RunnerActiveSession, RunnerSessionEnvelope, RunnerSessionScope, RunnerTerminalSession } from './game/runner/runnerSessionTypes';
 
 const RunScreen = lazy(async () => {
   const module = await import('./app/screens/RunScreen');
@@ -56,6 +59,13 @@ function App(): React.JSX.Element {
     ? new AuthenticatedRunGateway(readEntraSettings().apiBaseUrl, auth.acquireApiToken)
     : browserRunGateway, [auth.acquireApiToken, auth.mode]);
   const canUseRecords = auth.mode === 'local' || auth.status === 'signed-in';
+  const sessionScope = useMemo<RunnerSessionScope | null>(() => {
+    if (auth.mode === 'local') return { kind: 'guest' };
+    if (auth.mode === 'cloud' && auth.status === 'signed-in' && auth.account?.homeAccountId) {
+      return { kind: 'account', id: auth.account.homeAccountId };
+    }
+    return null;
+  }, [auth.account?.homeAccountId, auth.mode, auth.status]);
   const [audioPreferences, setAudioPreferences] = useState<AudioPreferences>(() => {
     try {
       return loadAudioPreferences(window.localStorage);
@@ -72,6 +82,13 @@ function App(): React.JSX.Element {
   const [runId, setRunId] = useState(0);
   const latestRunId = useRef(0);
   const submittedRunIds = useRef(new Set<number>());
+  const sessionRunRef = useRef<{ runId: string; scope: RunnerSessionScope } | null>(null);
+  const processedTerminalRunId = useRef<string | null>(null);
+  const [sessionEnvelope, setSessionEnvelope] = useState<RunnerSessionEnvelope | null>(null);
+  const [sessionRecoveryReady, setSessionRecoveryReady] = useState(false);
+  const [sessionStorageWarning, setSessionStorageWarning] = useState<string | null>(null);
+  const [confirmingNewRun, setConfirmingNewRun] = useState(false);
+  const [initialRunSession, setInitialRunSession] = useState<RunnerActiveSession | null>(null);
   const [bestState, setBestState] = useState<BestLoadState>({ key: '', record: null, error: null });
   const [rankingRequestId, setRankingRequestId] = useState(0);
   const [historyRequestId, setHistoryRequestId] = useState(0);
@@ -89,6 +106,84 @@ function App(): React.JSX.Element {
   const rankingLoading = screen === 'rankings' && rankingState.requestId !== rankingRequestId;
   const rankingRows = rankingState.requestId === rankingRequestId ? rankingState.rows : [];
   const rankingError = rankingState.requestId === rankingRequestId ? rankingState.error : null;
+
+  useEffect(() => {
+    setSessionRecoveryReady(false);
+    setSessionEnvelope(null);
+    setConfirmingNewRun(false);
+    if (!sessionScope) return;
+    const read = browserRunnerSessionStore.read(sessionScope);
+    if (read.ok) {
+      setSessionEnvelope(read.value);
+      setSessionStorageWarning(null);
+    } else {
+      setSessionStorageWarning(read.reason === 'expired' ? '저장된 이어하기가 7일이 지나 만료되어 삭제되었습니다.'
+        : '이어하기 저장을 읽지 못했습니다. 이번 플레이는 계속할 수 있지만 복구 기록은 사용할 수 없습니다.');
+      setSessionEnvelope(null);
+    }
+    setSessionRecoveryReady(true);
+  }, [sessionScope]);
+
+  const writeEnvelope = useCallback((envelope: RunnerSessionEnvelope): boolean => {
+    const result = browserRunnerSessionStore.write(envelope);
+    if (!result.ok) {
+      setSessionStorageWarning('이어하기 저장에 실패했습니다. 게임은 계속할 수 있지만 이 런은 복구되지 않을 수 있습니다.');
+      return false;
+    }
+    setSessionStorageWarning(null);
+    setSessionEnvelope(envelope);
+    return true;
+  }, []);
+
+  function saveActiveSession(session: RunnerActiveSession): void {
+    const run = sessionRunRef.current;
+    if (!run) return;
+    writeEnvelope({ schemaVersion: 1, kind: 'active', savedAt: new Date().toISOString(),
+      accountScope: run.scope, runId: run.runId, payload: session });
+  }
+
+  const saveTerminalSession = useCallback((result: RunnerResult, outcome: RunnerFinishOutcome, settled = false,
+    presentation?: RunnerTerminalSession['presentation']): boolean => {
+    const run = sessionRunRef.current;
+    if (!run) return false;
+    const payload: RunnerTerminalSession = { characterId: result.characterId, mode: result.mode,
+      storyStageId: result.mode === 'story' ? result.storyStageId ?? null : null,
+      result, outcome, settled, ...(presentation ? { presentation } : {}) };
+    return writeEnvelope({ schemaVersion: 1, kind: 'terminal', savedAt: new Date().toISOString(),
+      accountScope: run.scope, runId: run.runId, payload });
+  }, [writeEnvelope]);
+
+  useEffect(() => {
+    if (!sessionRecoveryReady || screen !== 'menu' || sessionEnvelope?.kind !== 'terminal' ||
+        processedTerminalRunId.current === sessionEnvelope.runId) return;
+    const envelope = sessionEnvelope;
+    const payload = envelope.payload;
+    if (envelope.kind !== 'terminal') return;
+    processedTerminalRunId.current = envelope.runId;
+    sessionRunRef.current = { runId: envelope.runId, scope: envelope.accountScope };
+    latestRunId.current += 1;
+    const recoveredRunId = latestRunId.current;
+    const stableRunKey = `${envelope.runId}:${payload.result.finishedAtIso}`;
+    const settlement = settleRun(browserPlayerProfileStore, stableRunKey, payload.result);
+    const achievements = recordRunAndUnlock(browserPlayerProfileStore, stableRunKey, payload.result);
+    browserPersonalBestStore.record(payload.result);
+    const presentation = payload.presentation ?? {
+      settlement,
+      newlyUnlockedAchievementIds: achievements.newlyUnlockedAchievementIds,
+      achievementBonusCoins: achievements.bonusCoins,
+    };
+    setProfile(achievements.profile);
+    setSelectedCharacterId(payload.characterId);
+    setSelectedMode(payload.mode);
+    setSelectedStageId(payload.storyStageId ?? 'dawn-city');
+    setRunId(recoveredRunId);
+    setFinishedRun({ runId: recoveredRunId, result: payload.result, outcome: payload.outcome,
+      submittedRank: null, submissionPending: false, recordError: null,
+      settlement: presentation.settlement, newlyUnlockedAchievementIds: presentation.newlyUnlockedAchievementIds,
+      achievementBonusCoins: presentation.achievementBonusCoins });
+    setScreen('result');
+    if (!payload.settled || !payload.presentation) saveTerminalSession(payload.result, payload.outcome, true, presentation);
+  }, [saveTerminalSession, screen, sessionEnvelope, sessionRecoveryReady]);
 
   useEffect(() => {
     browserRunnerAudio.setPreferences(audioPreferences);
@@ -230,8 +325,58 @@ function App(): React.JSX.Element {
     setProfile(browserPlayerProfileStore.load());
   }
 
+  function createStableRunId(): string {
+    return typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+
+  function resumeSavedRun(): void {
+    if (!sessionScope || !sessionEnvelope || sessionEnvelope.kind !== 'active') return;
+    const payload = sessionEnvelope.payload;
+    sessionRunRef.current = { runId: sessionEnvelope.runId, scope: sessionEnvelope.accountScope };
+    setSelectedCharacterId(payload.characterId);
+    setSelectedMode(payload.mode);
+    setSelectedStageId(payload.storyStageId ?? 'dawn-city');
+    setInitialRunSession(payload);
+    latestRunId.current += 1;
+    setRunId(latestRunId.current);
+    setFinishedRun(null);
+    setScreen('run');
+  }
+
+  function confirmDiscardAndStart(): void {
+    if (!sessionScope || !sessionEnvelope || sessionEnvelope.kind !== 'active') return;
+    const payload = sessionEnvelope.payload;
+    const removed = browserRunnerSessionStore.remove(sessionScope);
+    if (!removed.ok) {
+      setSessionStorageWarning('저장된 런을 삭제하지 못했습니다. 기존 코인 손실을 막기 위해 새 런을 시작하지 않았습니다.');
+      setConfirmingNewRun(false);
+      return;
+    }
+    setSessionEnvelope(null);
+    setSessionStorageWarning(null);
+    setConfirmingNewRun(false);
+    startRun(payload.characterId, payload.mode, payload.storyStageId);
+  }
+
+  function acknowledgeTerminal(action: () => void): void {
+    if (sessionEnvelope?.kind === 'terminal' && sessionScope) {
+      const removed = browserRunnerSessionStore.remove(sessionScope);
+      if (!removed.ok) {
+        setSessionStorageWarning('결과 저장을 정리하지 못했습니다. 같은 결과가 다음 접속에 다시 표시될 수 있습니다.');
+        return;
+      }
+      setSessionEnvelope(null);
+      processedTerminalRunId.current = null;
+      sessionRunRef.current = null;
+    }
+    action();
+  }
+
   function startRun(characterId = selectedCharacterId, mode = selectedMode, stageId = mode === 'story' ? selectedStageId : null): void {
     if (!canUseRecords) return;
+    if (sessionScope) sessionRunRef.current = { runId: createStableRunId(), scope: sessionScope };
+    setInitialRunSession(null);
     latestRunId.current += 1;
     setSelectedCharacterId(characterId);
     setSelectedMode(mode);
@@ -251,7 +396,20 @@ function App(): React.JSX.Element {
     onSignIn={() => { void auth.signIn(); }}
     onSignOut={() => { void auth.signOut(); }} />;
 
-  if (auth.mode === 'configuration-error' || (auth.mode === 'cloud' && auth.status !== 'signed-in')) return menu;
+  const menuWithRecovery = <>
+    {menu}
+    {sessionRecoveryReady && screen === 'menu' && sessionEnvelope?.kind === 'active' &&
+      <ResumeSessionDialog envelope={sessionEnvelope} warning={sessionStorageWarning}
+        confirmingNewRun={confirmingNewRun} onResume={resumeSavedRun}
+        onRequestNewRun={() => setConfirmingNewRun(true)} onConfirmNewRun={confirmDiscardAndStart}
+        onCancelNewRun={() => setConfirmingNewRun(false)} onDismissWarning={() => setSessionStorageWarning(null)} />}
+    {sessionStorageWarning && !(sessionRecoveryReady && screen === 'menu' && sessionEnvelope?.kind === 'active') &&
+      <div className="runner-session-warning" role="alert">{sessionStorageWarning}
+        <button type="button" onClick={() => setSessionStorageWarning(null)} aria-label="안내 닫기">×</button>
+      </div>}
+  </>;
+
+  if (auth.mode === 'configuration-error' || (auth.mode === 'cloud' && auth.status !== 'signed-in')) return menuWithRecovery;
 
   if (screen === 'character-select') {
     return (
@@ -303,6 +461,10 @@ function App(): React.JSX.Element {
           trailCosmeticId={trailCosmeticId}
           audioPreferences={audioPreferences} onAudioPreferencesChange={setAudioPreferences}
           onUnlockAudio={() => browserRunnerAudio.unlock()}
+          initialSession={initialRunSession}
+          onCheckpoint={saveActiveSession}
+          onTerminalCheckpoint={(result, outcome) => { saveTerminalSession(result, outcome, false); }}
+          storageWarning={sessionStorageWarning}
           onExit={() => {
             latestRunId.current += 1;
             setScreen('menu');
@@ -311,10 +473,18 @@ function App(): React.JSX.Element {
             if (latestRunId.current !== currentRunId || submittedRunIds.current.has(currentRunId)) return;
             browserRunnerAudio.playEffect(result.finishReason === 'stage-complete' ? 'victory' : 'game-over');
             submittedRunIds.current.add(currentRunId);
-            const settlement = settleRun(browserPlayerProfileStore, `${currentRunId}:${result.finishedAtIso}`, result);
+            saveTerminalSession(result, outcome, false);
+            const persistentRunId = sessionRunRef.current?.runId ?? `${currentRunId}`;
+            const stableRunKey = `${persistentRunId}:${result.finishedAtIso}`;
+            const settlement = settleRun(browserPlayerProfileStore, stableRunKey, result);
             const achievements = recordRunAndUnlock(browserPlayerProfileStore,
-              `${currentRunId}:${result.finishedAtIso}`, result);
+              stableRunKey, result);
             setProfile(achievements.profile);
+            saveTerminalSession(result, outcome, true, {
+              settlement,
+              newlyUnlockedAchievementIds: achievements.newlyUnlockedAchievementIds,
+              achievementBonusCoins: achievements.bonusCoins,
+            });
             setFinishedRun({ runId: currentRunId, result, outcome, submittedRank: null,
               submissionPending: true, recordError: null, settlement,
               newlyUnlockedAchievementIds: achievements.newlyUnlockedAchievementIds,
@@ -346,9 +516,9 @@ function App(): React.JSX.Element {
       return <StoryResult result={finishedRun.result} settlement={finishedRun.settlement}
         newlyUnlockedAchievementIds={finishedRun.newlyUnlockedAchievementIds}
         achievementBonusCoins={finishedRun.achievementBonusCoins}
-        onRetry={() => startRun(finishedRun.result.characterId, 'story', finishedRun.result.storyStageId ?? 'dawn-city')}
-        onNextStage={(stageId) => startRun(finishedRun.result.characterId, 'story', stageId)}
-        onStageSelect={() => setScreen('stage-select')} />;
+        onRetry={() => acknowledgeTerminal(() => startRun(finishedRun.result.characterId, 'story', finishedRun.result.storyStageId ?? 'dawn-city'))}
+        onNextStage={(stageId) => acknowledgeTerminal(() => startRun(finishedRun.result.characterId, 'story', stageId))}
+        onStageSelect={() => acknowledgeTerminal(() => setScreen('stage-select'))} />;
     }
     return (
       <RunResult result={finishedRun.result} outcome={finishedRun.outcome} bestDistanceMeters={bestDistance}
@@ -357,9 +527,9 @@ function App(): React.JSX.Element {
         achievementBonusCoins={finishedRun.achievementBonusCoins}
         submittedRank={finishedRun.submittedRank} recordPending={finishedRun.submissionPending}
         recordError={finishedRun.recordError ?? bestError} overallBest={overallBest}
-        onRetry={() => startRun(finishedRun.result.characterId)}
-        onChooseCharacter={() => setScreen('character-select')}
-        onRankings={openRankings} />
+        onRetry={() => acknowledgeTerminal(() => startRun(finishedRun.result.characterId))}
+        onChooseCharacter={() => acknowledgeTerminal(() => setScreen('character-select'))}
+        onRankings={() => acknowledgeTerminal(openRankings)} />
     );
   }
 
@@ -379,7 +549,7 @@ function App(): React.JSX.Element {
       onBack={() => setScreen('menu')} />;
   }
 
-  return menu;
+  return menuWithRecovery;
 }
 
 export default App;

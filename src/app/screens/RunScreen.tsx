@@ -18,6 +18,7 @@ import type { AudioPreferences } from '../../audio/audioPreferences';
 import { browserRunnerAudio } from '../../audio/RunnerAudioManager';
 import { browserRunnerMusic } from '../../audio/RunnerMusicManager';
 import { getStoryStage } from '../../game/runner/storyConfig';
+import type { RunnerActiveSession } from '../../game/runner/runnerSessionTypes';
 
 function isPortrait(): boolean {
   return window.matchMedia?.('(orientation: portrait)').matches ?? window.innerHeight > window.innerWidth;
@@ -29,22 +30,26 @@ export type RunScreenProps = {
   storyStageId?: StoryStageId | null;
   trailCosmeticId?: string | null;
   onFinish(result: RunnerResult, outcome: RunnerFinishOutcome): void;
+  onTerminalCheckpoint?(result: RunnerResult, outcome: RunnerFinishOutcome): void;
   onExit(): void;
   audioPreferences: AudioPreferences;
   onAudioPreferencesChange(preferences: AudioPreferences): void;
   onUnlockAudio(): void;
+  initialSession?: RunnerActiveSession | null;
+  onCheckpoint?(session: RunnerActiveSession): void;
+  storageWarning?: string | null;
 };
 
-export function RunScreen({ characterId, mode = 'endless', storyStageId = null, trailCosmeticId = null, onFinish, onExit, audioPreferences, onAudioPreferencesChange,
-  onUnlockAudio }: RunScreenProps): React.JSX.Element {
+export function RunScreen({ characterId, mode = 'endless', storyStageId = null, trailCosmeticId = null, onFinish, onTerminalCheckpoint, onExit, audioPreferences, onAudioPreferencesChange,
+  onUnlockAudio, initialSession = null, onCheckpoint, storageWarning }: RunScreenProps): React.JSX.Element {
   const character = getCharacter(characterId);
-  const [tutorialEnabled] = useState(() => shouldShowRunnerTutorial());
+  const [tutorialEnabled] = useState(() => !initialSession && shouldShowRunnerTutorial());
   const [portrait, setPortrait] = useState(isPortrait);
-  const [paused, setPaused] = useState(() => isPortrait() || tutorialEnabled);
-  const [guideOpen, setGuideOpen] = useState(tutorialEnabled);
-  const [guideVariant, setGuideVariant] = useState<'first-run' | 'pause-review'>(tutorialEnabled ? 'first-run' : 'pause-review');
-  const [snapshot, setSnapshot] = useState<RunnerSnapshot>(() => createRunnerSnapshot(characterId, new Date(), { mode, storyStageId }));
-  const [countdownValue, setCountdownValue] = useState<number | null>(3);
+  const [paused, setPaused] = useState(() => !!initialSession || isPortrait() || tutorialEnabled);
+  const [guideOpen, setGuideOpen] = useState(() => !initialSession && tutorialEnabled);
+  const [guideVariant, setGuideVariant] = useState<'first-run' | 'pause-review'>(!initialSession && tutorialEnabled ? 'first-run' : 'pause-review');
+  const [snapshot, setSnapshot] = useState<RunnerSnapshot>(() => initialSession?.snapshot ?? createRunnerSnapshot(characterId, new Date(), { mode, storyStageId }));
+  const [countdownValue, setCountdownValue] = useState<number | null>(() => initialSession ? null : 3);
   const [recentBonus, setRecentBonus] = useState<RunnerHudCue | null>(null);
   const [exitConfirmation, setExitConfirmation] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -233,6 +238,7 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
 
   return (
     <main className="run-screen">
+      {storageWarning && <div className="runner-session-warning" role="alert">{storageWarning}</div>}
       <header className="run-screen__header">
         <div><span className="eyebrow">RUNNING ACTION</span><strong>{character.displayName}</strong></div>
         <button type="button" onClick={requestExit}>나가기</button>
@@ -248,7 +254,11 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
           onSnapshot={(next) => {
             setSnapshot(next);
             if (next.phase === 'paused') setPaused(true);
+            else if (next.phase === 'running') setPaused(false);
           }}
+          initialSession={initialSession}
+          onCheckpoint={onCheckpoint}
+          onTerminalCheckpoint={onTerminalCheckpoint}
           onFinished={onFinish}
           onEvent={handleEvent} />
         <TouchControls inputBridge={inputBridge}
@@ -270,7 +280,7 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
             aria-labelledby="exit-confirm-title">
             <div className="runner-pause-card">
               <strong id="exit-confirm-title">이번 달리기를 종료할까요?</strong>
-              <p>현재 기록은 결과에 저장되지 않습니다.</p>
+              <p>현재 진행 상황은 이 브라우저에 저장되어 다음에 이어서 할 수 있습니다.</p>
               <div className="runner-result-actions">
                 <button type="button" onClick={onExit}>종료하고 메뉴로</button>
                 <button type="button" onClick={() => setExitConfirmation(false)}>일시정지로 돌아가기</button>

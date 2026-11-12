@@ -9,6 +9,7 @@ import type {
   RunnerSnapshot,
   StoryStageId,
 } from './runnerTypes';
+import type { SettlementResult } from '../../services/PlayerProgression';
 
 export type RunnerSessionKind = 'active' | 'terminal';
 export type RunnerSessionScope = Readonly<
@@ -72,6 +73,11 @@ export type RunnerTerminalSession = Readonly<{
   result: RunnerResult;
   outcome: RunnerFinishOutcome;
   settled: boolean;
+  presentation?: Readonly<{
+    settlement: SettlementResult;
+    newlyUnlockedAchievementIds: readonly string[];
+    achievementBonusCoins: number;
+  }>;
 }>;
 
 export type RunnerSessionEnvelope = Readonly<{

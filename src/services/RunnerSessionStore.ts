@@ -116,7 +116,12 @@ function isTerminalPayload(value: unknown): value is RunnerTerminalSession {
   return isCharacterId(payload.characterId) && isMode(payload.mode) &&
     (payload.storyStageId === null || isStoryStageId(payload.storyStageId)) &&
     isRunnerResult(payload.result, payload.characterId, payload.mode) &&
-    FINISH_OUTCOMES.includes(payload.outcome as RunnerFinishOutcome) && typeof payload.settled === 'boolean';
+    FINISH_OUTCOMES.includes(payload.outcome as RunnerFinishOutcome) && typeof payload.settled === 'boolean' &&
+    (payload.presentation === undefined || (!!payload.presentation &&
+      typeof payload.presentation === 'object' &&
+      Array.isArray(payload.presentation.newlyUnlockedAchievementIds) &&
+      Number.isFinite(payload.presentation.achievementBonusCoins) &&
+      !!payload.presentation.settlement && typeof payload.presentation.settlement === 'object'));
 }
 
 function parseEnvelope(value: unknown): RunnerSessionEnvelope | null {

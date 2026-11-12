@@ -6,6 +6,7 @@ import type { RunnerInputBridge } from './RunnerInput';
 import type { RunnerFinishOutcome, RunnerMode, RunnerResult, RunnerSnapshot, StoryStageId } from './runnerTypes';
 import { RunnerScene } from './RunnerScene';
 import type { RunnerEvent } from './runnerEvents';
+import type { RunnerActiveSession } from './runnerSessionTypes';
 
 export type RunnerGameProps = {
   characterId: CharacterId;
@@ -15,24 +16,28 @@ export type RunnerGameProps = {
   inputBridge: RunnerInputBridge;
   paused: boolean;
   tutorialEnabled: boolean;
+  initialSession?: RunnerActiveSession | null;
+  onCheckpoint?(session: RunnerActiveSession): void;
+  onTerminalCheckpoint?(result: RunnerResult, outcome: RunnerFinishOutcome): void;
   onSnapshot(snapshot: RunnerSnapshot): void;
   onFinished(result: RunnerResult, outcome: RunnerFinishOutcome): void;
   onEvent?(event: RunnerEvent): void;
 };
 
 export function RunnerGame({
-  characterId, mode = 'endless', storyStageId = null, trailCosmeticId = null, inputBridge, paused, tutorialEnabled, onSnapshot, onFinished, onEvent,
+  characterId, mode = 'endless', storyStageId = null, trailCosmeticId = null, inputBridge, paused, tutorialEnabled,
+  initialSession = null, onCheckpoint, onTerminalCheckpoint, onSnapshot, onFinished, onEvent,
 }: RunnerGameProps): React.JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
   const initialPaused = useRef(paused);
-  const callbacksRef = useRef({ onSnapshot, onFinished, onEvent });
+  const callbacksRef = useRef({ onSnapshot, onFinished, onEvent, onCheckpoint, onTerminalCheckpoint });
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    callbacksRef.current = { onSnapshot, onFinished, onEvent };
-  }, [onSnapshot, onFinished, onEvent]);
+    callbacksRef.current = { onSnapshot, onFinished, onEvent, onCheckpoint, onTerminalCheckpoint };
+  }, [onSnapshot, onFinished, onEvent, onCheckpoint, onTerminalCheckpoint]);
 
   useEffect(() => {
     if (!hostRef.current) return;
@@ -42,11 +47,13 @@ export function RunnerGame({
         onSnapshot: (snapshot) => callbacksRef.current.onSnapshot(snapshot),
         onFinished: (result, outcome) => callbacksRef.current.onFinished(result, outcome),
         onEvent: (event) => callbacksRef.current.onEvent?.(event),
+        onCheckpoint: (session) => callbacksRef.current.onCheckpoint?.(session),
+        onTerminalCheckpoint: (result, outcome) => callbacksRef.current.onTerminalCheckpoint?.(result, outcome),
         onError: (failure) => {
           callbacksRef.current.onEvent?.({ type: 'fatal-error', message: failure.message });
           setError(failure.message);
         },
-      }, tutorialEnabled));
+      }, tutorialEnabled, initialSession));
       game.registry.set('paused', initialPaused.current);
       gameRef.current = game;
     } catch (failure) {
@@ -58,7 +65,7 @@ export function RunnerGame({
       gameRef.current = null;
       game?.destroy(true);
     };
-  }, [characterId, mode, storyStageId, trailCosmeticId, inputBridge, tutorialEnabled, attempt]);
+  }, [characterId, mode, storyStageId, trailCosmeticId, inputBridge, tutorialEnabled, initialSession, attempt]);
 
   useEffect(() => {
     const game = gameRef.current;
@@ -66,8 +73,46 @@ export function RunnerGame({
     game.registry.set('paused', paused);
     if (!game.isBooted) return;
     const scene = game.scene.keys.RunnerScene;
-    if (scene instanceof RunnerScene) scene.setPaused(paused);
+    if (scene instanceof RunnerScene) {
+      scene.setPaused(paused);
+      if (paused) {
+        const session = scene.createSessionCheckpoint();
+        if (session) callbacksRef.current.onCheckpoint?.(session);
+      }
+    }
   }, [paused, attempt]);
+
+  useEffect(() => {
+    const game = gameRef.current;
+    if (!game) return;
+    const checkpoint = (leavePaused: boolean): void => {
+      inputBridge.clear();
+      if (!game.isBooted) return;
+      const scene = game.scene.keys.RunnerScene;
+      if (!(scene instanceof RunnerScene)) return;
+      if (!scene.canCreateSessionCheckpoint()) return;
+      if (scene.getSnapshot().phase === 'running') scene.setPaused(true);
+      const session = scene.createSessionCheckpoint();
+      if (session) callbacksRef.current.onCheckpoint?.(session);
+      if (!leavePaused && scene.getSnapshot().phase === 'paused') scene.setPaused(false);
+    };
+    const onVisibilityChange = (): void => {
+      if (document.visibilityState === 'hidden') checkpoint(true);
+    };
+    const onPageHide = (): void => checkpoint(true);
+    const interval = window.setInterval(() => {
+      if (!game.isBooted) return;
+      const scene = game.scene.keys.RunnerScene;
+      if (scene instanceof RunnerScene && scene.getSnapshot().phase === 'running') checkpoint(false);
+    }, 1_000);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('pagehide', onPageHide);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('pagehide', onPageHide);
+    };
+  }, [inputBridge, attempt]);
 
   return (
     <div className="runner-game">

@@ -7,7 +7,7 @@
 [P01 Session Recovery](./phases/2026-11-12-runner-session-resume/P01-session-recovery/phase.md)
 
 ## Active Task
-[T03 Resume and Autosave Flow](./phases/2026-11-12-runner-session-resume/P01-session-recovery/T03-resume-flow.md)
+None — Runner Session Resume plan is complete.
 
 ## Status
 - T01 account-scoped local session store is implemented and validated. See [T01](./phases/2026-11-12-runner-session-resume/P01-session-recovery/T01-session-store.md).
@@ -21,4 +21,4 @@
 - Existing unrelated working-tree edits are preserved; only files owned by the active task and memory pointer updates are staged for its commit.
 
 ## Next Step
-Read and execute [T03](./phases/2026-11-12-runner-session-resume/P01-session-recovery/T03-resume-flow.md): connect paused checkpoints to autosave, return-to-title resume/new-run choices, safe discard confirmation, and terminal result recovery.
+Runner Session Resume is complete. The local Vite preview is available at `http://localhost:5173/`; continue with the next prioritized plan when ready. Azure deployment remains paused pending its separate setup and validation tasks.

@@ -5,11 +5,14 @@ import type { RunnerInputBridge } from './RunnerInput';
 import { RunnerScene } from './RunnerScene';
 import { RUNNER_CONFIG } from './runnerConfig';
 import type { RunnerEvent } from './runnerEvents';
+import type { RunnerActiveSession } from './runnerSessionTypes';
 
 export type RunnerGameCallbacks = {
   onSnapshot(snapshot: RunnerSnapshot): void;
   onFinished(result: RunnerResult, outcome: RunnerFinishOutcome): void;
   onEvent?(event: RunnerEvent): void;
+  onCheckpoint?(session: RunnerActiveSession): void;
+  onTerminalCheckpoint?(result: RunnerResult, outcome: RunnerFinishOutcome): void;
   onError(error: Error): void;
 };
 
@@ -22,6 +25,7 @@ export function createRunnerGameConfig(
   inputBridge: RunnerInputBridge,
   callbacks: RunnerGameCallbacks,
   tutorialEnabled: boolean,
+  initialSession: RunnerActiveSession | null = null,
 ): Phaser.Types.Core.GameConfig {
   return {
     type: Phaser.AUTO,
@@ -45,8 +49,11 @@ export function createRunnerGameConfig(
         game.registry.set('onSnapshot', callbacks.onSnapshot);
         game.registry.set('onFinished', callbacks.onFinished);
         game.registry.set('onEvent', callbacks.onEvent);
+        game.registry.set('onCheckpoint', callbacks.onCheckpoint);
+        game.registry.set('onTerminalCheckpoint', callbacks.onTerminalCheckpoint);
         game.registry.set('onError', callbacks.onError);
         game.registry.set('runnerTutorialEnabled', tutorialEnabled);
+        game.registry.set('initialRunnerSession', initialSession);
       },
     },
   };
