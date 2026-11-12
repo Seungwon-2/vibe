@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { CharacterId } from '../game/characters/characterTypes';
 import type { RunnerSessionEnvelope, RunnerSessionScope } from '../game/runner/runnerSessionTypes';
 import { createRunnerEngineCheckpoint } from '../game/runner/runnerSessionTestFixtures';
-import { BrowserRunnerSessionStore, createRunnerSessionKey, RUNNER_SESSION_TTL_MS } from './RunnerSessionStore';
+import { BrowserRunnerSessionStore, createRunnerSessionKey, getSessionStoreWarning, RUNNER_SESSION_TTL_MS } from './RunnerSessionStore';
 
 class MemoryStorage implements Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> {
   readonly values = new Map<string, string>();
@@ -63,6 +63,22 @@ function terminalEnvelope(scope: RunnerSessionScope = guest): RunnerSessionEnvel
   };
 }
 
+function storyActiveEnvelope(scope: RunnerSessionScope = guest): RunnerSessionEnvelope {
+  const envelope = activeEnvelope(scope);
+  if (envelope.kind !== 'active') throw new Error('Expected active envelope');
+  const stageId = 'dawn-city' as const;
+  return {
+    ...envelope,
+    payload: {
+      ...envelope.payload,
+      mode: 'story',
+      storyStageId: stageId,
+      snapshot: { ...envelope.payload.snapshot, mode: 'story', storyStageId: stageId },
+      engine: { ...envelope.payload.engine, pickupStageId: stageId },
+    },
+  };
+}
+
 describe('BrowserRunnerSessionStore', () => {
   it('uses isolated guest and encoded account keys', () => {
     expect(createRunnerSessionKey(guest)).toBe('stella-runner:session:v1:guest');
@@ -84,6 +100,28 @@ describe('BrowserRunnerSessionStore', () => {
     expect(accountRead.value).toEqual(active);
     expect(guestRead.value).toEqual(terminal);
     expect(store.read(accountB, new Date(savedAt))).toEqual({ ok: true, value: null });
+  });
+
+  it('round-trips first and paused story checkpoints under the same scope', () => {
+    const storage = new MemoryStorage();
+    const store = new BrowserRunnerSessionStore(storage);
+    const firstCheckpoint = storyActiveEnvelope(accountA);
+    const pausedCheckpoint = storyActiveEnvelope(accountA);
+
+    expect(store.write(firstCheckpoint)).toEqual({ ok: true, value: undefined });
+    expect(store.read(accountA, new Date(savedAt))).toEqual({ ok: true, value: firstCheckpoint });
+    expect(store.write(pausedCheckpoint)).toEqual({ ok: true, value: undefined });
+    expect(store.read(accountA, new Date(savedAt))).toEqual({ ok: true, value: pausedCheckpoint });
+  });
+
+  it('rejects story checkpoints whose stage identity differs across payload and engine', () => {
+    const store = new BrowserRunnerSessionStore(new MemoryStorage());
+    const envelope = storyActiveEnvelope();
+    if (envelope.kind !== 'active') throw new Error('Expected active envelope');
+    const invalid = { ...envelope, payload: { ...envelope.payload,
+      engine: { ...envelope.payload.engine, pickupStageId: 'moonlit-forest' as const } } };
+
+    expect(store.write(invalid)).toEqual({ ok: false, reason: 'invalid' });
   });
 
   it('rejects and removes data saved under a different account scope', () => {
@@ -137,6 +175,14 @@ describe('BrowserRunnerSessionStore', () => {
     };
     const quotaStore = new BrowserRunnerSessionStore(quotaStorage);
     expect(quotaStore.write(activeEnvelope())).toMatchObject({ ok: false, reason: 'quota' });
+  });
+
+  it('maps storage operations and reasons to actionable warnings', () => {
+    expect(getSessionStoreWarning('write', 'quota')).toContain('저장 공간');
+    expect(getSessionStoreWarning('write', 'unavailable')).toContain('복구되지 않을 수 있습니다');
+    expect(getSessionStoreWarning('read', 'invalid')).toContain('이전 런은 복구되지 않습니다');
+    expect(getSessionStoreWarning('read', 'expired')).toContain('7일');
+    expect(getSessionStoreWarning('remove', 'invalid')).toContain('다시 표시될 수 있습니다');
   });
 
   it('removes only the requested account key', () => {

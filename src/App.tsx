@@ -27,7 +27,7 @@ import { browserRunnerAudio } from './audio/RunnerAudioManager';
 import { browserRunnerMusic } from './audio/RunnerMusicManager';
 import { DEFAULT_AUDIO_PREFERENCES, loadAudioPreferences, saveAudioPreferences, type AudioPreferences } from './audio/audioPreferences';
 import { ResumeSessionDialog } from './app/components/ResumeSessionDialog';
-import { browserRunnerSessionStore } from './services/RunnerSessionStore';
+import { browserRunnerSessionStore, getSessionStoreWarning } from './services/RunnerSessionStore';
 import type { RunnerActiveSession, RunnerSessionEnvelope, RunnerSessionScope, RunnerTerminalSession } from './game/runner/runnerSessionTypes';
 
 const RunScreen = lazy(async () => {
@@ -117,8 +117,7 @@ function App(): React.JSX.Element {
       setSessionEnvelope(read.value);
       setSessionStorageWarning(null);
     } else {
-      setSessionStorageWarning(read.reason === 'expired' ? '저장된 이어하기가 7일이 지나 만료되어 삭제되었습니다.'
-        : '이어하기 저장을 읽지 못했습니다. 이번 플레이는 계속할 수 있지만 복구 기록은 사용할 수 없습니다.');
+      setSessionStorageWarning(getSessionStoreWarning('read', read.reason));
       setSessionEnvelope(null);
     }
     setSessionRecoveryReady(true);
@@ -127,7 +126,7 @@ function App(): React.JSX.Element {
   const writeEnvelope = useCallback((envelope: RunnerSessionEnvelope): boolean => {
     const result = browserRunnerSessionStore.write(envelope);
     if (!result.ok) {
-      setSessionStorageWarning('이어하기 저장에 실패했습니다. 게임은 계속할 수 있지만 이 런은 복구되지 않을 수 있습니다.');
+      setSessionStorageWarning(getSessionStoreWarning('write', result.reason));
       return false;
     }
     setSessionStorageWarning(null);
@@ -354,7 +353,7 @@ function App(): React.JSX.Element {
     const payload = sessionEnvelope.payload;
     const removed = browserRunnerSessionStore.remove(sessionScope);
     if (!removed.ok) {
-      setSessionStorageWarning('저장된 런을 삭제하지 못했습니다. 기존 코인 손실을 막기 위해 새 런을 시작하지 않았습니다.');
+      setSessionStorageWarning(getSessionStoreWarning('remove', removed.reason));
       setConfirmingNewRun(false);
       return;
     }
@@ -369,7 +368,7 @@ function App(): React.JSX.Element {
     if (sessionEnvelope?.kind === 'terminal' && sessionScope) {
       const removed = browserRunnerSessionStore.remove(sessionScope);
       if (!removed.ok) {
-        setSessionStorageWarning('결과 저장을 정리하지 못했습니다. 같은 결과가 다음 접속에 다시 표시될 수 있습니다.');
+        setSessionStorageWarning(getSessionStoreWarning('remove', removed.reason));
         return;
       }
       setSessionEnvelope(null);

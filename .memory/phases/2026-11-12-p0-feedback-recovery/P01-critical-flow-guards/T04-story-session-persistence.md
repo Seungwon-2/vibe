@@ -1,6 +1,6 @@
 # Task: T04 Story Session Persistence
 
-## Status: pending
+## Status: done
 
 ## Goal
 Find and correct the reported story-mode “save failed” message so successful story-session persistence is not reported as a failure while real storage failures remain visible.
@@ -44,10 +44,10 @@ Find and correct the reported story-mode “save failed” message so successful
 - Verify a dismissed error does not reappear as stale warning on a successful subsequent story run.
 
 ## Acceptance Criteria
-- [ ] A successful story-mode session save does not display a save-failure warning.
-- [ ] Story runs remain recoverable after reload when browser storage succeeds.
-- [ ] Real storage/validation failures remain visible and do not claim the run was saved.
-- [ ] Endless persistence, expiration, account scoping, and physics restoration remain intact.
+- [x] A successful story-mode session save does not display a save-failure warning.
+- [x] Story runs remain recoverable after reload when browser storage succeeds.
+- [x] Real storage/validation failures remain visible and do not claim the run was saved.
+- [x] Endless persistence, expiration, account scoping, and physics restoration remain intact.
 
 ## Validation
 - `npm test -- src/App.sessionRecovery.test.tsx src/services/RunnerSessionStore.test.ts`
@@ -67,6 +67,6 @@ Task: T04-story-session-persistence
 ```
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed
+- commit: see Git history

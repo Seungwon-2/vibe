@@ -23,6 +23,18 @@ export type SessionStoreResult<T> =
   | Readonly<{ ok: true; value: T }>
   | Readonly<{ ok: false; reason: 'unavailable' | 'quota' | 'expired' | 'invalid'; error?: string }>;
 
+export type SessionStoreOperation = 'read' | 'write' | 'remove';
+
+export function getSessionStoreWarning(operation: SessionStoreOperation,
+  reason: Exclude<SessionStoreResult<never>, { ok: true }>['reason']): string {
+  if (reason === 'quota') return '브라우저 저장 공간이 부족해 이어하기 데이터를 저장하지 못했습니다. 저장 공간을 확보하면 다시 저장할 수 있습니다.';
+  if (reason === 'unavailable') return '브라우저 저장소에 접근할 수 없습니다. 게임은 계속할 수 있지만 이 런은 복구되지 않을 수 있습니다.';
+  if (reason === 'expired') return '저장된 이어하기 데이터가 7일이 지나 만료되어 삭제했습니다.';
+  if (operation === 'write') return '이어하기 데이터를 확인할 수 없어 저장하지 못했습니다. 현재 런은 저장되지 않을 수 있습니다.';
+  if (operation === 'remove') return '저장된 런을 정리하지 못했습니다. 같은 런이 다음 접속에서 다시 표시될 수 있습니다.';
+  return '저장된 이어하기 데이터를 읽을 수 없어 삭제했습니다. 이번 플레이는 계속할 수 있지만 이전 런은 복구되지 않습니다.';
+}
+
 export interface RunnerSessionStore {
   read(scope: RunnerSessionScope, now?: Date): SessionStoreResult<RunnerSessionEnvelope | null>;
   write(envelope: RunnerSessionEnvelope): SessionStoreResult<void>;
@@ -109,9 +121,11 @@ function isEngineCheckpoint(value: unknown): value is RunnerEngineCheckpoint {
 function isActivePayload(value: unknown): value is RunnerActiveSession {
   if (!value || typeof value !== 'object') return false;
   const payload = value as Partial<RunnerActiveSession>;
-  return isCharacterId(payload.characterId) && isMode(payload.mode) &&
-    (payload.storyStageId === null || isStoryStageId(payload.storyStageId)) &&
-    isSnapshot(payload.snapshot, payload.characterId, payload.mode) && isEngineCheckpoint(payload.engine);
+  if (!isCharacterId(payload.characterId) || !isMode(payload.mode) ||
+      !isSnapshot(payload.snapshot, payload.characterId, payload.mode) || !isEngineCheckpoint(payload.engine)) return false;
+  const stageId = payload.mode === 'story' ? payload.storyStageId : null;
+  return (payload.mode === 'story' ? isStoryStageId(stageId) : payload.storyStageId === null) &&
+    payload.snapshot.storyStageId === stageId && payload.engine.pickupStageId === stageId;
 }
 
 const FINISH_REASONS: readonly RunnerFinishReason[] = [
@@ -132,15 +146,16 @@ function isRunnerResult(value: unknown, characterId: CharacterId, mode: RunnerMo
 function isTerminalPayload(value: unknown): value is RunnerTerminalSession {
   if (!value || typeof value !== 'object') return false;
   const payload = value as Partial<RunnerTerminalSession>;
-  return isCharacterId(payload.characterId) && isMode(payload.mode) &&
-    (payload.storyStageId === null || isStoryStageId(payload.storyStageId)) &&
-    isRunnerResult(payload.result, payload.characterId, payload.mode) &&
-    FINISH_OUTCOMES.includes(payload.outcome as RunnerFinishOutcome) && typeof payload.settled === 'boolean' &&
-    (payload.presentation === undefined || (!!payload.presentation &&
-      typeof payload.presentation === 'object' &&
-      Array.isArray(payload.presentation.newlyUnlockedAchievementIds) &&
-      Number.isFinite(payload.presentation.achievementBonusCoins) &&
-      !!payload.presentation.settlement && typeof payload.presentation.settlement === 'object'));
+  if (!isCharacterId(payload.characterId) || !isMode(payload.mode) ||
+      !isRunnerResult(payload.result, payload.characterId, payload.mode) ||
+      !FINISH_OUTCOMES.includes(payload.outcome as RunnerFinishOutcome) || typeof payload.settled !== 'boolean' ||
+      (payload.presentation !== undefined && (!payload.presentation || typeof payload.presentation !== 'object' ||
+        !Array.isArray(payload.presentation.newlyUnlockedAchievementIds) ||
+        !Number.isFinite(payload.presentation.achievementBonusCoins) ||
+        !payload.presentation.settlement || typeof payload.presentation.settlement !== 'object'))) return false;
+  const stageId = payload.mode === 'story' ? payload.storyStageId : null;
+  return (payload.mode === 'story' ? isStoryStageId(stageId) : payload.storyStageId === null) &&
+    payload.result.storyStageId === stageId;
 }
 
 function parseEnvelope(value: unknown): RunnerSessionEnvelope | null {
