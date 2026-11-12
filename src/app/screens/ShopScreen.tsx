@@ -19,9 +19,15 @@ const SHOP_TRAIL_IDS = new Set(['trail-cloud', 'trail-petal', 'trail-starlight',
 const SHOP_ITEMS = COSMETICS.filter((item) => SHOP_TRAIL_IDS.has(item.id));
 
 export function ShopScreen({ profile, initialCharacterId, onBack, onPurchase, onEquip, onUnequip }: ShopScreenProps): React.JSX.Element {
-  const [characterId, setCharacterId] = useState(initialCharacterId);
+  const unlockedCharacters = CHARACTERS.filter((character) => profile.unlockedCharacterIds.includes(character.id));
+  const [characterId, setCharacterId] = useState<CharacterId>(() =>
+    profile.unlockedCharacterIds.includes(initialCharacterId) ? initialCharacterId : (unlockedCharacters[0]?.id ?? initialCharacterId));
   const [notice, setNotice] = useState('');
-  const equipped = profile.equippedCosmeticIdsByCharacter[characterId] ?? [];
+  const activeCharacterId = unlockedCharacters.some((character) => character.id === characterId)
+    ? characterId
+    : (unlockedCharacters[0]?.id ?? characterId);
+  const hasUnlockedCharacter = unlockedCharacters.length > 0;
+  const equipped = profile.equippedCosmeticIdsByCharacter[activeCharacterId] ?? [];
 
   return (
     <main className="progression-screen shop-screen">
@@ -33,26 +39,30 @@ export function ShopScreen({ profile, initialCharacterId, onBack, onPurchase, on
         <div className="shop-toolbar">
           <strong>보유 코인 <span>🪙 {profile.walletCoins.toLocaleString()}</span></strong>
           <label>장착할 러너
-            <select value={characterId} onChange={(event) => setCharacterId(event.target.value as CharacterId)}>
-              {CHARACTERS.map((character) => <option value={character.id} key={character.id}>{character.displayName}</option>)}
+            <select value={activeCharacterId} disabled={!hasUnlockedCharacter} onChange={(event) => {
+              const nextCharacterId = event.target.value as CharacterId;
+              if (unlockedCharacters.some((character) => character.id === nextCharacterId)) setCharacterId(nextCharacterId);
+            }}>
+              {unlockedCharacters.map((character) => <option value={character.id} key={character.id}>{character.displayName}</option>)}
             </select>
           </label>
         </div>
         <div className="shop-loadout" aria-label="현재 러너 장착 아이템">
-          <strong>{CHARACTERS.find((character) => character.id === characterId)?.displayName} 장착 중</strong>
+          <strong>{CHARACTERS.find((character) => character.id === activeCharacterId)?.displayName} 장착 중</strong>
           {SHOP_CATEGORIES.map((kind) => {
             const cosmeticId = equipped.find((id) => COSMETICS.find((item) => item.id === id)?.kind === kind);
             const cosmetic = COSMETICS.find((item) => item.id === cosmeticId);
             return <span key={kind}>{KIND_LABELS[kind]}: {cosmetic?.name ?? '기본'}</span>;
           })}
         </div>
+        {!hasUnlockedCharacter && <p className="shop-notice" role="status">해금된 캐릭터가 없어 치장을 장착할 수 없습니다.</p>}
         {notice && <p className="shop-notice" role="status">{notice}</p>}
         {SHOP_CATEGORIES.map((kind) => <section className="shop-category" key={kind} aria-labelledby={`shop-${kind}`}>
           <h2 id={`shop-${kind}`}>{KIND_LABELS[kind]}</h2>
           <div className="shop-items">
             {SHOP_ITEMS.filter((item) => item.kind === kind).map((item) => {
               const owned = profile.unlockedCosmeticIds.includes(item.id);
-              const compatible = item.compatibleCharacterIds.includes(characterId);
+              const compatible = hasUnlockedCharacter && item.compatibleCharacterIds.includes(activeCharacterId);
               const isEquipped = equipped.includes(item.id);
               return <article className={`shop-item${item.placeholder ? ' is-placeholder' : ''}`} key={item.id}>
                 <div className={`shop-item__preview shop-item__preview--${kind}`} style={{ '--cosmetic-color': item.color } as React.CSSProperties}>
@@ -67,10 +77,10 @@ export function ShopScreen({ profile, initialCharacterId, onBack, onPurchase, on
                     onClick={() => setNotice(onPurchase(item.id) ? `${item.name} 구매 완료` : '코인이 부족하거나 구매할 수 없습니다.')}>🪙 {item.price} 구매</button>}
                   {!owned && !item.purchasable && <button type="button" disabled>{item.placeholder ? '에셋 준비 중' : '도전 보상'}</button>}
                   {owned && compatible && <button type="button" disabled={isEquipped}
-                    onClick={() => setNotice(onEquip(characterId, item.id) ? `${item.name} 장착 완료` : '장착할 수 없습니다.')}>{isEquipped ? '장착 중' : '장착'}</button>}
+                    onClick={() => setNotice(onEquip(activeCharacterId, item.id) ? `${item.name} 장착 완료` : '장착할 수 없습니다.')}>{isEquipped ? '장착 중' : '장착'}</button>}
                   {owned && !compatible && <button type="button" disabled>이 러너 전용</button>}
                   {owned && isEquipped && <button type="button" className="shop-item__remove"
-                    onClick={() => { onUnequip(characterId, kind); setNotice(`${KIND_LABELS[kind]} 기본 장비로 변경`); }}>해제</button>}
+                    onClick={() => { onUnequip(activeCharacterId, kind); setNotice(`${KIND_LABELS[kind]} 기본 장비로 변경`); }}>해제</button>}
                 </div>
               </article>;
             })}

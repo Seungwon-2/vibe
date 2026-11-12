@@ -1,6 +1,6 @@
 # Task: T03 Locked Character Cosmetics
 
-## Status: pending
+## Status: done
 
 ## Goal
 Prevent selecting a locked character in the cosmetic shop and reject attempts to equip cosmetics to a locked character at the service boundary.
@@ -46,9 +46,9 @@ Prevent selecting a locked character in the cosmetic shop and reject attempts to
 - Verify selecting an unlocked character and equipping a compatible cosmetic still works.
 
 ## Acceptance Criteria
-- [ ] Locked characters are not selectable in the shop.
-- [ ] Service calls cannot equip items for locked characters, even if called outside the screen.
-- [ ] Existing loadouts and unlocked-character shop behavior are preserved.
+- [x] Locked characters are not selectable in the shop.
+- [x] Service calls cannot equip items for locked characters, even if called outside the screen.
+- [x] Existing loadouts and unlocked-character shop behavior are preserved.
 
 ## Validation
 - `npm test -- src/services/CosmeticService.test.ts src/app/screens/ShopScreen.test.tsx`
@@ -68,6 +68,6 @@ Task: T03-locked-character-cosmetics
 ```
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed (`npm test -- src/services/CosmeticService.test.ts src/app/screens/ShopScreen.test.tsx`, `npm run typecheck`, `npm run lint`)
 - commit: pending

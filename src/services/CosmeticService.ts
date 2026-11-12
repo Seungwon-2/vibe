@@ -2,7 +2,7 @@ import type { CharacterId } from '../game/characters/characterTypes';
 import type { PlayerProfileStore } from './PlayerProfile';
 import { getCosmetic } from './CosmeticCatalog';
 
-export type CosmeticActionResult = Readonly<{ ok: boolean; reason?: 'unknown' | 'unavailable' | 'owned' | 'insufficient-funds' | 'not-owned' | 'incompatible' }>;
+export type CosmeticActionResult = Readonly<{ ok: boolean; reason?: 'unknown' | 'unavailable' | 'owned' | 'insufficient-funds' | 'not-owned' | 'incompatible' | 'character-locked' }>;
 
 export function purchaseCosmetic(profileStore: PlayerProfileStore, cosmeticId: string): CosmeticActionResult {
   const cosmetic = getCosmetic(cosmeticId);
@@ -23,7 +23,9 @@ export function equipCosmetic(profileStore: PlayerProfileStore, characterId: Cha
   const cosmetic = getCosmetic(cosmeticId);
   if (!cosmetic) return { ok: false, reason: 'unknown' };
   if (cosmetic.placeholder) return { ok: false, reason: 'unavailable' };
-  if (!profileStore.load().unlockedCosmeticIds.includes(cosmeticId)) return { ok: false, reason: 'not-owned' };
+  const profile = profileStore.load();
+  if (!profile.unlockedCharacterIds.includes(characterId)) return { ok: false, reason: 'character-locked' };
+  if (!profile.unlockedCosmeticIds.includes(cosmeticId)) return { ok: false, reason: 'not-owned' };
   if (!cosmetic.compatibleCharacterIds.includes(characterId)) return { ok: false, reason: 'incompatible' };
   profileStore.update((profile) => {
     const equipped = profile.equippedCosmeticIdsByCharacter[characterId] ?? [];
