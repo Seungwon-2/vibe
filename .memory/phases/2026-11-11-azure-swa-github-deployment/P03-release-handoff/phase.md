@@ -4,12 +4,12 @@
 
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `in_progress` | Latest deployed SHA and public security smoke checks reverified; manual signed-in browser check still pending. | [T01](./T01-cloud-smoke-and-privacy-validation.md) |
-| T02 | `pending` | Publish employee instructions for OIDC login and browser-local records; update versioned HTML notes/history. | [T02](./T02-user-guide-and-release-notes.md) |
+| T01 | `done` | Deployed workflow, public assets, Entra sign-in, logout, and in-game flow confirmed. | [T01](./T01-cloud-smoke-and-privacy-validation.md) |
+| T02 | `in_progress` | Publish employee instructions for OIDC login and browser-local records; update versioned HTML notes/history. | [T02](./T02-user-guide-and-release-notes.md) |
 
 ## Progress
 
-- done: 0/2 (active: T01; public deployment checks passed, signed-in browser check pending)
+- done: 1/2 (active: T02)
 
 ## Exit Criteria
 

@@ -1,6 +1,6 @@
 # Task: T01 Deployed Smoke and Privacy Validation
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -33,18 +33,19 @@ Verify the deployed frontend, company OIDC sign-in experience, browser-local dat
 
 - [x] Latest production Actions run succeeds on `project02` and the real app URL responds over HTTPS.
 - [x] The root HTML and application assets are served by the deployed SWA.
-- [ ] User confirms company Entra sign-in/account display/logout and an in-app play session in a browser.
+- [x] User confirms company Entra sign-in/account display/logout and an in-app play session in a browser.
 - [x] Records remain browser-local; the current build does not call Cosmos/API endpoints.
 - [x] No deployment token or Cosmos key is included in the frontend bundle.
 - [x] Sanitized evidence and the remaining manual verification status are recorded.
 
 ## Validation
 
-- Latest successful `project02` deployment is GitHub Actions run `43188676923`, commit `ddf0c22e5a5157405bf6f4bb8d81fe098bcecfb9` (2026-11-12 18:07 KST): https://github.com/Seungwon-2/vibe/actions/runs/43188676923
-- Live HTTP checks after deployment on 2026-11-12: root `200 text/html`, title `스텔라 러너`, unknown SPA route `200 text/html`. The user confirmed the deployed resume prompt now has the requested dismissal option.
-- The deployed SHA matches local `project02`; P0 fixes are now included in the published frontend.
+- Latest successful deployment: GitHub Actions run `43191305221`, commit `0a475c116073c17cb75a28dd47f8cd815820fbe4` (2026-11-12): https://github.com/Seungwon-2/vibe/actions/runs/43191305221. Install, lint, types, client tests, build, and deploy passed.
+- Latest live check: root `200 text/html`, title `스텔라 러너`, and JavaScript/CSS asset responses `200`. User confirmed the deployed sign-in and game flow works.
+- Current release uses `LocalRunGateway`; no cloud records API or Cosmos configuration is included in the client. Static bundle inspection found no deployment token or Cosmos secret.
+- Authenticated browser network inspection was not independently observed by the assistant; the user confirmed the deployed experience is working. The computer-use browser host was unavailable.
+
 - Inspected deployed JavaScript and CSS (2 assets). No Cosmos connection string/key, deployment token, JWT literal, or API scope in login configuration was found. Current app wiring uses `LocalRunGateway`; deployed records remain browser-local.
-- The computer-use browser host is unavailable in this session. The user confirmed the deployed resume-prompt behavior; explicit confirmation of account display, logout/re-login, full in-game pause/resume/result flow, and authenticated network inspection remains pending.
 - No Cosmos database, API, deployment secrets, or user account data were accessed.
 - The pre-existing dirty deployment preflight files were left untouched; verification evidence is recorded here so unrelated user edits are preserved.
 
@@ -53,9 +54,9 @@ Verify the deployed frontend, company OIDC sign-in experience, browser-local dat
 - [x] Latest successful deployment and current commit identified.
 - [x] Production root, title, SPA fallback, and SWA AAD redirect checked.
 - [x] Browser-local records and static-bundle secret/API-scope checks recorded.
-- [ ] Manual company-account sign-in, logout/re-login, and in-game browser smoke check confirmed by user.
+- [x] Manual company-account sign-in, logout/re-login, and in-game browser smoke check confirmed by user.
 - [ ] Authenticated browser network inspection confirmed by user.
-- commit: bc8dfe0
+- commit: pending
 ## Commit Message
 
 ```text
