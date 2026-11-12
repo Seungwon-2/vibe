@@ -21,6 +21,7 @@ export type MainMenuProps = {
   onAudioPreferencesChange(preferences: AudioPreferences): void;
   onUnlockAudio(): void;
   authMode?: RunnerAuthMode;
+  recordSource?: 'cloud' | 'local';
   authStatus?: RunnerAuthStatus;
   authError?: string | null;
   accountName?: string | null;
@@ -30,12 +31,13 @@ export type MainMenuProps = {
 };
 
 export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onShop, topRun, topRunLoading, topRunError,
-  showControlsHelp, audioPreferences, onAudioPreferencesChange, onUnlockAudio, authMode = 'local',
+  showControlsHelp, audioPreferences, onAudioPreferencesChange, onUnlockAudio, authMode = 'local', recordSource = 'local',
   authStatus = 'signed-in', authError = null, accountName = null, accountUsername = null, onSignIn, onSignOut }: MainMenuProps): React.JSX.Element {
   const [dialog, setDialog] = useState<'settings' | 'credits' | null>(null);
   const topCharacter = topRun ? getCharacter(topRun.characterId) : null;
   const cloudNeedsSignIn = authMode === 'cloud' && authStatus !== 'signed-in';
   const configurationFailed = authMode === 'configuration-error';
+  const cloudRecords = recordSource === 'cloud';
 
   return (
     <main className="landing-shell main-menu-scene">
@@ -62,8 +64,8 @@ export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onSho
                 : topRunLoading ? '기록 불러오는 중…'
                 : topRunError ? topRunError
                   : topRun && topCharacter
-                    ? `${authMode === 'cloud' ? '내 최고 기록' : '로컬 최고 기록'} ${topRun.distanceMeters.toLocaleString()}m · ${topCharacter.displayName}`
-                    : `${authMode === 'cloud' ? '내 기록' : '로컬 기록'}이 없습니다. 첫 달리기를 시작해보세요!`}
+                    ? `${cloudRecords ? '내 최고 기록' : '이 브라우저의 최고 기록'} ${topRun.distanceMeters.toLocaleString()}m · ${topCharacter.displayName}`
+                    : `${cloudRecords ? '내 기록' : '이 브라우저에 저장된 기록'}이 없습니다. 첫 달리기를 시작해보세요!`}
             </p>
             {showControlsHelp && <p className="main-menu-help">Space / ↑ 점프 · ↓ 슬라이딩 · P 일시정지</p>}
             {authMode === 'cloud' && authStatus === 'signed-in' && (
@@ -83,11 +85,11 @@ export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onSho
             </button>
             <button className="main-menu-secondary main-menu-rankings" type="button" onClick={onRankings}
               disabled={cloudNeedsSignIn || configurationFailed}>
-              {authMode === 'cloud' ? '유저 랭킹' : '로컬 기록 보기'}
+              {cloudRecords ? '유저 랭킹' : '이 브라우저 기록 보기'}
             </button>
             {onHistory && <button className="main-menu-secondary" type="button" onClick={onHistory}
               disabled={cloudNeedsSignIn || configurationFailed}>
-              {authMode === 'cloud' ? '내 플레이 기록' : '플레이 기록'}
+              {cloudRecords ? '내 플레이 기록' : '이 브라우저의 플레이 기록'}
             </button>}
             {onAchievements && <button className="main-menu-secondary" type="button" onClick={onAchievements}>업적</button>}
             {onShop && <button className="main-menu-secondary" type="button" onClick={onShop}>코인 상점</button>}

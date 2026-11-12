@@ -24,12 +24,28 @@ const sessionMock = vi.hoisted(() => ({
     ? 'stella-runner:session:v1:guest' : `stella-runner:session:v1:account:${encodeURIComponent(scope.id)}`,
 }));
 
+const authMock = vi.hoisted(() => ({
+  value: {
+    mode: 'local', status: 'signed-in', account: null, error: null,
+    signIn: vi.fn(), signOut: vi.fn(), acquireApiToken: vi.fn(),
+  } as {
+    mode: 'local' | 'cloud' | 'configuration-error';
+    status: 'loading' | 'signed-out' | 'signed-in' | 'error';
+    account: { homeAccountId: string; name: string; username: string } | null;
+    error: string | null;
+    signIn: ReturnType<typeof vi.fn>;
+    signOut: ReturnType<typeof vi.fn>;
+    acquireApiToken: ReturnType<typeof vi.fn>;
+  },
+}));
+
 vi.mock('./services/PersonalBestStore', () => ({
   browserPersonalBestStore: { getBest: vi.fn(() => null) },
 }));
 
 vi.mock('./services/LocalRunGateway', () => ({ browserRunGateway: runGatewayMock }));
 vi.mock('./audio/RunnerAudioManager', () => ({ browserRunnerAudio: audioMock }));
+vi.mock('./auth/AuthProvider', () => ({ useRunnerAuth: () => authMock.value }));
 
 vi.mock('./game/runner/RunnerGame', async () => {
   const React = await import('react');
@@ -65,6 +81,10 @@ function openEndlessCharacterSelect(): void {
 
 afterEach(cleanup);
 beforeEach(() => {
+  authMock.value = {
+    mode: 'local', status: 'signed-in', account: null, error: null,
+    signIn: vi.fn(), signOut: vi.fn(), acquireApiToken: vi.fn(),
+  };
   localStorage.removeItem(sessionMock.getKey({ kind: 'guest' }));
   localStorage.removeItem('runner-action:tutorial:v1:seen');
   localStorage.removeItem('runner-audio:preferences:v1');
@@ -88,6 +108,46 @@ beforeEach(() => {
 });
 
 describe('App flow', () => {
+  it('keeps cloud-authenticated runs and rankings local while preserving account controls', async () => {
+    const signOut = vi.fn();
+    const acquireApiToken = vi.fn();
+    authMock.value = {
+      mode: 'cloud', status: 'signed-in',
+      account: { homeAccountId: 'employee-1', name: 'Employee One', username: 'employee@example.test' },
+      error: null, signIn: vi.fn(), signOut, acquireApiToken,
+    };
+    render(<App />);
+
+    expect(await screen.findByText(/이 브라우저에 저장된 기록이 없습니다/)).toBeInTheDocument();
+    expect(screen.getByText('Employee One')).toBeInTheDocument();
+    expect(screen.getByText('employee@example.test')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '로그아웃' }));
+    expect(signOut).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: '이 브라우저 기록 보기' }));
+    expect(await screen.findByRole('heading', { name: '로컬 기록' })).toBeInTheDocument();
+    expect(await screen.findByText('이 브라우저에 저장된 기록입니다. 거리 순으로 정렬하고, 거리가 같으면 코인 수로 순위를 정합니다.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '메인 메뉴로' }));
+
+    openEndlessCharacterSelect();
+    fireEvent.click(screen.getByRole('button', { name: '아오쿠모 린' }));
+    fireEvent.click(document.querySelector('.selector-footer .selector-confirm')!);
+    expect(await screen.findByTestId('runner-mock')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'mock time out' }));
+    await waitFor(() => expect(runGatewayMock.submitRun).toHaveBeenCalledOnce());
+    expect(acquireApiToken).not.toHaveBeenCalled();
+  });
+
+  it('still requires company sign-in before starting in cloud mode', () => {
+    const signIn = vi.fn();
+    authMock.value = { mode: 'cloud', status: 'signed-out', account: null, error: null,
+      signIn, signOut: vi.fn(), acquireApiToken: vi.fn() };
+    render(<App />);
+
+    expect(document.querySelector<HTMLButtonElement>('.home-start')).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: '회사 계정으로 로그인' }));
+    expect(signIn).toHaveBeenCalledOnce();
+  });
+
   it('offers to resume an active checkpoint and restores it paused without countdown', async () => {
     const savedAt = new Date().toISOString();
     const snapshot = {
@@ -182,7 +242,7 @@ describe('App flow', () => {
       finishedAtIso: '2026-10-27T00:00:00.000Z',
     }]);
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: '로컬 기록 보기' }));
+    fireEvent.click(screen.getByRole('button', { name: '이 브라우저 기록 보기' }));
     expect(screen.getByRole('heading', { name: '로컬 기록' })).toBeInTheDocument();
     expect(await screen.findByText(/하나요 히요리/)).toBeInTheDocument();
     expect(screen.getByText('1,250m')).toBeInTheDocument();

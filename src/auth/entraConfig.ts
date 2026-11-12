@@ -17,7 +17,7 @@ export function readEntraSettings(): EntraSettings {
 }
 
 export function isEntraConfigured(settings = readEntraSettings()): boolean {
-  return Boolean(settings.tenantId && settings.clientId && settings.apiScope);
+  return Boolean(settings.tenantId && settings.clientId);
 }
 
 export const entraMsalConfig: Configuration = (() => {
@@ -33,6 +33,10 @@ export const entraMsalConfig: Configuration = (() => {
     cache: { cacheLocation: 'sessionStorage', storeAuthStateInCookie: false },
   };
 })();
+
+export const loginRequest: RedirectRequest = {
+  scopes: ['openid', 'profile'],
+};
 
 export const runnerApiRequest: RedirectRequest & SilentRequest = {
   scopes: [readEntraSettings().apiScope].filter(Boolean),

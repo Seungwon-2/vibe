@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { InteractionRequiredAuthError, PublicClientApplication, type AccountInfo } from '@azure/msal-browser';
 import { MsalProvider, useMsal } from '@azure/msal-react';
-import { entraMsalConfig, isEntraConfigured, readEntraSettings, runnerApiRequest } from './entraConfig';
+import { entraMsalConfig, isEntraConfigured, loginRequest, readEntraSettings, runnerApiRequest } from './entraConfig';
 
 export type RunnerAuthStatus = 'loading' | 'signed-out' | 'signed-in' | 'error';
 export type RunnerAuthMode = 'local' | 'cloud' | 'configuration-error';
@@ -47,7 +47,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
   if (!configured) {
     if (!configError) return <AuthContext.Provider value={localAuth}>{children}</AuthContext.Provider>;
     const value: RunnerAuthValue = { ...localAuth, mode: 'configuration-error', status: 'error',
-      error: 'Entra 설정이 완전하지 않습니다. 테넌트, SPA 클라이언트, API scope를 모두 설정해야 합니다.' };
+      error: 'Entra 설정이 완전하지 않습니다. 테넌트 ID와 SPA 클라이언트 ID를 설정해야 합니다.' };
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
   }
   if (initializationError) {
@@ -68,10 +68,11 @@ function CloudContextBridge({ children }: Readonly<{ children: React.ReactNode }
   const value = useMemo<RunnerAuthValue>(() => ({
     mode: 'cloud', status: inProgress !== 'none' ? 'loading' : account ? 'signed-in' : 'signed-out',
     account, error: null,
-    signIn: async () => { await instance.loginRedirect({ ...runnerApiRequest }); },
+    signIn: async () => { await instance.loginRedirect({ ...loginRequest }); },
     signOut: async () => { await instance.logoutRedirect({ account: account ?? undefined }); },
     acquireApiToken: async () => {
       if (!account) throw new Error('Sign in to continue');
+      if (!readEntraSettings().apiScope) throw new Error('Runner API scope is not configured');
       try { return (await instance.acquireTokenSilent({ ...runnerApiRequest, account })).accessToken; }
       catch (error) {
         if (error instanceof InteractionRequiredAuthError) {

@@ -14,8 +14,7 @@ import type { RunnerFinishOutcome, RunnerMode, RunnerResult, StoryStageId } from
 import { browserPersonalBestStore } from './services/PersonalBestStore';
 import { browserRunGateway } from './services/LocalRunGateway';
 import type { PersonalBestRecord, PersonalRunHistoryRecord, PublicLeaderboardRecord, RunGateway } from './services/RunGateway';
-import { AuthenticatedRunGateway, RunApiError } from './services/AuthenticatedRunGateway';
-import { readEntraSettings } from './auth/entraConfig';
+import { RunApiError } from './services/AuthenticatedRunGateway';
 import { useRunnerAuth } from './auth/AuthProvider';
 import { browserPlayerProfileStore } from './services/LocalPlayerProfileStore';
 import { settleRun, type SettlementResult } from './services/PlayerProgression';
@@ -55,9 +54,7 @@ type PersonalHistoryLoadState = { requestId: number; rows: PersonalRunHistoryRec
 function App(): React.JSX.Element {
   const auth = useRunnerAuth();
   const signIn = auth.signIn;
-  const runGateway = useMemo<RunGateway>(() => auth.mode === 'cloud'
-    ? new AuthenticatedRunGateway(readEntraSettings().apiBaseUrl, auth.acquireApiToken)
-    : browserRunGateway, [auth.acquireApiToken, auth.mode]);
+  const runGateway = useMemo<RunGateway>(() => browserRunGateway, []);
   const canUseRecords = auth.mode === 'local' || auth.status === 'signed-in';
   const sessionScope = useMemo<RunnerSessionScope | null>(() => {
     if (auth.mode === 'local') return { kind: 'guest' };
@@ -391,7 +388,7 @@ function App(): React.JSX.Element {
     topRun={overallBest} topRunLoading={bestLoading} topRunError={bestError}
     showControlsHelp={shouldShowRunnerTutorial()} audioPreferences={audioPreferences}
     onAudioPreferencesChange={setAudioPreferences} onUnlockAudio={() => browserRunnerAudio.unlock()}
-    authMode={auth.mode} authStatus={auth.status} authError={auth.error}
+    authMode={auth.mode} recordSource="local" authStatus={auth.status} authError={auth.error}
     accountName={auth.account?.name ?? null} accountUsername={auth.account?.username ?? null}
     onSignIn={() => { void auth.signIn(); }}
     onSignOut={() => { void auth.signOut(); }} />;
@@ -535,7 +532,7 @@ function App(): React.JSX.Element {
 
   if (screen === 'rankings') {
     return (
-      <RankingScreen rows={rankingRows} loading={rankingLoading} error={rankingError} source={auth.mode === 'cloud' ? 'cloud' : 'local'}
+      <RankingScreen rows={rankingRows} loading={rankingLoading} error={rankingError} source="local"
         onBack={() => setScreen('menu')} />
     );
   }

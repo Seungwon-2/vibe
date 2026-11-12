@@ -1,24 +1,19 @@
-# Current Context
+﻿# Current Context
 
 ## Active Plan
-[Runner Session Resume](./plans/2026-11-12-runner-session-resume.md)
+[Entra Login Without API Consent](./plans/2026-11-12-entra-login-without-api-consent.md)
 
 ## Active Phase
-[P01 Session Recovery](./phases/2026-11-12-runner-session-resume/P01-session-recovery/phase.md)
+[P01 Login and Browser-Local Records](./phases/2026-11-12-entra-login-without-api-consent/P01-login-and-local-records/phase.md)
 
 ## Active Task
-None — Runner Session Resume plan is complete.
+None — [Entra Login Without API Consent](./plans/2026-11-12-entra-login-without-api-consent.md) is complete.
 
 ## Status
-- T01 account-scoped local session store is implemented and validated. See [T01](./phases/2026-11-12-runner-session-resume/P01-session-recovery/T01-session-store.md).
-- T02 Phaser player/world checkpoint serialization and restoration is implemented. Targeted runner tests and lint passed; see [T02](./phases/2026-11-12-runner-session-resume/P01-session-recovery/T02-engine-checkpoint.md).
-- The Azure Static Web Apps deployment plan remains paused and preserved at [P02-T02](./phases/2026-11-11-azure-swa-github-deployment/P02-cloud-delivery/T02-entra-registration.md). Its existing decisions remain: deploy to `Seungwon-2/vibe` on `project02`, use the provisioned Standard SWA `stella-runner-project02`, and use the app-owned Cosmos database/container. User-provided ARM output reported the resources as created; live reachability, Entra/API behavior, and actual billing remain unverified.
-- The existing Azure plan's Entra registrations, GitHub Actions deployment, and secure managed API settings remain pending. The user reported Cosmos account-owner approval for the shared account-scoped key; no Azure resource was changed by this session task.
-- The prior Azure preflight recorded that the Free SWA quota blocked what-if; the Standard what-if listed the new SWA and Stella Runner Cosmos database/container. Details remain in [deployment preflight](../docs/azure-deployment-preflight.md).
-- Coin motif pickup sections and runner speed power-ups are recorded as complete in the prior plan/history. T03 managed API Cosmos configuration was implemented earlier; Azure access setup was cancelled at the user's request.
-- This local session feature does not change Azure resources, Entra registrations, or Cosmos integration.
-- The 2026-11-03 Azure Deployment Readiness plan delivered the MSAL SPA authentication foundation (`f8a9230`) and protected Functions/Cosmos API routes (`2740953`).
-- Existing unrelated working-tree edits are preserved; only files owned by the active task and memory pointer updates are staged for its commit.
+- T01 is implemented; focused tests and lint pass.
+- Full typecheck is currently blocked by unrelated runner-session resume typing errors. Production build was skipped because typecheck failed.
+- Azure SWA deployment remains paused; no Azure resources or Cosmos APIs were changed.
+- Preserve unrelated working-tree edits. This task commits only its login source, tests, and memory tracking files.
 
 ## Next Step
-Runner Session Resume is complete. The local Vite preview is available at `http://localhost:5173/`; continue with the next prioritized plan when ready. Azure deployment remains paused pending its separate setup and validation tasks.
+Choose the next plan: resolve existing runner-session type errors before release validation, or resume the Azure SWA deployment-readiness plan. API consent and cloud record storage remain separate future work.

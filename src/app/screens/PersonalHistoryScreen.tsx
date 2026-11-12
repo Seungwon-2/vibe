@@ -47,7 +47,7 @@ export function PersonalHistoryScreen({ rows, loading, error, hasMore, onLoadMor
       <section className="title-card rankings-card personal-history-card" aria-labelledby="history-title">
         <p className="eyebrow">MY RUNS · PRIVATE HISTORY</p>
         <h1 id="history-title">내 플레이 기록</h1>
-        <p className="intro-copy">로그인한 계정의 달리기 기록만 표시됩니다.</p>
+        <p className="intro-copy">이 브라우저에 저장된 달리기 기록입니다. 다른 기기와는 공유되지 않습니다.</p>
         {loading && rows.length === 0 && <p className="rankings-empty" role="status">기록을 불러오는 중입니다…</p>}
         {error && <p className="rankings-empty" role="alert">{error}</p>}
         {error && rows.length === 0 && <button type="button" onClick={onRetry} disabled={loading}>다시 시도</button>}
