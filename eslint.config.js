@@ -11,6 +11,9 @@ export default tseslint.config(
     extends: [eslint.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: {
       globals: globals.browser,
+      parserOptions: {
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     plugins: {
       'react-hooks': reactHooks,
