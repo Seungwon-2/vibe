@@ -70,4 +70,4 @@ Task: T03-locked-character-cosmetics
 ## Progress
 - [x] Implementation complete
 - [x] Validation passed (`npm test -- src/services/CosmeticService.test.ts src/app/screens/ShopScreen.test.tsx`, `npm run typecheck`, `npm run lint`)
-- commit: pending
+- commit: `2cc9333`
