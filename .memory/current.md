@@ -1,25 +1,23 @@
 # Current Context
 
 ## Active Plan
-[Azure Static Web Apps and GitHub Deployment](./plans/2026-11-11-azure-swa-github-deployment.md)
+[Runner Session Resume](./plans/2026-11-12-runner-session-resume.md)
 
 ## Active Phase
-[P02 Cloud Delivery](./phases/2026-11-11-azure-swa-github-deployment/P02-cloud-delivery/phase.md)
+[P01 Session Recovery](./phases/2026-11-12-runner-session-resume/P01-session-recovery/phase.md)
 
 ## Active Task
-[T02 Dedicated Entra App Registration](./phases/2026-11-11-azure-swa-github-deployment/P02-cloud-delivery/T02-entra-registration.md)
+[T02 Phaser Engine Checkpoint](./phases/2026-11-12-runner-session-resume/P01-session-recovery/T02-engine-checkpoint.md)
 
 ## Status
-- The 2026-11-03 Azure Deployment Readiness plan delivered the MSAL SPA authentication foundation (`f8a9230`) and protected Functions/Cosmos API routes (`2740953`). Its remaining personal-history/ranking UI, account-area, and managed API credential setup are carried into the active plan.
-- Coin Motif Pickup Sections and Runner Speed Power-Ups work are recorded as complete in the prior plan/history.
-- Current branch is `project02`. Existing unrelated working-tree changes are preserved; planning has not staged, committed, or reverted them.
-- Confirmed deployment target: GitHub `Seungwon-2/vibe`, branch `project02`; Azure subscription `CR-Project-01`, resource group `grill-me-edu`; Standard SWA `stella-runner-project02` and app-owned Cosmos SQL database `stella-runner` / container `PlayerRecords` are provisioned per the user's successful ARM result. Actual charges and the SWA hostname remain to be checked.
-- The dedicated single-tenant Entra registrations, GitHub secret/workflow, and application deployment remain pending. The SWA and Cosmos child resources were provisioned by the user; the pasted ARM deployment result reports `Succeeded` and lists the expected three resource IDs. This does not confirm live app reachability, Entra/API behavior, or actual billed cost.
-- Cosmos owner approval for use of the account-scoped key is reported by the user. Because this key is account-wide and managed API has no managed identity, cloud API connection is gated on secure server-side SWA setting configuration and no-secret logging.
-- T01 preflight (2026-11-11): the earlier Free SWA what-if was blocked by the 10-app quota. After the user selected Standard and authorized proceeding, a Standard what-if listed only the new SWA and Stella Runner Cosmos database/container. The user supplied ARM deployment output for `stella-runner-create-20261111`, reporting `Succeeded` and the expected resource IDs. Details and cost assumptions: [deployment preflight](../docs/azure-deployment-preflight.md).
-- P02-T01 is complete. P02-T03 infrastructure apply is complete from the user's deployment output; its managed API secure settings remain pending until Entra identifiers are ready. Exact subscription billing and the live site URL are not yet verified.
-- Existing unrelated worktree changes remain untouched.
-- T03 SWA managed API Cosmos configuration is implemented and validated. Azure access setup was cancelled at the user's request; no Azure resource was changed.
+- T01 account-scoped local session store is implemented and validated. See [T01](./phases/2026-11-12-runner-session-resume/P01-session-recovery/T01-session-store.md).
+- The Azure Static Web Apps deployment plan remains paused and preserved at [P02-T02](./phases/2026-11-11-azure-swa-github-deployment/P02-cloud-delivery/T02-entra-registration.md). Its existing decisions remain: deploy to `Seungwon-2/vibe` on `project02`, use the provisioned Standard SWA `stella-runner-project02`, and use the app-owned Cosmos database/container. User-provided ARM output reported the resources as created; live reachability, Entra/API behavior, and actual billing remain unverified.
+- The existing Azure plan's Entra registrations, GitHub Actions deployment, and secure managed API settings remain pending. The user reported Cosmos account-owner approval for the shared account-scoped key; no Azure resource was changed by this session task.
+- The prior Azure preflight recorded that the Free SWA quota blocked what-if; the Standard what-if listed the new SWA and Stella Runner Cosmos database/container. Details remain in [deployment preflight](../docs/azure-deployment-preflight.md).
+- Coin motif pickup sections and runner speed power-ups are recorded as complete in the prior plan/history. T03 managed API Cosmos configuration was implemented earlier; Azure access setup was cancelled at the user's request.
+- This local session feature does not change Azure resources, Entra registrations, or Cosmos integration.
+- The 2026-11-03 Azure Deployment Readiness plan delivered the MSAL SPA authentication foundation (`f8a9230`) and protected Functions/Cosmos API routes (`2740953`).
+- Existing unrelated working-tree edits are preserved; only files owned by the active task and memory pointer updates are staged for its commit.
 
 ## Next Step
-Create the dedicated single-tenant Entra SPA and API registrations described in [T02](./phases/2026-11-11-azure-swa-github-deployment/P02-cloud-delivery/T02-entra-registration.md). Then configure public identifiers and secure server-side API settings in T03; do not expose credentials in code, shell output, logs, or chat.
+Read and execute [T02](./phases/2026-11-12-runner-session-resume/P01-session-recovery/T02-engine-checkpoint.md): define the Phaser player/world checkpoint so resume can restore the exact jump, velocity, slide, active objects, and deterministic spawn state.
