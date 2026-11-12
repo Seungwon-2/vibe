@@ -77,4 +77,4 @@ Task: T01-resume-prompt-dismissal
 ## Progress
 - [x] Implementation complete
 - [x] Validation passed (`npm test -- src/app/components/ResumeSessionDialog.test.tsx src/App.sessionRecovery.test.tsx`, `npm run typecheck`, `npm run lint`)
-- commit: pending
+- commit: `70ac100`
