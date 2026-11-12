@@ -161,6 +161,7 @@ describe('RunnerScene finish boundary', () => {
       emitFinished(result: RunnerResult): void;
     };
     harness.inputBridge = { clear };
+    (harness as unknown as { registry: { get(key: string): undefined } }).registry = { get: () => undefined };
     harness.trailEffect = { clear: vi.fn() };
     harness.player = { finish: finishPlayer };
     harness.eventEmitter = { finish: finishEvent };
@@ -189,6 +190,7 @@ describe('RunnerScene finish boundary', () => {
       emitFinished(result: RunnerResult): void;
     };
     harness.inputBridge = { clear: vi.fn() };
+    (harness as unknown as { registry: { get(key: string): undefined } }).registry = { get: () => undefined };
     harness.trailEffect = { clear: vi.fn() };
     harness.player = { finish: finishPlayer };
     harness.eventEmitter = { finish: finishEvent };
@@ -224,6 +226,7 @@ describe('RunnerScene finish boundary', () => {
       finishedAtIso: '2026-11-02T00:00:00.000Z', finishReason: 'lives-exhausted' };
     harness.finishEmitted = false;
     harness.finishPending = false;
+    (harness as unknown as { registry: { get(key: string): undefined } }).registry = { get: () => undefined };
     harness.inputBridge = { clear: clearInput };
     harness.heldKeyboardActions = new Set(['Space']);
     harness.trailEffect = { clear: clearTrail };
@@ -288,6 +291,7 @@ describe('RunnerScene finish boundary', () => {
       distanceMeters: 845, worldDistance: 2_535, coins: 7, elapsedMs: 31_000, remainingMs: 59_000 };
     harness.snapshot = contactSnapshot;
     harness.finishEmitted = false;
+    (harness as unknown as { registry: { get(key: string): undefined } }).registry = { get: () => undefined };
     harness.inputBridge = { clear };
     harness.trailEffect = { clear: vi.fn() };
     harness.heldKeyboardActions = new Set(['Space']);

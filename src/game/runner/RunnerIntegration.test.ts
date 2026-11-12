@@ -23,10 +23,10 @@ describe('offline runner integration', () => {
     state = collectPickup(state, { id: 'coin-1', kind: 'coin' });
     state = collectPickup(state, { id: 'time-1', kind: 'time' });
     expect(state.coins).toBe(1);
-    expect(state.remainingMs).toBe(94_000); // 3s item + Rin's 1s passive
+    expect(state.remainingMs).toBe(90_000); // Endless runs restore time only at gates.
 
     const hit = applyCollision(state);
-    expect(hit.remainingMs).toBe(89_000);
+    expect(hit.remainingMs).toBe(85_000);
     expect(applyCollision(hit)).toBe(hit); // protection prevents repeated damage
     state = hit;
 
