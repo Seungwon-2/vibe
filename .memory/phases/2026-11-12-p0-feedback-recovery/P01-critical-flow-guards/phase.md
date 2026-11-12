@@ -7,7 +7,7 @@
 | T02 | `done` | Gate cloud-mode menu actions behind successful sign-in. | [T02](./T02-cloud-sign-in-gate.md) |
 | T03 | `done` | Prevent cosmetic selection and service calls from targeting locked characters. | [T03](./T03-locked-character-cosmetics.md) |
 | T04 | `done` | Diagnose story session-save failures and align warnings with actual persistence outcomes. | [T04](./T04-story-session-persistence.md) |
-| T05 | `pending` | Resolve achievement IDs to localized names with a safe fallback. | [T05](./T05-achievement-name-fallback.md) |
+| T05 | `done` | Resolve achievement IDs to localized names with a safe fallback. | [T05](./T05-achievement-name-fallback.md) |
 
 ## Progress
-- done: 4/5 (active: T05)
+- done: 5/5

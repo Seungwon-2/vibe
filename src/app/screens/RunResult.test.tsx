@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { RunResult } from './RunResult';
+import { getAchievementDisplayName } from '../../services/AchievementCatalog';
 
 afterEach(cleanup);
 
@@ -69,5 +70,22 @@ describe('RunResult', () => {
       bestDistanceMeters={1234} onRetry={vi.fn()} onChooseCharacter={vi.fn()} onRankings={vi.fn()} />);
     expect(screen.getByRole('heading', { name: '새로운 최고 기록!' })).toBeInTheDocument();
     expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-animation', 'gameOver');
+  });
+
+  it('shows safe achievement labels once each without exposing unknown ids', () => {
+    render(<RunResult result={result} outcome="completed" bestDistanceMeters={1234}
+      settlement={{ depositedCoins: 0, newlyUnlockedStageId: null, newlyUnlockedCharacterId: null,
+        newlyClaimedCosmeticIds: [], challenges: [], profile: {
+          version: 1, walletCoins: 0, unlockedCharacterIds: [], unlockedStageIds: [], clearedStageIds: [],
+          completedChallengeKeys: [], achievementProgress: {}, unlockedAchievementIds: [], unlockedCosmeticIds: [],
+          equippedCosmeticIdsByCharacter: {}, processedRunIds: [], claimedRewardKeys: [],
+        } }}
+      newlyUnlockedAchievementIds={['distance-2500', 'distance-2500', 'internal-secret-id']}
+      onRetry={vi.fn()} onChooseCharacter={vi.fn()} onRankings={vi.fn()} />);
+
+    expect(screen.getByText(`업적 달성 · ${getAchievementDisplayName('distance-2500')}`)).toBeInTheDocument();
+    expect(screen.getByText('업적 달성 · 알 수 없는 업적')).toBeInTheDocument();
+    expect(screen.queryByText(/internal-secret-id/)).not.toBeInTheDocument();
+    expect(screen.getAllByText(`업적 달성 · ${getAchievementDisplayName('distance-2500')}`)).toHaveLength(1);
   });
 });

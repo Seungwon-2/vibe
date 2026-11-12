@@ -6,7 +6,7 @@ Close five release-critical usability and correctness gaps reported after the la
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | Repair critical entry, persistence, and reward-feedback flows in five independently verifiable tasks. | [P01](../phases/2026-11-12-p0-feedback-recovery/P01-critical-flow-guards/phase.md) |
+| P01 | `done` | Repair critical entry, persistence, and reward-feedback flows in five independently verifiable tasks. | [P01](../phases/2026-11-12-p0-feedback-recovery/P01-critical-flow-guards/phase.md) |
 
 ## Decisions
 - [P0 feedback decisions](../decisions/2026-11-12-p0-feedback-fixes.md)

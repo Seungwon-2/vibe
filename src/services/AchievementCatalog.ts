@@ -27,3 +27,8 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = Object.freeze([
   { id: 'story-grand-tour', name: '별길 완주', description: '스토리 코스 네 곳 모두 완주',
     metric: 'story-courses-cleared', modeScope: 'story', threshold: 4, rewardCoins: 100 },
 ]);
+
+/** Returns a user-facing achievement label without exposing internal identifiers. */
+export function getAchievementDisplayName(id: string): string {
+  return ACHIEVEMENTS.find((achievement) => achievement.id === id)?.name ?? '알 수 없는 업적';
+}

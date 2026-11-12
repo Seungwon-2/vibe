@@ -2,7 +2,7 @@ import { CharacterPreview } from '../components/CharacterPreview';
 import { getCharacter } from '../../game/characters/characterCatalog';
 import { getStoryStage, getNextStoryStageId } from '../../game/runner/storyConfig';
 import type { RunnerResult, StoryStageId } from '../../game/runner/runnerTypes';
-import { ACHIEVEMENTS } from '../../services/AchievementCatalog';
+import { getAchievementDisplayName } from '../../services/AchievementCatalog';
 import type { SettlementResult } from '../../services/PlayerProgression';
 
 export type StoryResultProps = {
@@ -22,9 +22,7 @@ export function StoryResult({ result, settlement, newlyUnlockedAchievementIds, a
   const character = getCharacter(result.characterId);
   const cleared = result.completedStage === true && result.finishReason === 'stage-complete';
   const nextStageId = getNextStoryStageId(stageId);
-  const unlockedNames = newlyUnlockedAchievementIds
-    .map((id) => ACHIEVEMENTS.find((achievement) => achievement.id === id)?.name)
-    .filter((name): name is string => Boolean(name));
+  const unlockedNames = [...new Set(newlyUnlockedAchievementIds)].map(getAchievementDisplayName);
 
   return (
     <main className="result-shell story-result-shell">

@@ -1,6 +1,6 @@
 # Task: T05 Achievement Name Fallback
 
-## Status: pending
+## Status: done
 
 ## Goal
 Ensure achievement-unlock feedback always displays a localized achievement name or safe fallback instead of exposing internal IDs.
@@ -38,9 +38,9 @@ Ensure achievement-unlock feedback always displays a localized achievement name 
 - Test StoryResult and RunResult share behavior; repeated IDs do not duplicate the visible message.
 
 ## Acceptance Criteria
-- [ ] Known achievements continue to display localized catalog names.
-- [ ] Unknown/corrupt achievement IDs never appear verbatim in result UI.
-- [ ] Run and story result screens use one shared resolver.
+- [x] Known achievements continue to display localized catalog names.
+- [x] Unknown/corrupt achievement IDs never appear verbatim in result UI.
+- [x] Run and story result screens use one shared resolver.
 
 ## Validation
 - `npm test -- src/app/screens/RunResult.test.tsx src/app/screens/StoryResult.test.tsx src/services/AchievementCatalog.test.ts`
@@ -60,6 +60,6 @@ Task: T05-achievement-name-fallback
 ```
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
-- commit: pending
+- [x] Implementation complete
+- [x] Validation passed
+- commit: see Git history

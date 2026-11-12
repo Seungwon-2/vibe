@@ -4,7 +4,7 @@ import type { CharacterId } from '../../game/characters/characterTypes';
 import type { RunnerFinishOutcome, RunnerResult } from '../../game/runner/runnerTypes';
 import type { PersonalBestRecord } from '../../services/RunGateway';
 import type { SettlementResult } from '../../services/PlayerProgression';
-import { ACHIEVEMENTS } from '../../services/AchievementCatalog';
+import { getAchievementDisplayName } from '../../services/AchievementCatalog';
 
 export type RunResultProps = {
   result: RunnerResult;
@@ -58,7 +58,7 @@ export function RunResult({ result, outcome, bestDistanceMeters, submittedRank =
             {settlement.newlyUnlockedStageId && <span>새 스테이지 해금</span>}
             {settlement.newlyUnlockedCharacterId && <span>{getCharacter(settlement.newlyUnlockedCharacterId).displayName} 해금</span>}
             {settlement.newlyClaimedCosmeticIds.length > 0 && <span>도전 꾸미기 {settlement.newlyClaimedCosmeticIds.length}개 해금</span>}
-            {newlyUnlockedAchievementIds.map((id) => <span key={id}>업적 달성 · {ACHIEVEMENTS.find((item) => item.id === id)?.name ?? id}</span>)}
+            {[...new Set(newlyUnlockedAchievementIds)].map((id) => <span key={id}>업적 달성 · {getAchievementDisplayName(id)}</span>)}
           </div>}
           <dl className="result-stats">
             <div><dt>최고 거리</dt><dd>{bestDistanceMeters.toLocaleString()}m</dd></div>
