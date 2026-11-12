@@ -2,18 +2,17 @@
 
 ## Goal
 
-Prepare Stella Runner for a dedicated Azure Static Web App deployment that automatically publishes pushes to `project02` in `Seungwon-2/vibe`. The release must use the existing single-tenant Entra design, keep personal run history private, expose only each player's best endless record publicly, and use only app-owned Cosmos DB objects inside the approved shared account. The plan includes preflight cost/permission review, deployment verification, and user-facing operations documents. This is a plan only: no Azure resource, Entra registration, GitHub secret, workflow, or deployment is created by planning.
+Deploy Stella Runner's frontend to its dedicated Azure Static Web App and automatically publish pushes to `project02` in `Seungwon-2/vibe`. The current pilot uses single-tenant OIDC sign-in and browser-local records. Cosmos-backed history, public cross-user ranking, custom API scopes, and admin consent are deferred until tenant policy and data-access design are reviewed. This plan records infrastructure and deployment work already completed.
 
 ## Confirmed Target
 
 - Repository: `https://github.com/Seungwon-2/vibe.git`; branch: `project02`.
 - App: React 19 + TypeScript + Vite 8 + Phaser; root `/`; `npm run build`; output `dist/`.
-- API: Azure Functions v4 Node API from `api/`, hosted as the Static Web Apps managed API (no separate Function App).
+- API: source exists in `api/`, but the current workflow deploys no API (`api_location` is blank). Cloud records and rankings are not active.
 - Azure: subscription `CR-Project-01`; resource group `grill-me-edu`; new Standard SWA `stella-runner-project02` (availability to verify); managed API in East Asia. Standard was selected by the user on 2026-11-11 to avoid the subscription's exhausted Free-plan quota; verify recurring cost before apply.
-- Data: existing Cosmos account `maze-rescue-ms-b7af62a9` in Korea Central; add only database `stella-runner` and container `PlayerRecords`, partition key `/playerId`; do not change existing account configuration or data.
-- Identity: new dedicated single-tenant Entra app registration; company tenant including guest accounts; MSAL; private account panel shows name and username/email and supports logout; public ranking uses `name` or `Runner` and never exposes email or identifiers.
-- Public leaderboard: one best endless record per player, distance descending then coins descending. Personal history is accessible only to its authenticated owner. Browser-local records are not migrated.
-- Cosmos access: SWA managed API has no managed identity; use a server-only account connection string setting. User reports owner approval for the account-scoped key. Since it grants account-wide access, plan execution must preserve that boundary and stop if secure configuration or approval cannot be verified.
+- Data: Azure deployment created database `stella-runner` and container `PlayerRecords` in the existing `maze-rescue-ms-b7af62a9` account, but this release does not connect to them. Current history and ranking stay in browser storage.
+- Identity: dedicated single-tenant SPA registration with MSAL OIDC sign-in; no Microsoft Graph permission or custom API scope is requested during login. The account panel uses claims available to MSAL and supports logout.
+- API consent and Cosmos access: deferred. No Cosmos connection string is configured in SWA or GitHub, and the live frontend does not make Cosmos/API requests.
 - Cost: Standard SWA has recurring usage charges; Cosmos throughput/storage and API consumption can also incur charges. The existing Cosmos account is shared; determine its actual capacity and estimate this app's incremental use before provisioning.
 
 ## Phases
@@ -21,8 +20,8 @@ Prepare Stella Runner for a dedicated Azure Static Web App deployment that autom
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | P01 | `done` | Complete the remaining app-side account/history experience and managed API Cosmos configuration. | [P01](../phases/2026-11-11-azure-swa-github-deployment/P01-app-readiness/phase.md) |
-| P02 | `in_progress` | Verify access, cost, and target isolation; create dedicated cloud configuration and GitHub Actions delivery. | [P02](../phases/2026-11-11-azure-swa-github-deployment/P02-cloud-delivery/phase.md) |
-| P03 | `pending` | Verify deployed behavior and prepare employee usage and versioned release documentation. | [P03](../phases/2026-11-11-azure-swa-github-deployment/P03-release-handoff/phase.md) |
+| P02 | `done` | Provision the dedicated SWA, defer cloud API settings, and deploy the frontend from `project02`. | [P02](../phases/2026-11-11-azure-swa-github-deployment/P02-cloud-delivery/phase.md) |
+| P03 | `done` | Complete browser sign-in/gameplay smoke checks and prepare employee usage and versioned release documentation. | [P03](../phases/2026-11-11-azure-swa-github-deployment/P03-release-handoff/phase.md) |
 
 ## Gates and Scope
 
@@ -30,10 +29,10 @@ Prepare Stella Runner for a dedicated Azure Static Web App deployment that autom
 - Proceed only if refreshed GitHub access can write to the requested repository and branch. Prior observed GitHub permissions were read-only; this remains unverified.
 - Verify tenant/app registration permissions, SWA name availability, managed API region/runtime support, Cosmos account capacity/usage, and incremental cost at execution time.
 - Use an infrastructure preview before applying. The preview must show only the new SWA and the new app-owned Cosmos database/container; no existing apps, databases, containers, or shared account settings may be altered.
-- The deployment workflow must run for `project02` pushes and must not expose the SWA token to untrusted pull-request code. Frontend `VITE_*` values are public identifiers only; no credentials go into frontend environment variables or bundles.
-- Add the Cosmos connection string only as a protected server-side API application setting. Do not print it in CLI output, logs, shell history, source, Bicep parameters, GitHub artifacts, or chat.
+- The deployment workflow runs for `project02` pushes and does not expose the SWA token to pull-request code. Frontend `VITE_*` values are public identifiers only; no credentials go into frontend variables or bundles.
+- No Cosmos connection string or API setting is configured in the current release. If cloud data is resumed, first review admin-consent policy and a least-privilege Cosmos access design.
 - If Cosmos owner approval, secure secret configuration, GitHub write permission, expected cost, or target isolation is not verified, stop before the dependent cloud mutation.
 
 ## Previous Work Carried Forward
 
-The previous plan `.memory/plans/2026-11-03-azure-deployment-readiness.md` already delivered the MSAL SPA auth foundation and protected Functions/Cosmos API routes (commits `f8a9230` and `2740953`). Its remaining UI/account/configuration work is represented in P01 here. No cloud resource has been provisioned. This new plan supersedes the old plan for future deployment work while preserving its history and files.
+The previous plan `.memory/plans/2026-11-03-azure-deployment-readiness.md` delivered the MSAL SPA auth foundation and API source. The user later provisioned the dedicated SWA and app-owned Cosmos objects, and the frontend now deploys automatically from `project02`. The current release does not call the API or Cosmos. This plan supersedes the old plan for current deployment scope while preserving historical files.

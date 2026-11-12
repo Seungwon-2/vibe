@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ff">
+  <title>스텔라 러너 · 릴리즈 노트</title>
+  <style>
+    :root{color-scheme:light;--ink:#252b49;--muted:#65708c;--line:#e5e3f2;--blue:#3977c9;--lav:#8b78cc;--pink:#eb91bd;--paper:#fff;--wash:#f6f7ff;--green:#287b68}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 9% 0%,#e4efff 0,transparent 35%),linear-gradient(145deg,#faf8ff,#fff5f7);color:var(--ink);font:16px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif}
+    main{width:min(100% - 32px,1000px);margin:42px auto 64px}.hero,section{border:1px solid var(--line);border-radius:26px;background:rgba(255,255,255,.92);box-shadow:0 18px 52px #34385e0d}.hero{padding:clamp(26px,5vw,52px)}.eyebrow{margin:0 0 10px;color:var(--blue);font-size:.78rem;font-weight:800;letter-spacing:.17em;text-transform:uppercase}h1{margin:0;font-size:clamp(2rem,5vw,3.5rem);line-height:1.15;letter-spacing:-.045em}.lead{max-width:720px;margin:16px 0 0;color:var(--muted);font-size:1.08rem}.meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:24px}.pill{padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:#fff;color:#535d7b;font-size:.86rem;font-weight:700}.pill.preview{border-color:#f1c4d9;background:#fff3f8;color:#a24d76}.pill.live{border-color:#bde5d9;background:#effaf6;color:var(--green)}
+    section{margin-top:20px;padding:clamp(20px,4vw,34px)}h2{margin:0 0 15px;font-size:1.35rem;letter-spacing:-.025em}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.item{padding:18px;border-radius:17px;background:var(--wash)}.item h3{margin:0 0 5px;font-size:1.02rem}.item p{margin:0;color:var(--muted)}ul{margin:8px 0 0;padding-left:1.25rem}li+li{margin-top:7px}.callout{padding:18px 20px;border-left:4px solid var(--lav);border-radius:12px;background:#f5f2ff}.callout strong{display:block;margin-bottom:5px}.link{color:#2866b4;font-weight:700;text-decoration-thickness:1px;text-underline-offset:3px}.meta-list{display:grid;grid-template-columns:170px 1fr;gap:9px 16px;margin:0}.meta-list dt{color:var(--muted)}.meta-list dd{margin:0;font-weight:650;overflow-wrap:anywhere}.foot{padding:24px 4px;color:var(--muted);font-size:.9rem;text-align:center}
+    @media(max-width:650px){main{width:min(100% - 18px,1000px);margin:12px auto 28px}.hero{border-radius:21px}.grid{grid-template-columns:1fr}.meta-list{grid-template-columns:1fr;gap:2px}.meta-list dd{margin-bottom:8px}section{border-radius:20px}}
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">Stella Runner · Release Notes</p>
+      <h1>스텔라 러너 파일럿 v0.1.0</h1>
+      <p class="lead">현재 배포된 버전의 기능과 확인된 제한 사항을 안내합니다. 이 버전은 추가 플레이 테스트와 개선 의견 수집을 위한 파일럿입니다.</p>
+      <div class="meta">
+        <span class="pill preview">파일럿 테스트 버전</span>
+        <span class="pill">v0.1.0</span>
+        <span class="pill">2026년 11월 12일</span>
+        <span class="pill">project02</span>
+        <span class="pill live">배포 확인 완료</span>
+      </div>
+    </header>
+
+    <section>
+      <h2>이번 배포에서 확인할 수 있는 내용</h2>
+      <div class="grid">
+        <article class="item"><h3>로그인과 계정 정보</h3><p>회사 Microsoft Entra 계정으로 로그인하고, 메뉴에서 제공되는 이름·계정 정보를 확인하거나 로그아웃할 수 있습니다.</p></article>
+        <article class="item"><h3>러닝 액션 플레이</h3><p>점프와 슬라이딩으로 장애물을 피하고 코인, 시간 보너스, 속도 부스트와 거대화 아이템을 활용합니다.</p></article>
+        <article class="item"><h3>두 가지 플레이 모드</h3><p>시간과 거리를 겨루는 끝없는 달리기, 테마별 코스를 완주하는 스토리 스테이지를 플레이할 수 있습니다.</p></article>
+        <article class="item"><h3>캐릭터와 진행</h3><p>캐릭터별 패시브 효과와 스테이지 진행 해금이 적용됩니다. 이어하기는 같은 브라우저 프로필에 저장된 런 상태를 복구합니다.</p></article>
+      </div>
+    </section>
+
+    <section>
+      <h2>테스트 중인 저장 방식</h2>
+      <div class="callout">
+        <strong>로그인과 게임 기록은 현재 별도로 동작합니다.</strong>
+        Entra 로그인은 회사 계정을 확인하지만, 런 기록·코인 지갑·해금 상태·이어하기는 이 브라우저 프로필의 로컬 저장소에 보관됩니다. 계정별 분리나 서버 동기화는 없고, 같은 브라우저 프로필을 사용하는 사람은 로컬 데이터를 볼 수 있습니다. 브라우저 데이터를 지우거나 기기·프로필을 바꾸면 기록은 이어지지 않습니다.
+      </div>
+      <ul>
+        <li>온라인 공개 랭킹과 다른 직원의 기록 조회는 아직 제공되지 않습니다. 메뉴의 기록은 이 브라우저에 저장된 기록입니다.</li>
+        <li>이어하기는 저장된 브라우저의 런을 복구하기 위한 기능이며 서버 동기화는 하지 않습니다.</li>
+        <li><a class="link" href="employee-user-guide.html">직원 이용 안내 보기</a>에서 조작법, 아이템과 저장 범위를 확인할 수 있습니다.</li>
+        <li>이 배포는 파일럿 테스트 단계입니다. 플레이 중 문제나 개선점을 기록해 다음 업데이트에 반영할 예정입니다.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>배포 정보</h2>
+      <dl class="meta-list">
+        <dt>앱 주소</dt><dd><a class="link" href="https://thankful-beach-01ab67d00.5.azurestaticapps.net/">thankful-beach-01ab67d00.5.azurestaticapps.net</a></dd>
+        <dt>배포 브랜치</dt><dd>project02</dd>
+        <dt>배포 커밋</dt><dd><code>0a475c116073c17cb75a28dd47f8cd815820fbe4</code></dd>
+        <dt>GitHub Actions</dt><dd><a class="link" href="https://github.com/Seungwon-2/vibe/actions/runs/43191305221">실행 번호 43191305221 · 성공</a></dd>
+        <dt>확인 결과</dt><dd>배포 주소 HTTP 200, 페이지 제목 ‘스텔라 러너’ 확인</dd>
+      </dl>
+    </section>
+
+    <section>
+      <h2>다음 업데이트</h2>
+      <p class="lead">이번 버전은 회사 계정 로그인과 게임 흐름을 확인한 파일럿입니다. 화면 구성 개선과 플레이 피드백을 이어서 반영하고, 온라인 기록·계정별 저장은 데이터 보호 범위와 회사 정책을 확인한 뒤 별도 작업으로 진행합니다.</p>
+    </section>
+
+    <footer class="foot">스텔라 러너 · 테스트 배포 기록 · 배포 상태와 기능 범위는 다음 릴리즈에서 갱신됩니다.</footer>
+  </main>
+</body>
+</html>

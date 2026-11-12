@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f3ff">
+  <title>Stella Runner · 배포 전 개발 기록</title>
+  <style>
+    :root{--ink:#202746;--muted:#68718e;--line:#e2dcf0;--blue:#3975c8;--pink:#e895bd;--gold:#d49b43;--lav:#8877c8}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 85% 5%,#fce5f1 0,transparent 34%),linear-gradient(135deg,#edf4ff,#faf7ff 55%,#fff8f3);color:var(--ink);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}main{width:min(100% - 36px,1080px);margin:44px auto 70px}.hero{padding:38px clamp(22px,5vw,54px);border:1px solid var(--line);border-radius:30px;background:#ffffffdf;box-shadow:0 24px 70px #34385e12}.eyebrow{margin:0 0 9px;color:var(--lav);font-size:.78rem;font-weight:800;letter-spacing:.18em}h1{margin:0;font-size:clamp(2rem,5vw,3.4rem);line-height:1.12;letter-spacing:-.04em}.lead{max-width:800px;color:var(--muted);font-size:1.05rem}.callout{margin-top:22px;padding:15px 18px;border-radius:14px;background:#f0edff;color:#51477a}
+    .timeline{position:relative;margin:28px 0 0;padding:0 0 0 30px;list-style:none}.timeline:before{position:absolute;top:8px;bottom:8px;left:9px;width:2px;background:linear-gradient(var(--blue),var(--lav),var(--pink));content:""}.event{position:relative;margin:0 0 18px;padding:22px 24px;border:1px solid var(--line);border-radius:20px;background:#fff}.event:before{position:absolute;top:27px;left:-28px;width:14px;height:14px;border:3px solid white;border-radius:50%;background:var(--blue);box-shadow:0 0 0 2px #cbd9f7;content:""}.event:nth-child(3n+2):before{background:var(--lav);box-shadow:0 0 0 2px #ddd5f5}.event:nth-child(3n):before{background:var(--pink);box-shadow:0 0 0 2px #f4d1e2}.date{margin:0;color:var(--blue);font-size:.78rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.event h2{margin:4px 0 8px;font-size:1.25rem}.event p{margin:0;color:var(--muted)}.event ul{margin:8px 0 0;padding-left:1.15rem}.event li+li{margin-top:4px}.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.panel{padding:24px;border:1px solid var(--line);border-radius:20px;background:#fff}.panel h2{margin:0 0 9px;font-size:1.2rem}.panel p{margin:0;color:var(--muted)}.tag{display:inline-block;margin:4px 5px 0 0;padding:4px 9px;border-radius:99px;background:#f1effb;color:#5b5680;font-size:.78rem;font-weight:700}footer{padding:22px 4px;color:var(--muted);text-align:center;font-size:.9rem}
+    @media(max-width:650px){main{width:min(100% - 20px,1080px);margin:16px auto 32px}.hero{padding:26px 20px;border-radius:22px}.timeline{padding-left:25px}.event{padding:18px}.event:before{left:-23px}.cols{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">DEVELOPMENT JOURNEY · 2026</p>
+      <h1>아이디어에서 배포 준비까지</h1>
+      <p class="lead">코딩 경험이 많지 않은 상태에서 요구사항 인터뷰, 단계별 계획, 작은 실행 단위의 구현과 플레이 피드백을 반복해 Stella Runner를 만들었습니다.</p>
+      <div class="callout"><strong>제작 방식:</strong> grill-me로 결정할 사항을 하나씩 확정하고, memory-plan으로 계획을 파일화한 뒤, memory-execute로 현재 작업을 순차 실행했습니다. 실제 플레이에서 발견한 문제는 다시 계획과 수정 작업으로 연결했습니다.</div>
+    </header>
+
+    <ol class="timeline">
+      <li class="event"><p class="date">2026 · 10 · 21</p><h2>플랫포머 아이디어와 첫 게임 설계</h2><p>Azure 사내 로그인과 랭킹을 염두에 둔 React 게임 아이디어에서 출발했습니다. 월드·스테이지·보스·체크포인트를 포함한 플랫포머 계획과 오리지널 캐릭터 구상을 정리했습니다.</p><span class="tag">초기 기획</span><span class="tag">메모리 기반 계획</span></li>
+      <li class="event"><p class="date">2026 · 10 · 26–27</p><h2>러닝 액션으로 방향 전환</h2><p>플랫포머 요소를 우선 보류하고, 자동으로 달리며 점프·슬라이딩으로 장애물을 피하는 게임으로 재정의했습니다. 90초 무한 런, 거리·코인 기록, 4개 테마, 보너스 구간과 모바일 입력을 설계했습니다.</p><ul><li>Rin의 통합 동작 시트 기준과 다른 캐릭터 자산 구조 정리</li><li>캐릭터 선택·게임 화면·테마 코스의 반복 개선</li><li>낭떠러지, 튜토리얼, 테마별 오브젝트와 충돌 판정 정비</li></ul></li>
+      <li class="event"><p class="date">2026 · 10 · 29–30</p><h2>오디오·타이틀·화면 구성</h2><p>테마 음악과 효과음 작업을 진행하고, Stella Runner 타이틀 화면과 배경 자산을 연결했습니다. 반응형 화면에서 카드·캐릭터·게임 뷰포트가 잘리거나 지나치게 작아지는 문제를 실제 캡처 피드백에 맞춰 조정했습니다.</p><span class="tag">테마 음악</span><span class="tag">캐릭터 선택</span><span class="tag">화면 비율</span></li>
+      <li class="event"><p class="date">2026 · 10 · 31</p><h2>스토리 코스와 완주 감각</h2><p>스토리 모드의 네 테마에 서로 다른 고정 장애물 시퀀스를 마련했습니다. 각 코스 끝에 아치·결승선·GOAL 표식을 두고 통과 후 승리 포즈를 보여줘 완주 지점을 분명히 했습니다.</p></li>
+      <li class="event"><p class="date">2026 · 11 · 2</p><h2>난이도·아이템·장애물 도전</h2><p>무한 코스의 코인·장애물 밀도를 높이고, 거대화 아이템을 코인과 시각적으로 구분했습니다. 메리의 자석 효과, 2단 점프를 요구하는 높은 장벽·넓은 함정 도전도 조정했습니다.</p><ul><li>스토리 코스는 안전 경로와 고정 배치를 보존</li><li>무한 모드는 웨이브 빈도와 후반 난이도를 올리는 방향</li><li>장애물 안내는 첫 등장에 집중하고 오브젝트 겹침을 예방</li></ul></li>
+      <li class="event"><p class="date">2026 · 11 · 3</p><h2>공통 UI와 배포 전 품질 점검</h2><p>모드별 HUD 위치를 통일하고 화면 프레임과 콘텐츠 폭을 맞췄습니다. 무한 모드의 생명 소진에도 탈락 포즈를 넣고, 캐릭터 해금·상점 효과 표시를 다듬었습니다. 이 날짜 기록은 당시의 배포 전 상태입니다.</p><div class="callout"><strong>당시 상태 (11월 3일):</strong> Entra 로그인과 Azure 배포는 아직 실행하지 않았습니다. 이후 배포 준비와 실제 배포는 아래 11월 11–12일 기록에서 확인할 수 있습니다.</div></li>
+      <li class="event"><p class="date">2026 · 11 · 11–12</p><h2>회사 계정 로그인과 파일럿 배포</h2><p>전용 Static Web App을 연결하고 GitHub Actions로 <code>project02</code> 브랜치의 프런트엔드를 배포했습니다. 단일 회사 테넌트 Entra 로그인, 메뉴의 계정 정보와 로그아웃을 확인했으며, 사용자가 실제 배포본의 로그인과 플레이 흐름을 확인했습니다.</p><ul><li>배포 주소: <a href="https://thankful-beach-01ab67d00.5.azurestaticapps.net/">스텔라 러너 열기</a></li><li>확인한 배포: 커밋 <code>0a475c116073c17cb75a28dd47f8cd815820fbe4</code>, GitHub Actions <a href="https://github.com/Seungwon-2/vibe/actions/runs/43191305221">실행 43191305221 성공</a></li><li>로그인에 Graph 추가 권한이나 API scope는 요청하지 않습니다. 배포된 런 기록은 Azure/Cosmos에 전송되지 않습니다.</li></ul><div class="callout"><strong>저장 범위:</strong> 기록·지갑·해금·이어하기는 로그인 계정과 분리된 브라우저 프로필 로컬 저장입니다. 같은 프로필을 사용하는 사람은 데이터를 볼 수 있고, 온라인 통합 랭킹은 아직 연결하지 않았습니다.</div><p><a href="employee-user-guide.html">직원 이용 안내</a> · <a href="release-notes.html">파일럿 v0.1.0 릴리즈 노트</a></p></li>
+    </ol>
+
+    <div class="cols">
+      <section class="panel"><h2>사용자 피드백이 만든 개선</h2><p>점프 불가 발판, 화면 밖 추락, 낙하 애니메이션 중단, 슬라이딩 판정, 스프라이트 잘림, 캐릭터 크기 차이, 화면비와 스크롤 같은 문제를 직접 플레이하고 캡처로 전달했습니다. 이를 바탕으로 충돌·표시·애니메이션을 분리해 고쳤습니다.</p></section>
+      <section class="panel"><h2>다음 작업</h2><p>배포된 버전의 플레이 피드백과 화면 레이아웃 개선을 이어갑니다. 기록을 계정별로 보관하거나 온라인 랭킹을 제공하려면 브라우저 로컬 저장에서 서버 저장으로 전환할 설계와 회사 데이터 정책 검토가 별도로 필요합니다.</p></section>
+    </div>
+    <footer>Stella Runner · 개발·배포 이력 · 마지막 업데이트 2026-11-12 · <a href="release-notes.html">v0.1.0 릴리즈 노트</a> · <a href="employee-user-guide.html">직원 이용 안내</a></footer>
+  </main>
+</body>
+</html>
