@@ -1,22 +1,20 @@
 ﻿# Current Context
 
 ## Active Plan
-[Azure Static Web Apps and GitHub Deployment](./plans/2026-11-11-azure-swa-github-deployment.md)
+[Runner Feedback Recovery](./plans/2026-11-12-runner-feedback-recovery.md)
 
 ## Active Phase
-Complete — [P03 Release Handoff](./phases/2026-11-11-azure-swa-github-deployment/P03-release-handoff/phase.md)
+ [P01 Readability and Controls](./phases/2026-11-12-runner-feedback-recovery/P01-readability-and-controls/phase.md)
 
 ## Active Task
-None — all tasks in the Azure Static Web Apps and GitHub Deployment plan are complete.
+[T02 Hazard and Pit Readability](./phases/2026-11-12-runner-feedback-recovery/P01-readability-and-controls/T02-hazard-and-pit-readability.md)
 
 ## Status
-- P0 feedback recovery is complete. T01 (safe dismissal of the resume prompt), T02 (cloud sign-in gate), T03 (locked character cosmetics), T04 (story session persistence), and T05 (localized achievement feedback) are complete.
-- P0 feedback recovery and P03-T01 deployed smoke/privacy validation are complete.
-- Current release uses single-tenant OIDC login and browser-local history/rankings. API scopes, Cosmos integration, and cross-user ranking remain deferred.
-- The deployed sign-in and game flow were confirmed by the user. Follow-up screen layout polish is deferred to a later UI task.
-- P03-T02 completed: employee guide, pilot v0.1.0 release notes, and chronological deployment history document the verified deployment and browser-local data limitations.
-- Game records are not bound to Entra identity; no cloud API or shared ranking is active.
-- Preserve unrelated working-tree edits.
+- Azure deployment handoff and the five P0 feedback fixes are complete; the user confirmed the deployed sign-in flow.
+- New active plan covers the full 20-item player feedback list. Already-completed P0 work is regression verification only.
+- T01 responsive layout and visual comfort fixes are complete and validated.
+- Current pilot uses browser-local records; cloud API, Cosmos integration and shared ranking remain deferred.
+- Preserve unrelated working-tree edits; use `project02` and commit only task-owned files.
 
 ## Next Step
-Plan a separate follow-up UI/UX task for the deferred layout feedback. Cloud history/ranking remains a separate future design decision; do not imply it is active in the pilot.
+Read T02 blueprint and audit hazard silhouettes, collision bounds, and pit readability. Do not deploy as part of this plan.

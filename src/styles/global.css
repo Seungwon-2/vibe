@@ -1,18 +1,18 @@
 :root {
-  --ui-page: #f3f8ff;
-  --ui-surface: #ffffff;
-  --ui-surface-soft: #e8f1ff;
-  --ui-surface-raised: #f8faff;
-  --ui-text: #25395d;
-  --ui-muted: #526a91;
-  --ui-primary: #548bd3;
-  --ui-primary-strong: #356db5;
-  --ui-lavender: #a893e9;
-  --ui-border: #c5d7f2;
-  --ui-shadow: 0 18px 56px rgb(54 83 128 / 12%);
-  --ui-danger: #b34d62;
+  --ui-page: #edf2f8;
+  --ui-surface: #fbfcfe;
+  --ui-surface-soft: #e8eef7;
+  --ui-surface-raised: #f3f6fa;
+  --ui-text: #26364f;
+  --ui-muted: #53657e;
+  --ui-primary: #6689bd;
+  --ui-primary-strong: #3d659f;
+  --ui-lavender: #8c7dad;
+  --ui-border: #c7d2e1;
+  --ui-shadow: 0 18px 56px rgb(42 57 79 / 11%);
+  --ui-danger: #a94f63;
   font-family: "Trebuchet MS", "Malgun Gothic", sans-serif;
-  color: #f4f5ff;
+  color: var(--ui-text);
   background: var(--ui-page);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -593,7 +593,7 @@ h1 {
 .run-screen__help kbd { padding: 3px 7px; border: 1px solid var(--ui-border); border-radius: 6px; background: var(--ui-surface); color: var(--ui-text); }
 .run-screen > .runner-stage { width: var(--run-stage-width); margin: auto; }
 @media (orientation: landscape) and (max-height: 520px) and (min-width: 650px) {
-  .run-screen { --run-stage-width: min(100%, max(0px, calc((100dvh - 122px) * 16 / 9)), 2048px); height: 100dvh; min-height: 0; grid-template-rows: auto auto minmax(0, 1fr); gap: 4px; padding: 4px 8px; }
+  .run-screen { --run-stage-width: min(100%, max(0px, calc((100dvh - 168px) * 16 / 9)), 2048px); height: 100dvh; min-height: 0; grid-template-rows: auto auto minmax(0, 1fr); gap: 4px; padding: 4px 8px; }
   .run-screen__header .eyebrow { display: none; }
   .run-screen__header strong { font-size: 0.88rem; }
   .run-screen__header button { min-height: 32px; padding: 3px 12px; }
@@ -601,7 +601,7 @@ h1 {
   .runner-hud { padding-block: 4px; }
   .runner-hud__main { min-height: 38px; }
   .runner-hud__details { font-size: 0.7em; }
-  .run-screen > .runner-stage { width: min(100%, max(0px, calc((100dvh - 122px) * 16 / 9)), 2048px); }
+  .run-screen > .runner-stage { width: min(100%, max(0px, calc((100dvh - 168px) * 16 / 9)), 2048px); }
 }
 .runner-overlay--confirm { z-index: 8; padding: 14px; background: rgb(37 57 93 / 48%); }
 .runner-overlay--confirm .runner-result-actions { width: 100%; justify-content: center; }
@@ -2341,6 +2341,103 @@ body:has(.selector-shell--runner),
   .main-menu-dock { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* On narrow portrait phones, show every runner card in a compact grid and
+   remove the decorative runway so it cannot crowd out the selectable roster. */
+@media (max-width: 600px) and (orientation: portrait) {
+  .selector-shell.selector-shell--runner .selector-panel.selector-panel--runner {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .selector-shell.selector-shell--runner .selector-header.selector-header--runner {
+    align-items: center;
+  }
+
+  .selector-shell.selector-shell--runner .selector-header--runner h1 {
+    font-size: clamp(1.35rem, 6vw, 1.75rem);
+  }
+
+  .selector-shell.selector-shell--runner .character-roster.character-roster--runner[data-roster-layout="one-row"] {
+    display: grid !important;
+    min-height: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+    gap: 7px;
+    overflow: hidden;
+  }
+
+  .selector-shell.selector-shell--runner .character-card.character-card--runner {
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    flex: initial;
+  }
+
+  .selector-shell.selector-shell--runner .character-card.character-card--runner:last-child {
+    grid-column: 1 / -1 !important;
+    justify-self: center;
+    width: calc((100% - 7px) / 2);
+  }
+
+  .selector-shell.selector-shell--runner .character-card__art.character-card__art--runner {
+    min-height: 0;
+    padding: 5px;
+  }
+
+  .selector-shell.selector-shell--runner .character-card--runner .character-card__details {
+    min-height: 50px;
+    gap: 3px;
+    padding: 4px;
+  }
+
+  .selector-shell.selector-shell--runner .character-card--runner .character-card__name {
+    font-size: clamp(.7rem, 3.2vw, .84rem);
+  }
+
+  .selector-shell.selector-shell--runner .character-card--runner .character-card__passive {
+    gap: 4px;
+    padding: 3px;
+  }
+
+  .selector-shell.selector-shell--runner .character-card--runner .character-card__passive svg,
+  .selector-shell.selector-shell--runner .character-card--runner .character__ability-icon {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+  }
+
+  .selector-shell.selector-shell--runner .character-card--runner .character-card__passive-copy strong {
+    font-size: .62rem;
+  }
+
+  .selector-shell.selector-shell--runner .character-card--runner .character-card__passive-copy small {
+    display: none;
+  }
+
+  .selector-shell.selector-shell--runner .selector-runway {
+    display: none;
+  }
+
+  .selector-shell.selector-shell--runner .selector-footer.selector-footer--runner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .selector-shell.selector-shell--runner .selector-footer__navigation {
+    justify-content: center;
+  }
+
+  .selector-shell.selector-shell--runner .selector-confirm.selector-confirm--runner {
+    justify-self: stretch;
+    min-height: 42px;
+    padding-block: 6px;
+  }
+}
+
 @media (min-width: 601px) and (max-width: 900px) {
   .main-menu-actions {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2752,4 +2849,383 @@ body:has(.selector-shell--runner),
   .mode-option__art { min-height: 82px; }
   .progression-screen--stages .progression-panel { gap: 8px; padding-block: 12px; }
   .progression-screen--stages .stage-options { grid-auto-rows: 190px; }
+}
+
+/* T01: shared viewport and readability safeguards for the current pastel UI. */
+html,
+body,
+#root {
+  min-width: 320px;
+  min-height: 100%;
+}
+
+body {
+  color: var(--ui-text);
+  overflow-x: clip;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--ui-primary-strong);
+  outline-offset: 3px;
+}
+
+.main-menu-card,
+.selector-panel--runner,
+.progression-panel,
+.result-panel,
+.rankings-card {
+  color: var(--ui-text);
+  border-color: var(--ui-border);
+  box-shadow: var(--ui-shadow);
+}
+
+.selector-shell--runner,
+.progression-screen {
+  min-width: 320px;
+  min-height: 0;
+  overflow: clip;
+}
+
+.selector-shell--runner .selector-panel--runner {
+  min-width: 0;
+  min-height: 0;
+}
+
+.selector-shell--runner .character-card--runner,
+.selector-shell--runner .character-card--runner .character-card__details,
+.selector-shell--runner .character-card--runner .character-card__passive {
+  min-width: 0;
+}
+
+.selector-shell--runner .character-card--runner .character-card__passive-copy strong,
+.selector-shell--runner .character-card--runner .character-card__passive-copy small {
+  overflow-wrap: anywhere;
+}
+
+.selector-shell--runner .selector-footer--runner {
+  min-width: 0;
+}
+
+.selector-shell--runner .selector-footer--runner button {
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.run-screen {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100dvh;
+  overflow: clip;
+  --run-stage-width: min(100%, max(0px, calc((100dvh - 216px) * 16 / 9)), 2048px);
+}
+
+.run-screen__header,
+.run-screen__hud,
+.run-screen > .runner-stage,
+.run-screen__help {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.run-screen__hud,
+.run-screen > .runner-stage {
+  width: var(--run-stage-width);
+}
+
+.runner-hud {
+  min-width: 0;
+  max-width: 100%;
+  background-color: color-mix(in srgb, var(--ui-surface), transparent 4%);
+}
+
+.runner-hud__main,
+.runner-hud__details,
+.runner-hud__effects {
+  min-width: 0;
+}
+
+.runner-hud__details {
+  grid-template-rows: minmax(24px, auto) minmax(34px, auto);
+  overflow: visible;
+}
+
+.runner-hud__passive {
+  width: min(100%, max-content);
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+  white-space: normal;
+}
+
+.runner-hud__passive > span:nth-child(2),
+.runner-hud__passive small {
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.runner-hud__effects {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
+.runner-hud__powerup,
+.runner-hud__bonus {
+  flex: 0 0 auto;
+}
+
+.progression-screen--stages {
+  width: 100%;
+  height: 100dvh;
+  min-width: 320px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.progression-screen--stages .progression-panel {
+  width: min(100%, 1400px);
+  min-width: 0;
+  min-height: 0;
+  max-height: 100%;
+}
+
+.progression-screen--stages .stage-options,
+.progression-screen--stages .stage-option,
+.progression-screen--stages .stage-option__details {
+  min-width: 0;
+  min-height: 0;
+}
+
+.progression-screen--stages .stage-option__meta,
+.progression-screen--stages .stage-option__status {
+  overflow-wrap: anywhere;
+}
+
+.progression-screen--stages .stage-option.is-locked .stage-option__details {
+  color: var(--ui-muted);
+}
+
+.main-menu-actions {
+  min-width: 0;
+}
+
+.main-menu-actions .home-start,
+.main-menu-actions .main-menu-secondary {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Keep the long local-record label from widening the mobile footer grid. */
+.main-menu-card .main-menu-record {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.result-panel {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .progression-screen--stages {
+    padding: max(6px, env(safe-area-inset-top)) 6px max(6px, env(safe-area-inset-bottom));
+  }
+
+  .progression-screen--stages .progression-panel {
+    height: 100%;
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    gap: clamp(5px, 1vh, 9px);
+    padding: 12px 10px;
+  }
+
+  .progression-screen--stages .progression-panel h1 {
+    font-size: clamp(1.2rem, 6vw, 1.8rem);
+  }
+
+  .progression-screen--stages .stage-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: unset;
+    gap: 7px;
+  }
+
+  .progression-screen--stages .stage-option {
+    grid-template-rows: minmax(0, 1fr) auto;
+    border-radius: 12px;
+  }
+
+  .progression-screen--stages .stage-option__details {
+    gap: 2px;
+    padding: 6px;
+  }
+
+  .progression-screen--stages .stage-option strong {
+    font-size: clamp(.78rem, 3.5vw, .95rem);
+  }
+
+  .progression-screen--stages .stage-option__meta,
+  .progression-screen--stages .stage-option__status {
+    font-size: clamp(.58rem, 2.7vw, .7rem);
+    line-height: 1.2;
+  }
+
+  .progression-screen--stages .stage-option__order,
+  .progression-screen--stages .stage-option__scene-status {
+    top: 5px;
+    padding: 4px 6px;
+    font-size: .56rem;
+  }
+
+  .progression-screen--stages .stage-select-footer {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .progression-screen--stages .stage-select-footer .progression-primary {
+    grid-column: auto;
+    justify-self: end;
+  }
+
+  .progression-screen--stages .stage-select-footer button {
+    min-height: 36px;
+    padding: 5px 7px;
+    font-size: .68rem;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) and (min-width: 650px) {
+  .run-screen {
+    --run-stage-width: min(100%, max(0px, calc((100dvh - 168px) * 16 / 9)), 2048px);
+  }
+
+  .run-screen__hud,
+  .run-screen > .runner-stage {
+    width: var(--run-stage-width);
+  }
+}
+
+/* Compact landscape title: preserve the hero region and keep the whole dock visible. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .landing-shell.main-menu-scene {
+    height: 100dvh;
+    min-height: 0;
+  }
+
+  .main-menu-card.title-card { gap: 0; }
+  .main-menu-topbar { padding: 6px 16px 0; }
+  .main-menu-brand { font-size: .68rem; }
+  .main-menu-edition { font-size: .58rem; }
+  .main-menu-copy {
+    width: min(calc(100% - 32px), 900px);
+    margin: 2px auto auto;
+    padding: 0 0 6px;
+  }
+  .main-menu-copy .eyebrow { margin-bottom: 2px; font-size: .6rem; }
+  .main-menu-copy h1 { font-size: clamp(2.1rem, 7.5vw, 3.8rem); line-height: .95; }
+  .main-menu-dock {
+    grid-template-columns: minmax(150px, .72fr) minmax(0, 1.5fr);
+    gap: 10px;
+    padding: 8px 16px max(8px, env(safe-area-inset-bottom));
+  }
+  .dock-copy { align-items: center; gap: 2px; text-align: center; }
+  .dock-copy strong { font-size: .82rem; }
+  .dock-copy > span,
+  .main-menu-card .main-menu-help { display: none; }
+  .main-menu-card .main-menu-record { min-height: 24px; margin-top: 2px; padding: 3px 8px; font-size: .62rem; }
+  .main-menu-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: 38px repeat(2, 32px);
+    gap: 5px;
+  }
+  .main-menu-actions .home-start {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-height: 38px;
+    font-size: .82rem;
+  }
+  .main-menu-actions .main-menu-secondary { grid-column: auto; grid-row: auto; min-height: 32px; padding: 4px 5px; font-size: .62rem; white-space: normal; line-height: 1.2; }
+  .main-menu-actions .main-menu-sound,
+  .main-menu-actions .main-menu-credits { grid-column: auto; grid-row: auto; }
+
+  .progression-screen--stages {
+    padding: 6px;
+  }
+
+  .progression-screen--stages .progression-panel {
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    gap: 4px;
+    padding: 8px 12px;
+    overflow: hidden;
+  }
+
+  .progression-screen--stages .progression-panel h1 {
+    font-size: clamp(1.15rem, 4.5vh, 1.6rem);
+    line-height: 1.05;
+    margin-top: 0;
+  }
+
+  .progression-screen--stages .progression-intro {
+    font-size: clamp(.7rem, 2vh, .84rem);
+    line-height: 1.2;
+  }
+
+  .progression-screen--stages .stage-options {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: unset;
+    gap: 6px;
+  }
+
+  .progression-screen--stages .stage-option {
+    grid-template-rows: minmax(30px, .7fr) minmax(0, 1fr);
+    gap: 2px;
+    padding: 5px 7px;
+  }
+
+  .progression-screen--stages .stage-option__details {
+    gap: 1px;
+    padding: 3px 5px;
+  }
+
+  .progression-screen--stages .stage-option strong {
+    font-size: clamp(.8rem, 2.2vh, .94rem);
+    line-height: 1.1;
+  }
+
+  .progression-screen--stages .stage-option__meta,
+  .progression-screen--stages .stage-option__status {
+    font-size: clamp(.62rem, 1.65vh, .72rem);
+    line-height: 1.1;
+  }
+
+  .progression-screen--stages .stage-select-footer {
+    gap: 5px;
+  }
+
+  .progression-screen--stages .stage-select-footer button {
+    min-height: 32px;
+    padding: 4px 7px;
+    font-size: .66rem;
+  }
+}
+
+@media (max-width: 600px) and (orientation: portrait) {
+  .main-menu-card .main-menu-record { width: 100%; }
+  .main-menu-actions .main-menu-secondary { min-height: 40px; padding: 5px 6px; font-size: .68rem; white-space: normal; line-height: 1.2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
 }
