@@ -5,6 +5,7 @@ import type { CharacterAnimationName, CharacterId } from '../characters/characte
 import { getQualitySpriteY, getSlidePose, getTerminalSpriteY, RUNNER_GROUND_Y, RUNNER_PLAYER_X,
   STANDING_BODY_HEIGHT, STANDING_BODY_WIDTH } from './runnerPose';
 import { RUNNER_CONFIG } from './runnerConfig';
+import type { RunnerPlayerCheckpoint } from './runnerSessionTypes';
 
 export { RUNNER_PLAYER_X, RUNNER_GROUND_Y } from './runnerPose';
 type RunnerAction = 'run' | 'jump' | 'doubleJump' | 'slide' | 'hurt' | 'victory' | 'gameOver';
@@ -57,6 +58,87 @@ export class RunnerPlayer {
 
   get jumpCount(): number {
     return this.jumpsUsed;
+  }
+
+  createCheckpoint(): RunnerPlayerCheckpoint {
+    const frame = this.sprite.anims.currentFrame;
+    return {
+      x: this.sprite.x, y: this.sprite.y,
+      velocityX: this.body.velocity.x, velocityY: this.body.velocity.y,
+      bodyWidth: this.body.width, bodyHeight: this.body.height,
+      bodySourceWidth: this.body.sourceWidth, bodySourceHeight: this.body.sourceHeight,
+      bodyOffsetX: this.body.offset.x, bodyOffsetY: this.body.offset.y,
+      scaleX: this.sprite.scaleX, scaleY: this.sprite.scaleY,
+      alpha: this.sprite.alpha, allowGravity: this.body.allowGravity, bodyEnabled: this.body.enable,
+      grounded: this.grounded, jumpsUsed: this.jumpsUsed as 0 | 1 | 2,
+      slidingHeld: this.slidingHeld, hurt: this.hurt, passiveRescuing: this.passiveRescuing,
+      pitFalling: this.pitFalling, passiveEffectActive: this.passiveEffectActive,
+      giantActive: this.giantActive, airPhase: this.airPhase,
+      animation: this.animation ?? 'run', animationFrame: frame?.index ?? 0,
+      animationElapsedMs: this.sprite.anims.accumulator,
+    };
+  }
+
+  canRestoreCheckpoint(checkpoint: RunnerPlayerCheckpoint): boolean {
+    const finite = [checkpoint.x, checkpoint.y, checkpoint.velocityX, checkpoint.velocityY,
+      checkpoint.bodyWidth, checkpoint.bodyHeight, checkpoint.bodySourceWidth, checkpoint.bodySourceHeight,
+      checkpoint.bodyOffsetX, checkpoint.bodyOffsetY,
+      checkpoint.scaleX, checkpoint.scaleY, checkpoint.alpha, checkpoint.animationFrame,
+      checkpoint.animationElapsedMs];
+    const validAnimations: RunnerAnimation[] = ['run', 'jump', 'doubleJump', 'slide', 'hurt',
+      'victory', 'gameOver', 'jump-fall', 'double-jump-fall'];
+    if (!finite.every(Number.isFinite) || ![0, 1, 2].includes(checkpoint.jumpsUsed) ||
+      !validAnimations.includes(checkpoint.animation as RunnerAnimation) ||
+      !Number.isInteger(checkpoint.animationFrame) || checkpoint.animationFrame < 0 ||
+      checkpoint.animationElapsedMs < 0 || checkpoint.bodyWidth <= 0 || checkpoint.bodyHeight <= 0 ||
+      checkpoint.bodySourceWidth <= 0 || checkpoint.bodySourceHeight <= 0 ||
+      checkpoint.scaleX === 0 || checkpoint.scaleY === 0 ||
+      checkpoint.alpha < 0 || checkpoint.alpha > 1 ||
+      !['ascending', 'descending'].includes(checkpoint.airPhase) ||
+      typeof checkpoint.allowGravity !== 'boolean' || typeof checkpoint.bodyEnabled !== 'boolean' ||
+      typeof checkpoint.grounded !== 'boolean' || typeof checkpoint.slidingHeld !== 'boolean' ||
+      typeof checkpoint.hurt !== 'boolean' || typeof checkpoint.passiveRescuing !== 'boolean' ||
+      typeof checkpoint.pitFalling !== 'boolean' || typeof checkpoint.passiveEffectActive !== 'boolean' ||
+      typeof checkpoint.giantActive !== 'boolean') return false;
+
+    const animationKey = `${this.characterId}:${checkpoint.animation}`;
+    const animation = this.sprite.anims.animationManager.get(animationKey);
+    return Boolean(animation?.frames[checkpoint.animationFrame]);
+  }
+
+  restoreCheckpoint(checkpoint: RunnerPlayerCheckpoint): boolean {
+    if (!this.canRestoreCheckpoint(checkpoint)) return false;
+
+    this.grounded = checkpoint.grounded;
+    this.jumpsUsed = checkpoint.jumpsUsed;
+    this.slidingHeld = checkpoint.slidingHeld;
+    this.hurt = checkpoint.hurt;
+    this.passiveRescuing = checkpoint.passiveRescuing;
+    this.pitFalling = checkpoint.pitFalling;
+    this.passiveEffectActive = checkpoint.passiveEffectActive;
+    this.giantActive = checkpoint.giantActive;
+    this.airPhase = checkpoint.airPhase;
+    this.animation = checkpoint.animation as RunnerAnimation;
+    this.poseKey = 'restored';
+    this.sprite.setPosition(checkpoint.x, checkpoint.y).setScale(checkpoint.scaleX, checkpoint.scaleY)
+      .setAlpha(checkpoint.alpha);
+    this.body.setSize(checkpoint.bodySourceWidth, checkpoint.bodySourceHeight, false);
+    this.body.setOffset(checkpoint.bodyOffsetX, checkpoint.bodyOffsetY);
+    this.body.setAllowGravity(checkpoint.allowGravity);
+    this.body.enable = checkpoint.bodyEnabled;
+    this.body.setVelocity(checkpoint.velocityX, checkpoint.velocityY);
+    this.body.updateFromGameObject();
+    this.body.prev.copy(this.body.position);
+    this.body.prevFrame.copy(this.body.position);
+    const animationKey = `${this.characterId}:${checkpoint.animation}`;
+    const animation = this.sprite.anims.animationManager.get(animationKey)!;
+    const frame = animation.frames[checkpoint.animationFrame];
+    this.sprite.anims.play(animationKey, true);
+    this.sprite.anims.setCurrentFrame(frame);
+    this.sprite.anims.accumulator = checkpoint.animationElapsedMs;
+    if (this.passiveEffectActive) this.sprite.setTint(this.passive.id === 'toa-ghost-glide' ? 0xc49aff : 0xff8bc4);
+    else this.sprite.clearTint();
+    return true;
   }
 
   jump(): boolean {

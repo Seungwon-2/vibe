@@ -61,6 +61,29 @@ function snapshotAt(distanceMeters: number, phase: 'running' | 'paused' = 'runni
 }
 
 describe('ObstacleSpawner schedule', () => {
+  it('round-trips active hazards and generation cursors without duplicate overlaps', () => {
+    const sourceMock = makeScene();
+    const source = new ObstacleSpawner(sourceMock.scene, {} as Phaser.Physics.Arcade.Sprite, vi.fn(), false);
+    const running = snapshotAt(1_000);
+    source.update(running);
+    const checkpoint = source.createCheckpoint();
+    const paused = { ...running, phase: 'paused' as const };
+
+    const restoredMock = makeScene();
+    const onOverlap = vi.fn();
+    const restored = new ObstacleSpawner(restoredMock.scene, {} as Phaser.Physics.Arcade.Sprite, onOverlap, false);
+    expect(restored.canRestoreCheckpoint(checkpoint, paused)).toBe(true);
+    expect(restored.restoreCheckpoint(checkpoint, paused)).toBe(true);
+    expect(restoredMock.overlaps).toHaveLength(checkpoint.entities.length);
+    expect(restored.createCheckpoint()).toEqual(checkpoint);
+
+    restored.update(paused);
+    expect(restoredMock.overlaps).toHaveLength(checkpoint.entities.length);
+    expect(onOverlap).not.toHaveBeenCalled();
+    source.destroy();
+    restored.destroy();
+  });
+
   it('keeps complete hazard footprints outside pit and gate clearance zones', () => {
     for (let patternIndex = 0; ; patternIndex += 1) {
       const start = getPatternStartDistance(patternIndex);

@@ -19,6 +19,7 @@ import { PitSpawner } from './PitSpawner';
 import type { PitFallContactResult } from './PitSpawner';
 import { RunnerTrailEffect } from './RunnerTrailEffect';
 import { getRunnerAnimationPlayback } from './runnerAnimationConfig';
+import type { RunnerEngineCheckpoint, RunnerWorldEntityCheckpoint } from './runnerSessionTypes';
 
 export class RunnerScene extends Phaser.Scene {
   private inputBridge!: RunnerInputBridge;
@@ -196,6 +197,117 @@ export class RunnerScene extends Phaser.Scene {
 
   getSnapshot(): RunnerSnapshot {
     return this.snapshot;
+  }
+
+  createCheckpoint(): RunnerEngineCheckpoint | null {
+    if (!this.snapshot || this.snapshot.phase !== 'paused' || this.finishEmitted || this.finishPending ||
+      this.pitFallCinematicActive || !this.player || !this.spawner || !this.collectibles || !this.pits) return null;
+    const obstacles = this.spawner.createCheckpoint();
+    const collectibles = this.collectibles.createCheckpoint();
+    const pits = this.pits.createCheckpoint();
+    const entities: RunnerWorldEntityCheckpoint[] = [
+      ...obstacles.entities, ...collectibles.entities, ...pits.entities,
+    ];
+    return {
+      version: 1,
+      player: this.player.createCheckpoint(),
+      worldDistance: this.snapshot.worldDistance,
+      // Current course generation is deterministic from distance and cursors;
+      // keep an explicit seed slot for future randomized schedules.
+      randomSeed: 0,
+      obstacleCursor: obstacles.obstacleCursor,
+      obstaclePending: obstacles.obstaclePending,
+      obstacleWarnedKinds: obstacles.obstacleWarnedKinds,
+      obstacleSkipPatternAfterDoubleJump: obstacles.obstacleSkipPatternAfterDoubleJump,
+      pickupCursor: collectibles.pickupCursor,
+      pickupHorizonMeters: collectibles.pickupHorizonMeters,
+      pickupStageId: collectibles.pickupStageId,
+      createdGateDistances: collectibles.createdGateDistances,
+      pitCursor: pits.pitCursor,
+      entities,
+      collectedPickupIds: [...this.snapshot.collectedPickupIds],
+      passedGateIds: [...this.snapshot.passedGateIds],
+    };
+  }
+
+  canRestoreCheckpoint(checkpoint: RunnerEngineCheckpoint, snapshot: RunnerSnapshot): boolean {
+    if (!checkpoint || checkpoint.version !== 1 || snapshot.phase !== 'paused' ||
+      !Number.isFinite(checkpoint.worldDistance) || checkpoint.worldDistance !== snapshot.worldDistance ||
+      !Number.isSafeInteger(checkpoint.randomSeed) || checkpoint.randomSeed !== 0 ||
+      !Array.isArray(checkpoint.entities) || !Array.isArray(checkpoint.collectedPickupIds) ||
+      !Array.isArray(checkpoint.passedGateIds) ||
+      new Set(checkpoint.collectedPickupIds).size !== checkpoint.collectedPickupIds.length ||
+      new Set(checkpoint.passedGateIds).size !== checkpoint.passedGateIds.length ||
+      checkpoint.collectedPickupIds.length !== snapshot.collectedPickupIds.length ||
+      checkpoint.collectedPickupIds.some((id) => !snapshot.collectedPickupIds.includes(id)) ||
+      checkpoint.passedGateIds.length !== snapshot.passedGateIds.length ||
+      checkpoint.passedGateIds.some((id) => !snapshot.passedGateIds.includes(id)) ||
+      snapshot.collectedPickupIds.some((id) => typeof id !== 'string') ||
+      snapshot.passedGateIds.some((id) => typeof id !== 'string')) return false;
+    const sceneStage = snapshot.mode === 'story' ? snapshot.storyStageId ?? null : null;
+    if ((checkpoint.pickupStageId ?? null) !== sceneStage) return false;
+    const entityIds = new Set<string>();
+    for (const entity of checkpoint.entities) {
+      if (!entity || !['obstacle', 'pickup', 'pit', 'gate', 'goal'].includes(entity.kind) ||
+        typeof entity.id !== 'string' || !Number.isFinite(entity.distanceMeters)) return false;
+      const key = `${entity.kind}:${entity.id}`;
+      if (entityIds.has(key)) return false;
+      entityIds.add(key);
+    }
+    const obstacleCheckpoint = {
+      obstacleCursor: checkpoint.obstacleCursor,
+      obstaclePending: checkpoint.obstaclePending,
+      obstacleWarnedKinds: checkpoint.obstacleWarnedKinds,
+      obstacleSkipPatternAfterDoubleJump: checkpoint.obstacleSkipPatternAfterDoubleJump,
+      entities: checkpoint.entities.filter((entity) => entity.kind === 'obstacle'),
+    } as ReturnType<ObstacleSpawner['createCheckpoint']>;
+    const collectibleCheckpoint = {
+      pickupCursor: checkpoint.pickupCursor,
+      pickupHorizonMeters: checkpoint.pickupHorizonMeters,
+      pickupStageId: checkpoint.pickupStageId,
+      createdGateDistances: checkpoint.createdGateDistances,
+      entities: checkpoint.entities.filter((entity) => entity.kind === 'pickup' || entity.kind === 'gate' || entity.kind === 'goal'),
+    } as ReturnType<CollectibleSpawner['createCheckpoint']>;
+    const pitCheckpoint = {
+      pitCursor: checkpoint.pitCursor,
+      entities: checkpoint.entities.filter((entity) => entity.kind === 'pit'),
+    } as ReturnType<PitSpawner['createCheckpoint']>;
+    return this.player.canRestoreCheckpoint(checkpoint.player) &&
+      this.spawner.canRestoreCheckpoint(obstacleCheckpoint, snapshot) &&
+      this.collectibles.canRestoreCheckpoint(collectibleCheckpoint, snapshot) &&
+      this.pits.canRestoreCheckpoint(pitCheckpoint, snapshot);
+  }
+
+  restoreCheckpoint(checkpoint: RunnerEngineCheckpoint, snapshot: RunnerSnapshot): boolean {
+    if (!this.canRestoreCheckpoint(checkpoint, snapshot)) return false;
+    const obstacleCheckpoint = {
+      obstacleCursor: checkpoint.obstacleCursor,
+      obstaclePending: checkpoint.obstaclePending,
+      obstacleWarnedKinds: checkpoint.obstacleWarnedKinds,
+      obstacleSkipPatternAfterDoubleJump: checkpoint.obstacleSkipPatternAfterDoubleJump,
+      entities: checkpoint.entities.filter((entity) => entity.kind === 'obstacle'),
+    } as ReturnType<ObstacleSpawner['createCheckpoint']>;
+    const collectibleCheckpoint = {
+      pickupCursor: checkpoint.pickupCursor,
+      pickupHorizonMeters: checkpoint.pickupHorizonMeters,
+      pickupStageId: checkpoint.pickupStageId,
+      createdGateDistances: checkpoint.createdGateDistances,
+      entities: checkpoint.entities.filter((entity) => entity.kind === 'pickup' || entity.kind === 'gate' || entity.kind === 'goal'),
+    } as ReturnType<CollectibleSpawner['createCheckpoint']>;
+    const pitCheckpoint = {
+      pitCursor: checkpoint.pitCursor,
+      entities: checkpoint.entities.filter((entity) => entity.kind === 'pit'),
+    } as ReturnType<PitSpawner['createCheckpoint']>;
+
+    if (!this.player.restoreCheckpoint(checkpoint.player) ||
+      !this.spawner.restoreCheckpoint(obstacleCheckpoint, snapshot) ||
+      !this.collectibles.restoreCheckpoint(collectibleCheckpoint, snapshot) ||
+      !this.pits.restoreCheckpoint(pitCheckpoint, snapshot)) return false;
+    this.snapshot = snapshot;
+    this.backdrop.update(snapshot, 0);
+    this.trailEffect.clear();
+    this.drawPassiveEffect(snapshot.passiveEffectRemainingMs, snapshot.slideGuardRemainingMs);
+    return true;
   }
 
   protected publish(snapshot: RunnerSnapshot, force = false): void {

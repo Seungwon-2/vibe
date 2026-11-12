@@ -5,6 +5,7 @@ import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import type { RunnerSnapshot } from './runnerTypes';
 import { RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { PitDefinition } from './pitTypes';
+import type { RunnerEngineCheckpoint, RunnerWorldEntityCheckpoint } from './runnerSessionTypes';
 import { getPatternStartDistance } from './hazardPatterns';
 import { getStoryStage } from './storyConfig';
 import { getStoryPitDefinitions } from './storyPitSchedule';
@@ -166,7 +167,50 @@ export class PitSpawner {
     return RUNNER_PLAYER_X + (atMeters - currentMeters) / RUNNER_CONFIG.metersPerWorldUnit;
   }
 
-  private spawn(definition: PitDefinition): void {
+  createCheckpoint(): Pick<RunnerEngineCheckpoint, 'pitCursor'> & {
+    entities: readonly Extract<RunnerWorldEntityCheckpoint, { kind: 'pit' }>[];
+  } {
+    return {
+      pitCursor: this.nextPitIndex,
+      entities: this.active.map((pit) => ({ kind: 'pit', id: pit.definition.id,
+        distanceMeters: pit.definition.distanceMeters, definition: pit.definition,
+        resolved: pit.resolved, retainArtUntilDestroy: pit.retainArtUntilDestroy })),
+    };
+  }
+
+  canRestoreCheckpoint(
+    checkpoint: ReturnType<PitSpawner['createCheckpoint']>, snapshot: RunnerSnapshot,
+  ): boolean {
+    if (!Number.isSafeInteger(checkpoint.pitCursor) || checkpoint.pitCursor < 0 ||
+      !Array.isArray(checkpoint.entities) ||
+      checkpoint.entities.some((pit) => !pit || pit.kind !== 'pit' ||
+        typeof pit.id !== 'string' || pit.id !== pit.definition?.id ||
+        pit.distanceMeters !== pit.definition?.distanceMeters ||
+        !Number.isFinite(pit.distanceMeters) || !Number.isFinite(pit.definition?.widthMeters) ||
+        pit.definition.widthMeters <= 0 || typeof pit.definition.tutorialWarning !== 'boolean' ||
+        typeof pit.resolved !== 'boolean' || typeof pit.retainArtUntilDestroy !== 'boolean' ||
+        (pit.retainArtUntilDestroy && !pit.resolved)) ||
+      new Set(checkpoint.entities.map((pit) => pit.id)).size !== checkpoint.entities.length) return false;
+    return snapshot.phase === 'paused';
+  }
+
+  restoreCheckpoint(checkpoint: ReturnType<PitSpawner['createCheckpoint']>, snapshot: RunnerSnapshot): boolean {
+    if (!this.canRestoreCheckpoint(checkpoint, snapshot)) return false;
+    this.nextPitIndex = checkpoint.pitCursor;
+    this.activeStoryBiome = snapshot.mode === 'story' && snapshot.storyStageId
+      ? getBiomeById(getStoryStage(snapshot.storyStageId).biomeId) : null;
+    for (const pit of checkpoint.entities) {
+      const restored = this.spawn(pit.definition);
+      restored.resolved = pit.resolved;
+      restored.retainArtUntilDestroy = pit.retainArtUntilDestroy;
+      if (pit.resolved) this.removeOpening(restored);
+    }
+    this.previousDistanceMeters = snapshot.distanceMeters;
+    this.previousPlayerBounds = getCollisionBounds(this.player, 20, 38);
+    return true;
+  }
+
+  private spawn(definition: PitDefinition): ActivePit {
     const width = definition.widthMeters / RUNNER_CONFIG.metersPerWorldUnit;
     const opening = this.scene.add.rectangle(0, RUNNER_GROUND_Y - 1, width, ZONE_HEIGHT, 0xffffff, 0)
       .setOrigin(0.5);
@@ -188,6 +232,7 @@ export class PitSpawner {
       definition, opening, art, warning, resolved: false, retainArtUntilDestroy: false,
     };
     this.active.push(active);
+    return active;
   }
 
   private hasDroppedInto(pit: ActivePit): boolean {

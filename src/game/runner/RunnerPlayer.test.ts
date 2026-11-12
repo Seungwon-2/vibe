@@ -11,13 +11,15 @@ function createPlayer(characterId: CharacterId) {
   const body = {
     blocked: { down: true },
     touching: { down: false },
-    velocity: { y: 0 },
+    velocity: { x: 0, y: 0 },
     position: { x: 0, y: 0 },
     width: frameSize,
     height: frameSize,
     sourceWidth: frameSize,
     sourceHeight: frameSize,
     enable: true,
+    allowGravity: true,
+    offset,
     get bottom() { return body.position.y + body.height; },
     prev: { copy: vi.fn() },
     prevFrame: { copy: vi.fn() },
@@ -29,8 +31,8 @@ function createPlayer(characterId: CharacterId) {
     }),
     setOffset: vi.fn((x: number, y: number) => { offset.x = x; offset.y = y; }),
     setVelocityY: vi.fn((value: number) => { body.velocity.y = value; }),
-    setVelocity: vi.fn((_x: number, y: number) => { body.velocity.y = y; }),
-    setAllowGravity: vi.fn(),
+    setVelocity: vi.fn((x: number, y: number) => { body.velocity.x = x; body.velocity.y = y; }),
+    setAllowGravity: vi.fn((value: boolean) => { body.allowGravity = value; }),
     updateFromGameObject: vi.fn(() => {
       body.width = body.sourceWidth * sprite.scaleX;
       body.height = body.sourceHeight * sprite.scaleY;
@@ -39,19 +41,29 @@ function createPlayer(characterId: CharacterId) {
   };
   const sprite = {
     body,
+    x: 192,
     y: 470,
     scaleX: 1,
     scaleY: 1,
+    alpha: 1,
     frame: { name: 'run-00' },
     setOrigin: vi.fn(),
-    setPosition: vi.fn((_x: number, y: number) => { sprite.y = y; }),
-    setScale: vi.fn((x: number, y = x) => { sprite.scaleX = x; sprite.scaleY = y; }),
-    setAlpha: vi.fn(),
+    setPosition: vi.fn((x: number, y: number) => { sprite.x = x; sprite.y = y; return sprite; }),
+    setScale: vi.fn((x: number, y = x) => { sprite.scaleX = x; sprite.scaleY = y; return sprite; }),
+    setAlpha: vi.fn((value: number) => { sprite.alpha = value; return sprite; }),
     setTint: vi.fn(),
     clearTint: vi.fn(),
-    anims: { play: vi.fn((key: string) => {
-      sprite.frame.name = key.endsWith(':slide') ? 'slide-00' : 'run-00';
-    }) },
+    anims: {
+      currentFrame: { index: 0 },
+      accumulator: 0,
+      animationManager: { get: vi.fn(() => ({ frames: Array.from({ length: 20 }, (_, index) => ({ index })) })) },
+      play: vi.fn((key: string) => {
+        sprite.frame.name = key.endsWith(':slide') ? 'slide-00' : 'run-00';
+        sprite.anims.currentFrame = { index: 0 };
+        sprite.anims.accumulator = 0;
+      }),
+      setCurrentFrame: vi.fn((frame: { index: number }) => { sprite.anims.currentFrame = frame; }),
+    },
     destroy: vi.fn(),
   };
   return { player: new RunnerPlayer(sprite as unknown as Phaser.Physics.Arcade.Sprite, characterId), body, sprite };
@@ -70,6 +82,47 @@ describe('RunnerPlayer and input bridge', () => {
     expect(input.consumeFrame().jumpPressed).toBe(true);
     input.clear();
     expect(input.consumeFrame()).toEqual({ jumpPressed: false, slideHeld: false });
+  });
+
+  it('round-trips airborne double-jump physics and animation state without a new jump impulse', () => {
+    const source = createPlayer('player-default');
+    source.player.jump();
+    source.body.blocked.down = false;
+    source.body.velocity.x = 12;
+    source.body.velocity.y = -213;
+    source.sprite.x = 241;
+    source.sprite.y = 318;
+    source.player.update(16);
+    const checkpoint = source.player.createCheckpoint();
+
+    const restored = createPlayer('player-default');
+    expect(restored.player.canRestoreCheckpoint(checkpoint)).toBe(true);
+    expect(restored.player.restoreCheckpoint(checkpoint)).toBe(true);
+    expect(restored.sprite.x).toBe(241);
+    expect(restored.sprite.y).toBe(318);
+    expect(restored.body.velocity).toEqual({ x: 12, y: -213 });
+    expect(restored.player.jumpCount).toBe(1);
+    expect(restored.sprite.anims.currentFrame.index).toBe(checkpoint.animationFrame);
+    expect(restored.sprite.anims.accumulator).toBe(checkpoint.animationElapsedMs);
+    expect(restored.body.setVelocity).toHaveBeenCalledTimes(1);
+  });
+
+  it('restores a held slide and rejects invalid checkpoint data before mutation', () => {
+    const source = createPlayer('player-default');
+    source.player.setSliding(true);
+    const checkpoint = source.player.createCheckpoint();
+    const restored = createPlayer('player-default');
+
+    expect(restored.player.restoreCheckpoint(checkpoint)).toBe(true);
+    expect(restored.player.isSliding).toBe(true);
+    expect(restored.body.width).toBe(checkpoint.bodyWidth);
+    expect(restored.body.height).toBe(checkpoint.bodyHeight);
+
+    const invalid = { ...checkpoint, jumpsUsed: 3 as 0 | 1 | 2 };
+    const before = { x: restored.sprite.x, y: restored.sprite.y };
+    expect(restored.player.restoreCheckpoint(invalid)).toBe(false);
+    expect(restored.sprite.x).toBe(before.x);
+    expect(restored.sprite.y).toBe(before.y);
   });
 
   it('allows exactly two jumps with shared physics and resets on landing', () => {

@@ -15,6 +15,7 @@ import { getStoryPitDefinitions } from './storyPitSchedule';
 import { getHazardGeometry } from './CollisionSystem';
 import type { HazardDefinition } from './hazardTypes';
 import { boundsCenter, getCollisionBounds, sweptAabbIntersects, type CollisionBounds } from './sweptCollision';
+import type { RunnerEngineCheckpoint, RunnerWorldEntityCheckpoint } from './runnerSessionTypes';
 
 export type PickupDefinition = Readonly<{
   id: string;
@@ -622,7 +623,7 @@ type ActivePickup = {
 };
 
 type GateArt = { distanceMeters: number; art: Phaser.GameObjects.Graphics; label: Phaser.GameObjects.Text };
-type GoalArt = { art: Phaser.GameObjects.Graphics; label: Phaser.GameObjects.Text };
+type GoalArt = { distanceMeters: number; art: Phaser.GameObjects.Graphics; label: Phaser.GameObjects.Text };
 
 export class CollectibleSpawner {
   private nextPickupIndex = 0;
@@ -775,13 +776,150 @@ export class CollectibleSpawner {
         fontSize: '20px', fontStyle: 'bold', fontFamily: 'monospace',
         backgroundColor: '#fffffff2', padding: { x: 9, y: 5 },
       }).setOrigin(0.5).setDepth(6);
-      this.goal = { art, label };
+      this.goal = { distanceMeters: storyStage.lengthMeters, art, label };
     }
     if (storyStage && this.goal) {
       const x = this.screenX(storyStage.lengthMeters, snapshot.distanceMeters);
       this.goal.art.setPosition(x, RUNNER_GROUND_Y);
       this.goal.label.setPosition(x, RUNNER_GROUND_Y - 224);
     }
+  }
+
+  createCheckpoint(): Pick<RunnerEngineCheckpoint,
+    'pickupCursor' | 'pickupHorizonMeters' | 'pickupStageId' | 'createdGateDistances'> &
+    { entities: readonly Extract<RunnerWorldEntityCheckpoint, { kind: 'pickup' | 'gate' | 'goal' }>[] } {
+    return {
+      pickupCursor: this.nextPickupIndex,
+      pickupHorizonMeters: this.endlessPickupScheduleHorizonMeters,
+      pickupStageId: this.scheduledStoryStageId,
+      createdGateDistances: [...this.createdGates],
+      entities: [
+        ...this.active.map((pickup) => ({ kind: 'pickup' as const, id: pickup.definition.id,
+          distanceMeters: pickup.definition.distanceMeters, definition: pickup.definition,
+          collected: pickup.collected, magnetStarted: pickup.magnetStarted,
+          magnetElapsedMs: pickup.magnetElapsedMs, magnetStartX: pickup.magnetStartX,
+          magnetStartY: pickup.magnetStartY, magnetLastProjectedX: pickup.magnetLastProjectedX,
+          lastX: pickup.lastX, lastY: pickup.lastY })),
+        ...this.gates.map((gate) => ({ kind: 'gate' as const,
+          id: `gate-${gate.distanceMeters}`, distanceMeters: gate.distanceMeters })),
+        ...(this.goal ? [{ kind: 'goal' as const, id: 'goal', distanceMeters: this.goal.distanceMeters }] : []),
+      ],
+    };
+  }
+
+  canRestoreCheckpoint(
+    checkpoint: ReturnType<CollectibleSpawner['createCheckpoint']>, snapshot: RunnerSnapshot,
+  ): boolean {
+    const storyStage = snapshot.mode === 'story' && snapshot.storyStageId
+      ? getStoryStage(snapshot.storyStageId) : null;
+    if (!Number.isSafeInteger(checkpoint.pickupCursor) || checkpoint.pickupCursor < 0 ||
+      !Number.isFinite(checkpoint.pickupHorizonMeters) || checkpoint.pickupHorizonMeters < 0 ||
+      checkpoint.pickupStageId !== (storyStage?.id ?? null) ||
+      !Array.isArray(checkpoint.createdGateDistances) || !Array.isArray(checkpoint.entities) ||
+      checkpoint.createdGateDistances.some((distance) => !Number.isFinite(distance) ||
+        !RUNNER_GATE_DISTANCES_M.includes(distance)) ||
+      new Set(checkpoint.createdGateDistances).size !== checkpoint.createdGateDistances.length) return false;
+
+    const schedule = storyStage
+      ? generatePickupSchedule(storyStage.lengthMeters, storyStage.id)
+      : generatePickupSchedule(checkpoint.pickupHorizonMeters);
+    if (checkpoint.pickupCursor > schedule.length) return false;
+
+    const ids = new Set<string>();
+    const gateDistances = new Set<number>();
+    let hasGoal = false;
+    for (const entity of checkpoint.entities) {
+      if (!entity || !Number.isFinite(entity.distanceMeters) || typeof entity.id !== 'string' ||
+        ids.has(`${entity.kind}:${entity.id}`)) return false;
+      ids.add(`${entity.kind}:${entity.id}`);
+      if (entity.kind === 'pickup') {
+        const definition = entity.definition;
+        if (!definition || entity.id !== definition.id || entity.distanceMeters !== definition.distanceMeters ||
+          !['coin', 'time', 'giant', 'speed'].includes(definition.kind) ||
+          typeof definition.optionalJump !== 'boolean' || !Number.isFinite(definition.heightUnits) ||
+          (definition.guideAction !== undefined && !['jump', 'slide'].includes(definition.guideAction)) ||
+          ![entity.magnetElapsedMs, entity.magnetStartX, entity.magnetStartY,
+            entity.magnetLastProjectedX].every(Number.isFinite) || entity.magnetElapsedMs < 0 ||
+          typeof entity.collected !== 'boolean' || typeof entity.magnetStarted !== 'boolean' ||
+          (entity.lastX !== null && !Number.isFinite(entity.lastX)) ||
+          (entity.lastY !== null && !Number.isFinite(entity.lastY)) ||
+          ((entity.lastX === null) !== (entity.lastY === null)) ||
+          (entity.magnetStarted && !['coin', 'time'].includes(definition.kind))) return false;
+      } else if (entity.kind === 'gate') {
+        if (entity.id !== `gate-${entity.distanceMeters}` ||
+          !RUNNER_GATE_DISTANCES_M.includes(entity.distanceMeters) || gateDistances.has(entity.distanceMeters)) return false;
+        gateDistances.add(entity.distanceMeters);
+      } else if (entity.kind === 'goal') {
+        if (!storyStage || hasGoal || entity.id !== 'goal' || entity.distanceMeters !== storyStage.lengthMeters) return false;
+        hasGoal = true;
+      } else return false;
+    }
+    return snapshot.phase === 'paused';
+  }
+
+  restoreCheckpoint(checkpoint: ReturnType<CollectibleSpawner['createCheckpoint']>, snapshot: RunnerSnapshot): boolean {
+    if (!this.canRestoreCheckpoint(checkpoint, snapshot)) return false;
+    const storyStage = snapshot.mode === 'story' && snapshot.storyStageId
+      ? getStoryStage(snapshot.storyStageId) : null;
+    this.activeStoryBiome = storyStage ? getBiomeById(storyStage.biomeId) : null;
+    this.scheduledStoryStageId = checkpoint.pickupStageId;
+    this.activePickupSchedule = storyStage
+      ? generatePickupSchedule(storyStage.lengthMeters, storyStage.id)
+      : generatePickupSchedule(checkpoint.pickupHorizonMeters);
+    if (checkpoint.pickupCursor > this.activePickupSchedule.length) return false;
+    this.nextPickupIndex = checkpoint.pickupCursor;
+    this.endlessPickupScheduleHorizonMeters = checkpoint.pickupHorizonMeters;
+    this.createdGates = new Set(checkpoint.createdGateDistances);
+    for (const entity of checkpoint.entities) {
+      if (entity.kind === 'pickup') {
+        if (snapshot.collectedPickupIds.includes(entity.id)) continue;
+        const pickup = this.spawnPickup(entity.definition);
+        pickup.magnetStarted = entity.magnetStarted;
+        pickup.magnetElapsedMs = entity.magnetElapsedMs;
+        pickup.magnetStartX = entity.magnetStartX;
+        pickup.magnetStartY = entity.magnetStartY;
+        pickup.magnetLastProjectedX = entity.magnetLastProjectedX;
+        pickup.lastX = entity.lastX;
+        pickup.lastY = entity.lastY;
+        pickup.collected = entity.collected;
+        if (pickup.magnetStarted) pickup.sparkle = this.scene.add.graphics().setDepth(4);
+        if (pickup.collected) this.scene.time.delayedCall(0, () => {
+          if (!this.active.includes(pickup)) return;
+          this.onPickup(pickup.definition);
+          this.removePickup(pickup);
+        });
+      } else if (entity.kind === 'gate') this.restoreGate(entity.distanceMeters);
+      else if (entity.kind === 'goal') this.restoreGoal(entity.distanceMeters, storyStage);
+    }
+    this.previousDistanceMeters = snapshot.distanceMeters;
+    this.previousPlayerBounds = getCollisionBounds(this.player, 20, 38);
+    return true;
+  }
+
+  private restoreGate(distanceMeters: number): void {
+    const biome = this.activeStoryBiome ?? getBiomeForDistance(distanceMeters);
+    const { palette, landmark } = biome;
+    const art = this.scene.add.graphics().setDepth(-5);
+    drawRunnerGate(art, biome);
+    const label = this.scene.add.text(0, 0, `${landmark} · ${distanceMeters.toLocaleString()}m`, {
+      color: `#${palette.hazardContrast.toString(16).padStart(6, '0')}`,
+      fontSize: '15px', fontFamily: 'monospace', backgroundColor: '#fffffff0',
+      padding: { x: 5, y: 3 },
+    }).setOrigin(0.5).setDepth(5);
+    this.gates.push({ distanceMeters, art, label });
+  }
+
+  private restoreGoal(distanceMeters: number, storyStage: ReturnType<typeof getStoryStage> | null): void {
+    if (!storyStage) return;
+    const biome = getBiomeById(storyStage.biomeId);
+    const art = this.scene.add.graphics().setDepth(-5);
+    drawRunnerGoal(art, biome);
+    const label = this.scene.add.text(0, 0, 'GOAL', {
+      color: `#${biome.palette.hazardContrast.toString(16).padStart(6, '0')}`,
+      fontSize: '20px', fontStyle: 'bold', fontFamily: 'monospace',
+      backgroundColor: '#fffffff2', padding: { x: 9, y: 5 },
+    }).setOrigin(0.5).setDepth(6);
+    this.goal = { distanceMeters, art, label };
   }
 
   destroy(): void {
@@ -827,7 +965,7 @@ export class CollectibleSpawner {
       .lineBetween(sparkleX, sparkleY - 3, sparkleX, sparkleY + 3);
   }
 
-  private spawnPickup(definition: PickupDefinition): void {
+  private spawnPickup(definition: PickupDefinition): ActivePickup {
     const pickupSize = getPickupBodySize();
     const box = this.scene.add.rectangle(0, 0, pickupSize, pickupSize, 0xffffff, 0);
     this.scene.physics.add.existing(box);
@@ -847,6 +985,7 @@ export class CollectibleSpawner {
     this.scene.physics.add.overlap(this.player, box, () => {
       this.collectPickup(active);
     });
+    return active;
   }
 
   private collectPickup(pickup: ActivePickup): void {

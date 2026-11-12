@@ -6,6 +6,7 @@ import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGa
 import { isPitClearance, getPitDefinitions } from './PitSpawner';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import type { HazardDefinition } from './hazardTypes';
+import type { RunnerEngineCheckpoint, RunnerWorldEntityCheckpoint } from './runnerSessionTypes';
 import { RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { RunnerSnapshot } from './runnerTypes';
 import { getStoryStage } from './storyConfig';
@@ -126,12 +127,72 @@ export class ObstacleSpawner {
     this.previousPlayerBounds = playerBounds;
   }
 
+  createCheckpoint(): Pick<RunnerEngineCheckpoint,
+    'obstacleCursor' | 'obstaclePending' | 'obstacleWarnedKinds' | 'obstacleSkipPatternAfterDoubleJump'> &
+    { entities: readonly Extract<RunnerWorldEntityCheckpoint, { kind: 'obstacle' }>[] } {
+    return {
+      obstacleCursor: this.nextPatternIndex,
+      obstaclePending: this.pending.map((entry) => ({ ...entry })),
+      obstacleWarnedKinds: [...this.warnedKinds],
+      obstacleSkipPatternAfterDoubleJump: this.skipPatternAfterDoubleJump,
+      entities: this.active.map((hazard) => ({ kind: 'obstacle',
+        id: `${hazard.definition.id}@${hazard.atMeters}`, distanceMeters: hazard.atMeters,
+        definition: hazard.definition, passed: hazard.passed })),
+    };
+  }
+
+  canRestoreCheckpoint(
+    checkpoint: ReturnType<ObstacleSpawner['createCheckpoint']>, snapshot: RunnerSnapshot,
+  ): boolean {
+    if (!Number.isSafeInteger(checkpoint.obstacleCursor) || checkpoint.obstacleCursor < 0 ||
+      typeof checkpoint.obstacleSkipPatternAfterDoubleJump !== 'boolean' ||
+      !Array.isArray(checkpoint.obstaclePending) || !Array.isArray(checkpoint.obstacleWarnedKinds) ||
+      !Array.isArray(checkpoint.entities)) return false;
+    const validKinds = ['ground', 'overhead', 'double-jump'];
+    const validDefinition = (definition: HazardDefinition) => Boolean(definition) &&
+      typeof definition.id === 'string' && definition.id.length > 0 &&
+      validKinds.includes(definition.kind) && Number.isFinite(definition.offsetMeters) &&
+      Number.isFinite(definition.width) && definition.width > 0 &&
+      Number.isFinite(definition.height) && definition.height > 0 &&
+      typeof definition.warningColor === 'string';
+    if (checkpoint.obstacleWarnedKinds.some((kind) => !validKinds.includes(kind)) ||
+      new Set(checkpoint.obstacleWarnedKinds).size !== checkpoint.obstacleWarnedKinds.length ||
+      checkpoint.obstaclePending.some((entry) => !entry || !Number.isFinite(entry.atMeters) ||
+        !validDefinition(entry.definition))) return false;
+    const ids = new Set<string>();
+    for (const entity of checkpoint.entities) {
+      if (!entity || entity.kind !== 'obstacle' || typeof entity.id !== 'string' ||
+        !Number.isFinite(entity.distanceMeters) || typeof entity.passed !== 'boolean' ||
+        !validDefinition(entity.definition) || entity.id !== `${entity.definition.id}@${entity.distanceMeters}` ||
+        ids.has(entity.id)) return false;
+      ids.add(entity.id);
+    }
+    return snapshot.phase === 'paused';
+  }
+
+  restoreCheckpoint(checkpoint: ReturnType<ObstacleSpawner['createCheckpoint']>, snapshot: RunnerSnapshot): boolean {
+    if (!this.canRestoreCheckpoint(checkpoint, snapshot)) return false;
+    this.nextPatternIndex = checkpoint.obstacleCursor;
+    this.pending = checkpoint.obstaclePending.map((entry) => ({ ...entry }));
+    this.warnedKinds = new Set(checkpoint.obstacleWarnedKinds);
+    this.skipPatternAfterDoubleJump = checkpoint.obstacleSkipPatternAfterDoubleJump;
+    this.activeStoryStageId = snapshot.mode === 'story' ? snapshot.storyStageId ?? null : null;
+    for (const entity of checkpoint.entities) {
+      const hazard = this.spawn(entity.distanceMeters, entity.definition);
+      hazard.passed = entity.passed;
+      if (entity.passed) (hazard.box.body as Phaser.Physics.Arcade.Body).enable = false;
+    }
+    this.previousDistanceMeters = snapshot.distanceMeters;
+    this.previousPlayerBounds = getCollisionBounds(this.player, 20, 38);
+    return true;
+  }
+
   destroy(): void {
     for (const hazard of [...this.active]) this.remove(hazard);
     this.pending = [];
   }
 
-  private spawn(atMeters: number, definition: HazardDefinition): void {
+  private spawn(atMeters: number, definition: HazardDefinition): ActiveHazard {
     const collision = getHazardCollisionGeometry(definition, 960 - definition.width / 2);
     const box = this.scene.add.rectangle(0, 0, collision.width, collision.height, 0xffffff, 0);
     this.scene.physics.add.existing(box);
@@ -158,6 +219,7 @@ export class ObstacleSpawner {
     this.scene.physics.add.overlap(this.player, box, () => {
       this.resolveHazard(hazard);
     });
+    return hazard;
   }
 
   private resolveHazard(hazard: ActiveHazard): void {
