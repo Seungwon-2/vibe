@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CharacterId } from '../game/characters/characterTypes';
 import type { RunnerSessionEnvelope, RunnerSessionScope } from '../game/runner/runnerSessionTypes';
+import { createRunnerEngineCheckpoint } from '../game/runner/runnerSessionTestFixtures';
 import { BrowserRunnerSessionStore, createRunnerSessionKey, RUNNER_SESSION_TTL_MS } from './RunnerSessionStore';
 
 class MemoryStorage implements Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> {
@@ -37,7 +38,7 @@ function activeEnvelope(scope: RunnerSessionScope = guest): RunnerSessionEnvelop
         biomeId: 'dawn-city', finishedAtElapsedMs: null, finishReason: null,
         startedAtIso: savedAt, finishedAtIso: null,
       },
-      engine: { version: 1 },
+      engine: createRunnerEngineCheckpoint(),
     },
   };
 }
@@ -77,8 +78,11 @@ describe('BrowserRunnerSessionStore', () => {
 
     expect(store.write(active)).toEqual({ ok: true, value: undefined });
     expect(store.write(terminal)).toEqual({ ok: true, value: undefined });
-    expect(store.read(accountA, new Date(savedAt)).value).toEqual(active);
-    expect(store.read(guest, new Date(savedAt)).value).toEqual(terminal);
+    const accountRead = store.read(accountA, new Date(savedAt));
+    const guestRead = store.read(guest, new Date(savedAt));
+    if (!accountRead.ok || !guestRead.ok) throw new Error('Expected saved session envelopes');
+    expect(accountRead.value).toEqual(active);
+    expect(guestRead.value).toEqual(terminal);
     expect(store.read(accountB, new Date(savedAt))).toEqual({ ok: true, value: null });
   });
 

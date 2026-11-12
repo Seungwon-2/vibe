@@ -25,6 +25,7 @@ export class RunnerScene extends Phaser.Scene {
   private inputBridge!: RunnerInputBridge;
   private player!: RunnerPlayer;
   private snapshot!: RunnerSnapshot;
+  private mode!: RunnerMode;
   private countdownRemainingMs = RUNNER_CONFIG.countdownMs;
   private countdownValue: 0 | 1 | 2 | 3 = 3;
   private eventEmitter!: RunnerEventEmitter;
@@ -67,8 +68,9 @@ export class RunnerScene extends Phaser.Scene {
       onEvent: this.registry.get('onEvent') as ((event: RunnerEvent) => void) | undefined,
     });
     const initialSession = this.registry.get('initialRunnerSession') as RunnerActiveSession | null;
+    this.mode = initialSession?.mode ?? this.registry.get('runnerMode') as RunnerMode;
     this.snapshot = initialSession?.snapshot ?? createRunnerSnapshot(characterId, new Date(), {
-      mode: this.registry.get('runnerMode') as RunnerMode,
+      mode: this.mode,
       storyStageId: this.registry.get('storyStageId') as StoryStageId | null,
     });
     this.backdrop = new RunnerBackdrop(this, 0,
@@ -131,7 +133,7 @@ export class RunnerScene extends Phaser.Scene {
         const onError = this.registry.get('onError') as (error: Error) => void;
         onError(new Error('저장된 달리기를 복원하지 못했습니다. 새 달리기로 시작합니다.'));
         this.snapshot = createRunnerSnapshot(characterId, new Date(), {
-          mode: this.registry.get('runnerMode') as RunnerMode,
+          mode: this.mode,
           storyStageId: this.registry.get('storyStageId') as StoryStageId | null,
         });
       }
@@ -224,8 +226,8 @@ export class RunnerScene extends Phaser.Scene {
     if (!engine) return null;
     return {
       characterId: snapshot.characterId,
-      mode: snapshot.mode,
-      storyStageId: snapshot.mode === 'story' ? snapshot.storyStageId ?? null : null,
+      mode: this.mode,
+      storyStageId: this.mode === 'story' ? snapshot.storyStageId ?? null : null,
       snapshot,
       engine,
     };

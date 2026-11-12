@@ -80,11 +80,13 @@ export type RunnerTerminalSession = Readonly<{
   }>;
 }>;
 
-export type RunnerSessionEnvelope = Readonly<{
+type RunnerSessionEnvelopeBase = Readonly<{
   schemaVersion: 1;
-  kind: RunnerSessionKind;
   savedAt: string;
   accountScope: RunnerSessionScope;
   runId: string;
-  payload: RunnerActiveSession | RunnerTerminalSession;
 }>;
+
+export type RunnerSessionEnvelope =
+  | (RunnerSessionEnvelopeBase & Readonly<{ kind: 'active'; payload: RunnerActiveSession }>)
+  | (RunnerSessionEnvelopeBase & Readonly<{ kind: 'terminal'; payload: RunnerTerminalSession }>);

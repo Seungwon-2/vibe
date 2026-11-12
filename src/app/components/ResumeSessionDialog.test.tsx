@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ResumeSessionDialog } from './ResumeSessionDialog';
 import type { RunnerSessionEnvelope } from '../../game/runner/runnerSessionTypes';
+import { createRunnerEngineCheckpoint } from '../../game/runner/runnerSessionTestFixtures';
 
 const savedAt = new Date().toISOString();
 const envelope: RunnerSessionEnvelope = {
@@ -17,7 +18,7 @@ const envelope: RunnerSessionEnvelope = {
       slideGuardCooldownRemainingMs: 0, biomeId: 'dawn-city', finishedAtElapsedMs: null,
       finishReason: null, startedAtIso: savedAt, finishedAtIso: null,
     },
-    engine: { version: 1 },
+    engine: createRunnerEngineCheckpoint(),
   },
 };
 

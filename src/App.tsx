@@ -79,7 +79,8 @@ function App(): React.JSX.Element {
   const [runId, setRunId] = useState(0);
   const latestRunId = useRef(0);
   const submittedRunIds = useRef(new Set<number>());
-  const sessionRunRef = useRef<{ runId: string; scope: RunnerSessionScope } | null>(null);
+  const sessionRunRef = useRef<{ runId: string; scope: RunnerSessionScope; mode: RunnerMode;
+    storyStageId: StoryStageId | null } | null>(null);
   const processedTerminalRunId = useRef<string | null>(null);
   const [sessionEnvelope, setSessionEnvelope] = useState<RunnerSessionEnvelope | null>(null);
   const [sessionRecoveryReady, setSessionRecoveryReady] = useState(false);
@@ -143,8 +144,10 @@ function App(): React.JSX.Element {
     presentation?: RunnerTerminalSession['presentation']): boolean => {
     const run = sessionRunRef.current;
     if (!run) return false;
-    const payload: RunnerTerminalSession = { characterId: result.characterId, mode: result.mode,
-      storyStageId: result.mode === 'story' ? result.storyStageId ?? null : null,
+    const mode = result.mode ?? run.mode;
+    const storyStageId = mode === 'story' ? result.storyStageId ?? run.storyStageId : null;
+    const payload: RunnerTerminalSession = { characterId: result.characterId, mode,
+      storyStageId,
       result, outcome, settled, ...(presentation ? { presentation } : {}) };
     return writeEnvelope({ schemaVersion: 1, kind: 'terminal', savedAt: new Date().toISOString(),
       accountScope: run.scope, runId: run.runId, payload });
@@ -157,7 +160,8 @@ function App(): React.JSX.Element {
     const payload = envelope.payload;
     if (envelope.kind !== 'terminal') return;
     processedTerminalRunId.current = envelope.runId;
-    sessionRunRef.current = { runId: envelope.runId, scope: envelope.accountScope };
+    sessionRunRef.current = { runId: envelope.runId, scope: envelope.accountScope,
+      mode: payload.mode, storyStageId: payload.storyStageId };
     latestRunId.current += 1;
     const recoveredRunId = latestRunId.current;
     const stableRunKey = `${envelope.runId}:${payload.result.finishedAtIso}`;
@@ -330,7 +334,8 @@ function App(): React.JSX.Element {
   function resumeSavedRun(): void {
     if (!sessionScope || !sessionEnvelope || sessionEnvelope.kind !== 'active') return;
     const payload = sessionEnvelope.payload;
-    sessionRunRef.current = { runId: sessionEnvelope.runId, scope: sessionEnvelope.accountScope };
+    sessionRunRef.current = { runId: sessionEnvelope.runId, scope: sessionEnvelope.accountScope,
+      mode: payload.mode, storyStageId: payload.storyStageId };
     setSelectedCharacterId(payload.characterId);
     setSelectedMode(payload.mode);
     setSelectedStageId(payload.storyStageId ?? 'dawn-city');
@@ -372,7 +377,8 @@ function App(): React.JSX.Element {
 
   function startRun(characterId = selectedCharacterId, mode = selectedMode, stageId = mode === 'story' ? selectedStageId : null): void {
     if (!canUseRecords) return;
-    if (sessionScope) sessionRunRef.current = { runId: createStableRunId(), scope: sessionScope };
+    if (sessionScope) sessionRunRef.current = { runId: createStableRunId(), scope: sessionScope,
+      mode, storyStageId: mode === 'story' ? stageId : null };
     setInitialRunSession(null);
     latestRunId.current += 1;
     setSelectedCharacterId(characterId);

@@ -82,9 +82,28 @@ function isSnapshot(value: unknown, characterId: CharacterId, mode: RunnerMode):
     isIsoTimestamp(snapshot.startedAtIso);
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
 function isEngineCheckpoint(value: unknown): value is RunnerEngineCheckpoint {
-  return !!value && typeof value === 'object' && !Array.isArray(value) &&
-    (value as { version?: unknown }).version === 1;
+  if (!isRecord(value) || value.version !== 1 || !isRecord(value.player)) return false;
+  const player = value.player;
+  const numericPlayerFields = ['x', 'y', 'velocityX', 'velocityY', 'bodyWidth', 'bodyHeight',
+    'bodySourceWidth', 'bodySourceHeight', 'bodyOffsetX', 'bodyOffsetY', 'scaleX', 'scaleY',
+    'alpha', 'animationFrame', 'animationElapsedMs'];
+  const booleanPlayerFields = ['allowGravity', 'bodyEnabled', 'grounded', 'slidingHeld', 'hurt',
+    'passiveRescuing', 'pitFalling', 'passiveEffectActive', 'giantActive'];
+  return numericPlayerFields.every((field) => Number.isFinite(player[field])) &&
+    booleanPlayerFields.every((field) => typeof player[field] === 'boolean') &&
+    typeof player.animation === 'string' && ['ascending', 'descending'].includes(String(player.airPhase)) &&
+    [0, 1, 2].includes(Number(player.jumpsUsed)) &&
+    ['worldDistance', 'randomSeed', 'obstacleCursor', 'pickupCursor', 'pickupHorizonMeters', 'pitCursor']
+      .every((field) => Number.isFinite(value[field])) &&
+    typeof value.obstacleSkipPatternAfterDoubleJump === 'boolean' &&
+    (value.pickupStageId === null || isStoryStageId(value.pickupStageId)) &&
+    ['obstaclePending', 'obstacleWarnedKinds', 'createdGateDistances', 'entities',
+      'collectedPickupIds', 'passedGateIds'].every((field) => Array.isArray(value[field]));
 }
 
 function isActivePayload(value: unknown): value is RunnerActiveSession {
@@ -126,16 +145,19 @@ function isTerminalPayload(value: unknown): value is RunnerTerminalSession {
 
 function parseEnvelope(value: unknown): RunnerSessionEnvelope | null {
   if (!value || typeof value !== 'object') return null;
-  const envelope = value as Partial<RunnerSessionEnvelope>;
+  const envelope = value as { schemaVersion?: unknown; kind?: unknown; savedAt?: unknown;
+    accountScope?: unknown; runId?: unknown; payload?: unknown };
   if (envelope.schemaVersion !== 1 || !isValidScope(envelope.accountScope) ||
       !isIsoTimestamp(envelope.savedAt) || typeof envelope.runId !== 'string' || !envelope.runId.trim()) {
     return null;
   }
-  const validPayload = envelope.kind === 'active'
-    ? isActivePayload(envelope.payload)
-    : envelope.kind === 'terminal' && isTerminalPayload(envelope.payload);
-  if (!validPayload) return null;
-  return envelope as RunnerSessionEnvelope;
+  if (envelope.kind === 'active' && isActivePayload(envelope.payload)) {
+    return envelope as RunnerSessionEnvelope & { kind: 'active' };
+  }
+  if (envelope.kind === 'terminal' && isTerminalPayload(envelope.payload)) {
+    return envelope as RunnerSessionEnvelope & { kind: 'terminal' };
+  }
+  return null;
 }
 
 function storageFailure(error: unknown): SessionStoreResult<never> {

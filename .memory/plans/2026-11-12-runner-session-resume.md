@@ -1,4 +1,4 @@
-# Plan: Runner Session Resume
+﻿# Plan: Runner Session Resume
 
 ## Goal
 Save an active run when the browser is left or closed, then let the player resume from the exact saved gameplay state or discard the save and start over. Preserve terminal results for the next visit. This is browser-local storage, scoped per signed-in account or guest, with a seven-day expiry.
@@ -14,7 +14,8 @@ Save an active run when the browser is left or closed, then let the player resum
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `done ✅` | Account-scoped session store, exact Phaser state restore, and browser resume flow | [P01](./phases/2026-11-12-runner-session-resume/P01-session-recovery/phase.md) |
+| P01 | `done` | Account-scoped session store, exact Phaser state restore, and browser resume flow | [P01](./phases/2026-11-12-runner-session-resume/P01-session-recovery/phase.md) |
+| P02 | `done` | Correct session resume TypeScript errors and validate checkpoint typing | [P02](./phases/2026-11-12-runner-session-resume/P02-type-safety/phase.md) |
 
 ## Status
 Complete. The browser-local session store, exact Phaser checkpoint restore, and resume/terminal recovery flow are implemented.
@@ -30,4 +31,4 @@ Complete. The browser-local session store, exact Phaser checkpoint restore, and 
 - Phaser checkpoint data must preserve player pose/body state, active obstacle/pickup/pit/gate state, and enough deterministic generation state to continue without duplicates or skipped objects.
 
 ## Progress
-- done: 3/3 tasks (plan complete)
+- done: 1/1 tasks (type safety correction complete)

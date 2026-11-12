@@ -1,5 +1,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createRunnerEngineCheckpoint } from './game/runner/runnerSessionTestFixtures';
 
 const runnerMock = vi.hoisted(() => ({
   finish: null as ((characterId: string, outcome: 'personal-best' | 'completed') => void) | null,
@@ -162,7 +163,7 @@ describe('App flow', () => {
     localStorage.setItem(sessionMock.getKey({ kind: 'guest' }), JSON.stringify({
       schemaVersion: 1, kind: 'active', savedAt, accountScope: { kind: 'guest' }, runId: 'resume-test',
       payload: { characterId: 'player-default', mode: 'endless', storyStageId: null,
-        snapshot, engine: { version: 1 } },
+        snapshot, engine: createRunnerEngineCheckpoint() },
     }));
     render(<App />);
     expect(screen.getByRole('alertdialog')).toHaveTextContent('이어서 달릴까요?');
