@@ -40,11 +40,11 @@ Verify the deployed frontend, company OIDC sign-in experience, browser-local dat
 
 ## Validation
 
-- Latest successful `project02` deployment is GitHub Actions run `43161348309`, commit `da9735c71cde9a67cb8f73da37141f1145b9bdfd` (2026-11-12 14:25 KST): https://github.com/Seungwon-2/vibe/actions/runs/43161348309
-- Live HTTP checks on 2026-11-12: root `200 text/html`, title `스텔라 러너`, unknown SPA route `200 text/html`, and `/.auth/login/aad` returns `302` into the SWA AAD login flow. Unauthenticated `/.auth/me` contains no client principal.
-- The latest deployed SHA is an ancestor of local `project02`, but local has seven newer commits. P0 changes in local HEAD are not deployed because the branch has not been pushed.
+- Latest successful `project02` deployment is GitHub Actions run `43188676923`, commit `ddf0c22e5a5157405bf6f4bb8d81fe098bcecfb9` (2026-11-12 18:07 KST): https://github.com/Seungwon-2/vibe/actions/runs/43188676923
+- Live HTTP checks after deployment on 2026-11-12: root `200 text/html`, title `스텔라 러너`, unknown SPA route `200 text/html`. The user confirmed the deployed resume prompt now has the requested dismissal option.
+- The deployed SHA matches local `project02`; P0 fixes are now included in the published frontend.
 - Inspected deployed JavaScript and CSS (2 assets). No Cosmos connection string/key, deployment token, JWT literal, or API scope in login configuration was found. Current app wiring uses `LocalRunGateway`; deployed records remain browser-local.
-- The computer-use browser host is unavailable in this session. An authorized company account was not used, and authenticated sign-in, account display, logout/re-login, gameplay, and authenticated network inspection remain pending user confirmation.
+- The computer-use browser host is unavailable in this session. The user confirmed the deployed resume-prompt behavior; explicit confirmation of account display, logout/re-login, full in-game pause/resume/result flow, and authenticated network inspection remains pending.
 - No Cosmos database, API, deployment secrets, or user account data were accessed.
 - The pre-existing dirty deployment preflight files were left untouched; verification evidence is recorded here so unrelated user edits are preserved.
 
