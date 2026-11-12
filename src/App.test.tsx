@@ -166,7 +166,7 @@ describe('App flow', () => {
         snapshot, engine: createRunnerEngineCheckpoint() },
     }));
     render(<App />);
-    expect(screen.getByRole('alertdialog')).toHaveTextContent('이어서 달릴까요?');
+    expect(screen.getByRole('alertdialog')).toHaveTextContent('이어 달릴까요?');
     expect(screen.getByRole('button', { name: '새로 시작' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '이어하기' }));
     expect(await screen.findByTestId('runner-mock')).toHaveAttribute('data-paused', 'true');

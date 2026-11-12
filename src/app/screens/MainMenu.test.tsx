@@ -69,6 +69,37 @@ describe('MainMenu audio actions', () => {
     expect(screen.queryByText('private@example.com')).not.toBeInTheDocument();
   });
 
+  it('limits cloud menu actions to sign-in until authentication is ready', () => {
+    const onSignIn = vi.fn();
+    const { rerender } = render(<MainMenu onStart={vi.fn()} onRankings={vi.fn()} topRun={null}
+      topRunLoading={false} topRunError={null} showControlsHelp={false}
+      audioPreferences={{ ...DEFAULT_AUDIO_PREFERENCES }} onAudioPreferencesChange={vi.fn()}
+      onUnlockAudio={vi.fn()} authMode="cloud" authStatus="loading" onSignIn={onSignIn}
+      onAchievements={vi.fn()} onShop={vi.fn()} onHistory={vi.fn()} />);
+
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    expect(screen.getByRole('button')).toHaveClass('main-menu-sign-in');
+    expect(screen.getByRole('button')).toBeDisabled();
+
+    rerender(<MainMenu onStart={vi.fn()} onRankings={vi.fn()} topRun={null} topRunLoading={false}
+      topRunError={null} showControlsHelp={false} audioPreferences={{ ...DEFAULT_AUDIO_PREFERENCES }}
+      onAudioPreferencesChange={vi.fn()} onUnlockAudio={vi.fn()} authMode="cloud" authStatus="error"
+      authError="Sign-in failed" onSignIn={onSignIn} onHistory={vi.fn()} onAchievements={vi.fn()}
+      onShop={vi.fn()} />);
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    expect(screen.getByRole('button')).toBeEnabled();
+    expect(screen.getByText('Sign-in failed')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button'));
+    expect(onSignIn).toHaveBeenCalledOnce();
+
+    rerender(<MainMenu onStart={vi.fn()} onRankings={vi.fn()} topRun={null} topRunLoading={false}
+      topRunError={null} showControlsHelp={false} audioPreferences={{ ...DEFAULT_AUDIO_PREFERENCES }}
+      onAudioPreferencesChange={vi.fn()} onUnlockAudio={vi.fn()} authMode="configuration-error"
+      authStatus="error" authError="Configuration required" onSignIn={onSignIn} onShop={vi.fn()} />);
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
+    expect(screen.getByText('Configuration required')).toBeInTheDocument();
+  });
+
   it('keeps the local records action in the same menu button row and opens rankings', () => {
     const onRankings = vi.fn();
     const { container } = render(<MainMenu onStart={vi.fn()} onRankings={onRankings} topRun={null} topRunLoading={false}

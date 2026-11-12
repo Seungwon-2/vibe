@@ -1,6 +1,6 @@
 # Task: T02 Cloud Sign-In Gate
 
-## Status: pending
+## Status: done
 
 ## Goal
 Make required company sign-in unmistakable and prevent unauthenticated users from entering gameplay or other app screens in cloud mode.
@@ -39,10 +39,10 @@ Make required company sign-in unmistakable and prevent unauthenticated users fro
 - Assert configuration error cannot reach character selection or a run through the UI.
 
 ## Acceptance Criteria
-- [ ] A signed-out cloud user sees a clear sign-in-only entry state.
-- [ ] No gameplay or other menu action can be reached before successful sign-in in cloud mode.
-- [ ] Loading and configuration-error states fail closed without exposing enabled game actions.
-- [ ] Local mode and signed-in cloud menu behavior remain available.
+- [x] A signed-out cloud user sees a clear sign-in-only entry state.
+- [x] No gameplay or other menu action can be reached before successful sign-in in cloud mode.
+- [x] Loading and configuration-error states fail closed without exposing enabled game actions.
+- [x] Local mode and signed-in cloud menu behavior remain available.
 
 ## Validation
 - `npm test -- src/app/screens/MainMenu.test.tsx src/App.test.tsx`
@@ -62,6 +62,6 @@ Task: T02-cloud-sign-in-gate
 ```
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [x] Validation passed
 - commit: pending

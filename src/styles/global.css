@@ -2250,6 +2250,13 @@ body:has(.selector-shell--runner),
 }
 .main-menu-actions .main-menu-sound { grid-column: 4; grid-row: 2; }
 .main-menu-actions .main-menu-credits { grid-column: 3; grid-row: 2; }
+.main-menu-actions > [hidden] { display: none !important; }
+.main-menu-actions .main-menu-sign-in {
+  grid-column: 1 / -1;
+  grid-row: auto;
+  justify-self: center;
+  width: min(100%, 440px);
+}
 
 .selector-footer.selector-footer--runner {
   display: grid;

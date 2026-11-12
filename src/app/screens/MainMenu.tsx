@@ -80,25 +80,25 @@ export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onSho
           </div>
           <div className="main-menu-actions">
             <button className="selector-confirm home-start" type="button" onClick={onStart}
-              disabled={cloudNeedsSignIn || configurationFailed}>
+              disabled={cloudNeedsSignIn || configurationFailed} hidden={cloudNeedsSignIn || configurationFailed}>
               달리기 시작
             </button>
             <button className="main-menu-secondary main-menu-rankings" type="button" onClick={onRankings}
-              disabled={cloudNeedsSignIn || configurationFailed}>
+              disabled={cloudNeedsSignIn || configurationFailed} hidden={cloudNeedsSignIn || configurationFailed}>
               {cloudRecords ? '유저 랭킹' : '이 브라우저 기록 보기'}
             </button>
             {onHistory && <button className="main-menu-secondary" type="button" onClick={onHistory}
-              disabled={cloudNeedsSignIn || configurationFailed}>
+              disabled={cloudNeedsSignIn || configurationFailed} hidden={cloudNeedsSignIn || configurationFailed}>
               {cloudRecords ? '내 플레이 기록' : '이 브라우저의 플레이 기록'}
             </button>}
-            {onAchievements && <button className="main-menu-secondary" type="button" onClick={onAchievements}>업적</button>}
-            {onShop && <button className="main-menu-secondary" type="button" onClick={onShop}>코인 상점</button>}
+            {onAchievements && <button className="main-menu-secondary" type="button" onClick={onAchievements} hidden={cloudNeedsSignIn || configurationFailed}>업적</button>}
+            {onShop && <button className="main-menu-secondary" type="button" onClick={onShop} hidden={cloudNeedsSignIn || configurationFailed}>코인 상점</button>}
             <button className="main-menu-secondary main-menu-sound" type="button"
-              onClick={() => { onUnlockAudio(); setDialog('settings'); }}>사운드 설정</button>
-            <button className="main-menu-secondary main-menu-credits" type="button" onClick={() => setDialog('credits')}>
+              hidden={cloudNeedsSignIn || configurationFailed} onClick={() => { onUnlockAudio(); setDialog('settings'); }}>사운드 설정</button>
+            <button className="main-menu-secondary main-menu-credits" type="button" onClick={() => setDialog('credits')} hidden={cloudNeedsSignIn || configurationFailed}>
               효과음 크레딧
             </button>
-            {cloudNeedsSignIn && onSignIn && <button className="main-menu-secondary" type="button"
+            {cloudNeedsSignIn && onSignIn && <button className="selector-confirm home-start main-menu-sign-in" type="button"
               onClick={onSignIn} disabled={authStatus === 'loading'}>
               {authStatus === 'loading' ? '계정 확인 중…' : '회사 계정으로 로그인'}
             </button>}
