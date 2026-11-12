@@ -103,7 +103,13 @@ export function RunnerGame({
     const interval = window.setInterval(() => {
       if (!game.isBooted) return;
       const scene = game.scene.keys.RunnerScene;
-      if (scene instanceof RunnerScene && scene.getSnapshot().phase === 'running') checkpoint(false);
+      if (scene instanceof RunnerScene && scene.getSnapshot().phase === 'running') {
+        // createSessionCheckpoint captures a paused snapshot without changing
+        // the live scene. Pausing here would clear held input every second,
+        // interrupting sustained actions such as sliding.
+        const session = scene.createSessionCheckpoint();
+        if (session) callbacksRef.current.onCheckpoint?.(session);
+      }
     }, 1_000);
     document.addEventListener('visibilitychange', onVisibilityChange);
     window.addEventListener('pagehide', onPageHide);

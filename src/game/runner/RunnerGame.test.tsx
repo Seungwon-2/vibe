@@ -7,13 +7,15 @@ const mocks = vi.hoisted(() => ({
   construct: vi.fn(),
   configArgs: [] as unknown[],
   shouldThrow: false,
+  scene: null as unknown,
 }));
 
 vi.mock('phaser', () => ({
   default: {
     Game: class {
       registry = { set: vi.fn() };
-      isBooted = false;
+      isBooted = true;
+      scene = { keys: { RunnerScene: mocks.scene } };
       destroy = mocks.destroy;
       constructor(config: unknown) {
         mocks.construct(config);
@@ -26,11 +28,36 @@ vi.mock('./createRunnerGameConfig', () => ({ createRunnerGameConfig: vi.fn((...a
   mocks.configArgs = args;
   return { mocked: true };
 }) }));
-vi.mock('./RunnerScene', () => ({ RunnerScene: class {} }));
+vi.mock('./RunnerScene', () => ({ RunnerScene: class {
+  getSnapshot = vi.fn(() => ({ phase: 'running' }));
+  createSessionCheckpoint = vi.fn(() => ({ snapshot: { phase: 'paused' } }));
+  canCreateSessionCheckpoint = vi.fn(() => true);
+  setPaused = vi.fn();
+} }));
 
 import { RunnerGame } from './RunnerGame';
+import { RunnerScene } from './RunnerScene';
 
 describe('RunnerGame', () => {
+  it('autosaves a paused snapshot without pausing the live scene or clearing held input', async () => {
+    vi.useFakeTimers();
+    const scene = new RunnerScene();
+    mocks.scene = scene;
+    const bridge = new RunnerInputBridge();
+    bridge.press('slide');
+    const onCheckpoint = vi.fn();
+    render(<RunnerGame characterId="player-default" inputBridge={bridge} paused={false} tutorialEnabled={false}
+      onSnapshot={vi.fn()} onFinished={vi.fn()} onCheckpoint={onCheckpoint} />);
+
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    expect(scene.createSessionCheckpoint).toHaveBeenCalledOnce();
+    expect(scene.setPaused).toHaveBeenCalledTimes(1); // Initial paused=false synchronization only.
+    expect(onCheckpoint).toHaveBeenCalledWith({ snapshot: { phase: 'paused' } });
+    expect(bridge.consumeFrame().slideHeld).toBe(true);
+    vi.useRealTimers();
+  });
+
   it('constructs once, keeps the instance through prop changes, and destroys it on unmount', () => {
     mocks.construct.mockClear();
     mocks.destroy.mockClear();
