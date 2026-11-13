@@ -164,6 +164,32 @@ describe('RunScreen', () => {
     expect(onExit).toHaveBeenCalledOnce();
   });
 
+  it('uses Escape to pause and resume without taking over runner movement keys', () => {
+    renderReadyRunScreen(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'begin mock run' }));
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(runMock.paused).toBe(true);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(runMock.paused).toBe(false);
+    fireEvent.keyDown(window, { key: 'ArrowDown' });
+    expect(runMock.paused).toBe(false);
+  });
+
+  it('Escape dismisses exit confirmation without exiting or resuming the run', () => {
+    const onExit = vi.fn();
+    renderReadyRunScreen(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={onExit} />);
+    fireEvent.click(screen.getByRole('button', { name: 'begin mock run' }));
+    fireEvent.keyDown(window, { key: 'Escape' });
+    const pauseDialog = screen.getByRole('dialog');
+    fireEvent.click(within(pauseDialog).getAllByRole('button')[3]);
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(runMock.paused).toBe(true);
+    expect(onExit).not.toHaveBeenCalled();
+  });
+
   it('opens audio settings from pause and keeps the run paused when settings close', () => {
     renderReadyRunScreen(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'begin mock run' }));

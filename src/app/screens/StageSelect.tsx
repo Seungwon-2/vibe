@@ -1,3 +1,4 @@
+import { moveGridFocus } from '../keyboardNavigation';
 import { STORY_STAGES } from '../../game/runner/storyConfig';
 import type { StoryStageId } from '../../game/runner/runnerTypes';
 import type { PlayerProfile } from '../../services/PlayerProfile';
@@ -21,7 +22,7 @@ export function StageSelect({ profile, selectedStageId, onSelect, onStart, onAch
         <p className="eyebrow">STORY COURSE</p>
         <h1 id="stage-select-title">달릴 스테이지를 선택하세요</h1>
         <p className="progression-intro">코인을 모으고 도전을 완료해 다음 코스와 러너를 해금하세요.</p>
-        <div className="stage-options">
+        <div className="stage-options" onKeyDown={(event) => moveGridFocus(event, window.matchMedia('(max-width: 760px)').matches ? 1 : 2)}>
           {STORY_STAGES.map((stage) => {
             const unlocked = profile.unlockedStageIds.includes(stage.id);
             const cleared = profile.clearedStageIds.includes(stage.id);

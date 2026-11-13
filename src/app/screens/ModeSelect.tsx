@@ -1,3 +1,4 @@
+import { moveGridFocus } from '../keyboardNavigation';
 import type { RunnerMode } from '../../game/runner/runnerTypes';
 
 export type ModeSelectProps = {
@@ -13,7 +14,7 @@ export function ModeSelect({ onSelect, onBack }: ModeSelectProps): React.JSX.Ele
         <p className="eyebrow">CHOOSE YOUR JOURNEY</p>
         <h1 id="mode-select-title">어떤 모험을 할까요?</h1>
         <p className="progression-intro">기록에 도전하거나, 네 가지 테마의 코스를 완주해 보세요.</p>
-        <div className="mode-options">
+        <div className="mode-options" onKeyDown={(event) => moveGridFocus(event, window.matchMedia('(max-width: 760px)').matches ? 1 : 2)}>
           <button className="mode-option mode-option--endless" type="button" onClick={() => onSelect('endless')}>
             <span className="mode-option__art" aria-hidden="true"><span className="mode-option__icon">∞</span><span className="mode-option__art-label">DISTANCE RUN</span></span>
             <span className="mode-option__eyebrow">기록에 도전</span>

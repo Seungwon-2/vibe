@@ -20,6 +20,11 @@ import { browserRunnerMusic } from '../../audio/RunnerMusicManager';
 import { getStoryStage } from '../../game/runner/storyConfig';
 import type { RunnerActiveSession } from '../../game/runner/runnerSessionTypes';
 
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return target.isContentEditable || !!target.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]');
+}
+
 function isPortrait(): boolean {
   return window.matchMedia?.('(orientation: portrait)').matches ?? window.innerHeight > window.innerWidth;
 }
@@ -59,6 +64,9 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
   const [gateBurstActive, setGateBurstActive] = useState(false);
   const passiveCueSequence = useRef(0);
   const pauseGuideButtonRef = useRef<HTMLButtonElement>(null);
+  const pauseButtonRef = useRef<HTMLButtonElement>(null);
+  const settingsInvokerRef = useRef<HTMLElement | null>(null);
+  const exitConfirmButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (snapshot.phase === 'paused') {
@@ -115,6 +123,8 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
     clearGateBurst();
     setPaused(true);
   }
+  const pauseRunRef = useRef(pauseRun);
+  pauseRunRef.current = pauseRun;
 
   function startAfterGuide(): void {
     markRunnerTutorialSeen();
@@ -131,6 +141,21 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
   function closeGuideToPause(): void {
     setGuideOpen(false);
     window.requestAnimationFrame(() => pauseGuideButtonRef.current?.focus());
+  }
+
+  function resumeRun(): void {
+    setPaused(false);
+    window.requestAnimationFrame(() => pauseButtonRef.current?.focus());
+  }
+
+  function closeSettings(): void {
+    setSettingsOpen(false);
+    window.requestAnimationFrame(() => settingsInvokerRef.current?.focus());
+  }
+
+  function dismissExitConfirmation(): void {
+    setExitConfirmation(false);
+    window.requestAnimationFrame(() => pauseButtonRef.current?.focus());
   }
 
   useEffect(() => {
@@ -163,24 +188,32 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
 
   useEffect(() => {
     const onPauseShortcut = (event: KeyboardEvent): void => {
-      if (event.code !== 'KeyP' || event.repeat) return;
-      if (guideOpen || exitConfirmation || settingsOpen) return;
-      if (paused && !portrait) {
-        setPaused(false);
-      } else if (!paused && snapshot.phase === 'running') {
-        if (bonusTimeout.current !== null) clearTimeout(bonusTimeout.current);
-        bonusTimeout.current = null;
-        setRecentBonus(null);
-        if (gateBurstTimeout.current !== null) clearTimeout(gateBurstTimeout.current);
-        gateBurstTimeout.current = null;
-        setGateBurstActive(false);
-        inputBridge.clear();
-        setPaused(true);
+      if (event.repeat || event.defaultPrevented || isEditableTarget(event.target)) return;
+      if (event.key === 'Escape') {
+        if (exitConfirmation) { event.preventDefault(); dismissExitConfirmation(); }
+        else if (settingsOpen) { event.preventDefault(); closeSettings(); }
+        else if (guideOpen) {
+          if (guideVariant === 'pause-review') { event.preventDefault(); closeGuideToPause(); }
+        } else if (paused) {
+          if (!portrait) { event.preventDefault(); resumeRun(); }
+        } else if (snapshot.phase === 'running') {
+          event.preventDefault();
+          pauseRunRef.current();
+        }
+        return;
       }
+      if ((event.code !== 'KeyP' && event.key.toLowerCase() !== 'p') || guideOpen || exitConfirmation || settingsOpen) return;
+      event.preventDefault();
+      if (paused && !portrait) resumeRun();
+      else if (!paused && snapshot.phase === 'running') pauseRunRef.current();
     };
     window.addEventListener('keydown', onPauseShortcut);
     return () => window.removeEventListener('keydown', onPauseShortcut);
-  }, [exitConfirmation, guideOpen, inputBridge, paused, portrait, settingsOpen, snapshot.phase]);
+  }, [exitConfirmation, guideOpen, guideVariant, paused, portrait, settingsOpen, snapshot.phase]);
+
+  useEffect(() => {
+    if (exitConfirmation) window.requestAnimationFrame(() => exitConfirmButtonRef.current?.focus());
+  }, [exitConfirmation]);
 
   function handleEvent(event: RunnerEvent): void {
     if (event.type === 'countdown') {
@@ -244,7 +277,7 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
         <button type="button" onClick={requestExit}>나가기</button>
       </header>
       <div className="run-screen__hud">
-        <RunnerHud snapshot={snapshot} character={character} recentBonus={recentBonus} onPause={pauseRun} />
+        <RunnerHud snapshot={snapshot} character={character} recentBonus={recentBonus} onPause={pauseRun} pauseButtonRef={pauseButtonRef} />
       </div>
       <div className={`runner-stage${gateBurstActive ? ' is-gate-boosting' : ''}${snapshot.giantRemainingMs > 0 ? ' is-giant-active' : ''}`}
         role="region" aria-label="러닝 게임 화면">
@@ -265,13 +298,13 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
           disabled={paused || snapshot.phase !== 'running'} />
         {snapshot.phase === 'countdown' && countdownValue !== null &&
           <CountdownOverlay value={countdownValue} />}
-        {paused && !guideOpen && !settingsOpen && !exitConfirmation && (
-          <PauseOverlay onResume={() => setPaused(false)} onExit={requestExit} portrait={portrait}
+        {paused && !guideOpen && !exitConfirmation && (
+          <PauseOverlay onResume={resumeRun} onExit={requestExit} portrait={portrait}
             onOpenGuide={openGuideFromPause} guideButtonRef={pauseGuideButtonRef}
-            onOpenAudioSettings={() => { onUnlockAudio(); setSettingsOpen(true); }} />
+            onOpenAudioSettings={() => { settingsInvokerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; onUnlockAudio(); setSettingsOpen(true); }} />
         )}
         {paused && settingsOpen && <AudioSettingsDialog preferences={audioPreferences}
-          onChange={onAudioPreferencesChange} onUnlockAudio={onUnlockAudio} onClose={() => setSettingsOpen(false)} />}
+          onChange={onAudioPreferencesChange} onUnlockAudio={onUnlockAudio} onClose={closeSettings} />}
         {guideOpen && <RunnerGuideDialog mode={mode} character={character}
           variant={guideVariant} portrait={portrait}
           onStart={startAfterGuide} onClose={closeGuideToPause} />}
@@ -282,8 +315,8 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
               <strong id="exit-confirm-title">이번 달리기를 종료할까요?</strong>
               <p>현재 진행 상황은 이 브라우저에 저장되어 다음에 이어서 할 수 있습니다.</p>
               <div className="runner-result-actions">
-                <button type="button" onClick={onExit}>종료하고 메뉴로</button>
-                <button type="button" onClick={() => setExitConfirmation(false)}>일시정지로 돌아가기</button>
+                <button ref={exitConfirmButtonRef} type="button" onClick={onExit}>종료하고 메뉴로</button>
+                <button type="button" onClick={dismissExitConfirmation}>일시정지로 돌아가기</button>
               </div>
             </div>
           </div>

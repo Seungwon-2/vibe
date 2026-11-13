@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { moveGridFocus } from '../keyboardNavigation';
 import { SelectorRunnerPreview } from '../components/SelectorRunnerPreview';
 import { CharacterAbilityIcon } from '../components/CharacterAbilityIcon';
 import { CHARACTERS, getCharacter, resolveCharacterId } from '../../game/characters/characterCatalog';
@@ -69,7 +70,7 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
         </header>
 
         <div className="character-roster character-roster--runner" data-roster-layout="one-row"
-          role="group" aria-label="플레이할 캐릭터">
+          role="group" onKeyDown={(event) => moveGridFocus(event, window.matchMedia('(max-width: 760px)').matches ? 2 : 5)} aria-label="플레이할 캐릭터">
           {SELECTOR_CHARACTERS.map((character) => {
             const selected = character.id === candidateCharacterId;
             const passive = getCharacterPassive(character.id);

@@ -1,4 +1,5 @@
-﻿import type { CharacterDefinition } from '../../game/characters/characterTypes';
+﻿import type { RefObject } from 'react';
+import type { CharacterDefinition } from '../../game/characters/characterTypes';
 import { getCharacterPassive } from '../../game/characters/characterAbilities';
 import { CharacterAbilityIcon } from './CharacterAbilityIcon';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from '../../game/runner/runnerConfig';
@@ -10,6 +11,7 @@ export type RunnerHudProps = {
   character: CharacterDefinition;
   recentBonus: RunnerHudCue | null;
   onPause(): void;
+  pauseButtonRef?: RefObject<HTMLButtonElement | null>;
 };
 
 export type RunnerHudCue =
@@ -31,7 +33,7 @@ function formatTime(remainingMs: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
-export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerHudProps): React.JSX.Element {
+export function RunnerHud({ snapshot, character, recentBonus, onPause, pauseButtonRef }: RunnerHudProps): React.JSX.Element {
   const storyStage = snapshot.mode === 'story' && snapshot.storyStageId
     ? getStoryStage(snapshot.storyStageId) : null;
   const nextGateIndex = RUNNER_GATE_DISTANCES_M.findIndex((distance) => distance > snapshot.distanceMeters);
@@ -87,7 +89,7 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause }: RunnerH
         </div>}
         <div className="runner-hud__actions">
           <span className="runner-hud__coins" aria-label={`코인 ${snapshot.coins}개`}>🟡 {snapshot.coins}</span>
-          <button className="runner-hud__pause" type="button" aria-label="일시정지" onClick={onPause}>Ⅱ</button>
+          <button ref={pauseButtonRef} className="runner-hud__pause" type="button" aria-label="일시정지" onClick={onPause}>Ⅱ</button>
         </div>
       </div>
       <div className="runner-hud__details">
