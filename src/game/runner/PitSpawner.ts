@@ -6,7 +6,6 @@ import type { RunnerSnapshot } from './runnerTypes';
 import { RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { PitDefinition } from './pitTypes';
 import type { RunnerEngineCheckpoint, RunnerWorldEntityCheckpoint } from './runnerSessionTypes';
-import { getPatternStartDistance } from './hazardPatterns';
 import { getStoryStage } from './storyConfig';
 import { getStoryPitDefinitions } from './storyPitSchedule';
 import { boundsCenter, getCollisionBounds, type CollisionBounds } from './sweptCollision';
@@ -46,28 +45,13 @@ export function getPitDefinitions(maxDistanceMeters: number): readonly PitDefini
     let distanceMeters = RUNNER_CONFIG.endlessWidePitFirstDistanceMeters +
       index * RUNNER_CONFIG.endlessWidePitSpacingMeters;
     if (distanceMeters > maxDistanceMeters) break;
-    const minimumSpacing = RUNNER_CONFIG.widePitWidthMeters / 2 + RUNNER_CONFIG.pitHazardClearanceMeters +
-      RUNNER_CONFIG.doubleJumpBarrierWidthPx / 2 * RUNNER_CONFIG.metersPerWorldUnit;
     const conflictsWithNarrowPit = (candidate: number) => pits.some((pit) => Math.abs(
       pit.distanceMeters - candidate,
     ) <= pit.widthMeters / 2 + RUNNER_CONFIG.widePitWidthMeters / 2 +
       RUNNER_CONFIG.pitHazardClearanceMeters);
-    const conflictsWithHazard = (candidate: number) => {
-      const lowerBound = candidate - minimumSpacing;
-      const upperBound = candidate + minimumSpacing;
-      let low = 0;
-      let high = 1;
-      while (getPatternStartDistance(high) < lowerBound) high *= 2;
-      while (low < high) {
-        const middle = Math.floor((low + high) / 2);
-        if (getPatternStartDistance(middle) < lowerBound) low = middle + 1;
-        else high = middle;
-      }
-      return getPatternStartDistance(low) <= upperBound;
-    };
     while (distanceMeters <= maxDistanceMeters && (
       isEndlessGateClearance(distanceMeters, RUNNER_CONFIG.widePitWidthMeters / 2) ||
-      conflictsWithNarrowPit(distanceMeters) || conflictsWithHazard(distanceMeters))) {
+      conflictsWithNarrowPit(distanceMeters))) {
       distanceMeters += 25;
     }
     if (distanceMeters <= maxDistanceMeters) {

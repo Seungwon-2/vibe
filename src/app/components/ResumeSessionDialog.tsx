@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { getCharacter } from '../../game/characters/characterCatalog';
 import type { RunnerSessionEnvelope } from '../../game/runner/runnerSessionTypes';
 
@@ -17,6 +18,11 @@ export function ResumeSessionDialog({ envelope, warning, confirmingNewRun, onRes
   onConfirmNewRun, onCancelNewRun, onDismiss, onDismissWarning }: ResumeSessionDialogProps): React.JSX.Element | null {
   const activeEnvelope = envelope?.kind === 'active' ? envelope : null;
   const character = activeEnvelope ? getCharacter(activeEnvelope.payload.characterId) : null;
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    dialogRef.current?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus();
+  }, [confirmingNewRun]);
 
   if (!warning && !activeEnvelope) return null;
   return <>
@@ -26,7 +32,7 @@ export function ResumeSessionDialog({ envelope, warning, confirmingNewRun, onRes
     </div>}
     {activeEnvelope && character && <div className="runner-overlay runner-overlay--confirm" role="alertdialog" aria-modal="true"
       aria-labelledby="resume-session-title">
-      <div className="runner-pause-card resume-session-card">
+      <div className="runner-pause-card resume-session-card" ref={dialogRef}>
         {confirmingNewRun ? <>
           <strong id="resume-session-title">저장된 달리기를 버리고 새로 시작할까요?</strong>
           <p>저장된 진행 상황과 이번 런에서 모은 코인은 사라집니다.</p>

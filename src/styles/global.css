@@ -1972,21 +1972,23 @@ body:has(.selector-shell--runner),
   line-height: 1.1;
 }
 
-.selector-shell.selector-shell--runner .character-roster.character-roster--runner[data-roster-layout="one-row"] {
+.selector-shell.selector-shell--runner .character-roster.character-roster--runner[data-roster-layout="adaptive"] {
   display: grid !important;
   width: 100%;
   min-width: 0;
   min-height: 0;
   grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  grid-template-rows: minmax(0, 1fr) !important;
-  grid-auto-columns: 0;
-  grid-auto-rows: 0;
+  grid-template-rows: none !important;
+  grid-auto-rows: minmax(180px, 1fr);
+  grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: row !important;
   align-items: stretch;
   gap: clamp(7px, 1vw, 16px);
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .selector-shell.selector-shell--runner .character-card.character-card--runner {
@@ -2133,15 +2135,21 @@ body:has(.selector-shell--runner),
 }
 
 .selector-shell.selector-shell--runner .selector-runway__runners {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: clamp(8px, 1vw, 16px);
   width: 100%;
   min-width: 0;
   min-height: 0;
   height: 100%;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  overflow-x: auto;
+  overflow-y: hidden;
   padding-bottom: clamp(14px, 2vh, 22px);
 }
 
 .selector-shell.selector-shell--runner .selector-runway__runner {
+  flex: 1 0 min(16%, 180px);
   min-width: 0;
   height: 100%;
 }
@@ -2181,7 +2189,7 @@ body:has(.selector-shell--runner),
     aspect-ratio: auto;
     grid-template-rows: auto minmax(0, 1fr) clamp(82px, 15vh, 132px) auto;
   }
-  .selector-shell.selector-shell--runner .character-roster.character-roster--runner[data-roster-layout="one-row"] {
+  .selector-shell.selector-shell--runner .character-roster.character-roster--runner[data-roster-layout="adaptive"] {
     display: flex !important;
     flex-wrap: nowrap !important;
     justify-content: flex-start;
@@ -2361,13 +2369,15 @@ body:has(.selector-shell--runner),
     font-size: clamp(1.35rem, 6vw, 1.75rem);
   }
 
-  .selector-shell.selector-shell--runner .character-roster.character-roster--runner[data-roster-layout="one-row"] {
+  .selector-shell.selector-shell--runner .character-roster.character-roster--runner[data-roster-layout="adaptive"] {
     display: grid !important;
     min-height: 0;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-rows: none !important;
+    grid-auto-rows: minmax(150px, 1fr);
     gap: 7px;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .selector-shell.selector-shell--runner .character-card.character-card--runner {
@@ -2377,7 +2387,7 @@ body:has(.selector-shell--runner),
     flex: initial;
   }
 
-  .selector-shell.selector-shell--runner .character-card.character-card--runner:last-child {
+  .selector-shell.selector-shell--runner .character-card.character-card--runner:nth-child(odd):last-child {
     grid-column: 1 / -1 !important;
     justify-self: center;
     width: calc((100% - 7px) / 2);

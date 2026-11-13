@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import type { CharacterId } from '../../game/characters/characterTypes';
+import type { CharacterFrameRef, CharacterId } from '../../game/characters/characterTypes';
 
 export type SelectorRunnerPreviewProps = {
   characterId: CharacterId;
-  frames: readonly string[];
+  frames: readonly CharacterFrameRef[];
   trailColor?: string;
 };
 
@@ -13,7 +13,7 @@ export function SelectorRunnerPreview({ characterId, frames, trailColor }: Selec
   useEffect(() => {
     const preloaded = frames.map((src) => {
       const image = document.createElement('img');
-      image.src = src;
+      image.src = src.url;
       return image;
     });
     const interval = window.setInterval(() => {
@@ -32,7 +32,7 @@ export function SelectorRunnerPreview({ characterId, frames, trailColor }: Selec
         className="selector-runner-frame"
         data-testid={`selector-runner-frame-${characterId}`}
         data-frame-index={frameIndex}
-        src={frames[frameIndex]}
+        src={frames[frameIndex]?.url ?? ''}
         alt=""
         draggable={false}
       />

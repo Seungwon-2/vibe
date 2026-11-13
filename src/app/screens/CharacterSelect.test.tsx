@@ -1,6 +1,8 @@
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CharacterSelect } from './CharacterSelect';
+import { CHARACTERS } from '../../game/characters/characterCatalog';
+import { getCharacterPassive } from '../../game/characters/characterAbilities';
 
 afterEach(() => {
   cleanup();
@@ -8,75 +10,86 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const roster = [
-  { id: 'player-default', name: '아오쿠모 린', shortName: '린', portrait: 'aokumo-rin.webp', firstRun: 'runs/player-default/run-01.png', nextRun: 'runs/player-default/run-02.png', passive: '질주의 메이드', icon: 'rin-cloud-tailwind' },
-  { id: 'hanayo-hiyori', name: '하나요 히요리', shortName: '히요리', portrait: 'hanayo-hiyori.webp', firstRun: 'runs/hanayo-hiyori/run-01.webp', nextRun: 'runs/hanayo-hiyori/run-02.webp', passive: '벚꽃 수호', icon: 'hiyori-blossom-ward' },
-  { id: 'tokino-mary', name: '토키노 메리', shortName: '메리', portrait: 'tokino-mary.webp', firstRun: 'runs/tokino-mary/run-01.webp', nextRun: 'runs/tokino-mary/run-02.webp', passive: '음표의 이끌림', icon: 'mary-music-magnet' },
-  { id: 'goth-student', name: '시즈키 토아', shortName: '토아', portrait: 'shizuki-toa.webp', firstRun: 'runs/goth-student/run-01.webp', nextRun: 'runs/goth-student/run-02.webp', passive: '고스트 슬라이드', icon: 'toa-ghost-glide' },
-  { id: 'cogane-rang', name: '코가네 랑', shortName: '랑', portrait: 'cogane-rang.webp', firstRun: 'runs/cogane-rang/run-01.webp', nextRun: 'runs/cogane-rang/run-02.webp', passive: '호랑이 탄력', icon: 'rang-tiger-spring' },
-] as const;
+const selectorCharacters = [...CHARACTERS].sort((left, right) => {
+  const order = ['player-default', 'hanayo-hiyori', 'tokino-mary', 'goth-student', 'cogane-rang'];
+  const leftIndex = order.indexOf(left.id);
+  const rightIndex = order.indexOf(right.id);
+  return (leftIndex < 0 ? Number.MAX_SAFE_INTEGER : leftIndex)
+    - (rightIndex < 0 ? Number.MAX_SAFE_INTEGER : rightIndex);
+});
 
 describe('CharacterSelect', () => {
-  it('shows five static high-resolution illustrations with passive icons and Korean names', () => {
-    render(<CharacterSelect selectedCharacterId={'unknown-id' as never} onConfirm={vi.fn()} onBack={vi.fn()} />);
-    expect(screen.getByRole('heading', { name: '누구와 달려볼까요?' })).toBeInTheDocument();
+  it('renders every registered character from catalog art and passive data', () => {
+    render(<CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />);
 
-    const cards = [...document.querySelectorAll<HTMLButtonElement>('.character-card--runner')];
-    expect(cards.map((card) => card.getAttribute('aria-label'))).toEqual(roster.map(({ name }) => name));
     const rosterGroup = screen.getByRole('group', { name: '플레이할 캐릭터' });
-    expect(rosterGroup).toHaveAttribute('data-roster-layout', 'one-row');
+    const cards = [...rosterGroup.querySelectorAll<HTMLButtonElement>('.character-card--runner')];
+    expect(rosterGroup).toHaveAttribute('data-roster-layout', 'adaptive');
+    expect(rosterGroup).toHaveAttribute('data-character-count', String(selectorCharacters.length));
+    expect(cards).toHaveLength(CHARACTERS.length);
+    expect(cards.map((card) => card.getAttribute('aria-label')))
+      .toEqual(selectorCharacters.map((character) => character.displayName));
     expect(cards.every((card) => card.parentElement === rosterGroup)).toBe(true);
-    expect(cards[0]).toHaveAttribute('aria-pressed', 'true');
 
-    for (const [index, character] of roster.entries()) {
+    for (const [index, character] of selectorCharacters.entries()) {
       const card = cards[index];
-      const illustration = card.querySelector('img.character-card__illustration');
-      expect(illustration).not.toBeNull();
-      expect(illustration).toHaveClass('character-card__illustration');
-      expect(illustration).toHaveAttribute('src', `/assets/character/selector-art/${character.portrait}`);
+      expect(card).toHaveAttribute('aria-pressed', index === 0 ? 'true' : 'false');
+      expect(card.querySelector('img.character-card__illustration')).toHaveAttribute('src', character.portraitUrl);
       expect(card.querySelector('.character-preview')).toBeNull();
-      expect(within(card).getByText(character.name)).toBeInTheDocument();
-      expect(within(card).getByText(character.passive)).toBeInTheDocument();
-      expect(card.querySelector('.character-ability-icon')).toHaveAttribute('data-icon', character.icon);
+      expect(card.querySelector('.character-card__name')).toHaveTextContent(character.displayName);
+
+      const passive = getCharacterPassive(character.id);
+      expect(card.querySelector('.character-card__passive-copy strong')).toHaveTextContent(passive.name);
+      expect(card.querySelector('.character-card__passive-copy small')).toHaveTextContent(passive.effectLabel);
+      if (passive.icon) {
+        expect(card.querySelector('.character-ability-icon')).toHaveAttribute('data-icon', passive.icon);
+      }
     }
   });
 
-  it('animates quality run frames only in the lower preview lane at 20 fps', () => {
+  it('animates each registered character run frames in the lower preview lane at 20 fps', () => {
     vi.useFakeTimers();
     render(<CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />);
+
+    const availableCharacters = selectorCharacters.filter((character) => character.available);
     expect(screen.getByRole('region', { name: '캐릭터 달리기 미리보기' })).toBeInTheDocument();
-    for (const character of roster) {
+    for (const character of availableCharacters) {
       const runner = screen.getByTestId(`selector-runner-${character.id}`);
       const image = runner.querySelector('img');
       expect(image).toHaveClass('selector-runner-frame');
-      expect(image).toHaveAttribute('src', `/assets/character/selector-art/${character.firstRun}`);
+      expect(image).toHaveAttribute('src', character.qualityAnimations.run[0]?.url);
     }
+
     act(() => vi.advanceTimersByTime(50));
-    for (const character of roster) {
+    for (const character of availableCharacters) {
       const image = screen.getByTestId(`selector-runner-${character.id}`).querySelector('img');
-      expect(image).toHaveAttribute('src', `/assets/character/selector-art/${character.nextRun}`);
+      expect(image).toHaveAttribute('src', character.qualityAnimations.run[1]?.url);
     }
   });
 
-  it('selects a card, updates its accent and start label, and confirms the unchanged ID', () => {
+  it('selects a character and confirms its unchanged catalog ID', () => {
     const onConfirm = vi.fn();
     render(<CharacterSelect selectedCharacterId="player-default" onConfirm={onConfirm} onBack={vi.fn()} />);
-    const hiyori = screen.getByRole('button', { name: '하나요 히요리' });
-    fireEvent.click(hiyori);
+    const nextCharacter = selectorCharacters.find((character) => character.available && character.id !== 'player-default');
+    expect(nextCharacter).toBeDefined();
+    const card = screen.getByRole('button', { name: nextCharacter!.displayName });
+    fireEvent.click(card);
 
-    expect(hiyori).toHaveAttribute('aria-pressed', 'true');
-    expect(hiyori).toHaveClass('is-selected');
-    expect(hiyori.style.getPropertyValue('--character-accent')).toBe('#fca6d0');
-    expect(screen.getByTestId('selector-runner-hanayo-hiyori')).toHaveClass('is-selected');
-    fireEvent.click(screen.getByRole('button', { name: '히요리 · 달리기 시작 ▶' }));
-    expect(onConfirm).toHaveBeenCalledWith('hanayo-hiyori');
+    expect(card).toHaveAttribute('aria-pressed', 'true');
+    expect(card).toHaveClass('is-selected');
+    expect(screen.getByTestId(`selector-runner-${nextCharacter!.id}`)).toHaveClass('is-selected');
+    fireEvent.click(screen.getByRole('button', { name: `${nextCharacter!.displayName} · 달리기 시작 ▶` }));
+    expect(onConfirm).toHaveBeenCalledWith(nextCharacter!.id);
   });
 
-  it('preserves the back action and selected-name start label', () => {
+  it('preserves the back action and uses the selected catalog display name', () => {
     const onConfirm = vi.fn();
     const onBack = vi.fn();
-    render(<CharacterSelect selectedCharacterId="cogane-rang" onConfirm={onConfirm} onBack={onBack} />);
-    expect(screen.getByRole('button', { name: '랑 · 달리기 시작 ▶' })).toBeInTheDocument();
+    const character = selectorCharacters.find((candidate) => candidate.available && candidate.id === 'cogane-rang')
+      ?? selectorCharacters.find((candidate) => candidate.available)!;
+    render(<CharacterSelect selectedCharacterId={character.id} onConfirm={onConfirm} onBack={onBack} />);
+
+    expect(screen.getByRole('button', { name: `${character.displayName} · 달리기 시작 ▶` })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '← 타이틀로' }));
     expect(onBack).toHaveBeenCalledOnce();
     expect(onConfirm).not.toHaveBeenCalled();

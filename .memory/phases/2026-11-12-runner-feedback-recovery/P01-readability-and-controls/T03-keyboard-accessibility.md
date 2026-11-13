@@ -73,3 +73,10 @@ Task: T03-keyboard-accessibility
 - Pause dialog buttons now move focus to the nearest visible button in the requested direction. This follows the actual responsive button layout, including wrapped rows.
 - Added a regression test for horizontal and vertical focus movement across the pause actions.
 - Validation: `npm test -- --run src/app/components/PauseOverlay.test.tsx` (3 passed), `npm run typecheck`, and focused ESLint passed.
+
+### App-wide arrow navigation follow-up (2026-11-13)
+- The pause-only fix did not cover buttons on the title, mode, character, stage, result, shop, ranking, and other non-gameplay screens.
+- Added spatial arrow navigation scoped to the current `main` area or topmost dialog, so responsive layouts do not depend on a fixed grid column count.
+- Removed overlapping grid-only handlers from mode, character, and stage selection. Native Enter/Space activation and form-field arrow behavior are preserved.
+- During active gameplay, the app-level handler yields arrow keys back to the runner; arrows remain available for buttons inside gameplay dialogs.
+- Validation: keyboard navigation, pause overlay, and resume dialog tests (9 passed), `npm run typecheck`, and focused ESLint passed.

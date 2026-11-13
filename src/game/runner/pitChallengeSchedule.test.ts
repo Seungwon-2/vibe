@@ -3,7 +3,6 @@ import { getPitDefinitions, isPitClearance } from './PitSpawner';
 import { getStoryHazardSchedule, validateStoryCourses } from './storyCourses';
 import { getStoryPitDefinitions } from './storyPitSchedule';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
-import { getPatternStartDistance } from './hazardPatterns';
 import { STORY_STAGES } from './storyConfig';
 import { advanceRunner, createRunnerSnapshot, startRunner } from './RunnerSimulation';
 
@@ -19,11 +18,12 @@ function speedAtDistance(mode: 'endless' | 'story', distanceMeters: number,
 }
 
 describe('wide double-jump pit schedule', () => {
-  it('adds wide Endless gaps after 2,000m with clearance from hazards, gates, and other pits', () => {
+  it('keeps wide Endless gaps on their authored schedule with clearance from gates and other pits', () => {
     const pits = getPitDefinitions(20_000);
     const widePits = pits.filter((pit) => pit.widthMeters === RUNNER_CONFIG.widePitWidthMeters);
     expect(widePits.length).toBeGreaterThan(1);
     expect(widePits[0].distanceMeters).toBeGreaterThan(2_000);
+    expect(widePits[0].distanceMeters).toBe(RUNNER_CONFIG.endlessWidePitFirstDistanceMeters);
     expect(widePits[0].tutorialWarning).toBe(true);
     expect(widePits.slice(1).every((pit) => !pit.tutorialWarning)).toBe(true);
 
@@ -32,13 +32,6 @@ describe('wide double-jump pit schedule', () => {
         expect(Math.abs(pit.distanceMeters - gate)).toBeGreaterThan(
           RUNNER_CONFIG.gateClearanceMeters + pit.widthMeters / 2,
         );
-      }
-      for (let index = 0; ; index += 1) {
-        const hazardDistance = getPatternStartDistance(index);
-        if (hazardDistance > pit.distanceMeters + pit.widthMeters / 2 +
-            RUNNER_CONFIG.pitHazardClearanceMeters + 11) break;
-        expect(isPitClearance(hazardDistance, pit,
-          RUNNER_CONFIG.pitHazardClearanceMeters + 11)).toBe(false);
       }
     }
     for (const pit of widePits) {

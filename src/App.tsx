@@ -27,6 +27,7 @@ import { browserRunnerAudio } from './audio/RunnerAudioManager';
 import { browserRunnerMusic } from './audio/RunnerMusicManager';
 import { DEFAULT_AUDIO_PREFERENCES, loadAudioPreferences, saveAudioPreferences, type AudioPreferences } from './audio/audioPreferences';
 import { ResumeSessionDialog } from './app/components/ResumeSessionDialog';
+import { moveDirectionalFocus } from './app/keyboardNavigation';
 import { browserRunnerSessionStore, getSessionStoreWarning } from './services/RunnerSessionStore';
 import type { RunnerActiveSession, RunnerSessionEnvelope, RunnerSessionScope, RunnerTerminalSession } from './game/runner/runnerSessionTypes';
 
@@ -71,6 +72,16 @@ function App(): React.JSX.Element {
     }
   });
   const [screen, setScreen] = useState<AppScreen>('menu');
+  useEffect(() => {
+    const handleDirectionalFocus = (event: globalThis.KeyboardEvent): void => {
+      // Arrow keys remain gameplay controls. Dialog buttons stay keyboard navigable while paused.
+      if (screen === 'run' && !(event.target instanceof Element
+        && event.target.closest('[role="dialog"], [role="alertdialog"]'))) return;
+      moveDirectionalFocus(event);
+    };
+    document.addEventListener('keydown', handleDirectionalFocus);
+    return () => document.removeEventListener('keydown', handleDirectionalFocus);
+  }, [screen]);
   const [selectedCharacterId, setSelectedCharacterId] = useState<CharacterId>('player-default');
   const [selectedMode, setSelectedMode] = useState<RunnerMode>('endless');
   const [selectedStageId, setSelectedStageId] = useState<StoryStageId>('dawn-city');

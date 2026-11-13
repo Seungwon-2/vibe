@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRunnerEngineCheckpoint } from './game/runner/runnerSessionTestFixtures';
+import { AUDIO_PREFERENCES_STORAGE_KEY } from './audio/audioPreferences';
 
 const runnerMock = vi.hoisted(() => ({
   finish: null as ((characterId: string, outcome: 'personal-best' | 'completed') => void) | null,
@@ -88,6 +89,7 @@ beforeEach(() => {
   };
   localStorage.removeItem(sessionMock.getKey({ kind: 'guest' }));
   localStorage.removeItem('runner-action:tutorial:v1:seen');
+  localStorage.removeItem(AUDIO_PREFERENCES_STORAGE_KEY);
   localStorage.removeItem('runner-audio:preferences:v1');
   runnerMock.finish = null;
   runnerMock.mounts = 0;
@@ -180,7 +182,7 @@ describe('App flow', () => {
     expect(audioMock.unlock).toHaveBeenCalled();
     expect(audioMock.playEffect).toHaveBeenCalledWith('ui-click');
     fireEvent.change(screen.getByRole('slider', { name: /효과음 크기/ }), { target: { value: '0.3' } });
-    expect(JSON.parse(localStorage.getItem('runner-audio:preferences:v1')!)).toMatchObject({ effectsVolume: 0.3 });
+    expect(JSON.parse(localStorage.getItem(AUDIO_PREFERENCES_STORAGE_KEY)!)).toMatchObject({ effectsVolume: 0.3 });
     expect(audioMock.setPreferences).toHaveBeenLastCalledWith(expect.objectContaining({ effectsVolume: 0.3 }));
   });
 

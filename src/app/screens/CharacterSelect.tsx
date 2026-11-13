@@ -8,40 +8,15 @@ import type { CharacterId } from '../../game/characters/characterTypes';
 import type { PlayerProfile } from '../../services/PlayerProfile';
 import { getCosmetic } from '../../services/CosmeticCatalog';
 
-const SELECTOR_CHARACTER_IDS: readonly CharacterId[] = [
+const SELECTOR_ORDER: readonly CharacterId[] = [
   'player-default', 'hanayo-hiyori', 'tokino-mary', 'goth-student', 'cogane-rang',
 ];
-const SELECTOR_CHARACTERS = SELECTOR_CHARACTER_IDS.map((id) => CHARACTERS.find((character) => character.id === id)!)
-  .filter(Boolean);
-const SHORT_NAMES: Readonly<Record<CharacterId, string>> = {
-  'player-default': '린',
-  'hanayo-hiyori': '히요리',
-  'tokino-mary': '메리',
-  'goth-student': '토아',
-  'cogane-rang': '랑',
-};
-const SELECTOR_ART: Readonly<Record<CharacterId, { portrait: string; runFrames: readonly string[] }>> = {
-  'player-default': {
-    portrait: '/assets/character/selector-art/aokumo-rin.webp',
-    runFrames: Array.from({ length: 12 }, (_, i) => `/assets/character/selector-art/runs/player-default/run-${String(i + 1).padStart(2, '0')}.png`),
-  },
-  'hanayo-hiyori': {
-    portrait: '/assets/character/selector-art/hanayo-hiyori.webp',
-    runFrames: Array.from({ length: 12 }, (_, i) => `/assets/character/selector-art/runs/hanayo-hiyori/run-${String(i + 1).padStart(2, '0')}.webp`),
-  },
-  'tokino-mary': {
-    portrait: '/assets/character/selector-art/tokino-mary.webp',
-    runFrames: Array.from({ length: 12 }, (_, i) => `/assets/character/selector-art/runs/tokino-mary/run-${String(i + 1).padStart(2, '0')}.webp`),
-  },
-  'goth-student': {
-    portrait: '/assets/character/selector-art/shizuki-toa.webp',
-    runFrames: Array.from({ length: 12 }, (_, i) => `/assets/character/selector-art/runs/goth-student/run-${String(i + 1).padStart(2, '0')}.webp`),
-  },
-  'cogane-rang': {
-    portrait: '/assets/character/selector-art/cogane-rang.webp',
-    runFrames: Array.from({ length: 12 }, (_, i) => `/assets/character/selector-art/runs/cogane-rang/run-${String(i + 1).padStart(2, '0')}.webp`),
-  },
-};
+const SELECTOR_CHARACTERS = [...CHARACTERS].sort((left, right) => {
+  const leftOrder = SELECTOR_ORDER.indexOf(left.id);
+  const rightOrder = SELECTOR_ORDER.indexOf(right.id);
+  return (leftOrder < 0 ? Number.MAX_SAFE_INTEGER : leftOrder)
+    - (rightOrder < 0 ? Number.MAX_SAFE_INTEGER : rightOrder);
+});
 
 export type CharacterSelectProps = {
   selectedCharacterId: CharacterId;
@@ -52,7 +27,8 @@ export type CharacterSelectProps = {
 };
 
 export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBack, onShop }: CharacterSelectProps): React.JSX.Element {
-  const unlockedCharacterIds = profile?.unlockedCharacterIds ?? SELECTOR_CHARACTER_IDS;
+  const unlockedCharacterIds = profile?.unlockedCharacterIds ?? SELECTOR_CHARACTERS
+    .filter((character) => character.available).map((character) => character.id);
   const initialCharacterId = unlockedCharacterIds.includes(selectedCharacterId) ? selectedCharacterId
     : unlockedCharacterIds[0] ?? 'player-default';
   const [candidateCharacterId, setCandidateCharacterId] = useState(() => resolveCharacterId(initialCharacterId));
@@ -69,8 +45,11 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
           <p className="selector-intro">캐릭터를 고른 뒤 아래의 달리기 버튼을 누르세요.</p>
         </header>
 
-        <div className="character-roster character-roster--runner" data-roster-layout="one-row"
-          role="group" onKeyDown={(event) => moveGridFocus(event, window.matchMedia('(max-width: 760px)').matches ? 2 : 5)} aria-label="플레이할 캐릭터">
+        <div className="character-roster character-roster--runner" data-roster-layout="adaptive"
+          data-character-count={SELECTOR_CHARACTERS.length}
+          role="group" aria-label="플레이할 캐릭터"
+          onKeyDown={(event) => moveGridFocus(event,
+            window.matchMedia('(max-width: 760px)').matches ? 2 : 5)}>
           {SELECTOR_CHARACTERS.map((character) => {
             const selected = character.id === candidateCharacterId;
             const passive = getCharacterPassive(character.id);
@@ -85,7 +64,7 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
                 type="button" key={character.id} aria-label={unlocked ? character.displayName : character.displayName + ' 잠김'}
                 aria-pressed={selected} disabled={!unlocked} onClick={() => setCandidateCharacterId(character.id)}>
                 <span className="character-card__art character-card__art--runner">
-                  <img className="character-card__illustration" src={SELECTOR_ART[character.id].portrait}
+                  <img className="character-card__illustration" src={character.portraitUrl}
                     alt="" draggable={false} />
                   {!unlocked && (
                     <span className="character-card__lock-overlay" aria-hidden="true">
@@ -116,12 +95,12 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
 
         <section className="selector-runway" aria-label="캐릭터 달리기 미리보기">
           <div className="selector-runway__runners">
-            {SELECTOR_CHARACTERS.filter((character) => unlockedCharacterIds.includes(character.id)).map((character) => (
+            {SELECTOR_CHARACTERS.filter((character) => character.available && unlockedCharacterIds.includes(character.id)).map((character) => (
               <span
                 className={`selector-runway__runner${character.id === candidateCharacterId ? ' is-selected' : ''}`}
                 style={{ '--character-accent': character.accentColor } as React.CSSProperties}
                 key={character.id} data-testid={`selector-runner-${character.id}`} aria-hidden="true">
-                <SelectorRunnerPreview characterId={character.id} frames={SELECTOR_ART[character.id].runFrames}
+                <SelectorRunnerPreview characterId={character.id} frames={character.qualityAnimations.run}
                   trailColor={(profile?.equippedCosmeticIdsByCharacter[character.id] ?? [])
                     .map((cosmeticId) => getCosmetic(cosmeticId)).find((cosmetic) => cosmetic?.kind === 'trail')?.color} />
               </span>
@@ -136,7 +115,7 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
           </div>
           <button className="selector-confirm selector-confirm--runner" type="button"
             onClick={() => onConfirm(candidateCharacterId)}>
-            {SHORT_NAMES[candidateCharacterId]} · 달리기 시작 ▶
+            {selectedCharacter.displayName} · 달리기 시작 ▶
           </button>
         </footer>
         <span className="sr-only" aria-live="polite">{selectedCharacter.displayName} 선택됨</span>
