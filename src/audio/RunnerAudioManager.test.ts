@@ -34,11 +34,11 @@ describe('RunnerAudioManager', () => {
     manager.unlock();
     manager.setPreferences({ ...DEFAULT_AUDIO_PREFERENCES, effectsVolume: 0.4 });
     manager.playEffect('coin');
-    expect(active[0].volume).toBeCloseTo(0.16);
+    expect(active[0].volume).toBeCloseTo(0.008);
     manager.setPreferences({ ...DEFAULT_AUDIO_PREFERENCES, effectsVolume: 0.7, muted: true });
     expect(active[0].volume).toBe(0);
     manager.setPreferences({ ...DEFAULT_AUDIO_PREFERENCES, effectsVolume: 0.7, muted: false });
-    expect(active[0].volume).toBeCloseTo(0.49);
+    expect(active[0].volume).toBeCloseTo(0.014);
   });
 
   it('varies consecutive coin pitch within bounds and resets after a gap', () => {

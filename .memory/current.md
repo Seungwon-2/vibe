@@ -22,4 +22,4 @@
 - Preserve unrelated working-tree edits; use `project02` and commit only task-owned files.
 
 ## Next Step
-P03-T01 implementation and automated checks are complete, including quadratic volume scaling (10% slider = 1% media gain) and 20% first-run music/effects defaults. Manually confirm the title Start action and comfortable loudness in Chromium and one other browser at `http://127.0.0.1:5176/`; then mark T01 done and advance to P03-T02 performance profiling. Do not deploy as part of this plan.
+P03-T01 audio slider scaling now caps media gain at 2%, defaults music/effects sliders to 50%, and migrates old v1 preferences (old 10% becomes new 50%). Focused audio tests (19) and typecheck pass. Manual listening/playback confirmation in Chromium and one additional browser remains at `http://127.0.0.1:5176/`; keep T01 in progress until confirmed, then advance to P03-T02 performance profiling. Do not deploy as part of this plan.

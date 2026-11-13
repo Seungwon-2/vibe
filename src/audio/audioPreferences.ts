@@ -6,18 +6,20 @@ export type AudioPreferences = {
 
 export const DEFAULT_AUDIO_PREFERENCES: Readonly<AudioPreferences> = Object.freeze({
   muted: false,
-  // The slider is perceptual (quadratic) so first-run playback stays gentle.
-  musicVolume: 0.2,
-  effectsVolume: 0.2,
+  // The slider controls a deliberately quiet 0-2% media-gain range.
+  musicVolume: 0.5,
+  effectsVolume: 0.5,
 });
 
-/** Convert the user-facing 0–100 slider to a quieter linear media gain. */
+export const AUDIO_PREFERENCES_STORAGE_KEY = 'runner-audio:preferences:v2';
+const LEGACY_AUDIO_PREFERENCES_STORAGE_KEY = 'runner-audio:preferences:v1';
+export const AUDIO_MEDIA_GAIN_CEILING = 0.02;
+
+/** Convert the user-facing slider position to the capped media gain. */
 export function audioGainFromPreference(volume: number): number {
   const normalized = Math.min(1, Math.max(0, Number.isFinite(volume) ? volume : 0));
-  return normalized * normalized;
+  return normalized * AUDIO_MEDIA_GAIN_CEILING;
 }
-
-export const AUDIO_PREFERENCES_STORAGE_KEY = 'runner-audio:preferences:v1';
 
 function clampVolume(value: unknown, fallback: number): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
@@ -26,8 +28,27 @@ function clampVolume(value: unknown, fallback: number): number {
 
 export function loadAudioPreferences(storage: Pick<Storage, 'getItem'>): AudioPreferences {
   try {
-    const value = storage.getItem(AUDIO_PREFERENCES_STORAGE_KEY);
-    if (value === null) return { ...DEFAULT_AUDIO_PREFERENCES };
+    const currentValue = storage.getItem(AUDIO_PREFERENCES_STORAGE_KEY);
+    if (currentValue === null) {
+      const legacyValue = storage.getItem(LEGACY_AUDIO_PREFERENCES_STORAGE_KEY);
+      if (legacyValue === null) return { ...DEFAULT_AUDIO_PREFERENCES };
+      const parsedLegacy: unknown = JSON.parse(legacyValue);
+      if (typeof parsedLegacy !== 'object' || parsedLegacy === null || Array.isArray(parsedLegacy)) {
+        return { ...DEFAULT_AUDIO_PREFERENCES };
+      }
+      const legacy = parsedLegacy as Partial<Record<keyof AudioPreferences, unknown>>;
+      const migrateVolume = (value: unknown): number => {
+        const oldSlider = clampVolume(value, 0);
+        const migrated = (oldSlider * oldSlider) / AUDIO_MEDIA_GAIN_CEILING;
+        return clampVolume(Number(migrated.toFixed(6)), 0);
+      };
+      return {
+        muted: typeof legacy.muted === 'boolean' ? legacy.muted : DEFAULT_AUDIO_PREFERENCES.muted,
+        musicVolume: migrateVolume(legacy.musicVolume),
+        effectsVolume: migrateVolume(legacy.effectsVolume),
+      };
+    }
+    const value = currentValue;
     const parsed: unknown = JSON.parse(value);
     if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return { ...DEFAULT_AUDIO_PREFERENCES };
     const candidate = parsed as Partial<Record<keyof AudioPreferences, unknown>>;
