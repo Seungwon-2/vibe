@@ -11,6 +11,7 @@ export class RunnerMusicManager {
   private currentId: RunnerMusicId | null = null;
   private unlocked = false;
   private paused = false;
+  private playbackAttempt: Promise<void> | null = null;
 
   constructor(options: { audioFactory?: MusicFactory; preferences?: AudioPreferences } = {}) {
     this.audioFactory = options.audioFactory ?? ((src) => new Audio(src));
@@ -33,6 +34,7 @@ export class RunnerMusicManager {
       return;
     }
     this.current?.pause();
+    this.playbackAttempt = null;
     this.current = null;
     this.currentId = id;
     this.paused = false;
@@ -42,6 +44,7 @@ export class RunnerMusicManager {
   pause(): void {
     this.paused = true;
     this.current?.pause();
+    this.playbackAttempt = null;
   }
 
   resume(): void {
@@ -57,8 +60,9 @@ export class RunnerMusicManager {
     this.unlocked = false;
   }
 
-  private async start(id: RunnerMusicId): Promise<void> {
+  private start(id: RunnerMusicId): void {
     if (!this.unlocked || this.paused || this.currentId !== id) return;
+    if (this.playbackAttempt) return;
     if (!this.current) {
       const track = RUNNER_MUSIC[id];
       this.current = this.audioFactory(track.src);
@@ -67,7 +71,12 @@ export class RunnerMusicManager {
     const audio = this.current;
     audio.volume = this.preferences.muted ? 0 : this.preferences.musicVolume;
     try {
-      await audio.play();
+      const attempt = audio.play().catch(() => {
+        // Playback can be rejected by browser policy; the next real gesture retries it.
+      }).finally(() => {
+        if (this.playbackAttempt === attempt) this.playbackAttempt = null;
+      });
+      this.playbackAttempt = attempt;
     } catch {
       // Playback may be blocked until a user gesture; a later unlock retries it.
     }

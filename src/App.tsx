@@ -380,6 +380,9 @@ function App(): React.JSX.Element {
 
   function startRun(characterId = selectedCharacterId, mode = selectedMode, stageId = mode === 'story' ? selectedStageId : null): void {
     if (!canUseRecords) return;
+    // Start from this explicit button/keyboard action while browser user activation is available.
+    browserRunnerAudio.unlock();
+    browserRunnerMusic.unlock();
     if (sessionScope) sessionRunRef.current = { runId: createStableRunId(), scope: sessionScope,
       mode, storyStageId: mode === 'story' ? stageId : null };
     setInitialRunSession(null);
@@ -395,7 +398,11 @@ function App(): React.JSX.Element {
   const localSignInPreview = import.meta.env.DEV
     && new URLSearchParams(window.location.search).get('preview') === 'sign-in';
 
-  const menu = <MainMenu onStart={() => setScreen('mode-select')} onRankings={openRankings} onHistory={openPersonalHistory}
+  const menu = <MainMenu onStart={() => {
+    browserRunnerAudio.unlock();
+    browserRunnerMusic.unlock();
+    setScreen('mode-select');
+  }} onRankings={openRankings} onHistory={openPersonalHistory}
     onAchievements={() => openAchievements('menu')} onShop={() => openShop('menu')}
     topRun={overallBest} topRunLoading={bestLoading} topRunError={bestError}
     showControlsHelp={shouldShowRunnerTutorial()} audioPreferences={audioPreferences}

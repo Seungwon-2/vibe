@@ -6,8 +6,9 @@ export type AudioPreferences = {
 
 export const DEFAULT_AUDIO_PREFERENCES: Readonly<AudioPreferences> = Object.freeze({
   muted: false,
-  musicVolume: 0.6,
-  effectsVolume: 0.8,
+  // Comfortable first-run levels; players can raise these in Sound Settings.
+  musicVolume: 0.3,
+  effectsVolume: 0.35,
 });
 
 export const AUDIO_PREFERENCES_STORAGE_KEY = 'runner-audio:preferences:v1';

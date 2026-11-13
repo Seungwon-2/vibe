@@ -33,4 +33,37 @@ describe('RunnerMusicManager', () => {
     manager.resume();
     expect(tracks[0].play).toHaveBeenCalledTimes(2);
   });
+
+  it('does not issue overlapping play requests when pointer and click both unlock audio', () => {
+    const tracks: RunnerMusicElement[] = [];
+    const manager = new RunnerMusicManager({ audioFactory: (src) => {
+      const audio = makeAudio(src);
+      audio.play = vi.fn(() => new Promise<void>(() => {}));
+      tracks.push(audio);
+      return audio;
+    } });
+    manager.play('title');
+    manager.unlock();
+    manager.unlock();
+    expect(tracks).toHaveLength(1);
+    expect(tracks[0].play).toHaveBeenCalledOnce();
+  });
+
+  it('retries music after a browser rejects the first play request', async () => {
+    const tracks: RunnerMusicElement[] = [];
+    const manager = new RunnerMusicManager({ audioFactory: (src) => {
+      const audio = makeAudio(src);
+      audio.play = vi.fn()
+        .mockRejectedValueOnce(new Error('autoplay blocked'))
+        .mockResolvedValue(undefined);
+      tracks.push(audio);
+      return audio;
+    } });
+    manager.play('title');
+    manager.unlock();
+    await Promise.resolve();
+    await Promise.resolve();
+    manager.unlock();
+    expect(tracks[0].play).toHaveBeenCalledTimes(2);
+  });
 });

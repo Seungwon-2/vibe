@@ -15,6 +15,10 @@ function memoryStorage(initial: Record<string, string> = {}) {
 }
 
 describe('audio preferences', () => {
+  it('starts with quieter first-run music and effects defaults', () => {
+    expect(DEFAULT_AUDIO_PREFERENCES).toEqual({ muted: false, musicVolume: 0.3, effectsVolume: 0.35 });
+  });
+
   it('uses the confirmed defaults when storage is empty or inaccessible', () => {
     expect(loadAudioPreferences(memoryStorage())).toEqual(DEFAULT_AUDIO_PREFERENCES);
     expect(loadAudioPreferences({ getItem: () => { throw new Error('denied'); } })).toEqual(DEFAULT_AUDIO_PREFERENCES);
@@ -32,7 +36,7 @@ describe('audio preferences', () => {
     const storage = memoryStorage({
       [AUDIO_PREFERENCES_STORAGE_KEY]: JSON.stringify({ muted: 'yes', musicVolume: null, effectsVolume: 0.35 }),
     });
-    expect(loadAudioPreferences(storage)).toEqual({ muted: false, musicVolume: 0.6, effectsVolume: 0.35 });
+    expect(loadAudioPreferences(storage)).toEqual({ muted: false, musicVolume: 0.3, effectsVolume: 0.35 });
   });
 
   it('persists clamped values under the versioned key', () => {

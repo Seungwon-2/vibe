@@ -22,4 +22,4 @@
 - Preserve unrelated working-tree edits; use `project02` and commit only task-owned files.
 
 ## Next Step
-Implement P03-T01 audio start and levels. Ensure audio starts from an explicit user gesture and reduce default music/effect levels. Do not deploy as part of this plan.
+P03-T01 implementation and automated checks are complete. Manually confirm music starts from the title Start action and that first-run volume is comfortable in Chromium and one other browser at `http://127.0.0.1:5175/`; then mark T01 done and advance to P03-T02 performance profiling. Do not deploy as part of this plan.
