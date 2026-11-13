@@ -83,6 +83,14 @@ describe('pit schedule and clearance', () => {
       .toBe(getPitDefinitions(20_000).length);
   });
 
+  it('keeps late endless pit schedules deterministic and bounded to the requested horizon', () => {
+    const pits = getPitDefinitions(100_000);
+    expect(pits).toEqual(getPitDefinitions(100_000));
+    expect(pits.every((pit) => pit.distanceMeters <= 100_000)).toBe(true);
+    expect(new Set(pits.map(({ id }) => id)).size).toBe(pits.length);
+    expect(pits.some(({ distanceMeters }) => distanceMeters > 90_000)).toBe(true);
+  });
+
   it('treats the pit width and configured clearance as one exclusion radius', () => {
     const pit = getPitDefinitions(850)[0];
     expect(isPitClearance(850 + 215, pit)).toBe(true);

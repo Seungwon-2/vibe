@@ -53,11 +53,17 @@ export function getPitDefinitions(maxDistanceMeters: number): readonly PitDefini
     ) <= pit.widthMeters / 2 + RUNNER_CONFIG.widePitWidthMeters / 2 +
       RUNNER_CONFIG.pitHazardClearanceMeters);
     const conflictsWithHazard = (candidate: number) => {
-      for (let patternIndex = 0; ; patternIndex += 1) {
-        const start = getPatternStartDistance(patternIndex);
-        if (start > candidate + minimumSpacing) return false;
-        if (Math.abs(start - candidate) <= minimumSpacing) return true;
+      const lowerBound = candidate - minimumSpacing;
+      const upperBound = candidate + minimumSpacing;
+      let low = 0;
+      let high = 1;
+      while (getPatternStartDistance(high) < lowerBound) high *= 2;
+      while (low < high) {
+        const middle = Math.floor((low + high) / 2);
+        if (getPatternStartDistance(middle) < lowerBound) low = middle + 1;
+        else high = middle;
       }
+      return getPatternStartDistance(low) <= upperBound;
     };
     while (distanceMeters <= maxDistanceMeters && (
       isEndlessGateClearance(distanceMeters, RUNNER_CONFIG.widePitWidthMeters / 2) ||

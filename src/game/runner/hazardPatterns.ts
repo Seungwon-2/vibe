@@ -19,6 +19,7 @@ export function getMaximumRunSpeedUnitsPerSecond(distanceMeters: number): number
 }
 
 const DENSE_WAVE_FIRST_METERS = RUNNER_CONFIG.denseSectionStartMeters;
+const denseWaveStartMeters: number[] = [DENSE_WAVE_FIRST_METERS];
 
 function getDenseDifficultyTier(waveIndex: number): number {
   return Math.floor(waveIndex / RUNNER_CONFIG.endlessDenseWavesPerDifficultyTier);
@@ -47,11 +48,14 @@ export function getDenseWaveSchedule(waveIndex: number): Readonly<{
   if (!Number.isInteger(waveIndex) || waveIndex < 0) {
     throw new RangeError('Wave index must be a non-negative integer');
   }
-  let waveStartMeters: number = DENSE_WAVE_FIRST_METERS;
-  for (let index = 0; index < waveIndex; index += 1) {
-    waveStartMeters += getDensePatternSpacing(index) * (RUNNER_CONFIG.densePatternsPerSection - 1) +
-      getDenseRecoveryGap(index);
+  while (denseWaveStartMeters.length <= waveIndex) {
+    const previousWaveIndex = denseWaveStartMeters.length - 1;
+    const previousWaveStart = denseWaveStartMeters[previousWaveIndex];
+    denseWaveStartMeters.push(previousWaveStart +
+      getDensePatternSpacing(previousWaveIndex) * (RUNNER_CONFIG.densePatternsPerSection - 1) +
+      getDenseRecoveryGap(previousWaveIndex));
   }
+  const waveStartMeters = denseWaveStartMeters[waveIndex];
   const spacing = getDensePatternSpacing(waveIndex);
   const patternDistances = [waveStartMeters];
   for (let slot = 1; slot < RUNNER_CONFIG.densePatternsPerSection; slot += 1) {
@@ -169,6 +173,15 @@ export function getPatternStartDistance(patternIndex: number): number {
   if (!Number.isInteger(patternIndex) || patternIndex < 0) {
     throw new RangeError('Pattern index must be a non-negative integer');
   }
+  while (patternStartMeters.length <= patternIndex) {
+    patternStartMeters.push(computePatternStartDistance(patternStartMeters.length));
+  }
+  return patternStartMeters[patternIndex];
+}
+
+const patternStartMeters: number[] = [];
+
+function computePatternStartDistance(patternIndex: number): number {
   if (patternIndex === 1) return RUNNER_CONFIG.tutorialSlideDistanceMeters;
   const earlyCount = Math.ceil(
     (RUNNER_CONFIG.denseSectionStartMeters - RUNNER_CONFIG.earlyPatternStartMeters) /
