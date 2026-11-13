@@ -1,4 +1,4 @@
-﻿# Task: T02 Endless Progression
+# Task: T02 Endless Progression
 
 ## Status: done
 
@@ -33,9 +33,9 @@ Prevent the endless course from becoming empty or losing time-recovery gates aft
 - [x] HUD always shows the next gate and correct remaining distance.
 
 ## Validation
-- `npm run test -- --run src/game/runner/RunnerSimulation.test.ts src/game/runner/ObstacleSpawner.test.ts src/game/runner/CollectibleSpawner.test.ts src/game/runner/PitSpawner.test.ts` — 57 tests pass.
+- `npm run test -- --run src/game/runner/RunnerSimulation.test.ts src/game/runner/ObstacleSpawner.test.ts src/game/runner/CollectibleSpawner.test.ts src/game/runner/PitSpawner.test.ts` ? 57 tests pass.
 - Deterministic simulation through 50,000m verifies endless hazard, coin, pit and pickup schedules; resume at 12,000m verifies gate 12,000 does not pay twice and gate 14,000 pays once.
-- `npm run typecheck` — passes.
+- `npm run typecheck` ? passes.
 
 ## Commit Message
 ```text
@@ -52,4 +52,4 @@ Task: T02-endless-progression
 ## Progress
 - [x] Implementation complete
 - [x] Validation passed
-- commit: 0d695be
+- commit: 20f7b92
