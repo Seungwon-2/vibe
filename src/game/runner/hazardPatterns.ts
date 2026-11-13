@@ -1,4 +1,4 @@
-import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
+import { ENDLESS_GATE_INTERVAL_METERS, isEndlessGateClearance, RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import { getCharacterPassive } from '../characters/characterAbilities';
 import type { HazardBand, HazardDefinition, HazardKind, HazardPattern } from './hazardTypes';
 
@@ -11,6 +11,12 @@ const RIN_SPEED_BONUS = getCharacterPassive('player-default');
 export const MAX_RUN_SPEED_UNITS_PER_SECOND = RUNNER_CONFIG.maxSpeedUnitsPerSecond *
   (1 + RUNNER_GATE_DISTANCES_M.length * RUNNER_CONFIG.gateSpeedBonusRatio) *
   (RIN_SPEED_BONUS.id === 'rin-speed' ? 1 + RIN_SPEED_BONUS.speedBonusRatio : 1);
+
+export function getMaximumRunSpeedUnitsPerSecond(distanceMeters: number): number {
+  const passedGateCount = Math.max(0, Math.floor(distanceMeters / ENDLESS_GATE_INTERVAL_METERS));
+  return RUNNER_CONFIG.maxSpeedUnitsPerSecond * (1 + passedGateCount * RUNNER_CONFIG.gateSpeedBonusRatio) *
+    (RIN_SPEED_BONUS.id === 'rin-speed' ? 1 + RIN_SPEED_BONUS.speedBonusRatio : 1);
+}
 
 const DENSE_WAVE_FIRST_METERS = RUNNER_CONFIG.denseSectionStartMeters;
 
@@ -109,6 +115,10 @@ export function isGateClearance(
 ): boolean {
   return Math.abs(distanceMeters - gateDistanceMeters) <=
     RUNNER_CONFIG.gateClearanceMeters + Math.max(0, objectHalfWidthMeters);
+}
+
+export function isEndlessGateClearanceForObject(distanceMeters: number, objectHalfWidthMeters: number): boolean {
+  return isEndlessGateClearance(distanceMeters, objectHalfWidthMeters);
 }
 
 function getBandForDistance(distanceMeters: number): HazardBand {

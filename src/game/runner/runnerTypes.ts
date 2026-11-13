@@ -8,7 +8,7 @@ export type RunnerPickupKind = 'coin' | 'time' | 'giant' | 'speed';
 export type RunnerBiomeId = 'dawn-city' | 'moonlit-forest' | 'crystal-mine' | 'cloud-skyway';
 export type StoryStageId = RunnerBiomeId;
 export type StoryChallengeId = 'no-hit' | 'coin-target';
-export type RunnerGateId = 'gate-2000' | 'gate-4000' | 'gate-6000' | 'gate-8000' | 'gate-10000';
+export type RunnerGateId = `gate-${number}`;
 
 export type RunnerSnapshot = Readonly<{
   phase: RunnerPhase;

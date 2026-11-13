@@ -1,10 +1,10 @@
 import type Phaser from 'phaser';
 import { getHazardCollisionGeometry, getHazardGeometry, getHazardVisualGeometry,
   isHazardDodgedBySlide } from './CollisionSystem';
-import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance,
+import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isEndlessGateClearanceForObject,
   METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { isPitClearance, getPitDefinitions } from './PitSpawner';
-import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
+import { RUNNER_CONFIG } from './runnerConfig';
 import type { HazardDefinition } from './hazardTypes';
 import type { RunnerEngineCheckpoint, RunnerWorldEntityCheckpoint } from './runnerSessionTypes';
 import { RUNNER_PLAYER_X } from './RunnerPlayer';
@@ -73,10 +73,8 @@ export class ObstacleSpawner {
             definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit),
         ));
         const conflictsWithGate = candidate.some(({ atMeters, definition }) =>
-          RUNNER_GATE_DISTANCES_M.some((gate) => isGateClearance(
-            atMeters, gate, definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit,
-          )),
-        );
+          isEndlessGateClearanceForObject(atMeters,
+            definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit));
         // Skip an entire authored pattern so action groups cannot be split.
         const skipForDoubleJumpRecovery = this.skipPatternAfterDoubleJump;
         if (!conflictsWithPit && !conflictsWithGate && !skipForDoubleJumpRecovery) {

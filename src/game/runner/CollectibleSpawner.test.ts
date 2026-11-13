@@ -1,10 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import type Phaser from 'phaser';
 import { drawPickupArt, generatePickupSchedule, getPickupBodySize,
-  CollectibleSpawner, getCoinMotifPoints, PICKUP_PIT_CLEARANCE_METERS, PICKUP_SCHEDULE } from './CollectibleSpawner';
+  CollectibleSpawner, getCoinMotifPoints, getPowerUpClearanceMeters, PICKUP_PIT_CLEARANCE_METERS,
+  PICKUP_SCHEDULE } from './CollectibleSpawner';
 import { RUNNER_GROUND_Y, STANDING_BODY_HEIGHT } from './runnerPose';
-import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
-import { getDenseWaveSchedule, getHazardDistance, getPatternForDistance, getPatternStartDistance, isGateClearance,
+import { ENDLESS_GATE_INTERVAL_METERS, isEndlessGateClearance, isEndlessGateDistance,
+  RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
+import { getDenseWaveSchedule, getHazardDistance,
+  getPatternForDistance, getPatternStartDistance, isGateClearance,
   MAX_RUN_SPEED_UNITS_PER_SECOND, METERS_PER_WORLD_UNIT } from './hazardPatterns';
 import { getPitDefinitions, isPitClearance } from './PitSpawner';
 import { getStoryPitDefinitions } from './storyPitSchedule';
@@ -116,7 +119,8 @@ describe('authored collectible schedule', () => {
           distanceMeters: nearestDistance(hazard.distanceMeters), heightUnits: 52,
         }, hazard)) || knownPits.some((pit) => isPitClearance(nearestDistance(pit.distanceMeters), pit,
           PICKUP_PIT_CLEARANCE_METERS + pickupHalfWidthMeters)) ||
-          RUNNER_GATE_DISTANCES_M.some((gate) => isGateClearance(nearestDistance(gate), gate, pickupHalfWidthMeters));
+          isEndlessGateClearance(nearestDistance(Math.round(((previous + current) / 2) /
+            ENDLESS_GATE_INTERVAL_METERS) * ENDLESS_GATE_INTERVAL_METERS), pickupHalfWidthMeters);
         expect(blocked, `the ${gap}m safe-pickup gap has no hazard or course landmark`).toBe(true);
       }
     }
@@ -283,8 +287,7 @@ describe('authored collectible schedule', () => {
         distanceMeters - definition.width / 2 * RUNNER_CONFIG.metersPerWorldUnit <= end)).toBe(false);
       expect(pits.some((pit) => isPitClearance(center, pit,
         RUNNER_CONFIG.coinMotifSafeWindowMeters / 2 + PICKUP_PIT_CLEARANCE_METERS))).toBe(false);
-      expect(RUNNER_GATE_DISTANCES_M.some((gate) => isGateClearance(center, gate,
-        RUNNER_CONFIG.coinMotifSafeWindowMeters / 2))).toBe(false);
+      expect(isEndlessGateClearance(center, RUNNER_CONFIG.coinMotifSafeWindowMeters / 2)).toBe(false);
       expect(hazards.some((hazard) => pickupOverlapsHazard(motif, hazard))).toBe(false);
     }
     expect(extended.filter(({ distanceMeters }) => distanceMeters < 13_000))
@@ -298,7 +301,7 @@ describe('authored collectible schedule', () => {
   it('schedules giant pickups deterministically outside course hazards, landmarks, and other pickups', () => {
     const generated = generatePickupSchedule(15_000);
     const giants = generated.filter(({ kind }) => kind === 'giant');
-    expect(giants.length).toBeGreaterThan(3);
+    expect(giants.length).toBeGreaterThanOrEqual(3);
     expect(giants).toEqual(generatePickupSchedule(15_000).filter(({ kind }) => kind === 'giant'));
     expect(giants.every(({ heightUnits, optionalJump }) => heightUnits === 52 && !optionalJump)).toBe(true);
     for (const giant of giants) {
@@ -382,7 +385,7 @@ describe('authored collectible schedule', () => {
           PICKUP_PIT_CLEARANCE_METERS + pickupHalfWidthMeters),
           `${pickup.id} overlaps pit clearance at ${pit.distanceMeters}m`).toBe(false);
       }
-      for (const gate of RUNNER_GATE_DISTANCES_M) {
+      for (let gate = ENDLESS_GATE_INTERVAL_METERS; gate <= maxDistance; gate += ENDLESS_GATE_INTERVAL_METERS) {
         const halfWidthMeters = (getPickupBodySize() / 2 + PICKUP_TEST_MARGIN_PX) *
           RUNNER_CONFIG.metersPerWorldUnit;
         expect(isGateClearance(pickup.distanceMeters, gate, halfWidthMeters),
@@ -420,14 +423,27 @@ describe('authored collectible schedule', () => {
     }
   });
 
-  it('keeps five milestone gates separate from pickups', () => {
+  it('keeps fixed milestones and recurring Endless gates separate from pickups', () => {
     expect(RUNNER_GATE_DISTANCES_M).toEqual([2000, 4000, 6000, 8000, 10000]);
-    for (const distance of RUNNER_GATE_DISTANCES_M) {
+    const endless = generatePickupSchedule(50_000);
+    expect(endless.some((pickup) => pickup.distanceMeters > 10_000)).toBe(true);
+    for (let distance = ENDLESS_GATE_INTERVAL_METERS; distance <= 50_000;
+      distance += ENDLESS_GATE_INTERVAL_METERS) {
+      expect(isEndlessGateDistance(distance)).toBe(true);
       const halfWidthMeters = (getPickupBodySize() / 2 + PICKUP_TEST_MARGIN_PX) *
         RUNNER_CONFIG.metersPerWorldUnit;
-      expect(PICKUP_SCHEDULE.every((pickup) =>
-        !isGateClearance(pickup.distanceMeters, distance, halfWidthMeters))).toBe(true);
+      expect(endless.every((pickup) =>
+        !isEndlessGateClearance(pickup.distanceMeters, halfWidthMeters))).toBe(true);
     }
+    expect(endless.some(({ kind, distanceMeters }) => kind === 'coin' && distanceMeters > 49_000)).toBe(true);
+    expect(getPitDefinitions(50_000).some(({ distanceMeters }) => distanceMeters > 49_000)).toBe(true);
+    let lastPatternIndex = 0;
+    while (getPatternStartDistance(lastPatternIndex + 1) <= 50_000) lastPatternIndex += 1;
+    expect(getPatternStartDistance(lastPatternIndex)).toBeGreaterThan(10_000);
+    expect(getPatternStartDistance(lastPatternIndex + 1)).toBeGreaterThan(50_000);
+    const latePattern = getPatternForDistance(getPatternStartDistance(lastPatternIndex));
+    expect(latePattern.obstacles.length).toBeGreaterThan(0);
+    expect(getHazardDistance(lastPatternIndex, latePattern.obstacles[0])).toBeGreaterThan(49_000);
   });
 
   it('places deterministic speed pickups in Endless and Story while keeping their visual clearance', () => {
@@ -457,18 +473,16 @@ describe('authored collectible schedule', () => {
     }
   });
 
-  it('keeps speed and giant power-ups outside each other’s active window', () => {
-    const schedule = generatePickupSchedule(20_000);
+  it('keeps speed and giant power-ups outside each other’s gate-adjusted active window', () => {
+    const schedule = generatePickupSchedule(50_000);
     const powerUps = schedule.filter(({ kind }) => kind === 'speed' || kind === 'giant');
-    expect(powerUps.some(({ distanceMeters }) => distanceMeters > 15_000)).toBe(true);
+    expect(powerUps.some(({ distanceMeters }) => distanceMeters > 40_000)).toBe(true);
     for (let index = 1; index < powerUps.length; index += 1) {
       const previous = powerUps[index - 1];
-      const previousDurationMs = previous.kind === 'giant'
-        ? RUNNER_CONFIG.giantDurationMs : RUNNER_CONFIG.speedPickupDurationMs;
-      const previousEffectDistance = Math.ceil(MAX_RUN_SPEED_UNITS_PER_SECOND * METERS_PER_WORLD_UNIT *
-        RUNNER_CONFIG.speedPickupMultiplier * previousDurationMs / 1_000);
       expect(powerUps[index].distanceMeters - powerUps[index - 1].distanceMeters)
-        .toBeGreaterThanOrEqual(previousEffectDistance + RUNNER_CONFIG.powerUpPickupRecoveryMeters);
+        .toBeGreaterThanOrEqual(getPowerUpClearanceMeters(
+          previous.kind === 'giant' ? 'giant' : 'speed', previous.distanceMeters,
+        ));
     }
   });
 

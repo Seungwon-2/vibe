@@ -98,3 +98,17 @@ export function getEndlessCollisionPenaltyMs(distanceMeters: number): number {
 }
 
 export const RUNNER_GATE_DISTANCES_M = Object.freeze([2_000, 4_000, 6_000, 8_000, 10_000] as const);
+export const ENDLESS_GATE_INTERVAL_METERS = 2_000;
+
+export function isEndlessGateDistance(distanceMeters: number): boolean {
+  return Number.isSafeInteger(distanceMeters) && distanceMeters >= ENDLESS_GATE_INTERVAL_METERS &&
+    distanceMeters % ENDLESS_GATE_INTERVAL_METERS === 0;
+}
+
+export function isEndlessGateClearance(distanceMeters: number, objectHalfWidthMeters = 0): boolean {
+  if (!Number.isFinite(distanceMeters)) return false;
+  const nearestGate = Math.max(1, Math.round(distanceMeters / ENDLESS_GATE_INTERVAL_METERS)) *
+    ENDLESS_GATE_INTERVAL_METERS;
+  return Math.abs(distanceMeters - nearestGate) <= RUNNER_CONFIG.gateClearanceMeters +
+    Math.max(0, objectHalfWidthMeters);
+}

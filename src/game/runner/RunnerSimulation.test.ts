@@ -97,26 +97,35 @@ describe('RunnerSimulation', () => {
     expect(toaAtMaxRamp.speedUnitsPerSecond).toBeCloseTo(491.5625, 8);
   });
 
-  it('is independent of update chunk size even across gates and time expiry', () => {
-    const oneStep = advanceRunner(running(), 200_000);
+  it('keeps long Endless progression deterministic across repeated gates', () => {
+    const oneStep = advanceRunner(running(), 180_000);
     let chunks = running();
-    let chunkResult = null;
-    for (let step = 0; step < 200 && !chunkResult; step += 1) {
+    for (let step = 0; step < 180; step += 1) {
       const next = advanceRunner(chunks, 1_000);
       chunks = next.state;
-      chunkResult = next.result;
     }
 
-    expect(oneStep.state.phase).toBe('finished');
-    expect(oneStep.state.passedGateIds).toHaveLength(5);
+    expect(oneStep.state.phase).toBe('running');
+    expect(oneStep.state.passedGateIds).toContain('gate-12000');
+    expect(new Set(oneStep.state.passedGateIds).size).toBe(oneStep.state.passedGateIds.length);
     expect(chunks.passedGateIds).toEqual(oneStep.state.passedGateIds);
     expect(chunks.distanceMeters).toBeCloseTo(oneStep.state.distanceMeters, 6);
-    expect(chunkResult).toEqual(oneStep.result);
-    expect(oneStep.result?.durationMs).toBeGreaterThan(90_000);
-    expect(oneStep.result?.finishedAtIso).toBe(
-      new Date(Date.parse(running().startedAtIso) + oneStep.result!.durationMs).toISOString(),
-    );
-    expect(advanceRunner(oneStep.state, 1_000)).toEqual({ state: oneStep.state, result: null });
+    expect(chunks.remainingMs).toBeCloseTo(oneStep.state.remainingMs, 6);
+    expect(chunks.elapsedMs).toBeCloseTo(oneStep.state.elapsedMs, 8);
+    expect(oneStep.result).toBeNull();
+
+    const passedThrough12k = Array.from({ length: 6 }, (_, index): `gate-${number}` =>
+      `gate-${(index + 1) * 2_000}`);
+    const atRepeatableGate = pauseRunner({ ...oneStep.state, distanceMeters: 12_000,
+      worldDistance: 12_000 / RUNNER_CONFIG.metersPerWorldUnit, passedGateIds: passedThrough12k,
+      remainingMs: 100_000 });
+    const gateAwards: string[] = [];
+    const afterResume = advanceRunner(resumeRunner(atRepeatableGate), 30_000,
+      (gateId) => gateAwards.push(gateId)).state;
+    expect(afterResume.passedGateIds.filter((id) => id === 'gate-12000')).toHaveLength(1);
+    expect(afterResume.passedGateIds).toContain('gate-14000');
+    expect(gateAwards.filter((id) => id === 'gate-12000')).toHaveLength(0);
+    expect(gateAwards.filter((id) => id === 'gate-14000')).toHaveLength(1);
   });
 
   it('keeps Endless time recovery at gates and preserves Story time pickup speed', () => {

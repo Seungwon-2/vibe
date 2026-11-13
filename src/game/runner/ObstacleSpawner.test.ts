@@ -7,6 +7,7 @@ import { getHazardDistance, getPatternForDistance, getPatternStartDistance, isGa
 import { getPitDefinitions, isPitClearance } from './PitSpawner';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import { RUNNER_GROUND_Y } from './runnerPose';
+import { RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { HazardDefinition } from './hazardTypes';
 
 type MockChainObject = Record<string, unknown> & {
@@ -82,6 +83,24 @@ describe('ObstacleSpawner schedule', () => {
     expect(onOverlap).not.toHaveBeenCalled();
     source.destroy();
     restored.destroy();
+  });
+
+  it('keeps advancing the Endless obstacle cursor beyond 10,000m', () => {
+    const mock = makeScene();
+    const spawner = new ObstacleSpawner(mock.scene, {} as Phaser.Physics.Arcade.Sprite, vi.fn(), false);
+    const distanceMeters = 12_000;
+    const visibleLeadMeters = (960 - RUNNER_PLAYER_X) * METERS_PER_WORLD_UNIT;
+
+    for (let distance = 1_000; distance <= distanceMeters; distance += 1_000) {
+      spawner.update(snapshotAt(distance));
+    }
+
+    const { obstacleCursor } = spawner.createCheckpoint();
+    expect(obstacleCursor).toBeGreaterThan(30);
+    expect(getPatternStartDistance(obstacleCursor - 1)).toBeLessThanOrEqual(distanceMeters + visibleLeadMeters);
+    expect(getPatternStartDistance(obstacleCursor)).toBeGreaterThan(distanceMeters + visibleLeadMeters);
+    expect(getPatternStartDistance(obstacleCursor - 1)).toBeGreaterThan(10_000);
+    spawner.destroy();
   });
 
   it('keeps complete hazard footprints outside pit and gate clearance zones', () => {

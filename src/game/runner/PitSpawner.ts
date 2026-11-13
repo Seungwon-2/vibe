@@ -1,7 +1,7 @@
 import type Phaser from 'phaser';
 import { getBiomeById, getBiomeForDistance, type RunnerBiomeDefinition } from '../visuals/runnerBiomes';
 import { drawRunnerPit } from '../visuals/runnerCourseObjects';
-import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
+import { isEndlessGateClearance, RUNNER_CONFIG } from './runnerConfig';
 import type { RunnerSnapshot } from './runnerTypes';
 import { RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { PitDefinition } from './pitTypes';
@@ -60,8 +60,7 @@ export function getPitDefinitions(maxDistanceMeters: number): readonly PitDefini
       }
     };
     while (distanceMeters <= maxDistanceMeters && (
-      RUNNER_GATE_DISTANCES_M.some((gate) => Math.abs(gate - distanceMeters) <=
-        RUNNER_CONFIG.gateClearanceMeters + RUNNER_CONFIG.widePitWidthMeters / 2) ||
+      isEndlessGateClearance(distanceMeters, RUNNER_CONFIG.widePitWidthMeters / 2) ||
       conflictsWithNarrowPit(distanceMeters) || conflictsWithHazard(distanceMeters))) {
       distanceMeters += 25;
     }

@@ -1,6 +1,7 @@
 import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterId } from '../characters/characterTypes';
-import { getEndlessCollisionPenaltyMs, RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
+import { ENDLESS_GATE_INTERVAL_METERS, getEndlessCollisionPenaltyMs, RUNNER_CONFIG,
+  RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import { getStoryStage } from './storyConfig';
 import { getBiomeForDistance } from '../visuals/runnerBiomes';
 import type {
@@ -13,9 +14,6 @@ import type {
   StoryStageId,
 } from './runnerTypes';
 
-const GATE_IDS: readonly RunnerGateId[] = RUNNER_GATE_DISTANCES_M.map(
-  (distance) => `gate-${distance}` as RunnerGateId,
-);
 const EPSILON = 1e-7;
 
 function getBaseSpeed(elapsedMs: number, gateCount: number, characterId: CharacterId, mode: RunnerMode): number {
@@ -135,13 +133,23 @@ function millisecondsToReach(
 }
 
 function getNextGate(state: RunnerSnapshot): { distance: number; id: RunnerGateId } | null {
-  for (let index = 0; index < RUNNER_GATE_DISTANCES_M.length; index += 1) {
-    const id = GATE_IDS[index];
-    if (!state.passedGateIds.includes(id)) {
-      return { distance: RUNNER_GATE_DISTANCES_M[index], id };
+  if (state.mode === 'story') {
+    for (const distance of RUNNER_GATE_DISTANCES_M) {
+      const id: RunnerGateId = `gate-${distance}`;
+      if (!state.passedGateIds.includes(id)) return { distance, id };
     }
+    return null;
   }
-  return null;
+  const passedDistance = state.distanceMeters;
+  let index = Math.max(1, Math.ceil((passedDistance - EPSILON) / ENDLESS_GATE_INTERVAL_METERS));
+  let distance = index * ENDLESS_GATE_INTERVAL_METERS;
+  let id: RunnerGateId = `gate-${distance}`;
+  while (state.passedGateIds.includes(id)) {
+    index += 1;
+    distance = index * ENDLESS_GATE_INTERVAL_METERS;
+    id = `gate-${distance}`;
+  }
+  return { distance, id };
 }
 
 function logicalFinishIso(state: RunnerSnapshot): string {

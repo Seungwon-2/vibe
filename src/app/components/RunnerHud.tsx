@@ -2,7 +2,7 @@
 import type { CharacterDefinition } from '../../game/characters/characterTypes';
 import { getCharacterPassive } from '../../game/characters/characterAbilities';
 import { CharacterAbilityIcon } from './CharacterAbilityIcon';
-import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from '../../game/runner/runnerConfig';
+import { ENDLESS_GATE_INTERVAL_METERS, RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from '../../game/runner/runnerConfig';
 import { getStoryStage } from '../../game/runner/storyConfig';
 import type { RunnerSnapshot } from '../../game/runner/runnerTypes';
 
@@ -36,11 +36,15 @@ function formatTime(remainingMs: number): string {
 export function RunnerHud({ snapshot, character, recentBonus, onPause, pauseButtonRef }: RunnerHudProps): React.JSX.Element {
   const storyStage = snapshot.mode === 'story' && snapshot.storyStageId
     ? getStoryStage(snapshot.storyStageId) : null;
-  const nextGateIndex = RUNNER_GATE_DISTANCES_M.findIndex((distance) => distance > snapshot.distanceMeters);
+  const nextEndlessGate = (Math.floor(snapshot.distanceMeters / ENDLESS_GATE_INTERVAL_METERS) + 1) *
+    ENDLESS_GATE_INTERVAL_METERS;
+  const nextGate = snapshot.mode === 'story'
+    ? RUNNER_GATE_DISTANCES_M.find((distance) => distance > snapshot.distanceMeters)
+    : nextEndlessGate;
   const landmark = storyStage
     ? storyStage.name + ' · 골인까지 ' + Math.ceil(Math.max(0, storyStage.lengthMeters - snapshot.distanceMeters)).toLocaleString() + 'm'
-    : nextGateIndex >= 0
-    ? `${BIOME_LABELS[snapshot.biomeId]} · 다음 보너스까지 ${Math.ceil(RUNNER_GATE_DISTANCES_M[nextGateIndex] - snapshot.distanceMeters).toLocaleString()}m`
+    : nextGate !== undefined
+    ? `${BIOME_LABELS[snapshot.biomeId]} · 다음 보너스까지 ${Math.ceil(nextGate - snapshot.distanceMeters).toLocaleString()}m`
     : BIOME_LABELS[snapshot.biomeId];
   const warning = !storyStage && snapshot.remainingMs <= 10_000;
   const passive = getCharacterPassive(character.id);
