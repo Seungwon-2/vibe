@@ -67,3 +67,9 @@ Task: T03-keyboard-accessibility
 - Blur now clears held keys during countdown without pausing it. Blur during active play still pauses as before.
 - Added regression coverage for countdown blur and ArrowUp/ArrowDown delivery during active play.
 - Validation: focused tests (26 passed), `npm run typecheck`, and `npm run lint` passed.
+
+### Pause dialog arrow-key focus fix (2026-11-13)
+- Clarified report: the keyboard issue is arrow-key navigation among buttons inside the Escape-opened pause dialog, separate from gameplay input and countdown focus behavior.
+- Pause dialog buttons now move focus to the nearest visible button in the requested direction. This follows the actual responsive button layout, including wrapped rows.
+- Added a regression test for horizontal and vertical focus movement across the pause actions.
+- Validation: `npm test -- --run src/app/components/PauseOverlay.test.tsx` (3 passed), `npm run typecheck`, and focused ESLint passed.
