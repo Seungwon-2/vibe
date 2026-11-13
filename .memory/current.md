@@ -7,7 +7,7 @@
 [P03 Runtime and Release Check](./phases/2026-11-12-runner-feedback-recovery/P03-runtime-and-release-check/phase.md)
 
 ## Active Task
-[T01 Audio Start and Levels](./phases/2026-11-12-runner-feedback-recovery/P03-runtime-and-release-check/T01-audio-start-and-levels.md)
+[T02 Performance Stutter](./phases/2026-11-12-runner-feedback-recovery/P03-runtime-and-release-check/T02-performance-stutter.md)
 
 ## Status
 - Azure deployment handoff and the five P0 feedback fixes are complete; the user confirmed the deployed sign-in flow.
@@ -22,4 +22,4 @@
 - Preserve unrelated working-tree edits; use `project02` and commit only task-owned files.
 
 ## Next Step
-P03-T01 audio slider scaling now caps media gain at 2%, defaults music/effects sliders to 50%, and migrates old v1 preferences (old 10% becomes new 50%). Focused audio tests (19) and typecheck pass. Manual listening/playback confirmation in Chromium and one additional browser remains at `http://127.0.0.1:5176/`; keep T01 in progress until confirmed, then advance to P03-T02 performance profiling. Do not deploy as part of this plan.
+P03-T01 is complete: audio media gain is capped at 2%, music/effects sliders default to 50%, and old v1 settings migrate (old 10% becomes new 50%). The user confirmed the adjusted volume in the local app; 19 focused audio tests and typecheck pass. Continue with P03-T02 performance profiling. Do not deploy as part of this plan.

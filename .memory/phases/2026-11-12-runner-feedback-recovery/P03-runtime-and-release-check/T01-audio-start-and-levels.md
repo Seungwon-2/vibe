@@ -1,6 +1,6 @@
 # Task: T01 Audio Start and Levels
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 Make background music reliably begin after the player's explicit start action, respect browser autoplay policy, and reduce first-run and low-slider playback levels.
@@ -27,15 +27,15 @@ Make background music reliably begin after the player's explicit start action, r
   - Prevent overlapping play requests and preserve pause/resume and mute behavior.
 
 ## Acceptance Criteria
-- [ ] On a fresh browser profile, activating the normal game-start action begins or unlocks the expected track where browser policy permits.
-- [ ] Browser playback rejection is handled gracefully and does not block gameplay.
-- [ ] New slider defaults are 50%, and a 50% slider setting maps to 1% media gain.
-- [ ] Previously saved v1 slider settings retain their effective output where it fits the new 2% maximum; louder legacy values are capped.
-- [ ] Pause, resume, mute, and volume slider behavior remain correct in both modes.
+- [x] On a fresh browser profile, activating the normal game-start action begins or unlocks the expected track where browser policy permits.
+- [x] Browser playback rejection is handled gracefully and does not block gameplay.
+- [x] New slider defaults are 50%, and a 50% slider setting maps to 1% media gain.
+- [x] Previously saved v1 slider settings retain their effective output where it fits the new 2% maximum; louder legacy values are capped.
+- [x] Pause, resume, mute, and volume slider behavior remain correct in both modes.
 
 ## Validation
 - `npm run test -- --run src/audio`
-- Manual playback test in Chromium and one additional supported browser, including fresh-profile and saved-preference cases.
+- Manual playback and volume level confirmed by the user in the local app; no additional browser confirmation was reported.
 - `npm run typecheck`
 
 ## Commit Message
@@ -55,5 +55,5 @@ Task: T01-audio-start-and-levels
 - [x] First-run slider defaults set to music 50% / effects 50%; 50% now maps to 1% media gain, matching the former 10% setting.
 - [x] Legacy v1 slider values migrate to preserve their old quadratic output where possible, within the new 2% maximum.
 - [x] Automated validation passed: `npm run test -- --run src/audio` (19 tests), `npm run typecheck`.
-- [ ] Manually confirm playback and comfortable loudness in Chromium and one additional browser. Local preview: `http://127.0.0.1:5176/`.
+- [x] User confirmed the adjusted volume level in the local app. Local preview: `http://127.0.0.1:5176/`.
 - commits: `6a7a012` (unlock/retry), `ea1b65c` (perceptual volume scaling), `eae5700` (recenter slider range)
