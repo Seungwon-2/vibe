@@ -12,6 +12,59 @@ vi.mock('../../services/PersonalBestStore', () => ({
 
 import { RunnerScene } from './RunnerScene';
 
+describe('RunnerScene keyboard focus handling', () => {
+  it('keeps the initial countdown moving when the browser window loses focus', () => {
+    const scene = new RunnerScene();
+    const clear = vi.fn();
+    const setPaused = vi.fn();
+    const setSliding = vi.fn();
+    const heldKeyboardActions = new Set(['ArrowDown']);
+    const harness = scene as unknown as {
+      snapshot: RunnerSnapshot;
+      inputBridge: { clear(): void };
+      heldKeyboardActions: Set<string>;
+      player: { setSliding(held: boolean): void };
+      setPaused(paused: boolean): void;
+      handleBlur(): void;
+    };
+    harness.snapshot = createRunnerSnapshot('player-default');
+    harness.inputBridge = { clear };
+    harness.heldKeyboardActions = heldKeyboardActions;
+    harness.player = { setSliding };
+    harness.setPaused = setPaused;
+
+    harness.handleBlur();
+
+    expect(clear).toHaveBeenCalledOnce();
+    expect(heldKeyboardActions.size).toBe(0);
+    expect(setPaused).not.toHaveBeenCalled();
+    expect(setSliding).not.toHaveBeenCalled();
+  });
+
+  it('keeps arrow-key jump and slide input wired to gameplay while running', () => {
+    const scene = new RunnerScene();
+    const press = vi.fn();
+    const harness = scene as unknown as {
+      snapshot: RunnerSnapshot;
+      inputBridge: { press(action: 'jump' | 'slide'): void };
+      heldKeyboardActions: Set<string>;
+      handleKeyDown(event: KeyboardEvent): void;
+    };
+    harness.snapshot = startRunner(createRunnerSnapshot('player-default'));
+    harness.inputBridge = { press };
+    harness.heldKeyboardActions = new Set();
+    const up = new KeyboardEvent('keydown', { code: 'ArrowUp', cancelable: true });
+    const down = new KeyboardEvent('keydown', { code: 'ArrowDown', cancelable: true });
+
+    harness.handleKeyDown(up);
+    harness.handleKeyDown(down);
+
+    expect(up.defaultPrevented).toBe(true);
+    expect(down.defaultPrevented).toBe(true);
+    expect(press.mock.calls).toEqual([['jump'], ['slide']]);
+  });
+});
+
 describe('RunnerScene finish boundary', () => {
   it('passes frame delta to the collectible magnet update', () => {
     const scene = new RunnerScene();

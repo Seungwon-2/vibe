@@ -61,3 +61,9 @@ Task: T03-keyboard-accessibility
 - Arrow keys move focus within mode, character, and stage choices; Enter/Space retain native button activation. Active gameplay arrow/space controls are not intercepted.
 - Pause, settings, and exit-confirmation focus moves to a useful action and returns to the invoking pause control when dismissed.
 - Added tests for keyboard grid movement, pause focus, Escape pause/resume, and safe exit-confirmation dismissal.
+
+### Follow-up regression fix (2026-11-13)
+- Browser-window blur during the initial countdown previously paused the Phaser scene while leaving its phase as `countdown`, so React did not show a pause overlay and the run appeared frozen.
+- Blur now clears held keys during countdown without pausing it. Blur during active play still pauses as before.
+- Added regression coverage for countdown blur and ArrowUp/ArrowDown delivery during active play.
+- Validation: focused tests (26 passed), `npm run typecheck`, and `npm run lint` passed.

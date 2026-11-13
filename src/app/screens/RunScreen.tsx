@@ -124,7 +124,9 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
     setPaused(true);
   }
   const pauseRunRef = useRef(pauseRun);
-  pauseRunRef.current = pauseRun;
+  useEffect(() => {
+    pauseRunRef.current = pauseRun;
+  });
 
   function startAfterGuide(): void {
     markRunnerTutorialSeen();

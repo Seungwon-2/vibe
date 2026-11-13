@@ -551,6 +551,10 @@ export class RunnerScene extends Phaser.Scene {
   private readonly handleBlur = (): void => {
     this.heldKeyboardActions.clear();
     this.inputBridge.clear();
+    // A focus change during the initial countdown must not pause the Phaser
+    // scene: the countdown phase has no pause/resume transition, which could
+    // otherwise leave the run frozen before its pause overlay appears.
+    if (this.snapshot?.phase === 'countdown') return;
     this.player?.setSliding(false);
     this.setPaused(true);
   };
