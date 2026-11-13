@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ff">
+  <title>스텔라 러너 · 피드백 패치노트 v0.2.0</title>
+  <style>
+    :root{color-scheme:light;--ink:#252b49;--muted:#65708c;--line:#e5e3f2;--blue:#3977c9;--lav:#8b78cc;--pink:#eb91bd;--paper:#fff;--wash:#f6f7ff;--green:#287b68;--amber:#946914}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 9% 0%,#e4efff 0,transparent 35%),linear-gradient(145deg,#faf8ff,#fff5f7);color:var(--ink);font:16px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif}
+    main{width:min(100% - 32px,1000px);margin:42px auto 64px}.hero,section{border:1px solid var(--line);border-radius:26px;background:rgba(255,255,255,.94);box-shadow:0 18px 52px #34385e0d}.hero{padding:clamp(26px,5vw,52px)}.eyebrow{margin:0 0 10px;color:var(--blue);font-size:.78rem;font-weight:800;letter-spacing:.17em;text-transform:uppercase}h1{margin:0;font-size:clamp(2rem,5vw,3.4rem);line-height:1.15;letter-spacing:-.045em}.lead{max-width:760px;margin:16px 0 0;color:var(--muted);font-size:1.08rem}.meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:24px}.pill{padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:#fff;color:#535d7b;font-size:.86rem;font-weight:700}.pill.candidate{border-color:#f1c4d9;background:#fff3f8;color:#a24d76}.pill.pass{border-color:#bde5d9;background:#effaf6;color:var(--green)}.pill.pending{border-color:#ead6a4;background:#fff9e8;color:var(--amber)}
+    section{margin-top:20px;padding:clamp(20px,4vw,34px)}h2{margin:0 0 15px;font-size:1.35rem;letter-spacing:-.025em}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.item{padding:18px;border-radius:17px;background:var(--wash)}.item h3{margin:0 0 5px;font-size:1.02rem}.item p{margin:0;color:var(--muted)}.callout{padding:18px 20px;border-left:4px solid var(--lav);border-radius:12px;background:#f5f2ff}.callout strong{display:block;margin-bottom:5px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:.94rem}th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{color:#465272;font-size:.84rem;white-space:nowrap}td:first-child{width:42px;color:var(--muted);font-weight:700}td:last-child{color:var(--muted)}.status{display:inline-block;padding:2px 8px;border-radius:99px;background:#edf7f4;color:var(--green);font-size:.78rem;font-weight:800;white-space:nowrap}.status.review{background:#fff6df;color:var(--amber)}ul{margin:8px 0 0;padding-left:1.25rem}li+li{margin-top:7px}.link{color:#2866b4;font-weight:700;text-decoration-thickness:1px;text-underline-offset:3px}.foot{padding:24px 4px;color:var(--muted);font-size:.9rem;text-align:center}
+    @media(max-width:650px){main{width:min(100% - 18px,1000px);margin:12px auto 28px}.hero{border-radius:21px}.grid{grid-template-columns:1fr}section{border-radius:20px}th,td{padding:9px 8px}}
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">Stella Runner · Feedback Patch Notes</p>
+      <h1>플레이 피드백 반영 내역</h1>
+      <p class="lead">반복 제보된 조작, 가시성, 코스 진행, 성능 문제를 반영한 v0.2.0 배포본입니다. 레이아웃과 색감은 이번 배포 후 사용자 의견을 더 모아 다음 수정에 반영합니다.</p>
+      <div class="meta">
+        <span class="pill pass">v0.2.0 배포</span>
+        <span class="pill">2026년 11월 13일</span>
+        <span class="pill">project02</span>
+        <span class="pill pass">자동 검증 통과</span>
+        <span class="pill pending">후속 의견 수집</span>
+      </div>
+    </header>
+
+    <section>
+      <h2>이번 후보에 반영된 개선</h2>
+      <div class="grid">
+        <article class="item"><h3>이어하기와 메뉴 조작</h3><p>이어하기 팝업을 닫을 수 있게 하고, Esc 일시정지 및 방향키·Enter 메뉴 탐색의 포커스 흐름을 보강했습니다.</p></article>
+        <article class="item"><h3>로그인과 기록 안내</h3><p>로그아웃 상태의 타이틀 진입 흐름과 스토리 모드의 브라우저 저장 처리를 점검했습니다. 기록과 랭킹은 여전히 이 브라우저에 저장됩니다.</p></article>
+        <article class="item"><h3>코스 읽기와 회피 판정</h3><p>장애물 실루엣, 낭떠러지 표현, 점프·2단 점프 회피 여유, 게이트 및 코스 생성 규칙을 보강했습니다.</p></article>
+        <article class="item"><h3>난이도와 아이템 흐름</h3><p>무한 코스의 후반 게이트 생성을 이어가고, 장애물·아이템 스케줄과 패턴 변주를 조정했습니다.</p></article>
+        <article class="item"><h3>오디오</h3><p>기본 음량을 낮추고, 사용자 입력 이후 배경음을 시작하며 음량 설정을 저장하도록 했습니다.</p></article>
+        <article class="item"><h3>캐릭터와 성능</h3><p>다섯 캐릭터의 모션 전환과 패시브 동작을 자동 검사하고, 긴 코스의 스케줄 생성을 최적화했습니다. 캐릭터 카탈로그는 후속 캐릭터 에셋을 추가할 수 있도록 유지했습니다.</p></article>
+      </div>
+    </section>
+
+    <section>
+      <h2>피드백 20개 상태</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>항목</th><th>상태</th><th>요약</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>이어하기 팝업 닫기</td><td><span class="status">수정 확인</span></td><td>닫기 선택과 팝업 회귀 테스트를 확인했습니다.</td></tr>
+          <tr><td>2</td><td>로그아웃 화면 로그인 버튼</td><td><span class="status">수정 확인</span></td><td>로그인 진입 흐름을 배포 후 확인한 기록이 있습니다.</td></tr>
+          <tr><td>3</td><td>배경음 시작</td><td><span class="status">수정 확인</span></td><td>사용자 첫 입력 후 재생하도록 했습니다. 자동재생 차단은 브라우저 정책입니다.</td></tr>
+          <tr><td>4</td><td>기본 음량</td><td><span class="status">수정 확인</span></td><td>낮은 출력으로 조정했고 사용자가 로컬 음량을 확인했습니다.</td></tr>
+          <tr><td>5</td><td>게임 화면의 빈 공간</td><td><span class="status review">후속 의견 수집</span></td><td>현재 배포본으로 의견을 더 받은 뒤 화면 크기와 여백을 조정합니다.</td></tr>
+          <tr><td>6</td><td>색감과 눈 피로</td><td><span class="status review">후속 의견 수집</span></td><td>현재 색감으로 플레이 의견을 받은 뒤 대비와 밝기를 조정합니다.</td></tr>
+          <tr><td>7</td><td>장애물 가시성</td><td><span class="status review">테마별 확인</span></td><td>실루엣 개선과 자동 검증은 완료, 네 테마 실주행은 대기 중입니다.</td></tr>
+          <tr><td>8</td><td>낭떠러지 표현</td><td><span class="status">사용자 확인</span></td><td>화면 아래까지 표현을 연결했고 사용자가 확인했습니다.</td></tr>
+          <tr><td>9</td><td>잠긴 캐릭터 치장 장착</td><td><span class="status">자동 확인</span></td><td>잠긴 캐릭터를 상점 선택 목록에서 제외하는 테스트가 통과했습니다.</td></tr>
+          <tr><td>10</td><td>캐릭터 패시브 효용</td><td><span class="status review">체감 재확인</span></td><td>패시브 기능 테스트는 통과했습니다. 밸런스 체감은 플레이 검토가 필요합니다.</td></tr>
+          <tr><td>11</td><td>장애물 회피 판정</td><td><span class="status review">실주행 확인</span></td><td>충돌·점프 회피 테스트는 통과했으며 테마별 조작 확인이 남았습니다.</td></tr>
+          <tr><td>12</td><td>후반 게이트 생성</td><td><span class="status">자동 확인</span></td><td>50km 코스 생성 및 이어하기 점검에서 후반 게이트를 확인했습니다.</td></tr>
+          <tr><td>13</td><td>스토리 저장 실패 오경고</td><td><span class="status review">저장소 확인</span></td><td>스토리 저장 회귀 테스트는 통과했습니다. 저장소 차단 환경 점검은 남았습니다.</td></tr>
+          <tr><td>14</td><td>끊김 현상</td><td><span class="status review">장시간 측정 대기</span></td><td>스케줄 성능 벤치마크는 통과했습니다. 실기기 프로파일과 장시간 플레이는 대기 중입니다.</td></tr>
+          <tr><td>15</td><td>캐릭터 점프·달리기 모션</td><td><span class="status review">실주행 확인</span></td><td>아틀라스와 전환 테스트는 통과했습니다. 현재 브라우저에서의 모션 체감 확인이 남았습니다.</td></tr>
+          <tr><td>16</td><td>가속 아이템 효용</td><td><span class="status review">체감 재확인</span></td><td>배치와 지속시간 검증은 완료했으며 플레이 보상감 평가는 남았습니다.</td></tr>
+          <tr><td>17</td><td>장애물 패턴 단조로움</td><td><span class="status review">테마별 확인</span></td><td>결정적 패턴 변주와 장거리 스케줄 검사는 통과했습니다.</td></tr>
+          <tr><td>18</td><td>업적 이름 영어 코드 노출</td><td><span class="status">자동 확인</span></td><td>한국어 이름과 미등록 ID 대체 표기를 테스트했습니다.</td></tr>
+          <tr><td>19</td><td>Esc 일시정지</td><td><span class="status">수정 확인</span></td><td>키보드 접근성 테스트와 사용자 조작 확인 기록이 있습니다.</td></tr>
+          <tr><td>20</td><td>방향키·Enter 접근성</td><td><span class="status">수정 확인</span></td><td>모달 포커스 흐름을 보강했고 사용자가 방향키 조작을 확인했습니다.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section>
+      <h2>검증과 알려진 제한</h2>
+      <div class="callout"><strong>이 문서는 배포된 v0.2.0의 패치노트입니다.</strong> GitHub Actions에서 전체 테스트 282개, 타입 검사, 린트, 빌드와 Azure 업로드가 통과했습니다. 레이아웃·색감 의견은 배포 후 수집하며, 네 테마 실주행과 장시간 프레임 프로파일링도 후속 확인 항목입니다.</div>
+      <ul>
+        <li>Vite 번들 크기 경고가 남아 있습니다. 빌드는 성공했으며 번들 분할은 후속 최적화 항목입니다.</li>
+        <li>온라인 공유 랭킹과 Cosmos DB 기록은 연결되지 않았습니다. 개인 기록·코인·해금은 브라우저 로컬 저장입니다.</li>
+        <li>수동 QA 결과는 <a class="link" href="runner-feedback-validation.md">상세 피드백 검증표</a>에 기록합니다.</li>
+      </ul>
+    </section>
+
+    <footer class="foot">스텔라 러너 · v0.2.0 · 2026년 11월 13일 배포</footer>
+  </main>
+</body>
+</html>
