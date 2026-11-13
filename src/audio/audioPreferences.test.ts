@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   AUDIO_PREFERENCES_STORAGE_KEY,
   DEFAULT_AUDIO_PREFERENCES,
+  audioGainFromPreference,
   loadAudioPreferences,
   saveAudioPreferences,
 } from './audioPreferences';
@@ -16,7 +17,15 @@ function memoryStorage(initial: Record<string, string> = {}) {
 
 describe('audio preferences', () => {
   it('starts with quieter first-run music and effects defaults', () => {
-    expect(DEFAULT_AUDIO_PREFERENCES).toEqual({ muted: false, musicVolume: 0.3, effectsVolume: 0.35 });
+    expect(DEFAULT_AUDIO_PREFERENCES).toEqual({ muted: false, musicVolume: 0.2, effectsVolume: 0.2 });
+  });
+
+  it('maps the slider through a quadratic curve for quieter low settings', () => {
+    expect(audioGainFromPreference(0)).toBe(0);
+    expect(audioGainFromPreference(0.1)).toBeCloseTo(0.01);
+    expect(audioGainFromPreference(0.5)).toBe(0.25);
+    expect(audioGainFromPreference(1)).toBe(1);
+    expect(audioGainFromPreference(Number.NaN)).toBe(0);
   });
 
   it('uses the confirmed defaults when storage is empty or inaccessible', () => {
@@ -36,7 +45,7 @@ describe('audio preferences', () => {
     const storage = memoryStorage({
       [AUDIO_PREFERENCES_STORAGE_KEY]: JSON.stringify({ muted: 'yes', musicVolume: null, effectsVolume: 0.35 }),
     });
-    expect(loadAudioPreferences(storage)).toEqual({ muted: false, musicVolume: 0.3, effectsVolume: 0.35 });
+    expect(loadAudioPreferences(storage)).toEqual({ muted: false, musicVolume: 0.2, effectsVolume: 0.35 });
   });
 
   it('persists clamped values under the versioned key', () => {

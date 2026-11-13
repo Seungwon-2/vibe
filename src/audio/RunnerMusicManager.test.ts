@@ -27,7 +27,7 @@ describe('RunnerMusicManager', () => {
     manager.unlock();
     manager.play('title');
     manager.setPreferences({ ...DEFAULT_AUDIO_PREFERENCES, musicVolume: 0.35 });
-    expect(tracks[0].volume).toBe(0.35);
+    expect(tracks[0].volume).toBeCloseTo(0.1225);
     manager.pause();
     expect(tracks[0].pause).toHaveBeenCalledOnce();
     manager.resume();

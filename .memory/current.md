@@ -1,4 +1,4 @@
-﻿# Current Context
+# Current Context
 
 ## Active Plan
 [Runner Feedback Recovery](./plans/2026-11-12-runner-feedback-recovery.md)
@@ -22,4 +22,4 @@
 - Preserve unrelated working-tree edits; use `project02` and commit only task-owned files.
 
 ## Next Step
-P03-T01 implementation and automated checks are complete. Manually confirm music starts from the title Start action and that first-run volume is comfortable in Chromium and one other browser at `http://127.0.0.1:5175/`; then mark T01 done and advance to P03-T02 performance profiling. Do not deploy as part of this plan.
+P03-T01 implementation and automated checks are complete, including quadratic volume scaling (10% slider = 1% media gain) and 20% first-run music/effects defaults. Manually confirm the title Start action and comfortable loudness in Chromium and one other browser at `http://127.0.0.1:5176/`; then mark T01 done and advance to P03-T02 performance profiling. Do not deploy as part of this plan.

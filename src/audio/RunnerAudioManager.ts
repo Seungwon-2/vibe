@@ -1,5 +1,5 @@
 import { RUNNER_AUDIO_EFFECTS, type AudioEffectId } from './audioCatalog';
-import { DEFAULT_AUDIO_PREFERENCES, type AudioPreferences } from './audioPreferences';
+import { audioGainFromPreference, DEFAULT_AUDIO_PREFERENCES, type AudioPreferences } from './audioPreferences';
 
 export type RunnerAudioElement = Pick<HTMLAudioElement, 'src' | 'volume' | 'playbackRate' | 'currentTime' | 'play' | 'pause' | 'onended'>;
 export type AudioFactory = (src: string) => RunnerAudioElement;
@@ -38,7 +38,7 @@ export class RunnerAudioManager {
       musicVolume: Math.min(1, Math.max(0, preferences.musicVolume)),
       effectsVolume: Math.min(1, Math.max(0, preferences.effectsVolume)),
     };
-    const volume = this.preferences.muted ? 0 : this.preferences.effectsVolume;
+    const volume = this.preferences.muted ? 0 : audioGainFromPreference(this.preferences.effectsVolume);
     for (const audio of this.activeAudio) audio.volume = volume;
   }
 
@@ -59,7 +59,7 @@ export class RunnerAudioManager {
 
     try {
       const audio = this.audioFactory(asset.src);
-      audio.volume = this.preferences.effectsVolume;
+      audio.volume = audioGainFromPreference(this.preferences.effectsVolume);
       audio.currentTime = 0;
       if (playbackRate !== undefined) audio.playbackRate = playbackRate;
       this.activeAudio.add(audio);

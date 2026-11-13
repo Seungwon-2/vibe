@@ -6,10 +6,16 @@ export type AudioPreferences = {
 
 export const DEFAULT_AUDIO_PREFERENCES: Readonly<AudioPreferences> = Object.freeze({
   muted: false,
-  // Comfortable first-run levels; players can raise these in Sound Settings.
-  musicVolume: 0.3,
-  effectsVolume: 0.35,
+  // The slider is perceptual (quadratic) so first-run playback stays gentle.
+  musicVolume: 0.2,
+  effectsVolume: 0.2,
 });
+
+/** Convert the user-facing 0–100 slider to a quieter linear media gain. */
+export function audioGainFromPreference(volume: number): number {
+  const normalized = Math.min(1, Math.max(0, Number.isFinite(volume) ? volume : 0));
+  return normalized * normalized;
+}
 
 export const AUDIO_PREFERENCES_STORAGE_KEY = 'runner-audio:preferences:v1';
 
