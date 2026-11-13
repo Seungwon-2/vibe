@@ -115,27 +115,29 @@ export function drawRunnerGate(
   }
 }
 
-/** Draws the visible pit inside x=[-width/2, width/2], y=[0, 36]. */
+/** Draws the visible pit inside x=[-width/2, width/2], extending down to the playfield edge. */
 export function drawRunnerPit(
   graphics: Phaser.GameObjects.Graphics,
   width: number,
   biome: RunnerBiomeDefinition,
+  visibleDepth: number,
 ): void {
-  if (!Number.isFinite(width) || width <= 0) return;
+  if (!Number.isFinite(width) || width <= 0 || !Number.isFinite(visibleDepth)) return;
+  const depth = Math.max(36, visibleDepth);
   const p = biome.palette;
   const half = width / 2;
   const edge = Math.min(width * 0.28, 22);
 
   // Preserve the dark open center. Only the rim and nearby details vary by biome.
-  graphics.fillStyle(p.hazardContrast, 0.96).fillRect(-half, 2, width, 34);
+  graphics.fillStyle(p.hazardContrast, 0.98).fillRect(-half, 2, width, depth - 2);
   // Outline both lips and the vertical cut so the opening reads as a drop,
   // rather than a dark floor marking, across all biome palettes.
   graphics.lineStyle(3, p.groundTop, 0.98)
     .lineBetween(-half, 1, -half + edge, 1)
     .lineBetween(half, 1, half - edge, 1);
   graphics.lineStyle(3, p.hazardContrast, 0.98)
-    .lineBetween(-half, 2, -half, 35)
-    .lineBetween(half, 2, half, 35);
+    .lineBetween(-half, 2, -half, depth)
+    .lineBetween(half, 2, half, depth);
   graphics.lineStyle(1.5, 0xffffff, 0.72)
     .lineBetween(-half + 2, 6, -half + 2, 20)
     .lineBetween(half - 2, 6, half - 2, 20);

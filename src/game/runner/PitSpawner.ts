@@ -217,7 +217,8 @@ export class PitSpawner {
 
     const biome = this.activeStoryBiome ?? getBiomeForDistance(definition.distanceMeters);
     const art = this.scene.add.graphics().setDepth(-1);
-    drawRunnerPit(art, width, biome);
+    const pitDepth = this.scene.scale.height - RUNNER_GROUND_Y;
+    drawRunnerPit(art, width, biome, pitDepth);
 
     const warning = this.tutorialEnabled && definition.tutorialWarning
       ? this.scene.add.text(0, RUNNER_GROUND_Y - 48,

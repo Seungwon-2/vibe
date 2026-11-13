@@ -11,6 +11,7 @@ function makeScene() {
   const textObjects: ReturnType<typeof makeText>[] = [];
   const zones: ReturnType<typeof makeZone>[] = [];
   const scene = {
+    scale: { height: 540 },
     add: {
       rectangle: vi.fn(() => {
         const zone = makeZone();
@@ -104,7 +105,12 @@ describe('PitSpawner', () => {
       RUNNER_CONFIG.pitWidthMeters / RUNNER_CONFIG.metersPerWorldUnit, 4, 0xffffff, 0);
     expect(mock.zones[0].setOrigin).toHaveBeenCalledWith(0.5);
     expect(mock.graphicsObjects[0].setDepth).toHaveBeenCalledWith(-1);
-    expect(mock.graphicsObjects[0].fillRect).toHaveBeenCalled();
+    expect(mock.graphicsObjects[0].fillRect).toHaveBeenCalledWith(
+      -RUNNER_CONFIG.pitWidthMeters / RUNNER_CONFIG.metersPerWorldUnit / 2,
+      2,
+      RUNNER_CONFIG.pitWidthMeters / RUNNER_CONFIG.metersPerWorldUnit,
+      68,
+    );
     expect(mock.textObjects).toHaveLength(1);
     expect(mock.textObjects[0].setVisible).toHaveBeenCalledWith(true);
 

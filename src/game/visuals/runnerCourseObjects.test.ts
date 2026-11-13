@@ -95,12 +95,13 @@ describe('biome course landmark art', () => {
     const width = 90;
     const signatures = RUNNER_BIOMES.map((biome) => {
       const graphics = makeGraphics();
-      drawRunnerPit(graphics as unknown as Phaser.GameObjects.Graphics, width, biome);
-      expectInside(graphics, { left: -width / 2, right: width / 2, top: 0, bottom: 36 });
-      expect(graphics.fillRect).toHaveBeenCalledWith(-width / 2, 2, width, 34);
-      expect(graphics.fillStyle).toHaveBeenCalledWith(biome.palette.hazardContrast, 0.96);
-      expect(graphics.lineBetween).toHaveBeenCalledWith(-width / 2, 2, -width / 2, 35);
-      expect(graphics.lineBetween).toHaveBeenCalledWith(width / 2, 2, width / 2, 35);
+      const visibleDepth = 70;
+      drawRunnerPit(graphics as unknown as Phaser.GameObjects.Graphics, width, biome, visibleDepth);
+      expectInside(graphics, { left: -width / 2, right: width / 2, top: 0, bottom: visibleDepth });
+      expect(graphics.fillRect).toHaveBeenCalledWith(-width / 2, 2, width, visibleDepth - 2);
+      expect(graphics.fillStyle).toHaveBeenCalledWith(biome.palette.hazardContrast, 0.98);
+      expect(graphics.lineBetween).toHaveBeenCalledWith(-width / 2, 2, -width / 2, visibleDepth);
+      expect(graphics.lineBetween).toHaveBeenCalledWith(width / 2, 2, width / 2, visibleDepth);
       return getSignature(graphics);
     });
     expect(new Set(signatures).size).toBe(RUNNER_BIOMES.length);

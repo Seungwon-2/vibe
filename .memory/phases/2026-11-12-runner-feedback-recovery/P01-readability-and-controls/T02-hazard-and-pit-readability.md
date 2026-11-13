@@ -58,4 +58,6 @@ Task: T02-hazard-and-pit-readability
 ## Implementation Notes
 - Added a consistent high-contrast top edge for double-jump barriers and lower edge for overhead slide barriers without changing collision geometry.
 - Added outlined lips and vertical depth edges to pit openings in all four biome palettes. Pit retention behavior was already correct and remains unchanged.
+- Extended the dark pit fill and both side edges from the ground opening to the bottom of the 960×540 playfield, so the lower floor pattern cannot visually continue through a lethal gap. The depth is derived from the Phaser viewport and ground line; collision geometry is unchanged.
 - Corrected an initial geometry assumption during review: with `RUNNER_GROUND_Y = 470`, the existing 54px overhead opening leaves 6px above the 48px sliding collision body. No geometry change was needed.
+- Verified with `npm run test -- --run src/game/runner/PitSpawner.test.ts src/game/visuals/runnerCourseObjects.test.ts src/game/runner/ObstacleSpawner.test.ts src/game/visuals/runnerHazards.test.ts` (19 tests) and `npm run build`.
