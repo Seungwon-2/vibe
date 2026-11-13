@@ -185,18 +185,22 @@ const GIANT_PICKUP_PURPLE = 0x9b5de5;
 const GIANT_PICKUP_PINK = 0xff77b7;
 const GIANT_PICKUP_OUTLINE = 0xffffff;
 
-export function getPowerUpClearanceMeters(kind: 'giant' | 'speed', atMeters: number): number {
+export function getPowerUpClearanceMeters(
+  kind: 'giant' | 'speed',
+  atMeters: number,
+  isStoryCourse = false,
+): number {
   const durationMs = kind === 'giant' ? RUNNER_CONFIG.giantDurationMs : RUNNER_CONFIG.speedPickupDurationMs;
   let distanceMeters = atMeters;
   let remainingMs: number = durationMs;
 
-  // Gate bonuses increase speed while an effect is active. Integrate gate by
-  // gate at maximum speed so later pickups cannot overlap that faster window.
+  // Story gates are visual milestones only. Endless gate bonuses are integrated
+  // across the active window so late pickups account for the faster course.
   for (let gateCrossings = 0; remainingMs > 0 && gateCrossings < 256; gateCrossings += 1) {
-    const speedMetersPerSecond = getMaximumRunSpeedUnitsPerSecond(distanceMeters) *
+    const speedMetersPerSecond = getMaximumRunSpeedUnitsPerSecond(isStoryCourse ? 0 : distanceMeters) *
       RUNNER_CONFIG.metersPerWorldUnit * RUNNER_CONFIG.speedPickupMultiplier;
-    const nextGate = (Math.floor(distanceMeters / ENDLESS_GATE_INTERVAL_METERS) + 1) *
-      ENDLESS_GATE_INTERVAL_METERS;
+    const nextGate = isStoryCourse ? Number.POSITIVE_INFINITY :
+      (Math.floor(distanceMeters / ENDLESS_GATE_INTERVAL_METERS) + 1) * ENDLESS_GATE_INTERVAL_METERS;
     const millisecondsToGate = (nextGate - distanceMeters) / speedMetersPerSecond * 1_000;
 
     if (millisecondsToGate >= remainingMs) {
@@ -209,20 +213,25 @@ export function getPowerUpClearanceMeters(kind: 'giant' | 'speed', atMeters: num
   }
 
   if (remainingMs > 0) return Number.POSITIVE_INFINITY;
-  return Math.ceil(distanceMeters - atMeters) + RUNNER_CONFIG.powerUpPickupRecoveryMeters;
+  // Add a search-radius buffer so the next pickup is not already within reach
+  // as the current effect expires, then leave the configured recovery distance.
+  const searchRadius = Math.max(RUNNER_CONFIG.speedPickupSearchRadiusMeters,
+    RUNNER_CONFIG.giantPickupSearchRadiusMeters);
+  return Math.ceil(distanceMeters - atMeters) + searchRadius + RUNNER_CONFIG.powerUpPickupRecoveryMeters;
 }
 
 function hasPowerUpSpacing(
   candidateMeters: number,
   candidateKind: 'giant' | 'speed',
   pickups: readonly PickupDefinition[],
+  isStoryCourse = false,
 ): boolean {
   return pickups.every((pickup) => {
     if (pickup.kind !== 'giant' && pickup.kind !== 'speed') return true;
     const gap = candidateMeters - pickup.distanceMeters;
     return gap >= 0
-      ? gap >= getPowerUpClearanceMeters(pickup.kind, pickup.distanceMeters)
-      : -gap >= getPowerUpClearanceMeters(candidateKind, candidateMeters);
+      ? gap >= getPowerUpClearanceMeters(pickup.kind, pickup.distanceMeters, isStoryCourse)
+      : -gap >= getPowerUpClearanceMeters(candidateKind, candidateMeters, isStoryCourse);
   });
 }
 
@@ -600,7 +609,7 @@ export function generatePickupSchedule(maxDistanceMeters: number,
       isPickupDistanceSafe(candidate, 52, hazards, pits, undefined, storyStageId) &&
       [...existingPickups, ...giantPickups].every((pickup) =>
         Math.abs(pickup.distanceMeters - candidate) >= 30) &&
-      (storyStageId !== null || hasPowerUpSpacing(candidate, 'giant', giantPickups)),
+      hasPowerUpSpacing(candidate, 'giant', [...existingPickups, ...giantPickups], storyStageId !== null),
     );
     if (distanceMeters === undefined) continue;
     giantPickups.push({ id: `giant-${giantIndex++}`, kind: 'giant', distanceMeters,
@@ -619,7 +628,7 @@ export function generatePickupSchedule(maxDistanceMeters: number,
       isPickupDistanceSafe(candidate, 52, hazards, pits, undefined, storyStageId) &&
       [...scheduledPickups, ...speedPickups].every((pickup) =>
         Math.abs(pickup.distanceMeters - candidate) >= RUNNER_CONFIG.speedPickupClearanceMeters) &&
-        (storyStageId !== null || hasPowerUpSpacing(candidate, 'speed', [...scheduledPickups, ...speedPickups])),
+      hasPowerUpSpacing(candidate, 'speed', [...scheduledPickups, ...speedPickups], storyStageId !== null),
     );
     if (distanceMeters !== undefined) {
       speedPickups.push({ id: `speed-${speedPickups.length}`, kind: 'speed', distanceMeters,

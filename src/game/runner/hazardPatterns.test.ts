@@ -98,6 +98,22 @@ describe('authored hazard patterns', () => {
       .toBe(RUNNER_CONFIG.endlessDenseWidePitRecoveryGapMeters);
   });
 
+  it('rotates the double-jump challenge position without changing its recovery spacing', () => {
+    const expectedSlots = [0, 1, 2, 1];
+    for (let rotation = 0; rotation < expectedSlots.length; rotation += 1) {
+      const waveIndex = 3 + rotation * 4;
+      const startPatternIndex = 3 + waveIndex * RUNNER_CONFIG.densePatternsPerSection;
+      const starts = Array.from({ length: RUNNER_CONFIG.densePatternsPerSection }, (_, slot) =>
+        getPatternStartDistance(startPatternIndex + slot),
+      );
+      const kinds = starts.map((distance) => getPatternForDistance(distance).obstacles[0].kind);
+      expect(kinds.filter((kind) => kind === 'double-jump')).toHaveLength(1);
+      expect(kinds.indexOf('double-jump')).toBe(expectedSlots[rotation]);
+      expect(starts[1] - starts[0]).toBeGreaterThanOrEqual(RUNNER_CONFIG.endlessDenseSpacingFloorMeters);
+      expect(starts[2] - starts[1]).toBeGreaterThanOrEqual(RUNNER_CONFIG.endlessDenseSpacingFloorMeters);
+    }
+  });
+
   it('keeps generated hazards outside pit zones and preserves one second of action recovery at fastest speed', () => {
     const scheduled: { at: number; kind: string }[] = [];
     let skipNextPattern = false;

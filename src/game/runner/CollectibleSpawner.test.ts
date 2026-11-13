@@ -454,7 +454,12 @@ describe('authored collectible schedule', () => {
     expect(endless).toEqual(generatePickupSchedule(15_000));
     for (const [index, schedule] of schedules.entries()) {
       const speeds = schedule.filter(({ kind }) => kind === 'speed');
-      expect(speeds.length, `schedule ${index} should contain speed pickups`).toBeGreaterThan(0);
+      if (index === 0) {
+        expect(speeds.length, 'Endless should contain speed pickups').toBeGreaterThan(0);
+      } else {
+        expect(schedule.some(({ kind }) => kind === 'giant' || kind === 'speed'),
+          `Story schedule ${index} should contain a high-impact pickup`).toBe(true);
+      }
       for (const speed of speeds) {
         expect(speed.id).toMatch(/^speed-\d+$/);
         const targetIndex = Math.max(0, Math.round((speed.distanceMeters -
@@ -483,6 +488,34 @@ describe('authored collectible schedule', () => {
         .toBeGreaterThanOrEqual(getPowerUpClearanceMeters(
           previous.kind === 'giant' ? 'giant' : 'speed', previous.distanceMeters,
         ));
+    }
+  });
+
+  it('spaces high-impact pickups in fixed Story courses without applying Endless gate acceleration', () => {
+    for (const stage of STORY_STAGES) {
+      const schedule = generatePickupSchedule(stage.lengthMeters, stage.id);
+      const powerUps = schedule.filter(({ kind }) => kind === 'speed' || kind === 'giant');
+      expect(powerUps.length, `${stage.id} should retain a high-impact pickup`).toBeGreaterThan(0);
+      for (let index = 1; index < powerUps.length; index += 1) {
+        const previous = powerUps[index - 1];
+        expect(powerUps[index].distanceMeters - previous.distanceMeters,
+          `${stage.id} power-ups overlap near ${previous.distanceMeters}m`)
+          .toBeGreaterThanOrEqual(getPowerUpClearanceMeters(
+            previous.kind === 'giant' ? 'giant' : 'speed', previous.distanceMeters, true,
+          ));
+      }
+    }
+  });
+
+  it('keeps every 1km tier supplied through a deterministic 50km Endless schedule', () => {
+    const schedule = generatePickupSchedule(50_000);
+    for (let kilometer = 0; kilometer < 50; kilometer += 1) {
+      const start = kilometer * 1_000;
+      const items = schedule.filter(({ distanceMeters }) =>
+        distanceMeters >= start && distanceMeters < start + 1_000);
+      expect(items.length, `no pickups in Endless ${start}-${start + 1_000}m`).toBeGreaterThan(0);
+      expect(items.some(({ kind }) => kind === 'coin'), `no coin in Endless ${start}-${start + 1_000}m`)
+        .toBe(true);
     }
   });
 

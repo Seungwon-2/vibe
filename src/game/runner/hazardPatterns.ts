@@ -144,7 +144,11 @@ function getScheduledKind(distanceMeters: number): HazardKind {
   }
   const slotIndex = wave.patternDistances.reduce((slot, start, index) =>
     distanceMeters >= start ? index : slot, 0);
-  if (waveIndex >= 3 && (waveIndex - 3) % 4 === 0 && slotIndex === 0) return 'double-jump';
+  if (waveIndex >= 3 && (waveIndex - 3) % 4 === 0) {
+    const doubleJumpSlots = [0, 1, 2, 1] as const;
+    const rotation = Math.floor((waveIndex - 3) / 4) % doubleJumpSlots.length;
+    if (slotIndex === doubleJumpSlots[rotation]) return 'double-jump';
+  }
   return (waveIndex + slotIndex) % 2 === 0 ? 'ground' : 'overhead';
 }
 
