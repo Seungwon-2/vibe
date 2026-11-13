@@ -4,20 +4,45 @@ import { getHazardCollisionGeometry, getHazardGeometry, getHazardVisualGeometry,
 import { createRunnerSnapshot, startRunner } from './RunnerSimulation';
 import type { HazardDefinition } from './hazardTypes';
 import { RUNNER_CONFIG } from './runnerConfig';
-import { RUNNER_GROUND_Y } from './runnerPose';
+import { RUNNER_GROUND_Y, STANDING_BODY_WIDTH } from './runnerPose';
 
 const ground: HazardDefinition = { id: 'spikes', kind: 'ground', offsetMeters: 0,
   width: 46, height: 48, warningColor: '#ffcf6b' };
 const overhead: HazardDefinition = { id: 'bar', kind: 'overhead', offsetMeters: 0,
   width: 64, height: 36, warningColor: '#8fe5f8' };
 const highBarrier: HazardDefinition = { id: 'wall', kind: 'double-jump', offsetMeters: 0,
-  width: 64, height: 156, warningColor: '#ff9a66' };
+  width: RUNNER_CONFIG.doubleJumpBarrierWidthPx, height: RUNNER_CONFIG.doubleJumpBarrierHeightPx,
+  warningColor: '#ff9a66' };
+
+function canClearDoubleJumpBarrier(height: number, firstJumpLeadSeconds: number, secondJumpDelaySeconds: number) {
+  const stepSeconds = 1 / 120;
+  const speed = RUNNER_CONFIG.maxSpeedUnitsPerSecond;
+  const horizontalHalfOverlap = (highBarrier.width + STANDING_BODY_WIDTH) / 2;
+  const overlapStart = firstJumpLeadSeconds - horizontalHalfOverlap / speed;
+  const overlapEnd = firstJumpLeadSeconds + horizontalHalfOverlap / speed;
+  let verticalVelocity = RUNNER_CONFIG.jumpImpulseY;
+  let verticalClearance = 0;
+
+  for (let elapsed = stepSeconds; elapsed <= overlapEnd + stepSeconds / 2; elapsed += stepSeconds) {
+    if (Math.abs(elapsed - secondJumpDelaySeconds) < stepSeconds / 2) {
+      verticalVelocity = RUNNER_CONFIG.jumpImpulseY;
+    }
+    verticalVelocity += RUNNER_CONFIG.gravityY * stepSeconds;
+    verticalClearance -= verticalVelocity * stepSeconds;
+    if (elapsed >= overlapStart && verticalClearance < height + 2) return false;
+  }
+  return true;
+}
 
 describe('hazard collision', () => {
   it('uses boxes aligned to standing and sliding silhouettes', () => {
     expect(getHazardGeometry(ground, 100)).toEqual({ x: 100, y: 422, width: 46, height: 48 });
     expect(getHazardGeometry(overhead, 100)).toEqual({ x: 100, y: 380, width: 64, height: 36 });
-    expect(getHazardGeometry(highBarrier, 100)).toEqual({ x: 100, y: RUNNER_GROUND_Y - 156, width: 64, height: 156 });
+    expect(getHazardGeometry(highBarrier, 100)).toEqual({
+      x: 100, y: RUNNER_GROUND_Y - RUNNER_CONFIG.doubleJumpBarrierHeightPx,
+      width: RUNNER_CONFIG.doubleJumpBarrierWidthPx,
+      height: RUNNER_CONFIG.doubleJumpBarrierHeightPx,
+    });
     expect(getHazardGeometry(overhead, 100).y + overhead.height).toBeLessThan(430);
   });
 
@@ -41,13 +66,25 @@ describe('hazard collision', () => {
     expect(isHazardDodgedBySlide(highBarrier, true)).toBe(false);
   });
 
-  it('sets the tall barrier between one-jump and well-timed double-jump ceilings', () => {
+  it('keeps the tall barrier above a single jump while providing a forgiving double-jump window', () => {
     const { gravityY, jumpImpulseY, doubleJumpBarrierHeightPx } = RUNNER_CONFIG;
     const oneJumpHeight = Math.abs(jumpImpulseY) ** 2 / (2 * gravityY);
-    const doubleJumpHeight = oneJumpHeight * 2;
+    const firstJumpLeadSeconds = 0.975;
+    const viableSecondJumpDelays: number[] = [];
+    for (let delay = 1 / 120; delay < 1.2; delay += 1 / 120) {
+      if (canClearDoubleJumpBarrier(doubleJumpBarrierHeightPx, firstJumpLeadSeconds, delay)) {
+        viableSecondJumpDelays.push(delay);
+      }
+    }
 
     expect(oneJumpHeight).toBeLessThan(doubleJumpBarrierHeightPx);
-    expect(doubleJumpHeight).toBeGreaterThan(doubleJumpBarrierHeightPx);
+    expect(canClearDoubleJumpBarrier(doubleJumpBarrierHeightPx, firstJumpLeadSeconds, 0.5)).toBe(true);
+    expect(viableSecondJumpDelays.length / 120).toBeGreaterThanOrEqual(0.3);
+    expect(viableSecondJumpDelays[0]).toBeGreaterThan(0.25);
+    expect(viableSecondJumpDelays.at(-1)).toBeLessThan(0.75);
+    // At max speed, this setup starts the first jump about 128m before the barrier center.
+    expect(firstJumpLeadSeconds * RUNNER_CONFIG.maxSpeedUnitsPerSecond *
+      RUNNER_CONFIG.metersPerWorldUnit).toBeCloseTo(128, 0);
   });
 
   it('applies one penalty then ignores overlaps during protection', () => {

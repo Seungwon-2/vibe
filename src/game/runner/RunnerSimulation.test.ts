@@ -5,6 +5,7 @@ import {
   advanceRunner,
   applyCollision,
   applyPitFall,
+  beginRunnerSlide,
   collectPickup,
   createRunnerSnapshot,
   finishRunner,
@@ -244,6 +245,7 @@ describe('RunnerSimulation', () => {
     expect(collisionRescue).toMatchObject({
       remainingMs: initial.remainingMs, staggerRemainingMs: 0, protectionRemainingMs: 1_200,
       passiveChargesRemaining: 1, passiveEffectRemainingMs: 700,
+      livesRemaining: initial.livesRemaining, hitsTaken: initial.hitsTaken,
     });
     const effectHalfway = advanceRunner(collisionRescue, 300).state;
     expect(effectHalfway.remainingMs).toBe(initial.remainingMs - 300);
@@ -255,6 +257,7 @@ describe('RunnerSimulation', () => {
     expect(pitRescue.state).toMatchObject({
       phase: 'running', remainingMs: initial.remainingMs, distanceMeters: initial.distanceMeters,
       passiveChargesRemaining: 0, passiveEffectRemainingMs: 700,
+      livesRemaining: initial.livesRemaining, hitsTaken: initial.hitsTaken,
     });
 
     const afterProtection = advanceRunner(pitRescue.state, RUNNER_CONFIG.protectionMs).state;
@@ -264,6 +267,29 @@ describe('RunnerSimulation', () => {
     const fatalPit = applyPitFall(pitRescue.state);
     expect(fatalPit.blockedByPassive).toBe(false);
     expect(fatalPit.state).toMatchObject({ phase: 'finished', finishReason: 'pit', remainingMs: 0 });
+  });
+
+  it("lets Toa's opening slide guard cancel one hit and enforces its 20-second cooldown", () => {
+    const initial = running('goth-student');
+    const sliding = beginRunnerSlide(initial);
+    expect(sliding.slideGuardRemainingMs).toBe(250);
+
+    const guarded = applyCollision(sliding, true);
+    expect(guarded).toMatchObject({
+      remainingMs: initial.remainingMs,
+      livesRemaining: initial.livesRemaining,
+      hitsTaken: initial.hitsTaken,
+      slideGuardRemainingMs: 0,
+      slideGuardCooldownRemainingMs: 20_000,
+      passiveEffectRemainingMs: 500,
+    });
+
+    expect(beginRunnerSlide(guarded)).toBe(guarded);
+    const cooldownAlmostDone = advanceRunner(guarded, 19_999).state;
+    expect(cooldownAlmostDone.slideGuardCooldownRemainingMs).toBe(1);
+    expect(beginRunnerSlide(cooldownAlmostDone)).toBe(cooldownAlmostDone);
+    const ready = advanceRunner(cooldownAlmostDone, 1).state;
+    expect(beginRunnerSlide(ready).slideGuardRemainingMs).toBe(250);
   });
 
   it('freezes map distance for 1.2s after a hit while the timer continues', () => {

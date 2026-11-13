@@ -4,6 +4,8 @@ import { RunnerInputBridge } from './RunnerInput';
 import { RunnerPlayer } from './RunnerPlayer';
 import type { CharacterId } from '../characters/characterTypes';
 import { getCharacter } from '../characters/characterCatalog';
+import { getCharacterPassive } from '../characters/characterAbilities';
+import { RUNNER_CONFIG } from './runnerConfig';
 
 function createPlayer(characterId: CharacterId) {
   const frameSize = getCharacter(characterId).qualityFrameSize as number;
@@ -143,6 +145,21 @@ describe('RunnerPlayer and input bridge', () => {
     expect(player.jump()).toBe(true);
     expect(player.jumpCount).toBe(1);
     expect(sprite.anims.play).toHaveBeenCalledWith('cogane-rang:doubleJump', true);
+  });
+
+  it("gives Rang's second jump a measured 12% apex increase without changing the first jump", () => {
+    const passive = getCharacterPassive('cogane-rang');
+    expect(passive.id).toBe('rang-double-jump');
+    if (passive.id !== 'rang-double-jump') throw new Error('Rang passive is not configured');
+
+    const baseImpulse = Math.abs(RUNNER_CONFIG.jumpImpulseY);
+    const baseApex = baseImpulse ** 2 / (2 * RUNNER_CONFIG.gravityY);
+    const rangApex = (baseImpulse * passive.doubleJumpVelocityMultiplier) ** 2 /
+      (2 * RUNNER_CONFIG.gravityY);
+
+    expect(RUNNER_CONFIG.jumpImpulseY).toBe(-420);
+    expect(passive.doubleJumpVelocityMultiplier).toBe(1.058);
+    expect((rangApex / baseApex - 1) * 100).toBeCloseTo(12, 0);
   });
 
   it('switches to the falling frames once velocity changes sign without changing jump physics', () => {

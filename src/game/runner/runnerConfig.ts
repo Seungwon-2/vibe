@@ -76,7 +76,8 @@ export const RUNNER_CONFIG = Object.freeze({
   gravityY: 900,
   jumpImpulseY: -420,
   doubleJumpBarrierWidthPx: 64,
-  doubleJumpBarrierHeightPx: 156,
+  // Keep above a single-jump apex (98px), but leave a ~325ms second-jump timing window.
+  doubleJumpBarrierHeightPx: 142,
   metersPerWorldUnit: 1 / 3,
   collisionPenaltyMs: 5_000,
   endlessCollisionPenaltyTiers: [
