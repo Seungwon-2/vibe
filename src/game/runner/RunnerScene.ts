@@ -37,6 +37,7 @@ export class RunnerScene extends Phaser.Scene {
   private trailEffect!: RunnerTrailEffect;
   private pits!: PitSpawner;
   private finishEmitted = false;
+  private terminalFinishedAtIso: string | null = null;
   private finishPending = false;
   private storyFinishTimer: Phaser.Time.TimerEvent | null = null;
   private pitFallCinematicActive = false;
@@ -510,6 +511,7 @@ export class RunnerScene extends Phaser.Scene {
 
   private emitFinished(result: RunnerResult): void {
     if (this.finishEmitted) return;
+    result = this.captureTerminalTime(result);
     this.finishEmitted = true;
     this.inputBridge.clear();
     this.trailEffect.clear();
@@ -524,9 +526,17 @@ export class RunnerScene extends Phaser.Scene {
   }
 
   private checkpointTerminal(result: RunnerResult, outcome: RunnerFinishOutcome): void {
+    result = this.captureTerminalTime(result);
     const onTerminalCheckpoint = this.registry.get('onTerminalCheckpoint') as
       ((result: RunnerResult, outcome: RunnerFinishOutcome) => void) | undefined;
     onTerminalCheckpoint?.(result, outcome);
+  }
+
+  private captureTerminalTime(result: RunnerResult): RunnerResult {
+    // elapsedMs excludes paused/offline time. Capture the real finish instant
+    // once, including before a delayed victory/defeat/pit animation completes.
+    this.terminalFinishedAtIso ??= new Date().toISOString();
+    return { ...result, finishedAtIso: this.terminalFinishedAtIso };
   }
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {

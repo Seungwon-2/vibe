@@ -46,7 +46,7 @@ The workflow sets `VITE_API_BASE_URL=/api`. The API also needs these server-side
 - `COSMOS_DATABASE_ID=stella-runner`
 - `COSMOS_CONTAINER_ID=PlayerRecords`
 
-The app first checks whether it can silently acquire the API token. If the user must consent, the signed-in account can explicitly choose **클라우드 기록 연결**. Tenant policy may still require an administrator to approve that consent; until API access succeeds, the browser-local gateway remains active. Deploying the API does not by itself prove a live Cosmos write: after setting these values and deploying, sign in, grant consent if permitted, submit a run, and verify it in the app's private history and public leaderboard. Never expose or paste Cosmos keys in chat or logs.
+Login requests the runner API scope together with OIDC scopes. Existing signed-in sessions first try silent acquisition and automatically start API consent when interaction is required, once per account/scope to avoid redirect loops after a denied request. A retry control remains available on failure. Tenant policy may still require an administrator to approve that consent; until API access succeeds, the browser-local gateway remains active. Deploying the API does not by itself prove a live Cosmos write: after setting these values and deploying, sign in, grant consent if permitted, submit a run, and verify it in the app's private history and public leaderboard. Never expose or paste Cosmos keys in chat or logs.
 
 ## Validation
 

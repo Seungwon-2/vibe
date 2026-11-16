@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { InteractionRequiredAuthError, PublicClientApplication, type AccountInfo } from '@azure/msal-browser';
 import { MsalProvider, useMsal } from '@azure/msal-react';
 import { entraMsalConfig, isEntraConfigured, loginRequest, readEntraSettings, runnerApiRequest } from './entraConfig';
@@ -75,10 +75,11 @@ function CloudContextBridge({ children, redirectError }: Readonly<{ children: Re
   const settings = readEntraSettings();
   const [apiConsentStatus, setApiConsentStatus] = useState<RunnerApiConsentStatus>(settings.apiScope ? 'checking' : 'unavailable');
   const [apiConsentError, setApiConsentError] = useState<string | null>(redirectError);
+  const automaticAttempt = useRef<string | null>(null);
   useEffect(() => { if (account) instance.setActiveAccount(account); }, [account, instance]);
   useEffect(() => {
     let current = true;
-    if (!account || !settings.apiScope) {
+    if (!account || !settings.apiScope || inProgress !== 'none') {
       queueMicrotask(() => {
         if (current) setApiConsentStatus(settings.apiScope ? 'checking' : 'unavailable');
       });
@@ -88,14 +89,37 @@ function CloudContextBridge({ children, redirectError }: Readonly<{ children: Re
       if (current) setApiConsentStatus('checking');
       return instance.acquireTokenSilent({ ...runnerApiRequest, account });
     }).then(() => {
-      if (current) { setApiConsentStatus('available'); setApiConsentError(null); }
-    }).catch((error: unknown) => {
+      if (current) {
+        setApiConsentStatus('available');
+        setApiConsentError(null);
+        automaticAttempt.current = null;
+        try { sessionStorage.removeItem(`runner:api-connect:${account.homeAccountId}:${settings.apiScope}`); } catch { /* Storage is optional. */ }
+      }
+    }).catch(async (error: unknown) => {
       if (!current) return;
-      if (error instanceof InteractionRequiredAuthError) setApiConsentStatus('consent-required');
+      if (error instanceof InteractionRequiredAuthError) {
+        setApiConsentStatus('consent-required');
+        // Existing sign-ins also connect automatically. Persist an attempt marker
+        // across redirects to avoid repeatedly redirecting after denied consent.
+        const attemptKey = `runner:api-connect:${account.homeAccountId}:${settings.apiScope}`;
+        if (redirectError || automaticAttempt.current === attemptKey) return;
+        try { if (sessionStorage.getItem(attemptKey)) return; } catch { /* Use the in-memory guard. */ }
+        automaticAttempt.current = attemptKey;
+        try {
+          sessionStorage.setItem(attemptKey, '1');
+        } catch { /* Private browsing may block storage. */ }
+        try { await instance.acquireTokenRedirect({ ...runnerApiRequest, account }); }
+        catch (connectionError: unknown) {
+          if (current) {
+            setApiConsentStatus('error');
+            setApiConsentError(connectionError instanceof Error ? connectionError.message : '클라우드 기록 자동 연결에 실패했습니다.');
+          }
+        }
+      }
       else { setApiConsentStatus('error'); setApiConsentError(error instanceof Error ? error.message : 'API 권한을 확인하지 못했습니다.'); }
     });
     return () => { current = false; };
-  }, [account, instance, settings.apiScope]);
+  }, [account, inProgress, instance, redirectError, settings.apiScope]);
   const value = useMemo<RunnerAuthValue>(() => ({
     mode: 'cloud', status: inProgress !== 'none' ? 'loading' : account ? 'signed-in' : 'signed-out',
     account, error: null, apiConsentStatus, apiConsentError: apiConsentError ?? redirectError,

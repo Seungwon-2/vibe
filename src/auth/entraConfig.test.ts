@@ -6,7 +6,7 @@ afterEach(() => {
 });
 
 describe('Entra SPA configuration', () => {
-  it('keeps OIDC login scopes separate from the optional delegated runner API scope', async () => {
+  it('requests the runner API scope at login so cloud connection needs no extra step', async () => {
     vi.stubEnv('VITE_ENTRA_TENANT_ID', 'tenant-123');
     vi.stubEnv('VITE_ENTRA_CLIENT_ID', 'spa-client-456');
     vi.stubEnv('VITE_ENTRA_API_SCOPE', 'api://runner-api/access_as_user');
@@ -14,8 +14,7 @@ describe('Entra SPA configuration', () => {
     const config = await import('./entraConfig');
 
     expect(config.isEntraConfigured()).toBe(true);
-    expect(config.loginRequest.scopes).toEqual(['openid', 'profile']);
-    expect(config.loginRequest.scopes).not.toContain('api://runner-api/access_as_user');
+    expect(config.loginRequest.scopes).toEqual(['openid', 'profile', 'api://runner-api/access_as_user']);
     expect(config.loginRequest.scopes).not.toContain('User.Read');
     expect(config.entraMsalConfig.auth).toMatchObject({
       clientId: 'spa-client-456',

@@ -13,6 +13,29 @@ vi.mock('../../services/PersonalBestStore', () => ({
 import { RunnerScene } from './RunnerScene';
 
 describe('RunnerScene keyboard focus handling', () => {
+  it('stamps resumed results with the real finish time and preserves it across delayed checkpoints', () => {
+    vi.useFakeTimers();
+    try {
+      const finishTime = '2026-11-16T06:00:00.000Z';
+      vi.setSystemTime(new Date(finishTime));
+      const scene = new RunnerScene();
+      const terminalCheckpoint = vi.fn();
+      const harness = scene as unknown as {
+        registry: { get(key: string): unknown };
+        checkpointTerminal(result: RunnerResult, outcome: 'completed'): void;
+        captureTerminalTime(result: RunnerResult): RunnerResult;
+      };
+      harness.registry = { get: () => terminalCheckpoint };
+      const logicalResult: RunnerResult = { characterId: 'player-default', distanceMeters: 1000,
+        coins: 4, durationMs: 15000, finishedAtIso: '2026-11-13T06:00:15.000Z', finishReason: 'pit' };
+      harness.checkpointTerminal(logicalResult, 'completed');
+      vi.setSystemTime(new Date('2026-11-16T06:00:01.000Z'));
+      const emittedResult = harness.captureTerminalTime(logicalResult);
+      expect(emittedResult).toEqual({ ...logicalResult, finishedAtIso: finishTime });
+      expect(terminalCheckpoint).toHaveBeenCalledExactlyOnceWith(emittedResult, 'completed');
+      expect(logicalResult.finishedAtIso).toBe('2026-11-13T06:00:15.000Z');
+    } finally { vi.useRealTimers(); }
+  });
   it('keeps the initial countdown moving when the browser window loses focus', () => {
     const scene = new RunnerScene();
     const clear = vi.fn();
@@ -227,7 +250,7 @@ describe('RunnerScene finish boundary', () => {
     expect(record).toHaveBeenCalledTimes(1);
     expect(clear).toHaveBeenCalledTimes(1);
     expect(finishPlayer).toHaveBeenCalledExactlyOnceWith('victory');
-    expect(finishEvent).toHaveBeenCalledExactlyOnceWith(result, 'personal-best');
+    expect(finishEvent).toHaveBeenCalledExactlyOnceWith({ ...result, finishedAtIso: expect.any(String) }, 'personal-best');
   });
 
   it('uses the crying action for a completed run below the saved best', () => {
@@ -251,7 +274,7 @@ describe('RunnerScene finish boundary', () => {
       coins: 0, durationMs: 1000, finishedAtIso: '2026-10-27T00:00:00.000Z', finishReason: 'timeout' };
     harness.emitFinished(result);
     expect(finishPlayer).toHaveBeenCalledExactlyOnceWith('gameOver');
-    expect(finishEvent).toHaveBeenCalledExactlyOnceWith(result, 'completed');
+    expect(finishEvent).toHaveBeenCalledExactlyOnceWith({ ...result, finishedAtIso: expect.any(String) }, 'completed');
   });
 
   it('holds the Story game-over pose for one second after the last life is lost', () => {
@@ -304,7 +327,7 @@ describe('RunnerScene finish boundary', () => {
     finishAfterHold?.();
 
     expect(harness.finishPending).toBe(false);
-    expect(finishEvent).toHaveBeenCalledExactlyOnceWith(result, 'completed');
+    expect(finishEvent).toHaveBeenCalledExactlyOnceWith({ ...result, finishedAtIso: expect.any(String) }, 'completed');
     expect(record).not.toHaveBeenCalled();
   });
 

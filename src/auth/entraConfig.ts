@@ -35,7 +35,7 @@ export const entraMsalConfig: Configuration = (() => {
 })();
 
 export const loginRequest: RedirectRequest = {
-  scopes: ['openid', 'profile'],
+  scopes: ['openid', 'profile', readEntraSettings().apiScope].filter(Boolean),
 };
 
 export const runnerApiRequest: RedirectRequest & SilentRequest = {
