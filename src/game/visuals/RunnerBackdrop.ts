@@ -82,8 +82,54 @@ function drawSkyDetail(graphics: Phaser.GameObjects.Graphics,
   }
 }
 
+// Cached into the existing far texture, rather than creating moving objects.
+// Pale silhouettes occupy the empty upper horizon; foreground hazards retain
+// their stronger outlines and the running lane stays visually uncluttered.
+function drawHorizon(graphics: Phaser.GameObjects.Graphics, biome: RunnerBiomeDefinition): void {
+  const { palette: p } = biome;
+  switch (biome.id) {
+    case 'dawn-city':
+      for (const [x, top, width] of [[8, 218, 75], [106, 175, 64], [219, 232, 90], [360, 192, 76]]) {
+        graphics.fillStyle(p.middle, .2).fillRoundedRect(x, top, width, 420 - top, 5);
+        graphics.fillStyle(p.middle, .2).fillTriangle(x - 7, top, x + width / 2, top - 24, x + width + 7, top);
+        for (let y = top + 22; y < 330; y += 27) {
+          for (let wx = x + 14; wx < x + width - 8; wx += 23) rect(graphics, 0xffffff, wx, y, 7, 11, .38);
+        }
+      }
+      graphics.lineStyle(3, p.middle, .17).lineBetween(0, 280, TILE_WIDTH, 280);
+      break;
+    case 'moonlit-forest':
+      for (const [x, top] of [[28, 175], [208, 138], [412, 192]]) {
+        rect(graphics, p.middle, x, top + 22, 14, 420 - top, .15);
+        ellipse(graphics, p.middle, x + 6, top, 172, 124, .18);
+        ellipse(graphics, p.far, x + 48, top + 25, 124, 90, .24);
+        graphics.lineStyle(5, p.middle, .13).lineBetween(x + 7, top + 114, x + 52, top + 66);
+      }
+      break;
+    case 'crystal-mine':
+      for (const [x, depth, width] of [[-12, 164, 105], [145, 216, 92], [330, 178, 136]]) {
+        graphics.fillStyle(p.middle, .19).fillTriangle(x, 40, x + width, 40, x + width * .45, depth);
+        graphics.fillStyle(p.accent, .16).fillTriangle(x + width * .45, depth, x + width, 40, x + width * .7, 60);
+      }
+      for (const x of [66, 374]) rect(graphics, p.middle, x, 176, 12, 265, .16);
+      rect(graphics, p.middle, 58, 174, 338, 12, .16);
+      break;
+    case 'cloud-skyway':
+      for (const [x, y] of [[22, 222], [299, 189]]) {
+        ellipse(graphics, p.middle, x + 60, y + 28, 154, 28, .26);
+        graphics.fillStyle(p.middle, .22).fillTriangle(x - 15, y + 30, x + 126, y + 30, x + 60, y + 100);
+        cloud(graphics, 0xffffff, x + 4, y - 18, .8, .8);
+        graphics.lineStyle(2, p.middle, .25).lineBetween(x + 40, y - 12, x + 60, y - 48)
+          .lineBetween(x + 60, y - 48, x + 80, y - 12);
+      }
+      graphics.lineStyle(3, p.middle, .22).lineBetween(80, 254, 350, 221);
+      break;
+  }
+}
+
 function drawFar(graphics: Phaser.GameObjects.Graphics, biome: RunnerBiomeDefinition): void {
   const { palette: p } = biome;
+  drawHorizon(graphics, biome);
   switch (biome.id) {
     case 'dawn-city': {
       ellipse(graphics, p.far, 148, 444, 430, 110, 0.24);

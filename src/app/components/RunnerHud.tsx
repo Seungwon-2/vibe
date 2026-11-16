@@ -11,6 +11,7 @@ export type RunnerHudProps = {
   character: CharacterDefinition;
   recentBonus: RunnerHudCue | null;
   onPause(): void;
+  onOpenGuide?(): void;
   pauseButtonRef?: RefObject<HTMLButtonElement | null>;
 };
 
@@ -33,7 +34,7 @@ function formatTime(remainingMs: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
-export function RunnerHud({ snapshot, character, recentBonus, onPause, pauseButtonRef }: RunnerHudProps): React.JSX.Element {
+export function RunnerHud({ snapshot, character, recentBonus, onPause, onOpenGuide, pauseButtonRef }: RunnerHudProps): React.JSX.Element {
   const storyStage = snapshot.mode === 'story' && snapshot.storyStageId
     ? getStoryStage(snapshot.storyStageId) : null;
   const nextEndlessGate = (Math.floor(snapshot.distanceMeters / ENDLESS_GATE_INTERVAL_METERS) + 1) *
@@ -67,7 +68,9 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause, pauseButt
         {storyStage && (
           <div className="runner-hud__timer runner-hud__course-progress">
             <span>코스 진행</span>
-            <strong>{Math.min(storyStage.lengthMeters, Math.round(snapshot.distanceMeters)).toLocaleString()} / {storyStage.lengthMeters.toLocaleString()}m</strong>
+            <strong title={`${Math.min(storyStage.lengthMeters, Math.round(snapshot.distanceMeters)).toLocaleString()} / ${storyStage.lengthMeters.toLocaleString()}m`}>
+              {Math.min(100, Math.round(snapshot.distanceMeters / storyStage.lengthMeters * 100))}%
+            </strong>
             <span className="runner-hud__gauge" role="progressbar" aria-label="코스 진행"
               aria-valuemin={0} aria-valuemax={storyStage.lengthMeters}
               aria-valuenow={Math.min(storyStage.lengthMeters, Math.round(snapshot.distanceMeters))}>
@@ -88,43 +91,53 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause, pauseButt
         </div>
         {(storyStage || snapshot.mode === 'endless') && <div className="runner-hud__lives" role="img"
           aria-label={`남은 생명 ${livesRemaining}개`}>
-          <span>생명</span>
-          <strong>{'♥'.repeat(livesRemaining)}{'♡'.repeat(Math.max(0, livesMaximum - livesRemaining))}</strong>
+          <span className="sr-only">생명</span>
+          <strong aria-hidden="true">{'♥'.repeat(livesRemaining)}{'♡'.repeat(Math.max(0, livesMaximum - livesRemaining))}</strong>
         </div>}
         <div className="runner-hud__actions">
           <span className="runner-hud__coins" aria-label={`코인 ${snapshot.coins}개`}>🟡 {snapshot.coins}</span>
+          <button type="button" className="runner-hud__passive" onClick={onOpenGuide}
+            aria-label={`패시브 안내: ${passive.name}. ${passive.effectLabel}`}
+            title={`${passive.name} · ${passive.effectLabel} · 눌러서 안내 보기`}
+            style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
+            {passive.icon && <CharacterAbilityIcon icon={passive.icon} accentColor={character.accentColor} size={24} />}
+            <span className="runner-hud__passive-copy sr-only"><strong>{passive.name}</strong><small>{passive.effectLabel}</small></span>
+            {passive.id === 'hiyori-guard' && <span className="runner-hud__charges"
+              role="img" aria-label={`남은 방어 ${snapshot.passiveChargesRemaining}회`}>
+              {[0, 1].map((charge) => <i key={charge} className={charge < snapshot.passiveChargesRemaining ? 'is-ready' : ''} />)}
+            </span>}
+            {passive.id === 'toa-ghost-glide' && snapshot.slideGuardCooldownRemainingMs > 0 &&
+              <small className="runner-hud__cooldown">{Math.ceil(snapshot.slideGuardCooldownRemainingMs / 1_000)}초</small>}
+          </button>
           <button ref={pauseButtonRef} className="runner-hud__pause" type="button" aria-label="일시정지" onClick={onPause}>Ⅱ</button>
         </div>
       </div>
       <div className="runner-hud__details">
         <span>{landmark}</span>
-        <div className="runner-hud__effects">
-          {snapshot.giantRemainingMs > 0 && (
-            <span className="runner-hud__powerup runner-hud__powerup--giant" role="timer" aria-label={`거대화 ${Math.ceil(snapshot.giantRemainingMs / 1_000)}초 남음`}>
-              ✦ 거대화 · {Math.ceil(snapshot.giantRemainingMs / 1_000)}초
-            </span>
-          )}
-          {snapshot.speedPickupRemainingMs > 0 && (
-            <span className="runner-hud__powerup runner-hud__powerup--speed" role="timer" aria-label={`2.5배 속도 ${Math.ceil(snapshot.speedPickupRemainingMs / 1_000)}초 남음`}>
-              ⚡ 2.5배 속도 · {Math.ceil(snapshot.speedPickupRemainingMs / 1_000)}초
-            </span>
-          )}
-          {(snapshot.stageSpeedBoostRemainingMs ?? 0) > 0 && (
-            <span className="runner-hud__powerup runner-hud__powerup--story-speed" role="timer" aria-label={'속도 증가 ' + Math.ceil((snapshot.stageSpeedBoostRemainingMs ?? 0) / 1_000) + '초 남음'}>
-              ✧ 속도 +15% · {Math.ceil((snapshot.stageSpeedBoostRemainingMs ?? 0) / 1_000)}초
-            </span>
-          )}
+        <div className="runner-hud__effects" aria-label="아이템 효과">
+          <span className="runner-hud__effect-slot">
+            {snapshot.giantRemainingMs > 0 && (
+              <span className="runner-hud__powerup runner-hud__powerup--giant" role="timer" aria-label={`거대화 ${Math.ceil(snapshot.giantRemainingMs / 1_000)}초 남음`}>
+                <span aria-hidden="true">✦</span> {Math.ceil(snapshot.giantRemainingMs / 1_000)}초
+              </span>
+            )}
+          </span>
+          <span className="runner-hud__effect-slot">
+            {snapshot.speedPickupRemainingMs > 0 && (
+              <span className="runner-hud__powerup runner-hud__powerup--speed" role="timer" aria-label={`2.5배 속도 ${Math.ceil(snapshot.speedPickupRemainingMs / 1_000)}초 남음`}>
+                <span aria-hidden="true">⚡</span> {Math.ceil(snapshot.speedPickupRemainingMs / 1_000)}초
+              </span>
+            )}
+          </span>
+          <span className="runner-hud__effect-slot">
+            {(snapshot.stageSpeedBoostRemainingMs ?? 0) > 0 && (
+              <span className="runner-hud__powerup runner-hud__powerup--story-speed" role="timer" aria-label={'속도 증가 ' + Math.ceil((snapshot.stageSpeedBoostRemainingMs ?? 0) / 1_000) + '초 남음'}>
+                <span aria-hidden="true">↗</span> {Math.ceil((snapshot.stageSpeedBoostRemainingMs ?? 0) / 1_000)}초
+              </span>
+            )}
+          </span>
         </div>
-        <span className="runner-hud__passive" style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
-          {passive.icon && <CharacterAbilityIcon icon={passive.icon} accentColor={character.accentColor} size={28} />}
-          <span><strong>{passive.name}</strong><small>{passive.effectLabel}</small></span>
-          {passive.id === 'hiyori-guard' && <span className="runner-hud__charges"
-            role="img" aria-label={`남은 방어 ${snapshot.passiveChargesRemaining}회`}>
-            {[0, 1].map((charge) => <i key={charge} className={charge < snapshot.passiveChargesRemaining ? 'is-ready' : ''} />)}
-          </span>}
-          {passive.id === 'toa-ghost-glide' && snapshot.slideGuardCooldownRemainingMs > 0 &&
-            <small className="runner-hud__cooldown">{Math.ceil(snapshot.slideGuardCooldownRemainingMs / 1_000)}초</small>}
-        </span>
+
       </div>
       {showBonus && (
         <span key={recentBonus.id} className={`runner-hud__bonus${passiveCue ? ' is-passive-cue' : ''}`} role="status">

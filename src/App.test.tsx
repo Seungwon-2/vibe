@@ -243,8 +243,8 @@ describe('App flow', () => {
     fireEvent.click(screen.getByRole('button', { name: '안내를 확인하고 시작' }));
     expect(localStorage.getItem('runner-action:tutorial:v1:seen')).toBe('1');
 
-    const header = screen.getByRole('banner');
-    fireEvent.click(header.querySelector('button')!);
+    fireEvent.click(screen.getByRole('button', { name: '일시정지' }));
+    fireEvent.click(screen.getByRole('button', { name: '나가기' }));
     const confirmation = screen.getByRole('alertdialog');
     fireEvent.click(confirmation.querySelector('button')!);
     expect(document.querySelector('.main-menu-help')).not.toBeInTheDocument();

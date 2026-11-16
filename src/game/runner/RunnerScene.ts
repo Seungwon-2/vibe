@@ -19,6 +19,7 @@ import { PitSpawner } from './PitSpawner';
 import type { PitFallContactResult } from './PitSpawner';
 import { RunnerTrailEffect } from './RunnerTrailEffect';
 import { getRunnerAnimationPlayback } from './runnerAnimationConfig';
+import { getRunnerCameraFrame } from './runnerViewport';
 import type { RunnerActiveSession, RunnerEngineCheckpoint, RunnerWorldEntityCheckpoint } from './runnerSessionTypes';
 
 export class RunnerScene extends Phaser.Scene {
@@ -60,6 +61,9 @@ export class RunnerScene extends Phaser.Scene {
   }
 
   create(): void {
+    const view = getRunnerCameraFrame();
+    this.cameras.main.setZoom(view.zoom);
+    this.cameras.main.setScroll(view.scrollX, view.scrollY);
     const characterId = this.registry.get('characterId') as CharacterId;
     const character = getCharacter(characterId);
     this.inputBridge = this.registry.get('inputBridge') as RunnerInputBridge;

@@ -50,7 +50,7 @@ describe('RunnerHud', () => {
       recentBonus={null} onPause={vi.fn()} />);
     expect(Array.from(hud?.children ?? []).map((child) => child.className.split(' ')[0])).toEqual(slotOrder);
     expect(screen.getByText('코스 진행')).toBeInTheDocument();
-    expect(screen.getByText('460 / 2,500m')).toBeInTheDocument();
+    expect(screen.getByText('18%')).toHaveAttribute('title', '460 / 2,500m');
     expect(screen.getByLabelText('코인 4개')).toBeInTheDocument();
   });
 
@@ -101,8 +101,8 @@ describe('RunnerHud', () => {
     const { rerender } = render(<RunnerHud snapshot={snapshot({
       speedPickupRemainingMs: 2_200, stageSpeedBoostRemainingMs: 1_100, giantRemainingMs: 3_000,
     })} character={getCharacter('player-default')} recentBonus={null} onPause={vi.fn()} />);
-    expect(screen.getByRole('timer', { name: '2.5배 속도 3초 남음' })).toHaveTextContent('2.5배 속도 · 3초');
-    expect(screen.getByRole('timer', { name: '속도 증가 2초 남음' })).toHaveTextContent('속도 +15% · 2초');
+    expect(screen.getByRole('timer', { name: '2.5배 속도 3초 남음' })).toHaveTextContent('⚡ 3초');
+    expect(screen.getByRole('timer', { name: '속도 증가 2초 남음' })).toHaveTextContent('↗ 2초');
     expect(screen.getByRole('timer', { name: '거대화 3초 남음' })).toBeInTheDocument();
     expect(document.querySelector('.runner-hud__powerup--speed')).toBeInTheDocument();
 
@@ -111,6 +111,23 @@ describe('RunnerHud', () => {
     recentBonus={{ id: 'speed-1', kind: 'speed-pickup' }} onPause={vi.fn()} />);
     expect(screen.queryByRole('timer')).not.toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('2.5배 속도 · 3초');
+  });
+
+  it('reserves three effect slots when powers appear together and expire', () => {
+    const { rerender } = render(<RunnerHud snapshot={snapshot()} character={getCharacter('player-default')}
+      recentBonus={null} onPause={vi.fn()} />);
+    const slots = Array.from(document.querySelectorAll('.runner-hud__effect-slot'));
+    expect(slots).toHaveLength(3);
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+    rerender(<RunnerHud snapshot={snapshot({ giantRemainingMs: 6_000, speedPickupRemainingMs: 3_000,
+      stageSpeedBoostRemainingMs: 2_000 })} character={getCharacter('player-default')}
+      recentBonus={null} onPause={vi.fn()} />);
+    expect(screen.getAllByRole('timer')).toHaveLength(3);
+    expect(Array.from(document.querySelectorAll('.runner-hud__effect-slot'))).toEqual(slots);
+    rerender(<RunnerHud snapshot={snapshot()} character={getCharacter('player-default')}
+      recentBonus={null} onPause={vi.fn()} />);
+    expect(Array.from(document.querySelectorAll('.runner-hud__effect-slot'))).toEqual(slots);
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
   });
 });
 

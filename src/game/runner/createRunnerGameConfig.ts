@@ -6,6 +6,7 @@ import { RunnerScene } from './RunnerScene';
 import { RUNNER_CONFIG } from './runnerConfig';
 import type { RunnerEvent } from './runnerEvents';
 import type { RunnerActiveSession } from './runnerSessionTypes';
+import { RUNNER_VIEWPORT } from './runnerViewport';
 
 export type RunnerGameCallbacks = {
   onSnapshot(snapshot: RunnerSnapshot): void;
@@ -30,8 +31,8 @@ export function createRunnerGameConfig(
   return {
     type: Phaser.AUTO,
     parent,
-    width: 960,
-    height: 540,
+    width: RUNNER_VIEWPORT.width,
+    height: RUNNER_VIEWPORT.height,
     backgroundColor: '#10152d',
     pixelArt: false,
     antialias: true,

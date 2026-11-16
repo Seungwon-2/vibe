@@ -1,0 +1,192 @@
+/* One 16:9 playfield. The HUD is an overlay, never a row in page layout. */
+.run-screen.run-screen--immersive {
+  --run-padding: clamp(4px, .6vmin, 10px);
+  display: grid;
+  width: 100%;
+  height: 100dvh;
+  min-width: 0;
+  min-height: 0;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  place-items: center;
+  gap: 0;
+  overflow: hidden;
+  padding: var(--run-padding);
+}
+
+.run-screen.run-screen--immersive > .runner-stage {
+  width: min(100%, calc((100dvh - 2 * var(--run-padding)) * 16 / 9));
+  max-width: 100%;
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+  margin: 0;
+  border: 0;
+  border-radius: clamp(6px, 1cqw, 14px);
+  box-shadow: 0 8px 32px rgb(23 38 54 / 15%);
+}
+
+.run-screen--immersive .run-screen__hud {
+  position: absolute;
+  z-index: 4;
+  inset: 0 0 auto;
+  width: 100%;
+  margin: 0;
+  pointer-events: none;
+}
+
+.run-screen--immersive .runner-hud {
+  display: grid;
+  grid-template-rows: 44px 28px;
+  gap: 3px;
+  padding: 8px clamp(10px, 1.6cqw, 24px) 6px;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(180deg, rgb(249 252 255 / 93%), rgb(249 252 255 / 78%) 75%, rgb(249 252 255 / 0%));
+  background-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  font-size: clamp(.75rem, 1.35cqw, 1rem);
+}
+
+.run-screen--immersive .runner-hud__main {
+  display: grid;
+  grid-template-columns: auto minmax(100px, 1fr) auto auto;
+  grid-template-areas: 'lives timer distance actions';
+  min-height: 0;
+  gap: clamp(10px, 1.5cqw, 24px);
+}
+
+.run-screen--immersive .runner-hud__lives {
+  grid-area: lives;
+  display: flex;
+  height: 44px;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 1.4em;
+  text-shadow: 0 1px 2px white;
+}
+
+.run-screen--immersive .runner-hud__timer {
+  grid-area: timer;
+  width: min(100%, 380px);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+}
+
+.run-screen--immersive .runner-hud__timer > span:first-child { font-size: .82em; }
+.run-screen--immersive .runner-hud__timer strong { font-size: 1.3em; }
+.run-screen--immersive .runner-hud__gauge { width: 100%; height: 7px; background: #d3deea; }
+.run-screen--immersive .runner-hud__gauge > span { background: #567caf; }
+.run-screen--immersive .runner-hud__distance { grid-area: distance; padding: 0; border: 0; background: none; box-shadow: none; }
+.run-screen--immersive .runner-hud__distance strong { font-size: clamp(1.2rem, 2.4cqw, 2rem); }
+.run-screen--immersive .runner-hud__actions { grid-area: actions; gap: 12px; }
+.run-screen--immersive .runner-hud__coins { padding: 5px 8px; border: 0; background: rgb(255 245 213 / 85%); box-shadow: none; white-space: nowrap; }
+.run-screen--immersive .runner-hud__pause { width: 44px; height: 44px; border-radius: 50%; background: rgb(255 255 255 / 80%); }
+
+.run-screen--immersive .runner-hud__details {
+  display: grid;
+  height: 28px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: 28px;
+  align-items: center;
+  gap: 8px;
+  font-size: .82em;
+}
+
+.run-screen--immersive .runner-hud__details > span:first-child {
+  grid-area: auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.run-screen--immersive .runner-hud__effects {
+  grid-area: auto;
+  display: grid;
+  width: 170px;
+  height: 28px;
+  min-height: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 4px;
+  overflow: visible;
+}
+
+.run-screen--immersive .runner-hud__effect-slot { display: flex; min-width: 0; height: 28px; align-items: center; justify-content: center; }
+.run-screen--immersive .runner-hud__powerup { display: flex; width: 100%; justify-content: center; gap: 4px; padding: 3px 4px; font-size: 1em; font-variant-numeric: tabular-nums; }
+.run-screen--immersive .runner-hud__powerup--giant { border-color: #bda5d5; color: #654779; background: #f3eafa; }
+
+.run-screen--immersive .runner-hud__passive {
+  grid-area: auto;
+  display: inline-flex;
+  width: auto;
+  min-width: 44px;
+  max-width: none;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 3px 7px;
+  overflow: visible;
+  border-radius: 999px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.run-screen--immersive .runner-hud__passive > .runner-hud__passive-copy {
+  position: absolute;
+  display: block;
+  width: 1px;
+  min-width: 0;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  clip: rect(0, 0, 0, 0);
+}
+
+.run-screen--immersive .runner-hud__bonus {
+  top: calc(100% + 8px);
+  right: auto;
+  left: 50%;
+  width: max-content;
+  max-width: 60%;
+  padding: 6px 12px;
+  transform: translateX(-50%);
+  animation: immersive-bonus 1.2s ease-out both;
+}
+
+.run-screen--immersive .runner-touch-controls { padding: 0 12px 8px; }
+.run-screen--immersive .runner-touch-control { width: clamp(64px, 8cqw, 90px); background: rgb(53 87 132 / 63%); box-shadow: 0 3px 10px rgb(29 48 75 / 16%); }
+.run-screen--immersive .runner-touch-control--slide { color: #393b58; background: rgb(228 224 243 / 82%); }
+.run-screen--immersive .runner-hud__passive:focus-visible { outline: 3px solid var(--ui-primary-strong); outline-offset: 2px; }
+
+@keyframes immersive-bonus {
+  0% { opacity: 0; translate: 0 5px; }
+  15%, 75% { opacity: 1; translate: 0 0; }
+  100% { opacity: 0; translate: 0 -5px; }
+}
+
+@media (max-height: 520px), (max-width: 760px) {
+  .run-screen--immersive .runner-hud { grid-template-rows: 32px 18px; padding: 6px 10px 4px; gap: 0; }
+  .run-screen--immersive .runner-hud__main { gap: 10px; grid-template-columns: auto minmax(80px, 1fr) auto auto; }
+  .run-screen--immersive .runner-hud__details { grid-template-rows: 18px; height: 18px; gap: 5px; padding-right: 106px; }
+  .run-screen--immersive .runner-hud__timer { width: min(100%, 260px); gap: 1px 6px; }
+  .run-screen--immersive .runner-hud__gauge { height: 5px; }
+  .run-screen--immersive .runner-hud__actions { gap: 7px; }
+  .run-screen--immersive .runner-hud__effects { width: 148px; height: 18px; gap: 3px; }
+  .run-screen--immersive .runner-hud__effect-slot { height: 18px; }
+  .run-screen--immersive .runner-hud__powerup { padding: 1px 4px; }
+  .run-screen--immersive .runner-hud__passive { min-width: 44px; height: 44px; padding: 2px 5px; }
+  .run-screen--immersive .runner-touch-controls { padding: 0 8px 4px; }
+  .run-screen--immersive .runner-touch-control { width: 64px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .run-screen--immersive .runner-hud__bonus { animation: none; }
+}

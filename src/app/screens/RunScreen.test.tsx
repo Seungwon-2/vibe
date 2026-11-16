@@ -69,7 +69,7 @@ function renderReadyRunScreen(element: ReactElement): ReturnType<typeof render> 
 }
 
 describe('RunScreen', () => {
-  it.each(['story', 'endless'] as const)('keeps the %s HUD outside the gameplay stage', (mode) => {
+  it.each(['story', 'endless'] as const)('keeps the %s HUD and controls inside a single playfield', (mode) => {
     renderReadyRunScreen(<RunScreen {...audioProps} characterId="player-default" mode={mode}
       storyStageId={mode === 'story' ? 'dawn-city' : null} onFinish={vi.fn()} onExit={vi.fn()} />);
     const hud = document.querySelector('.runner-hud');
@@ -77,9 +77,9 @@ describe('RunScreen', () => {
     const stage = document.querySelector('.runner-stage');
     expect(hud).toBeInTheDocument();
     expect(hud?.parentElement).toBe(hudRow);
-    expect(hud?.closest('.runner-stage')).toBeNull();
-    expect(stage?.querySelector('.runner-hud')).toBeNull();
-    expect(hudRow?.nextElementSibling).toBe(stage);
+    expect(hud?.closest('.runner-stage')).toBe(stage);
+    expect(stage?.querySelector('.runner-hud')).toBe(hud);
+    expect(document.querySelector('.run-screen__header')).not.toBeInTheDocument();
     expect(within(hud as HTMLElement).getByRole('button', { name: '일시정지' })).toBeInTheDocument();
   });
 
@@ -158,8 +158,8 @@ describe('RunScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: '계속하기' }));
     expect(runMock.paused).toBe(false);
 
-    const header = screen.getByRole('banner');
-    fireEvent.click(within(header).getByRole('button', { name: '나가기' }));
+    fireEvent.click(screen.getByRole('button', { name: '일시정지' }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '나가기' }));
     fireEvent.click(screen.getByRole('button', { name: '종료하고 메뉴로' }));
     expect(onExit).toHaveBeenCalledOnce();
   });
@@ -215,6 +215,17 @@ describe('RunScreen', () => {
     expect(localStorage.getItem('runner-action:tutorial:v1:seen')).toBe('1');
     fireEvent.click(screen.getByRole('button', { name: '일시정지로 돌아가기' }));
     expect(screen.getByRole('dialog', { name: /일시 정지/ })).toBeInTheDocument();
+    expect(runMock.paused).toBe(true);
+  });
+
+  it('opens the compact passive icon guide while pausing the run', () => {
+    renderReadyRunScreen(<RunScreen {...audioProps} characterId="tokino-mary" onFinish={vi.fn()} onExit={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'begin mock run' }));
+    fireEvent.click(screen.getByRole('button', { name: /패시브 안내: 음표의 이끌림/ }));
+    expect(runMock.paused).toBe(true);
+    expect(screen.getByRole('dialog', { name: '조작법과 아이템 안내' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '일시정지로 돌아가기' }));
+    expect(screen.getByRole('dialog', { name: '일시 정지' })).toBeInTheDocument();
     expect(runMock.paused).toBe(true);
   });
 

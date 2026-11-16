@@ -19,6 +19,7 @@ import { browserRunnerAudio } from '../../audio/RunnerAudioManager';
 import { browserRunnerMusic } from '../../audio/RunnerMusicManager';
 import { getStoryStage } from '../../game/runner/storyConfig';
 import type { RunnerActiveSession } from '../../game/runner/runnerSessionTypes';
+import './RunScreen.css';
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -135,6 +136,7 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
   }
 
   function openGuideFromPause(): void {
+    pauseRun();
     setSettingsOpen(false);
     setGuideVariant('pause-review');
     setGuideOpen(true);
@@ -272,15 +274,8 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
   }
 
   return (
-    <main className="run-screen">
+    <main className="run-screen run-screen--immersive" aria-label={`${character.displayName} 달리기`}>
       {storageWarning && <div className="runner-session-warning" role="alert">{storageWarning}</div>}
-      <header className="run-screen__header">
-        <div><span className="eyebrow">RUNNING ACTION</span><strong>{character.displayName}</strong></div>
-        <button type="button" onClick={requestExit}>나가기</button>
-      </header>
-      <div className="run-screen__hud">
-        <RunnerHud snapshot={snapshot} character={character} recentBonus={recentBonus} onPause={pauseRun} pauseButtonRef={pauseButtonRef} />
-      </div>
       <div className={`runner-stage${gateBurstActive ? ' is-gate-boosting' : ''}${snapshot.giantRemainingMs > 0 ? ' is-giant-active' : ''}`}
         role="region" aria-label="러닝 게임 화면">
         <RunnerGame characterId={characterId} mode={mode} storyStageId={storyStageId} trailCosmeticId={trailCosmeticId}
@@ -296,6 +291,10 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
           onTerminalCheckpoint={onTerminalCheckpoint}
           onFinished={onFinish}
           onEvent={handleEvent} />
+        <div className="run-screen__hud">
+          <RunnerHud snapshot={snapshot} character={character} recentBonus={recentBonus}
+            onPause={pauseRun} onOpenGuide={openGuideFromPause} pauseButtonRef={pauseButtonRef} />
+        </div>
         <TouchControls inputBridge={inputBridge}
           disabled={paused || snapshot.phase !== 'running'} />
         {snapshot.phase === 'countdown' && countdownValue !== null &&
