@@ -15,12 +15,17 @@ function requiredEnv(name: string): string {
 async function verifyAccessToken(token: string): Promise<JWTPayload> {
   const tenantId = requiredEnv('ENTRA_TENANT_ID');
   const audience = requiredEnv('ENTRA_API_AUDIENCE');
+  // Microsoft Entra v2 access tokens use the API app's client ID as `aud`,
+  // even when the client requested a scope using its `api://...` URI.
+  const audiences = [audience];
+  const appIdUri = audience.match(/^api:\/\/([0-9a-f-]{36})(?:\/.*)?$/i);
+  if (appIdUri?.[1]) audiences.push(appIdUri[1]);
   const issuer = `https://login.microsoftonline.com/${tenantId}/v2.0`;
   if (!cachedJwks || cachedJwks.tenantId !== tenantId) {
     const url = new URL(`https://login.microsoftonline.com/${tenantId}/discovery/v2.0/keys`);
     cachedJwks = { tenantId, keys: createRemoteJWKSet(url) };
   }
-  const { payload } = await jwtVerify(token, cachedJwks.keys, { issuer, audience, algorithms: ['RS256'] });
+  const { payload } = await jwtVerify(token, cachedJwks.keys, { issuer, audience: audiences, algorithms: ['RS256'] });
   return payload;
 }
 

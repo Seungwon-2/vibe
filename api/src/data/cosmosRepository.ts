@@ -105,7 +105,8 @@ export class CosmosRepository implements RunnerRepository {
   async getRunHistory(playerId: string, limit: number, cursor: string | null): Promise<{
     items: RunDocument[]; nextCursor: string | null;
   }> {
-    const query: SqlQuerySpec = { query: 'SELECT * FROM c WHERE c.kind = @kind ORDER BY c.run.finishedAtIso DESC, c.id ASC',
+    // A single indexed sort key avoids requiring a custom Cosmos composite index.
+    const query: SqlQuerySpec = { query: 'SELECT * FROM c WHERE c.kind = @kind ORDER BY c.run.finishedAtIso DESC',
       parameters: [{ name: '@kind', value: 'run' }] };
     const options: FeedOptions = { partitionKey: playerId, maxItemCount: limit, continuationToken: cursor ?? undefined };
     try {

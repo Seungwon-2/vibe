@@ -14,8 +14,10 @@ import type { RunnerFinishOutcome, RunnerMode, RunnerResult, StoryStageId } from
 import { browserPersonalBestStore } from './services/PersonalBestStore';
 import { browserRunGateway } from './services/LocalRunGateway';
 import type { PersonalBestRecord, PersonalRunHistoryRecord, PublicLeaderboardRecord, RunGateway } from './services/RunGateway';
-import { RunApiError } from './services/AuthenticatedRunGateway';
+import { AuthenticatedRunGateway, RunApiError } from './services/AuthenticatedRunGateway';
+import { HybridRunGateway } from './services/HybridRunGateway';
 import { useRunnerAuth } from './auth/AuthProvider';
+import { readEntraSettings } from './auth/entraConfig';
 import { browserPlayerProfileStore } from './services/LocalPlayerProfileStore';
 import { settleRun, type SettlementResult } from './services/PlayerProgression';
 import { recordRunAndUnlock } from './services/AchievementService';
@@ -54,8 +56,11 @@ type PersonalHistoryLoadState = { requestId: number; rows: PersonalRunHistoryRec
 
 function App(): React.JSX.Element {
   const auth = useRunnerAuth();
-  const signIn = auth.signIn;
-  const runGateway = useMemo<RunGateway>(() => browserRunGateway, []);
+  const cloudRecordsAvailable = auth.mode === 'cloud' && auth.status === 'signed-in' && auth.apiConsentStatus === 'available';
+  const cloudGateway = useMemo(() => new AuthenticatedRunGateway(readEntraSettings().apiBaseUrl, auth.acquireApiToken),
+    [auth.acquireApiToken]);
+  const runGateway = useMemo<RunGateway>(() => new HybridRunGateway(browserRunGateway,
+    cloudRecordsAvailable ? cloudGateway : null), [cloudGateway, cloudRecordsAvailable]);
   const canUseRecords = auth.mode === 'local' || auth.status === 'signed-in';
   const sessionScope = useMemo<RunnerSessionScope | null>(() => {
     if (auth.mode === 'local') return { kind: 'guest' };
@@ -242,11 +247,24 @@ function App(): React.JSX.Element {
     void runGateway.getBest().then((best) => {
       if (current) setBestState({ key: bestRequestKey, record: best, error: null });
     }).catch((error: unknown) => {
-      if (error instanceof RunApiError && error.status === 401) void signIn();
-      if (current) setBestState({ key: bestRequestKey, record: null, error: '로컬 기록을 불러오지 못했습니다.' });
+      if (!current) return;
+      if (error instanceof RunApiError) {
+        const source = cloudRecordsAvailable ? '클라우드 기록' : '기록';
+        const details = [
+          `HTTP ${error.status}`,
+          error.code,
+          error.correlationId ? `요청 ID ${error.correlationId}` : null,
+        ].filter(Boolean).join(' · ');
+        setBestState({ key: bestRequestKey, record: null,
+          error: `${source}을 불러오지 못했습니다${details ? ` (${details})` : ''}. ${error.message}` });
+        return;
+      }
+      setBestState({ key: bestRequestKey, record: null,
+        error: cloudRecordsAvailable ? '클라우드 기록 요청에 실패했습니다. 로그인과 API 권한 상태를 확인해 주세요.'
+          : '이 브라우저의 기록을 불러오지 못했습니다.' });
     });
     return () => { current = false; };
-  }, [bestRequestKey, runGateway, signIn]);
+  }, [bestRequestKey, runGateway, cloudRecordsAvailable]);
 
   useEffect(() => {
     if (screen !== 'rankings') return;
@@ -254,13 +272,12 @@ function App(): React.JSX.Element {
     if (!canUseRecords) return;
     void runGateway.getRanking().then((rows) => {
       if (current) setRankingState({ requestId: rankingRequestId, rows, error: null });
-    }).catch((error: unknown) => {
-      if (error instanceof RunApiError && error.status === 401) void signIn();
+    }).catch(() => {
       if (current) setRankingState({ requestId: rankingRequestId, rows: [],
         error: '기록을 불러오지 못했습니다. 메인 메뉴로 돌아가 다시 시도해 주세요.' });
     });
     return () => { current = false; };
-  }, [screen, rankingRequestId, runGateway, canUseRecords, signIn]);
+  }, [screen, rankingRequestId, runGateway, canUseRecords]);
 
   useEffect(() => {
     if (screen !== 'personal-history') return;
@@ -268,12 +285,11 @@ function App(): React.JSX.Element {
     void runGateway.getPersonalHistory({ limit: 20, cursor: null }).then((page) => {
       if (current) setHistoryState({ requestId: historyRequestId, rows: [...page.items], cursor: page.nextCursor, error: null, loading: false });
     }).catch((error: unknown) => {
-      if (error instanceof RunApiError && error.status === 401) void signIn();
       if (current) setHistoryState({ requestId: historyRequestId, rows: [], cursor: null,
         error: error instanceof RunApiError ? error.message : '내 기록을 불러오지 못했습니다. 다시 시도해 주세요.', loading: false });
     });
     return () => { current = false; };
-  }, [screen, historyRequestId, runGateway, signIn]);
+  }, [screen, historyRequestId, runGateway]);
 
   function openRankings(): void {
     setRankingRequestId((requestId) => requestId + 1);
@@ -302,7 +318,6 @@ function App(): React.JSX.Element {
         ? { ...current, rows: [...current.rows, ...page.items], cursor: page.nextCursor, error: null, loading: false }
         : current);
     } catch (error) {
-      if (error instanceof RunApiError && error.status === 401) void signIn();
       setHistoryState((current) => current.requestId === requestId
         ? { ...current, error: error instanceof RunApiError ? error.message : '기록을 더 불러오지 못했습니다. 다시 시도해 주세요.', loading: false }
         : current);
@@ -418,10 +433,13 @@ function App(): React.JSX.Element {
     topRun={overallBest} topRunLoading={bestLoading} topRunError={bestError}
     showControlsHelp={shouldShowRunnerTutorial()} audioPreferences={audioPreferences}
     onAudioPreferencesChange={setAudioPreferences} onUnlockAudio={() => browserRunnerAudio.unlock()}
-    authMode={localSignInPreview ? 'cloud' : auth.mode} recordSource="local"
+    authMode={localSignInPreview ? 'cloud' : auth.mode} recordSource={cloudRecordsAvailable ? 'cloud' : 'local'}
     authStatus={localSignInPreview ? 'signed-out' : auth.status}
     authError={localSignInPreview ? null : auth.error}
     accountName={auth.account?.name ?? null} accountUsername={auth.account?.username ?? null}
+    apiConsentStatus={localSignInPreview ? 'unavailable' : auth.apiConsentStatus}
+    apiConsentError={localSignInPreview ? null : auth.apiConsentError}
+    onRequestApiConsent={() => { if (!localSignInPreview) void auth.requestApiConsent(); }}
     onSignIn={() => { if (!localSignInPreview) void auth.signIn(); }}
     onSignOut={() => { void auth.signOut(); }} />;
 
@@ -530,7 +548,6 @@ function App(): React.JSX.Element {
                 : current);
             }).catch((error: unknown) => {
               if (latestRunId.current !== currentRunId) return;
-              if (error instanceof RunApiError && error.status === 401) void auth.signIn();
               setFinishedRun((current) => current?.runId === currentRunId
                 ? { ...current, submissionPending: false,
                   recordError: error instanceof RunApiError ? error.message : '기록을 저장하지 못했습니다. 이번 결과는 이 화면에서 확인할 수 있습니다.' }
@@ -568,7 +585,7 @@ function App(): React.JSX.Element {
 
   if (screen === 'rankings') {
     return (
-      <RankingScreen rows={rankingRows} loading={rankingLoading} error={rankingError} source="local"
+      <RankingScreen rows={rankingRows} loading={rankingLoading} error={rankingError} source={cloudRecordsAvailable ? 'cloud' : 'local'}
         onBack={() => setScreen('menu')} />
     );
   }

@@ -5,7 +5,8 @@ import type { PersonalBestRecord, PersonalRunHistoryPage, PersonalRunHistoryReco
   PublicLeaderboardRecord, RunGateway, RunSubmissionReceipt } from './RunGateway';
 
 export class RunApiError extends Error {
-  constructor(readonly status: number, message: string) { super(message); this.name = 'RunApiError'; }
+  constructor(readonly status: number, message: string, readonly code: string | null = null,
+    readonly correlationId: string | null = null) { super(message); this.name = 'RunApiError'; }
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -83,7 +84,8 @@ function parseReceipt(value: unknown): RunSubmissionReceipt {
 export class AuthenticatedRunGateway implements RunGateway {
   private readonly baseUrl: string;
   private readonly runIds = new WeakMap<RunnerResult, string>();
-  constructor(baseUrl: string, private readonly acquireToken: () => Promise<string>, private readonly fetcher: typeof fetch = fetch) {
+  constructor(baseUrl: string, private readonly acquireToken: () => Promise<string>,
+    private readonly fetcher: typeof fetch = (input, init) => globalThis.fetch(input, init)) {
     this.baseUrl = baseUrl.replace(/\/+$/, '');
   }
   async getBest(): Promise<PersonalBestRecord | null> {
@@ -131,11 +133,22 @@ export class AuthenticatedRunGateway implements RunGateway {
       throw new RunApiError(0, error instanceof Error ? error.message : 'Network request failed');
     }
     if (!response.ok) {
+      let code: string | null = null;
+      let correlationId: string | null = null;
+      try {
+        const body: unknown = await response.json();
+        if (isObject(body)) {
+          code = typeof body.code === 'string' ? body.code : null;
+          correlationId = typeof body.correlationId === 'string' ? body.correlationId : null;
+        }
+      } catch {
+        // Keep the status-based message when the server did not return JSON.
+      }
       const message = response.status === 401 ? '다시 로그인해야 합니다.'
         : response.status === 403 ? '이 데이터에 접근할 권한이 없습니다.'
           : response.status >= 500 ? '서버에 일시적인 문제가 있습니다. 잠시 후 다시 시도해 주세요.'
             : `API request failed (${response.status})`;
-      throw new RunApiError(response.status, message);
+      throw new RunApiError(response.status, message, code, correlationId);
     }
     if (response.status === 204) return null;
     return response.json() as Promise<unknown>;

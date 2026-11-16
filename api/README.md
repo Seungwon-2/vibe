@@ -23,6 +23,25 @@ All data access is authorized with the verified `tid` + `oid` token claims. Publ
 
 The initial global ranking reads only `leaderboardBest` projections. Review Cosmos request units and query latency after deployment; if the number of players grows materially, replace the projection scan with a server-maintained leaderboard index. Client-sent runs receive basic plausibility validation but are not cheat-proof because the simulation remains client-side.
 
+## Static Web Apps managed API settings
+
+The `project02` GitHub Actions workflow deploys this folder as the SWA managed API (Node.js 22). Set these values in GitHub repository **Variables** so the frontend build can request the API scope:
+
+- `VITE_ENTRA_TENANT_ID`
+- `VITE_ENTRA_CLIENT_ID`
+- `VITE_ENTRA_API_SCOPE` (for example `api://<api-app-id>/access_as_user`)
+
+The workflow sets `VITE_API_BASE_URL=/api`. The API also needs these server-side Static Web App application settings; never put the Cosmos connection string in GitHub Variables or any `VITE_*` value:
+
+- `ENTRA_TENANT_ID`
+- `ENTRA_API_AUDIENCE` (the API app's client ID or `api://<client-id>` Application ID URI; the verifier accepts both forms for v2 tokens)
+- `ENTRA_API_SCOPE=access_as_user`
+- `COSMOS_CONNECTION_STRING` (store as a secret application setting)
+- `COSMOS_DATABASE_ID=stella-runner`
+- `COSMOS_CONTAINER_ID=PlayerRecords`
+
+The app first checks whether it can silently acquire the API token. If the user must consent, the signed-in account can explicitly choose **클라우드 기록 연결**. Tenant policy may still require an administrator to approve that consent; until API access succeeds, the browser-local gateway remains active. Deploying the API does not by itself prove a live Cosmos write: after setting these values and deploying, sign in, grant consent if permitted, submit a run, and verify it in the app's private history and public leaderboard. Never expose or paste Cosmos keys in chat or logs.
+
 ## Validation
 
 ```sh

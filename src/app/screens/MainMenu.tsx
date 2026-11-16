@@ -4,7 +4,7 @@ import { AudioCreditsDialog } from '../components/AudioCreditsDialog';
 import { AudioSettingsDialog } from '../components/AudioSettingsDialog';
 import { getCharacter } from '../../game/characters/characterCatalog';
 import type { PersonalBestRecord } from '../../services/RunGateway';
-import type { RunnerAuthMode, RunnerAuthStatus } from '../../auth/AuthProvider';
+import type { RunnerApiConsentStatus, RunnerAuthMode, RunnerAuthStatus } from '../../auth/AuthProvider';
 import './MainMenuAccount.css';
 
 export type MainMenuProps = {
@@ -26,13 +26,17 @@ export type MainMenuProps = {
   authError?: string | null;
   accountName?: string | null;
   accountUsername?: string | null;
+  apiConsentStatus?: RunnerApiConsentStatus;
+  apiConsentError?: string | null;
   onSignIn?(): void;
   onSignOut?(): void;
+  onRequestApiConsent?(): void;
 };
 
 export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onShop, topRun, topRunLoading, topRunError,
   showControlsHelp, audioPreferences, onAudioPreferencesChange, onUnlockAudio, authMode = 'local', recordSource = 'local',
-  authStatus = 'signed-in', authError = null, accountName = null, accountUsername = null, onSignIn, onSignOut }: MainMenuProps): React.JSX.Element {
+  authStatus = 'signed-in', authError = null, accountName = null, accountUsername = null,
+  apiConsentStatus = 'unavailable', apiConsentError = null, onSignIn, onSignOut, onRequestApiConsent }: MainMenuProps): React.JSX.Element {
   const [dialog, setDialog] = useState<'settings' | 'credits' | null>(null);
   const topCharacter = topRun ? getCharacter(topRun.characterId) : null;
   const cloudNeedsSignIn = authMode === 'cloud' && authStatus !== 'signed-in';
@@ -74,6 +78,20 @@ export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onSho
                   <strong className="main-menu-account__name">{accountName?.trim() || 'Runner'}</strong>
                   <span className="main-menu-account__username">{accountUsername?.trim() || '계정 정보 없음'}</span>
                 </div>
+                {apiConsentStatus === 'available' && <span className="main-menu-account__api-status">클라우드 기록 연결됨</span>}
+                {apiConsentStatus === 'checking' && <span className="main-menu-account__api-status" role="status">기록 권한 확인 중</span>}
+                {apiConsentStatus === 'consent-required' && onRequestApiConsent && (
+                  <div className="main-menu-account__api-action">
+                    <span>{apiConsentError || '동의 전 기록은 이 브라우저에 저장됩니다.'}</span>
+                    <button className="main-menu-account__connect" type="button" onClick={onRequestApiConsent}>클라우드 기록 연결</button>
+                  </div>
+                )}
+                {apiConsentStatus === 'error' && (
+                  <div className="main-menu-account__api-action">
+                    <span role="status">{apiConsentError || '클라우드 기록을 연결할 수 없습니다. 로컬 기록을 사용합니다.'}</span>
+                    {onRequestApiConsent && <button className="main-menu-account__connect" type="button" onClick={onRequestApiConsent}>다시 시도</button>}
+                  </div>
+                )}
                 {onSignOut && <button className="main-menu-account__logout" type="button" onClick={onSignOut}>로그아웃</button>}
               </div>
             )}
