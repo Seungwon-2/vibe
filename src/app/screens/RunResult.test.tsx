@@ -56,6 +56,15 @@ describe('RunResult', () => {
     expect(screen.getByText('6')).toBeInTheDocument();
   });
 
+  it('labels cloud submission and rankings without calling them local records', () => {
+    render(<RunResult result={result} outcome="completed" bestDistanceMeters={1234}
+      recordSource="cloud" recordPending
+      onRetry={vi.fn()} onChooseCharacter={vi.fn()} onRankings={vi.fn()} />);
+    expect(screen.getByRole('status')).toHaveTextContent('클라우드 기록 저장 중');
+    expect(screen.getByRole('button', { name: '유저 랭킹 보기' })).toBeInTheDocument();
+    expect(screen.queryByText('로컬 기록 저장 중…')).not.toBeInTheDocument();
+  });
+
   it('keeps the personal-best score label but shows a game-over pose after a pit fall', () => {
     render(<RunResult result={{ ...result, finishReason: 'pit' }} outcome="personal-best"
       bestDistanceMeters={1234} onRetry={vi.fn()} onChooseCharacter={vi.fn()} onRankings={vi.fn()} />);

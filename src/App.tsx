@@ -550,7 +550,9 @@ function App(): React.JSX.Element {
               if (latestRunId.current !== currentRunId) return;
               setFinishedRun((current) => current?.runId === currentRunId
                 ? { ...current, submissionPending: false,
-                  recordError: error instanceof RunApiError ? error.message : '기록을 저장하지 못했습니다. 이번 결과는 이 화면에서 확인할 수 있습니다.' }
+                  recordError: error instanceof RunApiError
+                    ? `${error.message} (HTTP ${error.status}${error.code ? ` · ${error.code}` : ''}${error.correlationId ? ` · 요청 ID ${error.correlationId}` : ''})`
+                    : '기록을 저장하지 못했습니다. 이번 결과는 이 화면에서 확인할 수 있습니다.' }
                 : current);
             });
           }} />
@@ -576,7 +578,8 @@ function App(): React.JSX.Element {
         newlyUnlockedAchievementIds={finishedRun.newlyUnlockedAchievementIds}
         achievementBonusCoins={finishedRun.achievementBonusCoins}
         submittedRank={finishedRun.submittedRank} recordPending={finishedRun.submissionPending}
-        recordError={finishedRun.recordError ?? bestError} overallBest={overallBest}
+        recordSource={cloudRecordsAvailable ? 'cloud' : 'local'}
+        recordError={finishedRun.recordError} bestLookupError={bestError} overallBest={overallBest}
         onRetry={() => acknowledgeTerminal(() => startRun(finishedRun.result.characterId))}
         onChooseCharacter={() => acknowledgeTerminal(() => setScreen('character-select'))}
         onRankings={() => acknowledgeTerminal(openRankings)} />

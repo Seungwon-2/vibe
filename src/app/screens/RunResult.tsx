@@ -12,7 +12,9 @@ export type RunResultProps = {
   bestDistanceMeters: number;
   submittedRank?: number | null;
   recordPending?: boolean;
+  recordSource?: 'local' | 'cloud';
   recordError?: string | null;
+  bestLookupError?: string | null;
   overallBest?: PersonalBestRecord | null;
   settlement?: SettlementResult;
   newlyUnlockedAchievementIds?: readonly string[];
@@ -23,7 +25,7 @@ export type RunResultProps = {
 };
 
 export function RunResult({ result, outcome, bestDistanceMeters, submittedRank = null,
-  recordPending = false, recordError = null, overallBest = null, settlement,
+  recordPending = false, recordSource = 'local', recordError = null, bestLookupError = null, overallBest = null, settlement,
   newlyUnlockedAchievementIds = [], achievementBonusCoins = 0,
   onRetry, onChooseCharacter, onRankings }: RunResultProps): React.JSX.Element {
   const character = getCharacter(result.characterId as CharacterId);
@@ -69,12 +71,14 @@ export function RunResult({ result, outcome, bestDistanceMeters, submittedRank =
               <div><dt>전체 최고</dt><dd>{overallBest.distanceMeters.toLocaleString()}m · {overallBest.displayName}</dd></div>
             )}
           </dl>
-          {recordPending && <p className="record-feedback" role="status">로컬 기록 저장 중…</p>}
+          {recordPending && <p className="record-feedback" role="status">{recordSource === 'cloud' ? '클라우드 기록 저장 중…' : '로컬 기록 저장 중…'}</p>}
+          {recordSource === 'cloud' && !recordPending && !recordError && <p className="record-feedback" role="status">클라우드에 기록이 저장되었습니다.</p>}
           {recordError && <p className="record-feedback is-error" role="alert">{recordError}</p>}
+          {bestLookupError && <p className="record-feedback" role="status">최고 기록 조회 안내: {bestLookupError}</p>}
           <div className="result-actions">
             <button className="selector-confirm" type="button" onClick={onRetry}>같은 캐릭터로 다시 달리기</button>
             <button type="button" onClick={onChooseCharacter}>캐릭터 선택</button>
-            <button type="button" onClick={onRankings}>로컬 기록 보기</button>
+            <button type="button" onClick={onRankings}>{recordSource === 'cloud' ? '유저 랭킹 보기' : '로컬 기록 보기'}</button>
           </div>
         </div>
       </section>

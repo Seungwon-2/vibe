@@ -266,4 +266,18 @@ describe('App flow', () => {
     expect(screen.getByText('1,250')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '같은 캐릭터로 다시 달리기' })).toBeEnabled();
   });
+
+  it('does not label a successful save as failed when the separate best lookup fails', async () => {
+    render(<App />);
+    openEndlessCharacterSelect();
+    fireEvent.click(document.querySelector('.selector-footer .selector-confirm')!);
+    await screen.findByTestId('runner-mock');
+    runGatewayMock.getBest.mockRejectedValueOnce(new Error('best lookup unavailable'));
+    fireEvent.click(screen.getByRole('button', { name: 'mock time out' }));
+    expect(await screen.findByText('1위')).toBeInTheDocument();
+    await waitFor(() => expect(runGatewayMock.getBest).toHaveBeenCalledTimes(2));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByText(/최고 기록 조회 안내:/)).toBeInTheDocument();
+    expect(runGatewayMock.submitRun).toHaveBeenCalledOnce();
+  });
 });

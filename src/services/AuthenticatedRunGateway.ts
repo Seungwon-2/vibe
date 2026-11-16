@@ -145,6 +145,12 @@ export class AuthenticatedRunGateway implements RunGateway {
         // Keep the status-based message when the server did not return JSON.
       }
       const message = response.status === 401 ? '다시 로그인해야 합니다.'
+        : response.status === 403 && code === 'CHARACTER_LOCKED'
+          ? '이 계정의 서버 진행도에서 아직 해금되지 않은 캐릭터입니다. 브라우저와 서버의 해금 상태가 달라 클라우드에 기록하지 못했습니다.'
+        : response.status === 403 && code === 'STAGE_LOCKED'
+          ? '이 계정의 서버 진행도에서 아직 열리지 않은 스테이지입니다. 브라우저와 서버의 진행도가 달라 클라우드에 기록하지 못했습니다.'
+        : response.status === 403 && code === 'INSUFFICIENT_CLAIMS'
+          ? '기록 API에 필요한 계정 정보 또는 권한이 토큰에 없습니다. 클라우드 기록 연결 상태를 확인해 주세요.'
         : response.status === 403 ? '이 데이터에 접근할 권한이 없습니다.'
           : response.status >= 500 ? '서버에 일시적인 문제가 있습니다. 잠시 후 다시 시도해 주세요.'
             : `API request failed (${response.status})`;

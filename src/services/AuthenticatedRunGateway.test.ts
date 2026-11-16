@@ -93,4 +93,16 @@ describe('AuthenticatedRunGateway', () => {
       vi.fn().mockRejectedValue(new Error('offline')));
     await expect(gateway.getRanking()).rejects.toMatchObject<Partial<RunApiError>>({ status: 0, message: 'offline' });
   });
+
+  it.each([
+    ['CHARACTER_LOCKED', '아직 해금되지 않은 캐릭터'],
+    ['STAGE_LOCKED', '아직 열리지 않은 스테이지'],
+    ['INSUFFICIENT_CLAIMS', '권한이 토큰에 없습니다'],
+  ])('distinguishes %s from a generic account permission failure', async (code, expected) => {
+    const gateway = new AuthenticatedRunGateway('/api', async () => 'token',
+      vi.fn().mockResolvedValue(jsonResponse({ code, correlationId: 'request-for-support' }, 403)));
+    await expect(gateway.submitRun(result)).rejects.toMatchObject({
+      status: 403, code, correlationId: 'request-for-support', message: expect.stringContaining(expected),
+    });
+  });
 });
