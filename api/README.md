@@ -25,6 +25,12 @@ The initial global ranking reads only `leaderboardBest` projections. Review Cosm
 
 ## Static Web Apps managed API settings
 
+The client sends `X-Runner-Authorization: Bearer <Entra API access token>`.
+SWA can replace the standard `Authorization` header with an internal token when
+forwarding to the managed API. The API therefore reads only the app header and
+validates its signature, issuer, audience, expiry, tenant and delegated scope.
+The platform header is never accepted as a user credential. Never log either token.
+
 The `project02` GitHub Actions workflow deploys this folder as the SWA managed API (Node.js 22). Set these values in GitHub repository **Variables** so the frontend build can request the API scope:
 
 - `VITE_ENTRA_TENANT_ID`

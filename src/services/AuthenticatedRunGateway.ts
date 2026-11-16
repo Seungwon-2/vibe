@@ -127,7 +127,7 @@ export class AuthenticatedRunGateway implements RunGateway {
       response = await this.fetcher(`${this.baseUrl}${path}`, {
         ...init,
         headers: { Accept: 'application/json', ...(init.body ? { 'Content-Type': 'application/json' } : {}),
-          ...init.headers, Authorization: `Bearer ${token}` },
+          ...init.headers, 'X-Runner-Authorization': `Bearer ${token}` },
       });
     } catch (error) {
       throw new RunApiError(0, error instanceof Error ? error.message : 'Network request failed');

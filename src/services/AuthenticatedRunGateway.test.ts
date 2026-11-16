@@ -29,7 +29,8 @@ describe('AuthenticatedRunGateway', () => {
     expect(await gateway.getRanking()).toEqual([publicBest]);
     expect(fetcher.mock.calls.map(([url]) => url)).toEqual(['/api/runs/best', '/api/leaderboard']);
     for (const [, init] of fetcher.mock.calls) {
-      expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer delegated-token');
+      expect(new Headers(init?.headers).get('X-Runner-Authorization')).toBe('Bearer delegated-token');
+      expect(new Headers(init?.headers).has('Authorization')).toBe(false);
       expect(new Headers(init?.headers).get('Accept')).toBe('application/json');
     }
   });
@@ -65,7 +66,7 @@ describe('AuthenticatedRunGateway', () => {
     await gateway.submitRun(result);
     const retrySubmission = JSON.parse(fetcher.mock.calls[1][1].body as string) as Record<string, unknown>;
     expect(retrySubmission.runId).toBe(submission.runId);
-    expect(new Headers(init.headers).get('Authorization')).toBe('Bearer token');
+    expect(new Headers(init.headers).get('X-Runner-Authorization')).toBe('Bearer token');
     expect(new Headers(init.headers).get('Content-Type')).toBe('application/json');
   });
 

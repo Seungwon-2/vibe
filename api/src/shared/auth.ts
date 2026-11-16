@@ -41,7 +41,9 @@ export function principalFromClaims(payload: JWTPayload): PlayerPrincipal {
 }
 
 export async function requirePrincipal(request: HttpRequest, verifier: TokenVerifier = verifyAccessToken): Promise<PlayerPrincipal> {
-  const authorization = request.headers.get('authorization');
+  // SWA can replace Authorization when forwarding requests to its managed API.
+  // Use the app's own header, then perform full Entra JWT validation below.
+  const authorization = request.headers.get('x-runner-authorization');
   const match = authorization?.match(/^Bearer\s+([^\s]+)$/i);
   if (!match) throw new ApiException(401, 'UNAUTHENTICATED', 'UNAUTHENTICATED');
   try {
