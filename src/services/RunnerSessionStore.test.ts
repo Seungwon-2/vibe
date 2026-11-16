@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { CharacterId } from '../game/characters/characterTypes';
 import type { RunnerSessionEnvelope, RunnerSessionScope } from '../game/runner/runnerSessionTypes';
 import { createRunnerEngineCheckpoint } from '../game/runner/runnerSessionTestFixtures';
+import { advanceRunner, createRunnerSnapshot, pauseRunner, resumeRunner, startRunner } from '../game/runner/RunnerSimulation';
 import { BrowserRunnerSessionStore, createRunnerSessionKey, getSessionStoreWarning, RUNNER_SESSION_TTL_MS } from './RunnerSessionStore';
 
 class MemoryStorage implements Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> {
@@ -112,6 +113,39 @@ describe('BrowserRunnerSessionStore', () => {
     expect(store.read(accountA, new Date(savedAt))).toEqual({ ok: true, value: firstCheckpoint });
     expect(store.write(pausedCheckpoint)).toEqual({ ok: true, value: undefined });
     expect(store.read(accountA, new Date(savedAt))).toEqual({ ok: true, value: pausedCheckpoint });
+  });
+
+  it('round-trips the real unlimited Story timer through JSON and continues after resuming', () => {
+    const storage = new MemoryStorage();
+    const store = new BrowserRunnerSessionStore(storage);
+    const envelope = storyActiveEnvelope(accountA);
+    if (envelope.kind !== 'active') throw new Error('Expected active envelope');
+    const active = advanceRunner(startRunner(createRunnerSnapshot('player-default', new Date(savedAt),
+      { mode: 'story', storyStageId: 'dawn-city' })), 1_000).state;
+    const checkpoint = { ...envelope, payload: { ...envelope.payload, snapshot: pauseRunner(active) } };
+    expect(checkpoint.payload.snapshot.remainingMs).toBe(Number.POSITIVE_INFINITY);
+    expect(store.write(checkpoint)).toEqual({ ok: true, value: undefined });
+    expect(JSON.parse(storage.getItem(createRunnerSessionKey(accountA))!).payload.snapshot.remainingMs).toBeNull();
+    const loaded = store.read(accountA, new Date(savedAt));
+    expect(loaded).toEqual({ ok: true, value: checkpoint });
+    if (!loaded.ok || loaded.value?.kind !== 'active') throw new Error('Expected restored active Story');
+    const resumed = advanceRunner(resumeRunner(loaded.value.payload.snapshot), 500);
+    expect(resumed.result).toBeNull();
+    expect(resumed.state.distanceMeters).toBeGreaterThan(active.distanceMeters);
+    expect(resumed.state.remainingMs).toBe(Number.POSITIVE_INFINITY);
+  });
+
+  it('still rejects non-finite or null countdowns in Endless', () => {
+    const storage = new MemoryStorage();
+    const store = new BrowserRunnerSessionStore(storage);
+    const envelope = activeEnvelope();
+    if (envelope.kind !== 'active') throw new Error('Expected active envelope');
+    expect(store.write({ ...envelope, payload: { ...envelope.payload,
+      snapshot: { ...envelope.payload.snapshot, remainingMs: Number.POSITIVE_INFINITY } } }))
+      .toEqual({ ok: false, reason: 'invalid' });
+    storage.setItem(createRunnerSessionKey(guest), JSON.stringify({ ...envelope, payload: {
+      ...envelope.payload, snapshot: { ...envelope.payload.snapshot, remainingMs: null } } }));
+    expect(store.read(guest, new Date(savedAt))).toEqual({ ok: false, reason: 'invalid' });
   });
 
   it('rejects story checkpoints whose stage identity differs across payload and engine', () => {

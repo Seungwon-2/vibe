@@ -87,7 +87,8 @@ function isSnapshot(value: unknown, characterId: CharacterId, mode: RunnerMode):
   return snapshot.phase === 'paused' && snapshot.characterId === characterId &&
     (snapshot.mode === undefined || snapshot.mode === mode) &&
     (snapshot.storyStageId === undefined || snapshot.storyStageId === null || isStoryStageId(snapshot.storyStageId)) &&
-    Number.isFinite(snapshot.elapsedMs) && Number.isFinite(snapshot.remainingMs) &&
+    Number.isFinite(snapshot.elapsedMs) && (Number.isFinite(snapshot.remainingMs) ||
+      (mode === 'story' && snapshot.remainingMs === Number.POSITIVE_INFINITY)) &&
     Number.isFinite(snapshot.distanceMeters) && Number.isFinite(snapshot.worldDistance) &&
     Number.isFinite(snapshot.speedUnitsPerSecond) && Number.isSafeInteger(snapshot.coins) &&
     Number.isFinite(snapshot.giantRemainingMs) && Number.isFinite(snapshot.speedPickupRemainingMs) &&
@@ -166,8 +167,15 @@ function parseEnvelope(value: unknown): RunnerSessionEnvelope | null {
       !isIsoTimestamp(envelope.savedAt) || typeof envelope.runId !== 'string' || !envelope.runId.trim()) {
     return null;
   }
-  if (envelope.kind === 'active' && isActivePayload(envelope.payload)) {
-    return envelope as RunnerSessionEnvelope & { kind: 'active' };
+  // Story's unlimited timer is +Infinity in the simulation. JSON represents
+  // that value as null; restore the sentinel only for an active Story run.
+  let payload = envelope.payload;
+  if (envelope.kind === 'active' && isRecord(payload) && payload.mode === 'story' &&
+      isRecord(payload.snapshot) && payload.snapshot.remainingMs === null) {
+    payload = { ...payload, snapshot: { ...payload.snapshot, remainingMs: Number.POSITIVE_INFINITY } };
+  }
+  if (envelope.kind === 'active' && isActivePayload(payload)) {
+    return { ...envelope, payload } as RunnerSessionEnvelope & { kind: 'active' };
   }
   if (envelope.kind === 'terminal' && isTerminalPayload(envelope.payload)) {
     return envelope as RunnerSessionEnvelope & { kind: 'terminal' };
