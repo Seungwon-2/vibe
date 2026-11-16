@@ -2,6 +2,7 @@ import { STORY_STAGES } from '../../game/runner/storyConfig';
 import type { StoryStageId } from '../../game/runner/runnerTypes';
 import type { PlayerProfile } from '../../services/PlayerProfile';
 import { StageBackdropPreview } from '../components/StageBackdropPreview';
+import { getCharacter } from '../../game/characters/characterCatalog';
 
 export type StageSelectProps = {
   profile: PlayerProfile;
@@ -28,7 +29,7 @@ export function StageSelect({ profile, selectedStageId, onSelect, onStart, onAch
             const chosen = selectedStageId === stage.id;
             const unlockCharacter = stage.unlockCharacterId;
             const status = cleared ? '완주 완료' : unlocked ? '선택 가능'
-              : '이전 스테이지 완주 시 해금' + (unlockCharacter ? ' · ' + unlockCharacter : '');
+              : '이전 스테이지 완주 시 해금' + (unlockCharacter ? ' · ' + getCharacter(unlockCharacter).displayName : '');
             return (
               <button className={'stage-option' + (chosen ? ' is-selected' : '') + (unlocked ? '' : ' is-locked')}
                 type="button" key={stage.id} disabled={!unlocked} aria-pressed={chosen}

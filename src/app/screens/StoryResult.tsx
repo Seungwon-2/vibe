@@ -3,6 +3,7 @@ import { getCharacter } from '../../game/characters/characterCatalog';
 import { getStoryStage, getNextStoryStageId } from '../../game/runner/storyConfig';
 import type { RunnerResult, StoryStageId } from '../../game/runner/runnerTypes';
 import { getAchievementDisplayName } from '../../services/AchievementCatalog';
+import { getCosmeticDisplayName } from '../../services/CosmeticCatalog';
 import type { SettlementResult } from '../../services/PlayerProgression';
 
 export type StoryResultProps = {
@@ -51,7 +52,7 @@ export function StoryResult({ result, settlement, newlyUnlockedAchievementIds, a
             {achievementBonusCoins > 0 && <span>업적 보상 코인 +{achievementBonusCoins}</span>}
             {settlement.newlyUnlockedCharacterId && <span>{getCharacter(settlement.newlyUnlockedCharacterId).displayName} 해금!</span>}
             {settlement.newlyUnlockedStageId && <span>새 스테이지 해금!</span>}
-            {settlement.newlyClaimedCosmeticIds.map((id) => <span key={id}>꾸미기 보상 해금 · {id}</span>)}
+            {[...new Set(settlement.newlyClaimedCosmeticIds)].map((id) => <span key={id}>꾸미기 보상 해금 · {getCosmeticDisplayName(id)}</span>)}
             {unlockedNames.map((name) => <span key={name}>업적 달성 · {name}</span>)}
           </div>
           <div className="story-challenges">

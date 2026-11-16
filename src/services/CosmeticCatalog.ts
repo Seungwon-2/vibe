@@ -1,4 +1,5 @@
 import type { CharacterId } from '../game/characters/characterTypes';
+import { STORY_STAGES } from '../game/runner/storyConfig';
 
 export type CosmeticKind = 'trail' | 'skin' | 'profile';
 export type CosmeticDefinition = Readonly<{
@@ -24,9 +25,9 @@ export const COSMETICS: readonly CosmeticDefinition[] = Object.freeze([
   { id: 'trail-petal', name: '꽃잎 산책', kind: 'trail', price: 120, assetPath: null, compatibleCharacterIds: ALL_CHARACTERS, rarity: 'common', description: '작은 꽃잎이 발걸음 뒤에 흩날립니다.', placeholder: false, purchasable: true, color: '#f1a9ca' },
   { id: 'trail-starlight', name: '별빛 궤적', kind: 'trail', price: 0, assetPath: null, compatibleCharacterIds: ALL_CHARACTERS, rarity: 'rare', description: '업적으로 해금되는 반짝이는 궤적.', placeholder: false, purchasable: false, color: '#f4d27a' },
   { id: 'trail-golden-notes', name: '황금 음표', kind: 'trail', price: 0, assetPath: null, compatibleCharacterIds: ALL_CHARACTERS, rarity: 'rare', description: '업적으로 해금되는 황금빛 음표 궤적.', placeholder: false, purchasable: false, color: '#d8aa5d' },
-  ...(['dawn', 'forest', 'mine', 'skyway'] as const).flatMap((world) => [
-    { id: `${world}-no-hit-trail`, name: `${world} 무피격 궤적`, kind: 'trail' as const, price: 0, assetPath: null, compatibleCharacterIds: ALL_CHARACTERS, rarity: 'rare' as const, description: '스토리 스테이지 무피격 완주 보상.', placeholder: false, purchasable: false, color: '#b7a7ed' },
-    { id: `${world}-coin-profile`, name: `${world} 코인 배지`, kind: 'profile' as const, price: 0, assetPath: null, compatibleCharacterIds: ALL_CHARACTERS, rarity: 'common' as const, description: '스토리 스테이지 코인 목표 달성 보상.', placeholder: false, purchasable: false, color: '#f2c76c' },
+  ...STORY_STAGES.flatMap((stage) => [
+    { id: stage.challengeRewardCosmeticIds.noHit, name: `${stage.name} 무피격 궤적`, kind: 'trail' as const, price: 0, assetPath: null, compatibleCharacterIds: ALL_CHARACTERS, rarity: 'rare' as const, description: '스토리 스테이지 무피격 완주 보상.', placeholder: false, purchasable: false, color: '#b7a7ed' },
+    { id: stage.challengeRewardCosmeticIds.coinTarget, name: `${stage.name} 코인 배지`, kind: 'profile' as const, price: 0, assetPath: null, compatibleCharacterIds: ALL_CHARACTERS, rarity: 'common' as const, description: '스토리 스테이지 코인 목표 달성 보상.', placeholder: false, purchasable: false, color: '#f2c76c' },
   ]),
   { id: 'profile-sky-crown', name: '하늘 왕관', kind: 'profile', price: 0, assetPath: null, compatibleCharacterIds: ALL_CHARACTERS, rarity: 'epic', description: '장거리 업적으로 해금되는 프로필 장식.', placeholder: false, purchasable: false, color: '#a9b9fa' },
   { id: 'profile-perfect-run', name: '완벽한 발자국', kind: 'profile', price: 0, assetPath: null, compatibleCharacterIds: ALL_CHARACTERS, rarity: 'rare', description: '무피격 업적으로 해금되는 프로필 장식.', placeholder: false, purchasable: false, color: '#f1a9ca' },
@@ -42,4 +43,9 @@ const COSMETIC_BY_ID = new Map(COSMETICS.map((cosmetic) => [cosmetic.id, cosmeti
 
 export function getCosmetic(id: string): CosmeticDefinition | undefined {
   return COSMETIC_BY_ID.get(id);
+}
+
+/** Display lookup also covers rewards restored from an earlier saved result. */
+export function getCosmeticDisplayName(id: string): string {
+  return getCosmetic(id)?.name ?? '알 수 없는 꾸미기';
 }
