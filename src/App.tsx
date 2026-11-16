@@ -57,11 +57,12 @@ type PersonalHistoryLoadState = { requestId: number; rows: PersonalRunHistoryRec
 function App(): React.JSX.Element {
   const auth = useRunnerAuth();
   const cloudRecordsAvailable = auth.mode === 'cloud' && auth.status === 'signed-in' && auth.apiConsentStatus === 'available';
+  const cloudRecordsPending = auth.mode === 'cloud' && auth.status === 'signed-in' && auth.apiConsentStatus === 'checking';
   const cloudGateway = useMemo(() => new AuthenticatedRunGateway(readEntraSettings().apiBaseUrl, auth.acquireApiToken),
     [auth.acquireApiToken]);
   const runGateway = useMemo<RunGateway>(() => new HybridRunGateway(browserRunGateway,
     cloudRecordsAvailable ? cloudGateway : null), [cloudGateway, cloudRecordsAvailable]);
-  const canUseRecords = auth.mode === 'local' || auth.status === 'signed-in';
+  const canUseRecords = auth.mode === 'local' || (auth.status === 'signed-in' && !cloudRecordsPending);
   const sessionScope = useMemo<RunnerSessionScope | null>(() => {
     if (auth.mode === 'local') return { kind: 'guest' };
     if (auth.mode === 'cloud' && auth.status === 'signed-in' && auth.account?.homeAccountId) {
@@ -113,10 +114,13 @@ function App(): React.JSX.Element {
   const [achievementsReturnTo, setAchievementsReturnTo] = useState<'menu' | 'stage-select'>('menu');
   const [shopReturnTo, setShopReturnTo] = useState<'menu' | 'character-select'>('menu');
   const [rankingState, setRankingState] = useState<RankingLoadState>({ requestId: -1, rows: [], error: null });
-  const bestRequestKey = !canUseRecords ? null : screen === 'menu' ? 'menu'
+  const recordContextKey = auth.mode === 'cloud'
+    ? `${auth.account?.homeAccountId ?? 'signed-out'}:${cloudRecordsAvailable ? 'cloud' : 'local'}` : 'local';
+  const bestScreenKey = screen === 'menu' ? 'menu'
     : screen === 'result' && finishedRun ? `result:${finishedRun.runId}` : null;
+  const bestRequestKey = canUseRecords && bestScreenKey ? `${recordContextKey}:${bestScreenKey}` : null;
   const overallBest = bestRequestKey && bestState.key === bestRequestKey ? bestState.record : null;
-  const bestLoading = bestRequestKey !== null && bestState.key !== bestRequestKey;
+  const bestLoading = cloudRecordsPending || (bestRequestKey !== null && bestState.key !== bestRequestKey);
   const bestError = bestRequestKey && bestState.key === bestRequestKey ? bestState.error : null;
   const rankingLoading = screen === 'rankings' && rankingState.requestId !== rankingRequestId;
   const rankingRows = rankingState.requestId === rankingRequestId ? rankingState.rows : [];
@@ -280,7 +284,7 @@ function App(): React.JSX.Element {
   }, [screen, rankingRequestId, runGateway, canUseRecords]);
 
   useEffect(() => {
-    if (screen !== 'personal-history') return;
+    if (screen !== 'personal-history' || !canUseRecords) return;
     let current = true;
     void runGateway.getPersonalHistory({ limit: 20, cursor: null }).then((page) => {
       if (current) setHistoryState({ requestId: historyRequestId, rows: [...page.items], cursor: page.nextCursor, error: null, loading: false });
@@ -289,7 +293,7 @@ function App(): React.JSX.Element {
         error: error instanceof RunApiError ? error.message : '내 기록을 불러오지 못했습니다. 다시 시도해 주세요.', loading: false });
     });
     return () => { current = false; };
-  }, [screen, historyRequestId, runGateway]);
+  }, [screen, historyRequestId, runGateway, canUseRecords]);
 
   function openRankings(): void {
     setRankingRequestId((requestId) => requestId + 1);

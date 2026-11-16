@@ -21,6 +21,8 @@ const audioMock = vi.hoisted(() => ({
   playEffect: vi.fn(),
 }));
 
+const cloudGatewayMock = vi.hoisted(() => ({ getBest: vi.fn() }));
+
 const sessionMock = vi.hoisted(() => ({
   getKey: (scope: { kind: 'guest' } | { kind: 'account'; id: string }) => scope.kind === 'guest'
     ? 'stella-runner:session:v1:guest' : `stella-runner:session:v1:account:${encodeURIComponent(scope.id)}`,
@@ -35,6 +37,7 @@ const authMock = vi.hoisted(() => ({
     status: 'loading' | 'signed-out' | 'signed-in' | 'error';
     account: { homeAccountId: string; name: string; username: string } | null;
     error: string | null;
+    apiConsentStatus?: 'checking' | 'available' | 'unavailable' | 'consent-required' | 'error';
     signIn: ReturnType<typeof vi.fn>;
     signOut: ReturnType<typeof vi.fn>;
     acquireApiToken: ReturnType<typeof vi.fn>;
@@ -46,6 +49,10 @@ vi.mock('./services/PersonalBestStore', () => ({
 }));
 
 vi.mock('./services/LocalRunGateway', () => ({ browserRunGateway: runGatewayMock }));
+vi.mock('./services/AuthenticatedRunGateway', async (importOriginal) => {
+  const original = await importOriginal<typeof import('./services/AuthenticatedRunGateway')>();
+  return { ...original, AuthenticatedRunGateway: class { getBest = cloudGatewayMock.getBest; } };
+});
 vi.mock('./audio/RunnerAudioManager', () => ({ browserRunnerAudio: audioMock }));
 vi.mock('./auth/AuthProvider', () => ({ useRunnerAuth: () => authMock.value }));
 
@@ -83,6 +90,7 @@ function openEndlessCharacterSelect(): void {
 
 afterEach(cleanup);
 beforeEach(() => {
+  cloudGatewayMock.getBest.mockReset().mockResolvedValue(null);
   authMock.value = {
     mode: 'local', status: 'signed-in', account: null, error: null,
     signIn: vi.fn(), signOut: vi.fn(), acquireApiToken: vi.fn(),
@@ -111,6 +119,45 @@ beforeEach(() => {
 });
 
 describe('App flow', () => {
+  it('keeps local best hidden while login records resolve and the cloud best loads', async () => {
+    const oldLocalBest = { rank: 1, displayName: 'Local Player', characterId: 'player-default',
+      distanceMeters: 17687, coins: 12, finishedAtIso: '2026-11-13T00:00:00.000Z' };
+    runGatewayMock.getBest.mockResolvedValue(oldLocalBest);
+    let resolveCloudBest!: (value: typeof oldLocalBest) => void;
+    cloudGatewayMock.getBest.mockReturnValue(new Promise((resolve) => { resolveCloudBest = resolve; }));
+    authMock.value = { ...authMock.value, mode: 'cloud', status: 'signed-in', apiConsentStatus: 'checking',
+      account: { homeAccountId: 'employee-1', name: 'Employee One', username: 'employee@example.test' } };
+    const { rerender } = render(<App />);
+    expect(screen.getByText('기록 불러오는 중…')).toBeInTheDocument();
+    expect(screen.queryByText(/17,687/)).not.toBeInTheDocument();
+    expect(runGatewayMock.getBest).not.toHaveBeenCalled();
+    authMock.value = { ...authMock.value, apiConsentStatus: 'available' };
+    rerender(<App />);
+    await waitFor(() => expect(cloudGatewayMock.getBest).toHaveBeenCalledOnce());
+    expect(screen.getByText('기록 불러오는 중…')).toBeInTheDocument();
+    await act(async () => resolveCloudBest({ ...oldLocalBest, displayName: 'Employee One', distanceMeters: 837 }));
+    expect(await screen.findByText(/내 최고 기록 837m/)).toBeInTheDocument();
+    expect(screen.queryByText(/17,687/)).not.toBeInTheDocument();
+    expect(runGatewayMock.getBest).not.toHaveBeenCalled();
+  });
+
+  it('hides the previous account best immediately when another account signs in', async () => {
+    let resolveNextBest!: (value: null) => void;
+    cloudGatewayMock.getBest.mockResolvedValueOnce({ rank: 1, displayName: 'First Runner', characterId: 'player-default',
+      distanceMeters: 17687, coins: 12, finishedAtIso: '2026-11-13T00:00:00.000Z' })
+      .mockReturnValueOnce(new Promise((resolve) => { resolveNextBest = resolve; }));
+    authMock.value = { ...authMock.value, mode: 'cloud', status: 'signed-in', apiConsentStatus: 'available',
+      account: { homeAccountId: 'employee-1', name: 'First Runner', username: 'first@example.test' } };
+    const { rerender } = render(<App />);
+    expect(await screen.findByText(/17,687m/)).toBeInTheDocument();
+    authMock.value = { ...authMock.value,
+      account: { homeAccountId: 'employee-2', name: 'Second Runner', username: 'second@example.test' } };
+    rerender(<App />);
+    expect(screen.queryByText(/17,687/)).not.toBeInTheDocument();
+    expect(screen.getByText('기록 불러오는 중…')).toBeInTheDocument();
+    await act(async () => resolveNextBest(null));
+    expect(await screen.findByText(/내 기록이 없습니다/)).toBeInTheDocument();
+  });
   it('keeps cloud-authenticated runs and rankings local while preserving account controls', async () => {
     const signOut = vi.fn();
     const acquireApiToken = vi.fn();
