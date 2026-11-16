@@ -9,7 +9,6 @@ export function ModeSelect({ onSelect, onBack }: ModeSelectProps): React.JSX.Ele
   return (
     <main className="progression-screen">
       <section className="progression-panel progression-panel--mode" aria-labelledby="mode-select-title">
-        <button className="progression-back" type="button" onClick={onBack}>← 타이틀</button>
         <p className="eyebrow">CHOOSE YOUR JOURNEY</p>
         <h1 id="mode-select-title">어떤 모험을 할까요?</h1>
         <p className="progression-intro">기록에 도전하거나, 네 가지 테마의 코스를 완주해 보세요.</p>
@@ -29,7 +28,7 @@ export function ModeSelect({ onSelect, onBack }: ModeSelectProps): React.JSX.Ele
             <span className="mode-option__details"><span>♥♥♥ 스테이지 생명</span><span>🏁 4개 코스</span><b aria-hidden="true">여정 선택 →</b></span>
           </button>
         </div>
-        <button className="progression-secondary" type="button" onClick={onBack}>뒤로</button>
+        <button className="progression-secondary" type="button" onClick={onBack}>← 타이틀로</button>
       </section>
     </main>
   );

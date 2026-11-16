@@ -1,16 +1,13 @@
 import { ACHIEVEMENTS } from '../../services/AchievementCatalog';
 import type { PlayerProfile } from '../../services/PlayerProfile';
+import { MenuDialog } from '../components/MenuDialog';
 
-export type AchievementsScreenProps = { profile: PlayerProfile; onBack(): void };
+export type AchievementsScreenProps = { profile: PlayerProfile; onBack(): void; backLabel?: string };
 
-export function AchievementsScreen({ profile, onBack }: AchievementsScreenProps): React.JSX.Element {
+export function AchievementsScreen({ profile, onBack, backLabel }: AchievementsScreenProps): React.JSX.Element {
   return (
-    <main className="progression-screen">
-      <section className="progression-panel achievement-panel" aria-labelledby="achievements-title">
-        <button className="progression-back" type="button" onClick={onBack}>뒤로</button>
-        <p className="eyebrow">RUNNER ACHIEVEMENTS</p>
-        <h1 id="achievements-title">모험의 기록</h1>
-        <p className="progression-intro">도전을 달성하고 코인과 꾸미기 보상을 모아보세요.</p>
+    <MenuDialog titleId="achievements-title" title="업적" eyebrow="RUNNER ACHIEVEMENTS"
+      description="도전을 달성하고 코인과 꾸미기 보상을 모아보세요." onBack={onBack} backLabel={backLabel}>
         <div className="achievement-wallet">보유 코인 <strong>{profile.walletCoins.toLocaleString()}</strong></div>
         <div className="achievement-list">
           {ACHIEVEMENTS.map((achievement) => {
@@ -31,7 +28,6 @@ export function AchievementsScreen({ profile, onBack }: AchievementsScreenProps)
             </article>;
           })}
         </div>
-      </section>
-    </main>
+    </MenuDialog>
   );
 }

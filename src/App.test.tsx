@@ -176,7 +176,7 @@ describe('App flow', () => {
     fireEvent.click(screen.getByRole('button', { name: '이 브라우저 기록 보기' }));
     expect(await screen.findByRole('heading', { name: '로컬 기록' })).toBeInTheDocument();
     expect(await screen.findByText('이 브라우저에 저장된 기록입니다. 거리 순으로 정렬하고, 거리가 같으면 코인 수로 순위를 정합니다.')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: '메인 메뉴로' }));
+    fireEvent.click(screen.getByRole('button', { name: '← 타이틀로' }));
 
     openEndlessCharacterSelect();
     fireEvent.click(screen.getByRole('button', { name: '아오쿠모 린' }));
@@ -298,7 +298,7 @@ describe('App flow', () => {
     expect(screen.getByText('1,250m')).toBeInTheDocument();
     expect(runGatewayMock.getRanking).toHaveBeenCalledOnce();
     expect(screen.queryByText(/월드 선택|스테이지 선택|체크포인트/)).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: '메인 메뉴로' }));
+    fireEvent.click(screen.getByRole('button', { name: '← 타이틀로' }));
     fireEvent.click(screen.getByRole('button', { name: '달리기 시작' }));
     expect(screen.getByRole('heading', { name: '어떤 모험을 할까요?' })).toBeInTheDocument();
   });

@@ -2,12 +2,14 @@ import { getCharacter } from '../../game/characters/characterCatalog';
 import { getStoryStage } from '../../game/runner/storyConfig';
 import type { PersonalRunHistoryRecord } from '../../services/RunGateway';
 import './PersonalHistoryScreen.css';
+import { MenuDialog } from '../components/MenuDialog';
 
 export type PersonalHistoryScreenProps = {
   rows: readonly PersonalRunHistoryRecord[];
   loading: boolean;
   error: string | null;
   hasMore: boolean;
+  source?: 'cloud' | 'local';
   onLoadMore(): void;
   onRetry(): void;
   onBack(): void;
@@ -41,13 +43,15 @@ function getFinishLabel(reason: PersonalRunHistoryRecord['finishReason']): strin
   }
 }
 
-export function PersonalHistoryScreen({ rows, loading, error, hasMore, onLoadMore, onRetry, onBack }: PersonalHistoryScreenProps): React.JSX.Element {
+export function PersonalHistoryScreen({ rows, loading, error, hasMore, source = 'local', onLoadMore, onRetry, onBack }: PersonalHistoryScreenProps): React.JSX.Element {
   return (
-    <main className="landing-shell">
-      <section className="title-card rankings-card personal-history-card" aria-labelledby="history-title">
-        <p className="eyebrow">MY RUNS · PRIVATE HISTORY</p>
-        <h1 id="history-title">내 플레이 기록</h1>
-        <p className="intro-copy">이 브라우저에 저장된 달리기 기록입니다. 다른 기기와는 공유되지 않습니다.</p>
+    <MenuDialog titleId="history-title" title="내 플레이 기록" eyebrow="MY RUNS · PRIVATE HISTORY"
+      onBack={onBack} bodyClassName="personal-history-card" description={source === 'cloud'
+        ? '로그인한 계정의 달리기 기록입니다. 본인만 확인할 수 있으며 최근 종료한 기록부터 표시합니다.'
+        : '이 브라우저에 저장된 달리기 기록입니다. 다른 기기와는 공유되지 않습니다.'}
+      footerActions={hasMore && <button type="button" onClick={onLoadMore} disabled={loading}>
+        {loading ? '불러오는 중…' : '기록 더 보기'}
+      </button>}>
         {loading && rows.length === 0 && <p className="rankings-empty" role="status">기록을 불러오는 중입니다…</p>}
         {error && <p className="rankings-empty" role="alert">{error}</p>}
         {error && rows.length === 0 && <button type="button" onClick={onRetry} disabled={loading}>다시 시도</button>}
@@ -67,7 +71,7 @@ export function PersonalHistoryScreen({ rows, loading, error, hasMore, onLoadMor
                   <small className="ranking-record__meta">
                     <span>{row.coins.toLocaleString()} 코인</span>
                     <span>{row.hitsTaken}회 피격</span>
-                    <span>{row.completedStage ? '스테이지 완주' : '미완주'}</span>
+                    {row.mode === 'story' && <span>{row.completedStage ? '스테이지 완주' : '미완주'}</span>}
                     <span>{getFinishLabel(row.finishReason)}</span>
                     <time dateTime={row.finishedAtIso}>{formatRunDate(row.finishedAtIso)}</time>
                   </small>
@@ -76,13 +80,6 @@ export function PersonalHistoryScreen({ rows, loading, error, hasMore, onLoadMor
             })}
           </ol>
         )}
-        <div className="result-actions rankings-actions personal-history-actions">
-          {hasMore && <button type="button" onClick={onLoadMore} disabled={loading}>
-            {loading ? '불러오는 중…' : '기록 더 보기'}
-          </button>}
-          <button type="button" onClick={onBack}>메인 메뉴로</button>
-        </div>
-      </section>
-    </main>
+    </MenuDialog>
   );
 }

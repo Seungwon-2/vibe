@@ -34,7 +34,7 @@ describe('RankingScreen', () => {
     expect(screen.getByRole('status')).toHaveTextContent('기록을 불러오는 중입니다');
     rerender(<RankingScreen rows={[]} loading={false} error="읽기 실패" source="local" onBack={onBack} />);
     expect(screen.getByRole('alert')).toHaveTextContent('읽기 실패');
-    fireEvent.click(screen.getByRole('button', { name: '메인 메뉴로' }));
+    fireEvent.click(screen.getByRole('button', { name: '← 타이틀로' }));
     expect(onBack).toHaveBeenCalledOnce();
   });
 });

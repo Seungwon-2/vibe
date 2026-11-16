@@ -3,11 +3,13 @@ import { CHARACTERS } from '../../game/characters/characterCatalog';
 import type { CharacterId } from '../../game/characters/characterTypes';
 import { COSMETICS, type CosmeticKind } from '../../services/CosmeticCatalog';
 import type { PlayerProfile } from '../../services/PlayerProfile';
+import { MenuDialog } from '../components/MenuDialog';
 
 export type ShopScreenProps = {
   profile: PlayerProfile;
   initialCharacterId: CharacterId;
   onBack(): void;
+  backLabel?: string;
   onPurchase(cosmeticId: string): boolean;
   onEquip(characterId: CharacterId, cosmeticId: string): boolean;
   onUnequip(characterId: CharacterId, kind: CosmeticKind): void;
@@ -18,7 +20,7 @@ const SHOP_CATEGORIES = ['trail'] as const;
 const SHOP_TRAIL_IDS = new Set(['trail-cloud', 'trail-petal', 'trail-starlight', 'trail-golden-notes']);
 const SHOP_ITEMS = COSMETICS.filter((item) => SHOP_TRAIL_IDS.has(item.id));
 
-export function ShopScreen({ profile, initialCharacterId, onBack, onPurchase, onEquip, onUnequip }: ShopScreenProps): React.JSX.Element {
+export function ShopScreen({ profile, initialCharacterId, onBack, backLabel, onPurchase, onEquip, onUnequip }: ShopScreenProps): React.JSX.Element {
   const unlockedCharacters = CHARACTERS.filter((character) => profile.unlockedCharacterIds.includes(character.id));
   const [characterId, setCharacterId] = useState<CharacterId>(() =>
     profile.unlockedCharacterIds.includes(initialCharacterId) ? initialCharacterId : (unlockedCharacters[0]?.id ?? initialCharacterId));
@@ -30,12 +32,8 @@ export function ShopScreen({ profile, initialCharacterId, onBack, onPurchase, on
   const equipped = profile.equippedCosmeticIdsByCharacter[activeCharacterId] ?? [];
 
   return (
-    <main className="progression-screen shop-screen">
-      <section className="progression-panel shop-panel" aria-labelledby="shop-title">
-        <button className="progression-back" type="button" onClick={onBack}>뒤로</button>
-        <p className="eyebrow">RUNNER CLOSET</p>
-        <h1 id="shop-title">코인 상점</h1>
-        <p className="progression-intro">꾸미기를 구매하고 러너마다 다르게 장착하세요. 게임 성능에는 영향을 주지 않습니다.</p>
+    <MenuDialog titleId="shop-title" title="코인 상점" eyebrow="RUNNER CLOSET" onBack={onBack} backLabel={backLabel}
+      description="꾸미기를 구매하고 러너마다 다르게 장착하세요. 게임 성능에는 영향을 주지 않습니다.">
         <div className="shop-toolbar">
           <strong>보유 코인 <span>🪙 {profile.walletCoins.toLocaleString()}</span></strong>
           <label>장착할 러너
@@ -86,7 +84,6 @@ export function ShopScreen({ profile, initialCharacterId, onBack, onPurchase, on
             })}
           </div>
         </section>)}
-      </section>
-    </main>
+    </MenuDialog>
   );
 }

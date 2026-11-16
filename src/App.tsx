@@ -496,11 +496,13 @@ function App(): React.JSX.Element {
   }
 
   if (screen === 'achievements') {
-    return <AchievementsScreen profile={profile} onBack={() => setScreen(achievementsReturnTo)} />;
+    return <AchievementsScreen profile={profile} onBack={() => setScreen(achievementsReturnTo)}
+      backLabel={achievementsReturnTo === 'menu' ? '← 타이틀로' : '← 스테이지 선택으로'} />;
   }
 
   if (screen === 'shop') {
     return <ShopScreen profile={profile} initialCharacterId={selectedCharacterId}
+      backLabel={shopReturnTo === 'menu' ? '← 타이틀로' : '← 캐릭터 선택으로'}
       onBack={() => setScreen(shopReturnTo)} onPurchase={handleCosmeticPurchase}
       onEquip={handleCosmeticEquip} onUnequip={handleCosmeticUnequip} />;
   }
@@ -599,7 +601,7 @@ function App(): React.JSX.Element {
 
   if (screen === 'personal-history') {
     const historyIsCurrent = historyState.requestId === historyRequestId;
-    return <PersonalHistoryScreen rows={historyIsCurrent ? historyState.rows : []}
+    return <PersonalHistoryScreen rows={historyIsCurrent ? historyState.rows : []} source={cloudRecordsAvailable ? 'cloud' : 'local'}
       loading={!historyIsCurrent || historyState.loading} error={historyIsCurrent ? historyState.error : null}
       hasMore={historyIsCurrent && historyState.cursor !== null} onLoadMore={() => { void loadMorePersonalHistory(); }}
       onRetry={openPersonalHistory}

@@ -16,6 +16,14 @@ const secondRun: PersonalRunHistoryRecord = {
 };
 
 describe('PersonalHistoryScreen', () => {
+  it('identifies cloud records as private account history rather than browser-only history', () => {
+    render(<PersonalHistoryScreen rows={[secondRun]} source="cloud" loading={false} error={null} hasMore={false}
+      onLoadMore={vi.fn()} onRetry={vi.fn()} onBack={vi.fn()} />);
+    expect(screen.getByRole('dialog', { name: '내 플레이 기록' })).toBeInTheDocument();
+    expect(screen.getByText(/로그인한 계정의 달리기 기록/)).toBeInTheDocument();
+    expect(screen.queryByText(/다른 기기와는 공유되지 않습니다/)).not.toBeInTheDocument();
+    expect(screen.queryByText('미완주')).not.toBeInTheDocument();
+  });
   it('renders personal run details with readable mode and finish labels, without record IDs', () => {
     render(<PersonalHistoryScreen rows={[firstRun]} loading={false} error={null} hasMore={false}
       onLoadMore={vi.fn()} onRetry={vi.fn()} onBack={vi.fn()} />);

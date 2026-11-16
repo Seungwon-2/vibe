@@ -48,7 +48,7 @@ export function StageSelect({ profile, selectedStageId, onSelect, onStart, onAch
           })}
         </div>
         <div className="stage-select-footer">
-          <button className="progression-secondary" type="button" onClick={onBack}>← 캐릭터</button>
+          <button className="progression-secondary" type="button" onClick={onBack}>← 캐릭터 선택으로</button>
           <button className="progression-secondary" type="button" onClick={onAchievements}>업적</button>
           <button className="progression-primary" type="button" disabled={!profile.unlockedStageIds.includes(selected.id)}
             onClick={onStart}>{selected.name} 시작</button>
