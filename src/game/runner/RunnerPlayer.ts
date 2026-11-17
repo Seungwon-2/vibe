@@ -27,6 +27,8 @@ export class RunnerPlayer {
   private poseKey = '';
   private readonly passive;
   private readonly character;
+  private readonly motionPreference = typeof window !== 'undefined'
+    ? window.matchMedia?.('(prefers-reduced-motion: reduce)') : undefined;
 
   constructor(
     private readonly sprite: Phaser.Physics.Arcade.Sprite,
@@ -258,7 +260,19 @@ export class RunnerPlayer {
     this.body.enable = false;
   }
 
-  setProtected(remainingMs: number): void {
+  setProtected(remainingMs: number, giantRecoveryRemainingMs = 0): void {
+    if (this.finished) {
+      this.sprite.setAlpha(1);
+      return;
+    }
+    if (giantRecoveryRemainingMs > 0) {
+      const elapsedMs = Math.max(0, RUNNER_CONFIG.giantRecoveryMs - giantRecoveryRemainingMs);
+      // Two gradual fades, never invisible; derived from game time so pause
+      // and checkpoint restoration do not start another animation clock.
+      this.sprite.setAlpha(this.motionPreference?.matches ? 0.65
+        : 0.75 + 0.25 * Math.cos(2 * Math.PI * elapsedMs / 500));
+      return;
+    }
     this.sprite.setAlpha(remainingMs > 0 && Math.floor(remainingMs / 100) % 2 === 0 ? 0.4 : 1);
   }
 

@@ -91,7 +91,7 @@ describe('RunnerScene keyboard focus handling', () => {
 describe('RunnerScene finish boundary', () => {
   it('passes frame delta to the collectible magnet update', () => {
     const scene = new RunnerScene();
-    const state = startRunner(createRunnerSnapshot('tokino-mary'));
+    const state = { ...startRunner(createRunnerSnapshot('tokino-mary')), giantRecoveryRemainingMs: 700 };
     const sprite = { x: 170, y: 470 };
     const collectiblesUpdate = vi.fn();
     const harness = scene as unknown as {
@@ -145,6 +145,7 @@ describe('RunnerScene finish boundary', () => {
     harness.update(0, 16);
 
     expect(collectiblesUpdate).toHaveBeenCalledWith(expect.objectContaining({ phase: 'running' }), 16);
+    expect(harness.player.setProtected).toHaveBeenCalledWith(0, 684);
   });
 
   it('activates the running trail while the separate speed pickup is active', () => {

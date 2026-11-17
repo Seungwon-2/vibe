@@ -183,7 +183,7 @@ export class RunnerScene extends Phaser.Scene {
     this.publish(state, gateAwards.length > 0 || result !== null);
     for (const gate of gateAwards) this.eventEmitter.gate(gate.id, gate.awardedMs);
     this.player.setHurt(state.staggerRemainingMs > 0);
-    this.player.setProtected(state.protectionRemainingMs);
+    this.player.setProtected(state.protectionRemainingMs, state.giantRecoveryRemainingMs);
     this.player.setPassiveEffect(state.passiveEffectRemainingMs);
     this.player.setGiant(state.giantRemainingMs > 0);
     this.trailEffect.update(this.time.now, deltaMs, this.player.gameObject.x, this.player.gameObject.y - 12,
@@ -416,14 +416,14 @@ export class RunnerScene extends Phaser.Scene {
     this.publish(state, true);
     if (blockedByPassive) {
       this.player.setPassiveEffect(state.passiveEffectRemainingMs);
-      this.player.setProtected(state.protectionRemainingMs);
+      this.player.setProtected(state.protectionRemainingMs, state.giantRecoveryRemainingMs);
       if (passiveId === 'toa-ghost-glide') this.eventEmitter.toaGlideTriggered();
       else this.eventEmitter.passiveTriggered(state.passiveChargesRemaining, 'obstacle');
       return;
     }
     this.eventEmitter.hazardHit();
     this.player.setHurt(true);
-    this.player.setProtected(state.protectionRemainingMs);
+    this.player.setProtected(state.protectionRemainingMs, state.giantRecoveryRemainingMs);
     if (result) this.emitFinished(result);
   };
 
@@ -435,7 +435,7 @@ export class RunnerScene extends Phaser.Scene {
       this.heldKeyboardActions.clear();
       this.inputBridge.clear();
       this.player.setPassiveEffect(state.passiveEffectRemainingMs);
-      this.player.setProtected(state.protectionRemainingMs);
+      this.player.setProtected(state.protectionRemainingMs, state.giantRecoveryRemainingMs);
       this.player.setGiant(state.giantRemainingMs > 0);
       this.player.beginPitRescue();
       this.eventEmitter.passiveTriggered(state.passiveChargesRemaining, 'pit');

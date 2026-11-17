@@ -72,6 +72,47 @@ function createPlayer(characterId: CharacterId) {
 }
 
 describe('RunnerPlayer and input bridge', () => {
+  it('shows two gentle recovery pulses without changing pose, animation or velocity', () => {
+    const { player, body, sprite } = createPlayer('player-default');
+    player.jump();
+    const checkpoint = player.createCheckpoint();
+    const calls = sprite.anims.play.mock.calls.length;
+    for (let remaining = 1_000; remaining > 0; remaining -= 25) {
+      player.setProtected(0, remaining);
+      expect(sprite.alpha).toBeGreaterThanOrEqual(0.5);
+      expect(sprite.alpha).toBeLessThanOrEqual(1);
+    }
+    player.setProtected(0, 750);
+    expect(sprite.alpha).toBeCloseTo(0.5);
+    player.setProtected(0, 500);
+    expect(sprite.alpha).toBeCloseTo(1);
+    expect(sprite.anims.play).toHaveBeenCalledTimes(calls);
+    expect(sprite.y).toBe(checkpoint.y);
+    expect(body.velocity.y).toBe(checkpoint.velocityY);
+    player.setProtected(0, 0);
+    expect(sprite.alpha).toBe(1);
+    player.finish('gameOver');
+    player.setProtected(0, 750);
+    expect(sprite.alpha).toBe(1);
+  });
+
+  it('keeps recovery appearance steady when reduced motion is enabled', () => {
+    const previous = window.matchMedia;
+    const preference = { matches: true };
+    window.matchMedia = vi.fn(() => preference as MediaQueryList);
+    try {
+      const { player, sprite } = createPlayer('player-default');
+      player.setProtected(0, 750);
+      expect(sprite.alpha).toBe(0.65);
+      player.setProtected(0, 500);
+      expect(sprite.alpha).toBe(0.65);
+      preference.matches = false; // Current OS preference can change mid-run.
+      player.setProtected(0, 500);
+      expect(sprite.alpha).toBe(1);
+      player.setProtected(0);
+      expect(sprite.alpha).toBe(1);
+    } finally { window.matchMedia = previous; }
+  });
   it('queues a jump once per press and holds slide until release', () => {
     const input = new RunnerInputBridge();
     input.press('jump');
