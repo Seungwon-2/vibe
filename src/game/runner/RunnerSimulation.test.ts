@@ -16,6 +16,65 @@ import {
 
 const EPOCH = new Date('2026-10-26T00:00:00.000Z');
 
+describe('giant expiry recovery', () => {
+  it.each(['endless', 'story'] as const)('protects ordinary hits for exactly one second in %s', mode => {
+    const initial = startRunner(createRunnerSnapshot('player-default', EPOCH,
+      { mode, storyStageId: mode === 'story' ? 'dawn-city' : null }));
+    const giant = collectPickup(initial, { id: 'recovery-giant', kind: 'giant' });
+    const atExpiry = advanceRunner(giant, RUNNER_CONFIG.giantDurationMs).state;
+    expect(atExpiry).toMatchObject({ giantRemainingMs: 0, giantRecoveryRemainingMs: 1_000 });
+    const protectedState = advanceRunner(atExpiry, 999).state;
+    expect(applyCollision(protectedState)).toBe(protectedState);
+    expect(protectedState.giantRecoveryRemainingMs).toBeCloseTo(1);
+    const expired = advanceRunner(protectedState, 1).state;
+    expect(expired.giantRecoveryRemainingMs).toBeCloseTo(0);
+    const hit = applyCollision(expired);
+    expect(hit.livesRemaining).toBe(2);
+    expect(hit.hitsTaken).toBe(1);
+    expect(hit.staggerRemainingMs).toBeGreaterThan(0);
+  });
+
+  it('subtracts expiry overshoot identically across frames and a gate boundary', () => {
+    const state = { ...running(), giantRemainingMs: 100, distanceMeters: 1_999,
+      worldDistance: 1_999 / RUNNER_CONFIG.metersPerWorldUnit };
+    const single = advanceRunner(state, 450).state;
+    const split = advanceRunner(advanceRunner(state, 100).state, 350).state;
+    expect(single.passedGateIds).toContain('gate-2000');
+    expect(single.giantRecoveryRemainingMs).toBeCloseTo(650);
+    expect(split.giantRecoveryRemainingMs).toBeCloseTo(single.giantRecoveryRemainingMs!);
+    expect(advanceRunner(state, 1_200).state.giantRecoveryRemainingMs).toBe(0);
+    const frozen = advanceRunner({ ...running(), giantRemainingMs: 100, staggerRemainingMs: 500 }, 450).state;
+    expect(frozen.giantRecoveryRemainingMs).toBe(650);
+    expect(frozen.worldDistance).toBe(0);
+  });
+
+  it('freezes on pause, resets on new giant and clears on terminal finish', () => {
+    const state = advanceRunner({ ...running(), giantRemainingMs: 100 }, 400).state;
+    expect(state.giantRecoveryRemainingMs).toBe(700);
+    const paused = pauseRunner(state);
+    expect(advanceRunner(paused, 10_000).state).toBe(paused);
+    const resumed = resumeRunner(paused);
+    expect(advanceRunner(resumed, 100).state.giantRecoveryRemainingMs).toBe(600);
+    const refreshed = collectPickup(resumed, { id: 'new-giant', kind: 'giant' });
+    expect(refreshed.giantRecoveryRemainingMs).toBe(0);
+    expect(advanceRunner(refreshed, 6_000).state.giantRecoveryRemainingMs).toBe(1_000);
+    expect(finishRunner(state).state.giantRecoveryRemainingMs).toBe(0);
+  });
+
+  it('takes priority over Hiyori and Toa but never protects from pits', () => {
+    for (const character of ['hanayo-hiyori', 'goth-student'] as const) {
+      const state = { ...running(character), giantRecoveryRemainingMs: 750, slideGuardRemainingMs: 250 };
+      expect(applyCollision(state, true)).toBe(state);
+    }
+    const ordinary = { ...running(), giantRecoveryRemainingMs: 750 };
+    expect(applyPitFall(ordinary).state.finishReason).toBe('pit');
+    const hiyori = applyPitFall({ ...running('hanayo-hiyori'), giantRecoveryRemainingMs: 750 });
+    expect(hiyori.blockedByPassive).toBe(true);
+    expect(hiyori.state).toMatchObject({ passiveChargesRemaining: 1, giantRecoveryRemainingMs: 0 });
+    expect(applyCollision({ ...ordinary, giantRecoveryRemainingMs: undefined }).livesRemaining).toBe(2);
+  });
+});
+
 function running(characterId: CharacterId = 'player-default') {
   return startRunner(createRunnerSnapshot(characterId, EPOCH));
 }

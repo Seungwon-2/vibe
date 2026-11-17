@@ -68,6 +68,7 @@ export const RUNNER_CONFIG = Object.freeze({
   timePickupFirstDistanceMeters: 1_360,
   timePickupSpacingMeters: 2_400,
   giantDurationMs: 6_000,
+  giantRecoveryMs: 1_000,
   giantPickupLeadMeters: 100,
   giantPickupSearchRadiusMeters: 35,
   initialSpeedUnitsPerSecond: 302.5,

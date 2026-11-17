@@ -81,6 +81,24 @@ function storyActiveEnvelope(scope: RunnerSessionScope = guest): RunnerSessionEn
 }
 
 describe('BrowserRunnerSessionStore', () => {
+  it('preserves recovery across resume and accepts old saves with no recovery field', () => {
+    const store = new BrowserRunnerSessionStore(new MemoryStorage());
+    const envelope = activeEnvelope();
+    if (envelope.kind !== 'active') throw new Error('Expected active envelope');
+    expect(store.write(envelope).ok).toBe(true);
+    expect(store.read(guest, new Date(savedAt))).toEqual({ ok: true, value: envelope });
+    const recovery = { ...envelope, payload: { ...envelope.payload,
+      snapshot: { ...envelope.payload.snapshot, giantRecoveryRemainingMs: 650 } } };
+    expect(store.write(recovery).ok).toBe(true);
+    const restored = store.read(guest, new Date(savedAt));
+    if (!restored.ok || restored.value?.kind !== 'active') throw new Error('Expected active recovery');
+    const resumed = resumeRunner(restored.value.payload.snapshot);
+    expect(advanceRunner(resumed, 100).state.giantRecoveryRemainingMs).toBe(550);
+    for (const invalid of [-1, Number.NaN, Number.POSITIVE_INFINITY, 1_001]) {
+      expect(store.write({ ...recovery, payload: { ...recovery.payload,
+        snapshot: { ...recovery.payload.snapshot, giantRecoveryRemainingMs: invalid } } }).ok).toBe(false);
+    }
+  });
   it('uses isolated guest and encoded account keys', () => {
     expect(createRunnerSessionKey(guest)).toBe('stella-runner:session:v1:guest');
     expect(createRunnerSessionKey(accountA)).toBe('stella-runner:session:v1:account:home%2Fid%20%2B%20A');

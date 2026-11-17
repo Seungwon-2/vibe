@@ -28,6 +28,8 @@ export type RunnerSnapshot = Readonly<{
   speedUnitsPerSecond: number;
   coins: number;
   giantRemainingMs: number;
+  /** Ordinary-hazard protection after natural expiry; absent in legacy saves. */
+  giantRecoveryRemainingMs?: number;
   collectedPickupIds: readonly string[];
   passedGateIds: readonly RunnerGateId[];
   staggerRemainingMs: number;

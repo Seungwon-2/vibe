@@ -1,6 +1,6 @@
 # T02 Giant expiry recovery
 
-Status: pending
+Status: done
 
 ## Target files and symbols
 - src/game/runner/runnerConfig.ts: giantRecoveryMs=1000.
@@ -22,3 +22,5 @@ Recovery number in milliseconds, optional for old saves, initialized 0. No resul
 fix(game): protect runners for one second after giant expires
 
 Plan: 2026-11-17-runner-lane-clarity-giant-recovery
+
+Validation: 58 focused tests and production build passed. Natural expiry, overshoot/gate, pause, legacy save, passive priority and pits covered.

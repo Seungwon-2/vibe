@@ -1,4 +1,5 @@
 import { CHARACTERS } from '../game/characters/characterCatalog';
+import { RUNNER_CONFIG } from '../game/runner/runnerConfig';
 import type { CharacterId } from '../game/characters/characterTypes';
 import type {
   RunnerActiveSession,
@@ -92,6 +93,9 @@ function isSnapshot(value: unknown, characterId: CharacterId, mode: RunnerMode):
     Number.isFinite(snapshot.distanceMeters) && Number.isFinite(snapshot.worldDistance) &&
     Number.isFinite(snapshot.speedUnitsPerSecond) && Number.isSafeInteger(snapshot.coins) &&
     Number.isFinite(snapshot.giantRemainingMs) && Number.isFinite(snapshot.speedPickupRemainingMs) &&
+    (snapshot.giantRecoveryRemainingMs === undefined ||
+      (Number.isFinite(snapshot.giantRecoveryRemainingMs) && snapshot.giantRecoveryRemainingMs >= 0 &&
+        snapshot.giantRecoveryRemainingMs <= RUNNER_CONFIG.giantRecoveryMs)) &&
     isIsoTimestamp(snapshot.startedAtIso);
 }
 

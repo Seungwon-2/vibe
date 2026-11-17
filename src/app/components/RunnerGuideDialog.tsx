@@ -40,7 +40,7 @@ function getRunnerGuideItems(mode: RunnerMode): readonly RunnerGuideItem[] {
     {
       icon: '✦',
       title: '거대화',
-      description: `${RUNNER_CONFIG.giantDurationMs / 1_000}초 동안 몸집과 속도가 ${RUNNER_CONFIG.giantSpeedMultiplier}배가 되고 일반 장애물을 무시합니다. 낭떠러지는 피해야 합니다.`,
+      description: `${RUNNER_CONFIG.giantDurationMs / 1_000}초 동안 몸집이 커지고 속도가 ${RUNNER_CONFIG.giantSpeedMultiplier}배가 됩니다. 일반 장애물을 무시하고, 종료 후에도 ${RUNNER_CONFIG.giantRecoveryMs / 1_000}초간 보호됩니다. 낭떠러지는 피해야 합니다.`,
     },
   ];
 }

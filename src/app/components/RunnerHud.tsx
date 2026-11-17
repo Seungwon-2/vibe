@@ -121,6 +121,12 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause, onOpenGui
                 <span aria-hidden="true">✦</span> {Math.ceil(snapshot.giantRemainingMs / 1_000)}초
               </span>
             )}
+            {snapshot.giantRemainingMs <= 0 && (snapshot.giantRecoveryRemainingMs ?? 0) > 0 && (
+              <span className="runner-hud__powerup runner-hud__powerup--giant" role="timer"
+                aria-label={`거대화 종료 보호 ${Math.ceil((snapshot.giantRecoveryRemainingMs ?? 0) / 1_000)}초 남음`}>
+                <span aria-hidden="true">◇</span> 보호
+              </span>
+            )}
           </span>
           <span className="runner-hud__effect-slot">
             {snapshot.speedPickupRemainingMs > 0 && (

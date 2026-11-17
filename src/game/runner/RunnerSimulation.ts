@@ -87,6 +87,14 @@ function traveledWorldUnits(state: RunnerSnapshot, deltaMs: number, gateCount = 
   return distance;
 }
 
+function advanceGiantRecovery(state: RunnerSnapshot, deltaMs: number): number {
+  const remaining = Math.max(0, (state.giantRecoveryRemainingMs ?? 0) - deltaMs);
+  if (state.giantRemainingMs <= 0 || state.giantRemainingMs > deltaMs) return remaining;
+  // Expiry can happen between frames or within a segment crossing a gate.
+  // Count the actual time since expiry, rather than awarding a fresh second.
+  return Math.max(remaining, RUNNER_CONFIG.giantRecoveryMs - (deltaMs - state.giantRemainingMs), 0);
+}
+
 function advanceSegment(state: RunnerSnapshot, deltaMs: number, gateCount = state.passedGateIds.length): RunnerSnapshot {
   const elapsedMs = state.elapsedMs + deltaMs;
   const worldDistance = state.worldDistance + traveledWorldUnits(state, deltaMs, gateCount);
@@ -107,6 +115,7 @@ function advanceSegment(state: RunnerSnapshot, deltaMs: number, gateCount = stat
     slideGuardRemainingMs: Math.max(0, state.slideGuardRemainingMs - deltaMs),
     slideGuardCooldownRemainingMs: Math.max(0, state.slideGuardCooldownRemainingMs - deltaMs),
     giantRemainingMs: Math.max(0, state.giantRemainingMs - deltaMs),
+    giantRecoveryRemainingMs: advanceGiantRecovery(state, deltaMs),
     speedPickupRemainingMs: Math.max(0, state.speedPickupRemainingMs - deltaMs),
     stageSpeedBoostRemainingMs: Math.max(0, (state.stageSpeedBoostRemainingMs ?? 0) - deltaMs),
     biomeId: getBiomeForDistance(distanceMeters).id,
@@ -200,6 +209,7 @@ export function createRunnerSnapshot(
     speedUnitsPerSecond: getBaseSpeed(0, 0, characterId, mode),
     coins: 0,
     giantRemainingMs: 0,
+    giantRecoveryRemainingMs: 0,
     collectedPickupIds: [],
     passedGateIds: [],
     staggerRemainingMs: 0,
@@ -251,6 +261,7 @@ export function finishRunner(
       ...state,
       phase: 'finished' as const,
       giantRemainingMs: 0,
+      giantRecoveryRemainingMs: 0,
       speedPickupRemainingMs: 0,
       remainingMs: 0,
       finishedAtElapsedMs: state.elapsedMs,
@@ -289,6 +300,7 @@ export function advanceRunner(
         slideGuardRemainingMs: Math.max(0, current.slideGuardRemainingMs - frozenMs),
         slideGuardCooldownRemainingMs: Math.max(0, current.slideGuardCooldownRemainingMs - frozenMs),
         giantRemainingMs: Math.max(0, current.giantRemainingMs - frozenMs),
+        giantRecoveryRemainingMs: advanceGiantRecovery(current, frozenMs),
         speedPickupRemainingMs: Math.max(0, current.speedPickupRemainingMs - frozenMs),
         stageSpeedBoostRemainingMs: Math.max(0, (current.stageSpeedBoostRemainingMs ?? 0) - frozenMs),
       };
@@ -355,7 +367,8 @@ export function collectPickup(
 
   const collectedPickupIds = [...state.collectedPickupIds, pickup.id];
   if (pickup.kind === 'giant') {
-    const giant = { ...state, giantRemainingMs: RUNNER_CONFIG.giantDurationMs, collectedPickupIds };
+    const giant = { ...state, giantRemainingMs: RUNNER_CONFIG.giantDurationMs,
+      giantRecoveryRemainingMs: 0, collectedPickupIds };
     return { ...giant, speedUnitsPerSecond: getSpeed(giant) };
   }
   if (pickup.kind === 'coin') {
@@ -386,7 +399,7 @@ export function applyCollision(state: RunnerSnapshot, sliding = false): RunnerSn
       (state.mode !== 'story' && state.remainingMs <= 0)) {
     return state;
   }
-  if (state.giantRemainingMs > 0) return state;
+  if (state.giantRemainingMs > 0 || (state.giantRecoveryRemainingMs ?? 0) > 0) return state;
   const passive = getCharacterPassive(state.characterId);
   if (passive.id === 'toa-ghost-glide' && sliding && state.slideGuardRemainingMs > 0) {
     return {
@@ -441,6 +454,7 @@ export function applyPitFall(state: RunnerSnapshot): { state: RunnerSnapshot; bl
       state: {
         ...state,
         giantRemainingMs: 0,
+        giantRecoveryRemainingMs: 0,
         hitsTaken: (state.hitsTaken ?? 0) + (state.mode === 'story' ? 1 : 0),
         passiveChargesRemaining: state.passiveChargesRemaining - 1,
         passiveEffectRemainingMs: 700,

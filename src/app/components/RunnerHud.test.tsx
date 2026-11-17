@@ -124,6 +124,10 @@ describe('RunnerHud', () => {
       recentBonus={null} onPause={vi.fn()} />);
     expect(screen.getAllByRole('timer')).toHaveLength(3);
     expect(Array.from(document.querySelectorAll('.runner-hud__effect-slot'))).toEqual(slots);
+    rerender(<RunnerHud snapshot={snapshot({ giantRecoveryRemainingMs: 700 })}
+      character={getCharacter('player-default')} recentBonus={null} onPause={vi.fn()} />);
+    expect(screen.getByRole('timer', { name: '거대화 종료 보호 1초 남음' })).toBeInTheDocument();
+    expect(Array.from(document.querySelectorAll('.runner-hud__effect-slot'))).toEqual(slots);
     rerender(<RunnerHud snapshot={snapshot()} character={getCharacter('player-default')}
       recentBonus={null} onPause={vi.fn()} />);
     expect(Array.from(document.querySelectorAll('.runner-hud__effect-slot'))).toEqual(slots);
