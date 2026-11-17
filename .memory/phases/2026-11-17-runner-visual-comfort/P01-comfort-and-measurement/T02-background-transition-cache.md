@@ -39,4 +39,4 @@ Task: T02-background-transition-cache
 ## Progress
 - [x] Implementation complete
 - [ ] Validation passed — automated cache/finish-boundary tests, build/lint pass; browser before/after frame timings not collected. Isolated browser launch rejected by automatic review (`blocked by policy`); CUA native pipe unavailable. Structural operation counts (3 textures per moving transition → 0) are verified, not wall-clock/FPS improvement. Keep this task in progress until browser evidence is available.
-- commit: pending
+- commit: 2909a00 (implementation and automated validation; browser evidence still pending)
