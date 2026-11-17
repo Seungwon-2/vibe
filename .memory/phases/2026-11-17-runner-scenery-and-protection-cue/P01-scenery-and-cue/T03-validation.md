@@ -1,6 +1,8 @@
 # T03 Validation and handoff
 
-Status: pending
+Status: done
+
+Validation: 61 files / 357 tests, lint and build passed; local5175 HTTP200. Four-theme source-driven static preview inspected. Actual live browser timing and user comfort remain pending in previous comfort plan. No push/deployment.
 
 ## Implementation
 - docs/runner-visual-comfort-validation.md: replace stale art descriptions; link local static preview, list user checks and live measurement limits.
