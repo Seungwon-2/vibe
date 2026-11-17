@@ -1,6 +1,8 @@
 # T03 Regression and local handoff
 
-Status: pending
+Status: done
+
+Validation: 60 files / 353 tests, lint and build passed. local5175 HTTP200. Actual browser/device comfort and frame timing remain pending in the previous comfort plan. No push or deployment.
 
 ## Target files
 - docs/runner-visual-comfort-validation.md: automated coverage and manual comparison checklist, no unmeasured FPS claims.
