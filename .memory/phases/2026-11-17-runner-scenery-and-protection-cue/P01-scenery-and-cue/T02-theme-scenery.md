@@ -1,6 +1,6 @@
 # T02 Theme scenery
 
-Status: pending
+Status: done
 
 ## Goal
 Four recognizable, distinct theme illustrations with quiet hazard lane and cached rendering.
@@ -21,3 +21,5 @@ Four recognizable, distinct theme illustrations with quiet hazard lane and cache
 feat(game): rebuild four themed backgrounds with clear quiet scenery
 
 Plan: 2026-11-17-runner-scenery-and-protection-cue
+
+Validation: 6 art/cache tests and build passed. Source-driven four-theme PNG inspected; distinct landmarks, quiet lower lane, no clipped landmark bodies. Static preview is not live gameplay/performance evidence.
