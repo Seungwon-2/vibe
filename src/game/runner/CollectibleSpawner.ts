@@ -86,24 +86,28 @@ export function drawPickupArt(
 ): void {
   const { palette: p } = biome;
   if (kind === 'coin') {
-    art.fillStyle(p.pickupCoin).fillCircle(0, 0, 11);
-    art.lineStyle(2, p.hazardContrast, 0.96).strokeCircle(0, 0, 11);
-    art.fillStyle(p.accent).fillCircle(0, 0, 7);
-    art.lineStyle(1.5, p.hazardContrast, 0.9);
+    // Shared gold material separates currency from scenery and powers.
+    // Static highlights avoid shimmer; radius and sensor are unchanged.
+    art.fillStyle(0xe3a631).fillCircle(0, 0, 11);
+    art.lineStyle(2, 0x65451f, 1).strokeCircle(0, 0, 11);
+    art.fillStyle(0xffdb70).fillCircle(-1, -1, 8);
+    art.lineStyle(1, 0xb57a23, 1).strokeCircle(0, 0, 7);
+    art.lineStyle(2, 0xfff5cb, 1).lineBetween(-6, -6, -3, -8);
+    art.lineStyle(1.5, 0x65451f, 1);
     switch (biome.id) {
       case 'dawn-city':
         art.lineBetween(-4, 2, 4, 2).lineBetween(-2, -1, 0, -4).lineBetween(0, -4, 2, -1);
         break;
       case 'moonlit-forest':
-        art.fillStyle(p.hazardContrast).fillEllipse(0, 0, 8, 5);
-        art.lineStyle(1, p.groundFace).lineBetween(-3, 2, 3, -2);
+        art.fillStyle(0x96601f).fillEllipse(0, 0, 8, 5);
+        art.lineStyle(1, 0xfff5cb).lineBetween(-3, 2, 3, -2);
         break;
       case 'crystal-mine':
-        art.fillStyle(p.hazardContrast).fillTriangle(-4, 3, 0, -4, 4, 3);
-        art.fillStyle(p.accent).fillTriangle(-1, 2, 0, -2, 2, 2);
+        art.fillStyle(0x96601f).fillTriangle(-4, 3, 0, -4, 4, 3);
+        art.fillStyle(0xffedaa).fillTriangle(-1, 2, 0, -2, 2, 2);
         break;
       case 'cloud-skyway':
-        art.fillStyle(p.hazardContrast).fillTriangle(-1, -4, 1, -1, 0, 0)
+        art.fillStyle(0x96601f).fillTriangle(-1, -4, 1, -1, 0, 0)
           .fillTriangle(4, -1, 1, 1, 0, 0).fillTriangle(1, 4, -1, 1, 0, 0)
           .fillTriangle(-4, 1, -1, -1, 0, 0);
         break;

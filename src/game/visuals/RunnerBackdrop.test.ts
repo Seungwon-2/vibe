@@ -101,13 +101,13 @@ describe('RunnerBackdrop', () => {
     expect(mock.removed).toHaveLength(12);
   });
 
-  it('keeps calm far scenery stationary and ground distance exact, including a paused mode switch', () => {
-    expect(getParallaxOffsets(10.5, 'calm')).toEqual({ far: 0, middle: 1.26, near: 10.5 });
+  it('keeps calm far and middle scenery stationary and ground distance exact, including a paused mode switch', () => {
+    expect(getParallaxOffsets(10.5, 'calm')).toEqual({ far: 0, middle: 0, near: 10.5 });
     const mock = createScene();
     const backdrop = new RunnerBackdrop(mock.scene);
     backdrop.update({ distanceMeters: 2300, worldDistance: 6900 }, BIOME_CROSSFADE_MS);
-    expect(getParallaxOffsets(6900, 'calm')).toEqual({ far: 0, middle: 828, near: 6900 });
-    expect(mock.tileSprites.slice(-3).map(sprite => sprite.tilePositionX)).toEqual([0, 828, 6900]);
+    expect(getParallaxOffsets(6900, 'calm')).toEqual({ far: 0, middle: 0, near: 6900 });
+    expect(mock.tileSprites.slice(-3).map(sprite => sprite.tilePositionX)).toEqual([0, 0, 6900]);
     backdrop.setVisualMode('standard');
     expect(backdrop.biomeId).toBe('moonlit-forest');
     expect(mock.tileSprites.slice(-3).map(sprite => sprite.tilePositionX)).toEqual([1035, 2760, 6900]);

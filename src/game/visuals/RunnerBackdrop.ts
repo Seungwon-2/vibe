@@ -253,9 +253,11 @@ function drawNear(graphics: Phaser.GameObjects.Graphics, biome: RunnerBiomeDefin
   rect(graphics, 0xffffff, 0, GROUND_Y, TILE_WIDTH, 5, 0.88);
   rect(graphics, p.groundFace, 0, GROUND_Y + 13, TILE_WIDTH, HEIGHT - GROUND_Y - 13);
   rect(graphics, p.ground, 0, GROUND_Y + 14, TILE_WIDTH, 1, 0.45);
-  for (let x = 0; x <= TILE_WIDTH; x += 72) {
-    graphics.lineStyle(1, p.groundTop, 0.2)
-      .lineBetween(x, GROUND_Y + 15, x - 24, HEIGHT);
+  // Broad upright seams repeat exactly at the texture edge. Dense diagonal
+  // grids can appear to reverse direction during fast scrolling.
+  for (let x = 0; x <= TILE_WIDTH; x += 120) {
+    graphics.lineStyle(1, p.groundTop, 0.28)
+      .lineBetween(x, GROUND_Y + 15, x, HEIGHT);
   }
   graphics.lineStyle(1, p.groundTop, 0.2).lineBetween(0, 518, TILE_WIDTH, 518);
 }
@@ -264,7 +266,7 @@ export function getParallaxOffsets(worldDistance: number, mode: RunnerVisualMode
   const distance = Math.max(0, worldDistance);
   return {
     far: mode === 'calm' ? 0 : Math.floor(distance * PARALLAX_RATIOS.far),
-    middle: mode === 'calm' ? distance * .12 : Math.floor(distance * PARALLAX_RATIOS.middle),
+    middle: mode === 'calm' ? 0 : Math.floor(distance * PARALLAX_RATIOS.middle),
     // Keep fractional scroll in calm mode; rounding a slow layer to whole
     // pixels creates alternating stopped/one-pixel frames despite steady FPS.
     near: mode === 'calm' ? distance : Math.floor(distance * PARALLAX_RATIOS.near),
@@ -388,7 +390,7 @@ export class RunnerBackdrop {
       const key = `runner-biome-${biome.id}-${this.visualMode}-${layer}`;
       textureKeys.push(key);
       layers[layer] = this.scene.add.tileSprite(0, 0, WIDTH, HEIGHT, key).setOrigin(0, 0);
-      if (this.visualMode === 'calm' && layer !== 'near') layers[layer].alpha = layer === 'far' ? .65 : .5;
+      if (this.visualMode === 'calm' && layer !== 'near') layers[layer].alpha = layer === 'far' ? .85 : .75;
     }
     const sky = this.scene.add.rectangle(0, 0, WIDTH, HEIGHT, artBiome.palette.sky).setOrigin(0, 0);
     const skyDetail = this.scene.add.graphics();

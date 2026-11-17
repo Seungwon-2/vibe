@@ -664,7 +664,8 @@ describe('themed pickup art', () => {
       drawPickupArt(coin as unknown as Phaser.GameObjects.Graphics, 'coin', biome);
       expect(coin.fillCircle).toHaveBeenCalledWith(0, 0, 11);
       expect(coin.strokeCircle).toHaveBeenCalledWith(0, 0, 11);
-      expect(coin.lineStyle).toHaveBeenCalledWith(2, biome.palette.hazardContrast, 0.96);
+      expect(coin.lineStyle).toHaveBeenCalledWith(2, 0x65451f, 1);
+      expect(coin.fillStyle).toHaveBeenCalledWith(0xffdb70);
 
       const time = makeGraphics();
       drawPickupArt(time as unknown as Phaser.GameObjects.Graphics, 'time', biome);

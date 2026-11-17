@@ -17,7 +17,8 @@ export function drawRunnerHazard(
       case 'dawn-city': {
         // A striped street parcel with a weighted base.
         graphics.fillStyle(p.middle, 0.98).fillRoundedRect(5, 14, 36, 27, 5);
-        graphics.lineStyle(2, p.hazardContrast, 0.92).strokeRoundedRect(5, 14, 36, 27, 5);
+        graphics.lineStyle(3, p.hazardContrast, 1).strokeRoundedRect(5, 14, 36, 27, 5);
+        graphics.lineStyle(2, 0xffffff, 0.9).lineBetween(10, 16, 36, 16);
         graphics.fillStyle(p.gate, 0.98).fillRect(9, 18, 28, 6);
         graphics.fillStyle(p.accent, 0.98).fillRect(9, 29, 28, 6);
         graphics.fillStyle(p.groundTop, 0.98).fillRoundedRect(2, 38, 42, 7, 3);
@@ -27,7 +28,8 @@ export function drawRunnerHazard(
         break;
       }
       case 'moonlit-forest': {
-        // A mushroom stump, with cap spots as its readable forest cue.
+        // A dark cap rim separates the mushroom from the soft forest scenery.
+        graphics.fillStyle(p.hazardContrast, 1).fillEllipse(23, 19, 40, 24);
         graphics.fillStyle(p.middle, 0.98).fillRoundedRect(15, 26, 16, 19, 4);
         graphics.lineStyle(2, p.hazardContrast, 0.86).lineBetween(19, 30, 19, 41)
           .lineBetween(26, 29, 26, 42);
@@ -44,13 +46,18 @@ export function drawRunnerHazard(
           .fillTriangle(30, 46, 37, 23, 45, 46);
         graphics.lineStyle(1.5, p.hazardContrast, 0.9).lineBetween(11, 17, 12, 43)
           .lineBetween(27, 5, 27, 42).lineBetween(37, 23, 37, 43);
+        graphics.lineStyle(2, p.hazardContrast, 1).lineBetween(2, 46, 11, 17)
+          .lineBetween(15, 33, 27, 5).lineBetween(27, 5, 39, 46)
+          .lineBetween(37, 23, 45, 46);
         graphics.fillStyle(p.pickupTime, 0.98).fillTriangle(27, 8, 32, 29, 27, 25);
         graphics.fillStyle(0xffffff, 0.86).fillTriangle(11, 20, 14, 38, 18, 44)
           .fillTriangle(28, 10, 34, 28, 29, 24);
         break;
       }
       case 'cloud-skyway': {
-        // A low cloud bank crossed by a small gust mark.
+        // A shaded silhouette keeps the white cloud obstacle visible.
+        graphics.fillStyle(p.hazardContrast, 1).fillEllipse(13, 28, 25, 21)
+          .fillEllipse(24, 23, 29, 26).fillEllipse(35, 29, 21, 20);
         graphics.fillStyle(p.middle, 0.9).fillEllipse(23, 38, 44, 15);
         graphics.fillStyle(0xffffff, 0.98).fillEllipse(13, 28, 21, 17)
           .fillEllipse(24, 23, 25, 22).fillEllipse(36, 29, 19, 16);
@@ -116,6 +123,9 @@ export function drawRunnerHazard(
         break;
       }
     }
+    // Inset side rails add depth without widening the collision silhouette.
+    graphics.lineStyle(2, p.hazardContrast, 1).lineBetween(3, 8, 3, bottom - 3)
+      .lineBetween(width - 3, 8, width - 3, bottom - 3);
     // A crisp shared cap makes the required double jump readable even when the
     // biome fill is close in value to the distant background.
     graphics.lineStyle(5, p.hazardContrast, 0.96).lineBetween(2, 2, width - 2, 2);
@@ -188,6 +198,8 @@ export function drawRunnerHazard(
     }
   }
 
+  graphics.lineStyle(2, p.hazardContrast, 1).lineBetween(3, 2, 3, barrierBottom - 3)
+    .lineBetween(width - 3, 2, width - 3, barrierBottom - 3);
   // Keep the tunnel's lower edge visible in every biome. This is the boundary
   // that separates the blocked jump lane from the actual slide clearance.
   graphics.lineStyle(4, p.hazardContrast, 0.98)
