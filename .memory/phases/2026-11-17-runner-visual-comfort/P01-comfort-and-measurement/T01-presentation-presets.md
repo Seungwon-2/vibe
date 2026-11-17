@@ -49,4 +49,4 @@ Task: T01-presentation-presets
 ## Progress
 - [x] Implementation complete
 - [x] Validation passed — 32 focused tests, build and lint; includes sparse trail and reduced-motion coverage.
-- commit: pending
+- commit: 70e74dc

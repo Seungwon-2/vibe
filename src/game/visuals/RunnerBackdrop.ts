@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { RunnerSnapshot, StoryStageId } from '../runner/runnerTypes';
 import { getStoryStage } from '../runner/storyConfig';
-import { getBiomeById, getBiomeForDistance, type RunnerBiomeDefinition } from './runnerBiomes';
+import { getBiomeById, getBiomeForDistance, RUNNER_BIOMES, type RunnerBiomeDefinition } from './runnerBiomes';
 import type { RunnerVisualMode } from '../runner/runnerVisualPreferences';
 
 const WIDTH = 960;
@@ -264,8 +264,10 @@ export function getParallaxOffsets(worldDistance: number, mode: RunnerVisualMode
   const distance = Math.max(0, worldDistance);
   return {
     far: mode === 'calm' ? 0 : Math.floor(distance * PARALLAX_RATIOS.far),
-    middle: Math.floor(distance * (mode === 'calm' ? .12 : PARALLAX_RATIOS.middle)),
-    near: Math.floor(distance * PARALLAX_RATIOS.near),
+    middle: mode === 'calm' ? distance * .12 : Math.floor(distance * PARALLAX_RATIOS.middle),
+    // Keep fractional scroll in calm mode; rounding a slow layer to whole
+    // pixels creates alternating stopped/one-pixel frames despite steady FPS.
+    near: mode === 'calm' ? distance : Math.floor(distance * PARALLAX_RATIOS.near),
   };
 }
 
@@ -289,11 +291,16 @@ export class RunnerBackdrop {
   private outgoing: BackdropSet | null = null;
   private transitionElapsedMs = BIOME_CROSSFADE_MS;
   private lastFrame: Pick<RunnerSnapshot, 'distanceMeters' | 'worldDistance'>;
+  private readonly ownedTextureKeys = new Set<string>();
+  private destroyed = false;
 
   constructor(private readonly scene: Phaser.Scene, initialDistanceMeters = 0,
     private readonly storyStageId: StoryStageId | null = null,
     private visualMode: RunnerVisualMode = 'calm') {
     this.lastFrame = { distanceMeters: initialDistanceMeters, worldDistance: initialDistanceMeters * 3 };
+    // Prepare the finite theme set before countdown; never rasterize new
+    // background layers during a moving gate transition.
+    this.prepareTextures();
     this.active = this.createSet(this.resolveBiome(initialDistanceMeters));
     this.update(this.lastFrame, 0);
   }
@@ -303,8 +310,9 @@ export class RunnerBackdrop {
   }
 
   setVisualMode(mode: RunnerVisualMode): void {
-    if (this.visualMode === mode) return;
+    if (this.destroyed || this.visualMode === mode) return;
     this.visualMode = mode;
+    this.prepareTextures();
     this.destroySet(this.active);
     if (this.outgoing) this.destroySet(this.outgoing);
     this.outgoing = null;
@@ -342,26 +350,42 @@ export class RunnerBackdrop {
   }
 
   destroy(): void {
+    if (this.destroyed) return;
+    this.destroyed = true;
     this.destroySet(this.active);
     if (this.outgoing) this.destroySet(this.outgoing);
     this.outgoing = null;
+    for (const key of this.ownedTextureKeys) this.scene.textures.remove(key);
+    this.ownedTextureKeys.clear();
+  }
+
+  private prepareTextures(): void {
+    const biomes = this.storyStageId ? [this.resolveBiome(0)] : RUNNER_BIOMES;
+    const draw: Record<Layer, (graphics: Phaser.GameObjects.Graphics,
+      biome: RunnerBiomeDefinition) => void> = {
+      far: drawFar, middle: drawMiddle, near: drawNear,
+    };
+    for (const biome of biomes) {
+      const artBiome = backdropPalette(biome, this.visualMode);
+      for (const layer of ['far', 'middle', 'near'] as const) {
+        const key = `runner-biome-${biome.id}-${this.visualMode}-${layer}`;
+        if (this.ownedTextureKeys.has(key)) continue;
+        const graphics = this.scene.add.graphics();
+        draw[layer](graphics, artBiome);
+        graphics.generateTexture(key, TILE_WIDTH, HEIGHT);
+        graphics.destroy();
+        this.scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
+        this.ownedTextureKeys.add(key);
+      }
+    }
   }
 
   private createSet(biome: RunnerBiomeDefinition): BackdropSet {
     const artBiome = backdropPalette(biome, this.visualMode);
     const textureKeys: string[] = [];
-    const draw: Record<Layer, (graphics: Phaser.GameObjects.Graphics,
-      biome: RunnerBiomeDefinition) => void> = {
-      far: drawFar, middle: drawMiddle, near: drawNear,
-    };
     const layers = {} as Record<Layer, Phaser.GameObjects.TileSprite>;
     for (const layer of ['far', 'middle', 'near'] as const) {
       const key = `runner-biome-${biome.id}-${this.visualMode}-${layer}`;
-      const graphics = this.scene.add.graphics();
-      draw[layer](graphics, artBiome);
-      graphics.generateTexture(key, TILE_WIDTH, HEIGHT);
-      graphics.destroy();
-      this.scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
       textureKeys.push(key);
       layers[layer] = this.scene.add.tileSprite(0, 0, WIDTH, HEIGHT, key).setOrigin(0, 0);
       if (this.visualMode === 'calm' && layer !== 'near') layers[layer].alpha = layer === 'far' ? .65 : .5;
@@ -383,6 +407,6 @@ export class RunnerBackdrop {
 
   private destroySet(set: BackdropSet): void {
     set.container.destroy(true);
-    for (const key of set.textureKeys) this.scene.textures.remove(key);
+    // Textures are shared across active/outgoing sets and live until teardown.
   }
 }

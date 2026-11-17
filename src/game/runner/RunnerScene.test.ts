@@ -331,9 +331,10 @@ describe('RunnerScene finish boundary', () => {
     expect(record).not.toHaveBeenCalled();
   });
 
-  it('delays a fatal pit result until after the fall and camera shake, preserving contact-time data', () => {
+  it.each(['calm', 'standard'] as const)('preserves the fatal pit finish boundary in %s presentation', (mode) => {
     record.mockReset().mockReturnValue({ isNewBest: true });
     const scene = new RunnerScene();
+    scene.setVisualMode(mode);
     const finishPlayer = vi.fn();
     const finishEvent = vi.fn();
     const snapshotEvent = vi.fn();
@@ -408,7 +409,8 @@ describe('RunnerScene finish boundary', () => {
     expect(updatePlayer).not.toHaveBeenCalled();
 
     fallTweens[0].onComplete();
-    expect(shake).toHaveBeenCalledExactlyOnceWith(250, 0.012);
+    if (mode === 'standard') expect(shake).toHaveBeenCalledExactlyOnceWith(250, 0.012);
+    else expect(shake).not.toHaveBeenCalled();
     expect(finalize).toBeTypeOf('function');
     expect(record).not.toHaveBeenCalled();
     finalize?.();

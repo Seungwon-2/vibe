@@ -1,6 +1,6 @@
 # Task: T02 Background Transition Cache
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 Remove measured synchronous texture-generation work from moving theme transitions while bounding scene texture ownership.
@@ -20,8 +20,8 @@ Remove measured synchronous texture-generation work from moving theme transition
 
 ## Acceptance Criteria
 - [ ] Browser measurement identifies transition work and reports before/after costs.
-- [ ] No synchronous backdrop texture generation at moving gate transitions.
-- [ ] Cached texture count bounded and teardown idempotent.
+- [x] No synchronous backdrop texture generation at moving gate transitions.
+- [x] Cached texture count bounded and teardown idempotent.
 
 ## Validation
 - `npx vitest run src/game/visuals/RunnerBackdrop.test.ts`
@@ -37,6 +37,6 @@ Task: T02-background-transition-cache
 ```
 
 ## Progress
-- [ ] Implementation complete
-- [ ] Validation passed
+- [x] Implementation complete
+- [ ] Validation passed — automated cache/finish-boundary tests, build/lint pass; browser before/after frame timings not collected. Isolated browser launch rejected by automatic review (`blocked by policy`); CUA native pipe unavailable. Structural operation counts (3 textures per moving transition → 0) are verified, not wall-clock/FPS improvement. Keep this task in progress until browser evidence is available.
 - commit: pending

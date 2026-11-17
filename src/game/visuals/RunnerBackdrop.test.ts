@@ -51,7 +51,7 @@ function createScene() {
 }
 
 describe('RunnerBackdrop', () => {
-  it('builds three pixel-filtered layers behind a continuous decorative ground', () => {
+  it('prepares the finite theme set and builds three cached layers behind the ground', () => {
     const mock = createScene();
     const backdrop = new RunnerBackdrop(mock.scene, 0, null, 'standard');
     expect(backdrop.biomeId).toBe('dawn-city');
@@ -59,12 +59,14 @@ describe('RunnerBackdrop', () => {
       'runner-biome-dawn-city-standard-far', 'runner-biome-dawn-city-standard-middle',
       'runner-biome-dawn-city-standard-near',
     ]);
-    expect(mock.textureKeys).toHaveLength(3);
+    expect(mock.textureKeys).toHaveLength(12);
     expect(mock.containers[0].children).toHaveLength(5); // sky detail and three depths
-    expect(mock.scene.textures.get).toHaveBeenCalledTimes(3);
-    expect(mock.textureFilters).toEqual([1, 1, 1]);
+    expect(mock.scene.textures.get).toHaveBeenCalledTimes(12);
+    expect(mock.textureFilters).toEqual(Array(12).fill(1));
     backdrop.destroy();
-    expect(mock.removed).toHaveLength(3);
+    expect(mock.removed).toHaveLength(12);
+    backdrop.destroy();
+    expect(mock.removed).toHaveLength(12);
   });
 
   it('scrolls at 0.15x, 0.4x, and 1x and crossfades at exact gates', () => {
@@ -87,17 +89,20 @@ describe('RunnerBackdrop', () => {
     backdrop.update({ distanceMeters: 2100, worldDistance: 6300 }, BIOME_CROSSFADE_MS / 2);
     expect(mock.containers[0].destroyed).toBe(true);
     expect(mock.containers[1].alpha).toBe(1);
-    expect(mock.removed).toHaveLength(3);
+    expect(mock.removed).toHaveLength(0);
+    expect(mock.textureKeys).toHaveLength(12);
 
     backdrop.update({ distanceMeters: 4000, worldDistance: 12000 }, BIOME_CROSSFADE_MS);
     expect(backdrop.biomeId).toBe('crystal-mine');
     backdrop.update({ distanceMeters: 6000, worldDistance: 18000 }, BIOME_CROSSFADE_MS);
     expect(backdrop.biomeId).toBe('cloud-skyway');
+    expect(mock.textureKeys).toHaveLength(12);
     backdrop.destroy();
     expect(mock.removed).toHaveLength(12);
   });
 
   it('keeps calm far scenery stationary and ground distance exact, including a paused mode switch', () => {
+    expect(getParallaxOffsets(10.5, 'calm')).toEqual({ far: 0, middle: 1.26, near: 10.5 });
     const mock = createScene();
     const backdrop = new RunnerBackdrop(mock.scene);
     backdrop.update({ distanceMeters: 2300, worldDistance: 6900 }, BIOME_CROSSFADE_MS);
@@ -110,5 +115,24 @@ describe('RunnerBackdrop', () => {
     backdrop.setVisualMode('standard');
     expect(mock.textureKeys).toHaveLength(count);
     backdrop.destroy();
+    expect(new Set(mock.removed).size).toBe(24);
+    expect(mock.textureKeys).toHaveLength(24);
+  });
+
+  it('only prepares the fixed story theme and reuses cached modes without allocations', () => {
+    const mock = createScene();
+    const backdrop = new RunnerBackdrop(mock.scene, 0, 'moonlit-forest');
+    expect(mock.textureKeys).toHaveLength(3);
+    backdrop.setVisualMode('standard');
+    expect(mock.textureKeys).toHaveLength(6);
+    backdrop.setVisualMode('calm');
+    backdrop.setVisualMode('standard');
+    backdrop.update({distanceMeters: 2800, worldDistance: 8400}, 16);
+    expect(backdrop.biomeId).toBe('moonlit-forest');
+    expect(mock.textureKeys).toHaveLength(6);
+    expect(mock.removed).toHaveLength(0);
+    backdrop.destroy();
+    backdrop.destroy();
+    expect(mock.removed).toHaveLength(6);
   });
 });
