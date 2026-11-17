@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
+import type { RunnerVisualMode } from '../../game/runner/runnerVisualPreferences';
 
 export type PauseOverlayProps = {
   onResume(): void;
@@ -8,9 +9,13 @@ export type PauseOverlayProps = {
   onOpenGuide(): void;
   portrait: boolean;
   guideButtonRef?: RefObject<HTMLButtonElement | null>;
+  visualMode?: RunnerVisualMode;
+  reducedMotion?: boolean;
+  onVisualModeChange?(mode: RunnerVisualMode): void;
 };
 
-export function PauseOverlay({ onResume, onExit, onOpenAudioSettings, onOpenGuide, portrait, guideButtonRef }: PauseOverlayProps): React.JSX.Element {
+export function PauseOverlay({ onResume, onExit, onOpenAudioSettings, onOpenGuide, portrait, guideButtonRef,
+  visualMode = 'calm', reducedMotion = false, onVisualModeChange }: PauseOverlayProps): React.JSX.Element {
   const resumeButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => { resumeButtonRef.current?.focus(); }, []);
 
@@ -52,6 +57,16 @@ export function PauseOverlay({ onResume, onExit, onOpenAudioSettings, onOpenGuid
       <div className="runner-pause-card">
         <strong id="runner-pause-title">{portrait ? '화면을 가로로 돌려 주세요' : '일시 정지'}</strong>
         <p>{portrait ? '가로 화면으로 바꾸면 계속할 수 있어요.' : '잠시 쉬었다가 계속할 수 있어요.'}</p>
+        {onVisualModeChange && <div className="runner-visual-settings">
+          <label htmlFor="runner-visual-mode">화면 효과</label>
+          <select id="runner-visual-mode" value={visualMode}
+            onChange={(event) => onVisualModeChange(event.target.value as RunnerVisualMode)}>
+            <option value="calm">편안한 화면 (기본)</option>
+            <option value="standard">기존 효과 (비교용)</option>
+          </select>
+          <small>{reducedMotion ? '기기의 동작 줄이기 설정에 따라 편안한 화면을 적용합니다.'
+            : '배경과 장식 효과만 바뀝니다. 속도·판정·기록은 같습니다.'}</small>
+        </div>}
         <div className="runner-result-actions" onKeyDown={handleActionNavigation}>
           <button ref={resumeButtonRef} type="button" onClick={onResume} disabled={portrait}>계속하기</button>
           <button ref={guideButtonRef} type="button" onClick={onOpenGuide} disabled={portrait}>설명서 보기</button>

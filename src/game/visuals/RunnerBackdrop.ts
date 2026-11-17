@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { RunnerSnapshot, StoryStageId } from '../runner/runnerTypes';
 import { getStoryStage } from '../runner/storyConfig';
 import { getBiomeById, getBiomeForDistance, type RunnerBiomeDefinition } from './runnerBiomes';
+import type { RunnerVisualMode } from '../runner/runnerVisualPreferences';
 
 const WIDTH = 960;
 const HEIGHT = 540;
@@ -259,30 +260,60 @@ function drawNear(graphics: Phaser.GameObjects.Graphics, biome: RunnerBiomeDefin
   graphics.lineStyle(1, p.groundTop, 0.2).lineBetween(0, 518, TILE_WIDTH, 518);
 }
 
-export function getParallaxOffsets(worldDistance: number): Record<Layer, number> {
+export function getParallaxOffsets(worldDistance: number, mode: RunnerVisualMode = 'standard'): Record<Layer, number> {
   const distance = Math.max(0, worldDistance);
   return {
-    far: Math.floor(distance * PARALLAX_RATIOS.far),
-    middle: Math.floor(distance * PARALLAX_RATIOS.middle),
+    far: mode === 'calm' ? 0 : Math.floor(distance * PARALLAX_RATIOS.far),
+    middle: Math.floor(distance * (mode === 'calm' ? .12 : PARALLAX_RATIOS.middle)),
     near: Math.floor(distance * PARALLAX_RATIOS.near),
   };
+}
+
+/** Backdrop-only softening: collision objects keep their original strong palette. */
+function backdropPalette(biome: RunnerBiomeDefinition, mode: RunnerVisualMode): RunnerBiomeDefinition {
+  if (mode === 'standard') return biome;
+  const soften = (color: number): number => {
+    const channels = [color >> 16 & 255, color >> 8 & 255, color & 255];
+    const neutral = [184, 195, 206];
+    return channels.reduce((value, channel, index) =>
+      value | Math.round(channel * .78 + neutral[index] * .22) << (16 - index * 8), 0);
+  };
+  return { ...biome, palette: { ...biome.palette,
+    sky: soften(biome.palette.sky), far: soften(biome.palette.far), middle: soften(biome.palette.middle),
+    groundFace: soften(biome.palette.groundFace), ground: soften(biome.palette.ground),
+  } };
 }
 
 export class RunnerBackdrop {
   private active: BackdropSet;
   private outgoing: BackdropSet | null = null;
   private transitionElapsedMs = BIOME_CROSSFADE_MS;
+  private lastFrame: Pick<RunnerSnapshot, 'distanceMeters' | 'worldDistance'>;
 
   constructor(private readonly scene: Phaser.Scene, initialDistanceMeters = 0,
-    private readonly storyStageId: StoryStageId | null = null) {
+    private readonly storyStageId: StoryStageId | null = null,
+    private visualMode: RunnerVisualMode = 'calm') {
+    this.lastFrame = { distanceMeters: initialDistanceMeters, worldDistance: initialDistanceMeters * 3 };
     this.active = this.createSet(this.resolveBiome(initialDistanceMeters));
+    this.update(this.lastFrame, 0);
   }
 
   get biomeId(): RunnerBiomeDefinition['id'] {
     return this.active.biome.id;
   }
 
+  setVisualMode(mode: RunnerVisualMode): void {
+    if (this.visualMode === mode) return;
+    this.visualMode = mode;
+    this.destroySet(this.active);
+    if (this.outgoing) this.destroySet(this.outgoing);
+    this.outgoing = null;
+    this.active = this.createSet(this.resolveBiome(this.lastFrame.distanceMeters));
+    this.update(this.lastFrame, 0);
+  }
+
   update(snapshot: Pick<RunnerSnapshot, 'distanceMeters' | 'worldDistance'>, deltaMs: number): void {
+    this.lastFrame = snapshot;
     const biome = this.resolveBiome(snapshot.distanceMeters);
     if (biome.id !== this.active.biome.id) {
       if (this.outgoing) this.destroySet(this.outgoing);
@@ -291,7 +322,7 @@ export class RunnerBackdrop {
       this.active.container.alpha = 0;
       this.transitionElapsedMs = 0;
     }
-    const offsets = getParallaxOffsets(snapshot.worldDistance);
+    const offsets = getParallaxOffsets(snapshot.worldDistance, this.visualMode);
     for (const set of [this.active, this.outgoing]) {
       if (!set) continue;
       for (const layer of ['far', 'middle', 'near'] as const) {
@@ -317,6 +348,7 @@ export class RunnerBackdrop {
   }
 
   private createSet(biome: RunnerBiomeDefinition): BackdropSet {
+    const artBiome = backdropPalette(biome, this.visualMode);
     const textureKeys: string[] = [];
     const draw: Record<Layer, (graphics: Phaser.GameObjects.Graphics,
       biome: RunnerBiomeDefinition) => void> = {
@@ -324,18 +356,20 @@ export class RunnerBackdrop {
     };
     const layers = {} as Record<Layer, Phaser.GameObjects.TileSprite>;
     for (const layer of ['far', 'middle', 'near'] as const) {
-      const key = `runner-biome-${biome.id}-${layer}`;
+      const key = `runner-biome-${biome.id}-${this.visualMode}-${layer}`;
       const graphics = this.scene.add.graphics();
-      draw[layer](graphics, biome);
+      draw[layer](graphics, artBiome);
       graphics.generateTexture(key, TILE_WIDTH, HEIGHT);
       graphics.destroy();
       this.scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
       textureKeys.push(key);
       layers[layer] = this.scene.add.tileSprite(0, 0, WIDTH, HEIGHT, key).setOrigin(0, 0);
+      if (this.visualMode === 'calm' && layer !== 'near') layers[layer].alpha = layer === 'far' ? .65 : .5;
     }
-    const sky = this.scene.add.rectangle(0, 0, WIDTH, HEIGHT, biome.palette.sky).setOrigin(0, 0);
+    const sky = this.scene.add.rectangle(0, 0, WIDTH, HEIGHT, artBiome.palette.sky).setOrigin(0, 0);
     const skyDetail = this.scene.add.graphics();
-    drawSkyDetail(skyDetail, biome);
+    drawSkyDetail(skyDetail, artBiome);
+    if (this.visualMode === 'calm') skyDetail.alpha = .45;
     const container = this.scene.add.container(0, 0,
       [sky, skyDetail, layers.far, layers.middle, layers.near]).setDepth(-40);
     return { biome, container, layers, textureKeys };

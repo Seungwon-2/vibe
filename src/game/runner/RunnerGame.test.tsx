@@ -33,12 +33,28 @@ vi.mock('./RunnerScene', () => ({ RunnerScene: class {
   createSessionCheckpoint = vi.fn(() => ({ snapshot: { phase: 'paused' } }));
   canCreateSessionCheckpoint = vi.fn(() => true);
   setPaused = vi.fn();
+  setVisualMode = vi.fn();
 } }));
 
 import { RunnerGame } from './RunnerGame';
 import { RunnerScene } from './RunnerScene';
 
 describe('RunnerGame', () => {
+  it('updates presentation without reconstructing the game or disturbing a paused run', () => {
+    mocks.construct.mockClear();
+    const scene = new RunnerScene();
+    mocks.scene = scene;
+    const bridge = new RunnerInputBridge();
+    const props = { characterId: 'player-default' as const, inputBridge: bridge, paused: true,
+      tutorialEnabled: false, onSnapshot: vi.fn(), onFinished: vi.fn() };
+    const view = render(<RunnerGame {...props} visualMode="calm" />);
+    const pauseCalls = vi.mocked(scene.setPaused).mock.calls.length;
+    view.rerender(<RunnerGame {...props} visualMode="standard" />);
+    expect(mocks.construct).toHaveBeenCalledOnce();
+    expect(scene.setVisualMode).toHaveBeenLastCalledWith('standard');
+    expect(scene.setPaused).toHaveBeenCalledTimes(pauseCalls);
+    view.unmount();
+  });
   it('autosaves a paused snapshot without pausing the live scene or clearing held input', async () => {
     vi.useFakeTimers();
     const scene = new RunnerScene();

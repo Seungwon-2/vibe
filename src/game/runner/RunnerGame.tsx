@@ -7,12 +7,14 @@ import type { RunnerFinishOutcome, RunnerMode, RunnerResult, RunnerSnapshot, Sto
 import { RunnerScene } from './RunnerScene';
 import type { RunnerEvent } from './runnerEvents';
 import type { RunnerActiveSession } from './runnerSessionTypes';
+import type { RunnerVisualMode } from './runnerVisualPreferences';
 
 export type RunnerGameProps = {
   characterId: CharacterId;
   mode?: RunnerMode;
   storyStageId?: StoryStageId | null;
   trailCosmeticId?: string | null;
+  visualMode?: RunnerVisualMode;
   inputBridge: RunnerInputBridge;
   paused: boolean;
   tutorialEnabled: boolean;
@@ -26,18 +28,20 @@ export type RunnerGameProps = {
 
 export function RunnerGame({
   characterId, mode = 'endless', storyStageId = null, trailCosmeticId = null, inputBridge, paused, tutorialEnabled,
-  initialSession = null, onCheckpoint, onTerminalCheckpoint, onSnapshot, onFinished, onEvent,
+  initialSession = null, visualMode = 'calm', onCheckpoint, onTerminalCheckpoint, onSnapshot, onFinished, onEvent,
 }: RunnerGameProps): React.JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
   const initialPaused = useRef(paused);
+  const visualModeRef = useRef(visualMode);
   const callbacksRef = useRef({ onSnapshot, onFinished, onEvent, onCheckpoint, onTerminalCheckpoint });
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     callbacksRef.current = { onSnapshot, onFinished, onEvent, onCheckpoint, onTerminalCheckpoint };
-  }, [onSnapshot, onFinished, onEvent, onCheckpoint, onTerminalCheckpoint]);
+    visualModeRef.current = visualMode;
+  }, [onSnapshot, onFinished, onEvent, onCheckpoint, onTerminalCheckpoint, visualMode]);
 
   useEffect(() => {
     if (!hostRef.current) return;
@@ -53,7 +57,7 @@ export function RunnerGame({
           callbacksRef.current.onEvent?.({ type: 'fatal-error', message: failure.message });
           setError(failure.message);
         },
-      }, tutorialEnabled, initialSession));
+      }, tutorialEnabled, initialSession, visualModeRef.current));
       game.registry.set('paused', initialPaused.current);
       gameRef.current = game;
     } catch (failure) {
@@ -66,6 +70,14 @@ export function RunnerGame({
       game?.destroy(true);
     };
   }, [characterId, mode, storyStageId, trailCosmeticId, inputBridge, tutorialEnabled, initialSession, attempt]);
+
+  useEffect(() => {
+    const game = gameRef.current;
+    if (!game) return;
+    game.registry.set('runnerVisualMode', visualMode);
+    const scene = game.scene.keys.RunnerScene;
+    if (game.isBooted && scene instanceof RunnerScene) scene.setVisualMode(visualMode);
+  }, [visualMode, attempt]);
 
   useEffect(() => {
     const game = gameRef.current;

@@ -1,4 +1,5 @@
 import type Phaser from 'phaser';
+import type { RunnerVisualMode } from './runnerVisualPreferences';
 
 type TrailParticle = { x: number; y: number; bornAt: number; radius: number };
 
@@ -19,6 +20,7 @@ export class RunnerTrailEffect {
   private readonly particles: TrailParticle[] = [];
   private spawnElapsedMs = 0;
   private reducedMotion = false;
+  private visualMode: RunnerVisualMode = 'calm';
   private readonly color: number;
   private readonly motionPreference: MediaQueryList | null;
 
@@ -37,8 +39,9 @@ export class RunnerTrailEffect {
       this.clear();
       return;
     }
-    const lifeMs = intensified ? 760 : 520;
-    const spawnEveryMs = intensified ? 36 : 65;
+    const calm = this.visualMode === 'calm';
+    const lifeMs = calm ? 360 : intensified ? 760 : 520;
+    const spawnEveryMs = calm ? 120 : intensified ? 36 : 65;
     this.spawnElapsedMs += Math.min(deltaMs, 50);
     while (this.spawnElapsedMs >= spawnEveryMs) {
       this.spawnElapsedMs -= spawnEveryMs;
@@ -46,7 +49,7 @@ export class RunnerTrailEffect {
         x: x - 26 - Math.random() * 24,
         y: y - 10 + Math.random() * 20,
         bornAt: now,
-        radius: intensified ? 4.2 + Math.random() * 2.4 : 3 + Math.random() * 1.8,
+        radius: calm ? 2.5 : intensified ? 4.2 + Math.random() * 2.4 : 3 + Math.random() * 1.8,
       });
     }
     for (let index = this.particles.length - 1; index >= 0; index -= 1) {
@@ -58,9 +61,10 @@ export class RunnerTrailEffect {
       const particleX = particle.x - age * 28;
       const particleY = particle.y - age * 12;
       const radius = particle.radius * (1 - age * 0.4);
-      const alpha = (1 - age) * (intensified ? 0.88 : 0.72);
-      this.art.fillStyle(this.color, alpha * 0.22).fillCircle(particleX, particleY, radius * 2.5);
+      const alpha = (1 - age) * (calm ? 0.5 : intensified ? 0.88 : 0.72);
+      if (!calm) this.art.fillStyle(this.color, alpha * 0.22).fillCircle(particleX, particleY, radius * 2.5);
       this.art.fillStyle(this.color, alpha).fillCircle(particleX, particleY, radius);
+      if (calm) continue;
       this.art.fillStyle(0xffffff, alpha * (intensified ? 0.9 : 0.68))
         .fillCircle(particleX, particleY, radius * 0.34);
       if (age < (intensified ? 0.8 : 0.62)) {
@@ -76,6 +80,12 @@ export class RunnerTrailEffect {
     this.spawnElapsedMs = 0;
     this.particles.length = 0;
     this.art.clear();
+  }
+
+  setVisualMode(mode: RunnerVisualMode): void {
+    if (this.visualMode === mode) return;
+    this.visualMode = mode;
+    this.clear();
   }
 
   destroy(): void {

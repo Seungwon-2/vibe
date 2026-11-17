@@ -59,7 +59,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-beforeEach(() => localStorage.removeItem('runner-action:tutorial:v1:seen'));
+beforeEach(() => { localStorage.removeItem('runner-action:tutorial:v1:seen'); localStorage.removeItem('runner-action:visual:v1'); });
 
 function renderReadyRunScreen(element: ReactElement): ReturnType<typeof render> {
   const view = render(element);
@@ -69,6 +69,31 @@ function renderReadyRunScreen(element: ReactElement): ReturnType<typeof render> 
 }
 
 describe('RunScreen', () => {
+  it('defaults to calm and preserves pause while changing and persisting presentation', () => {
+    const view = renderReadyRunScreen(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
+    expect(screen.getByRole('region', { name: '러닝 게임 화면' })).toHaveAttribute('data-visual-mode', 'calm');
+    fireEvent.click(screen.getByRole('button', { name: 'begin mock run' }));
+    fireEvent.click(screen.getByRole('button', { name: '일시정지' }));
+    fireEvent.change(screen.getByLabelText('화면 효과'), { target: { value: 'standard' } });
+    expect(screen.getByRole('region', { name: '러닝 게임 화면' })).toHaveAttribute('data-visual-mode', 'standard');
+    expect(screen.getByTestId('run-game')).toHaveAttribute('data-paused', 'true');
+    expect(localStorage.getItem('runner-action:visual:v1')).toContain('standard');
+    view.unmount();
+    renderReadyRunScreen(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
+    expect(screen.getByRole('region', { name: '러닝 게임 화면' })).toHaveAttribute('data-visual-mode', 'standard');
+  });
+  it('honors OS reduced motion even when the saved comparison mode is standard', () => {
+    localStorage.setItem('runner-action:visual:v1', JSON.stringify({ version: 1, mode: 'standard' }));
+    const original = window.matchMedia;
+    const preference = (query: string) => ({ matches: query.includes('prefers-reduced-motion'),
+      media: query, onchange: null, addEventListener: vi.fn(), removeEventListener: vi.fn(),
+      addListener: vi.fn(), removeListener: vi.fn(), dispatchEvent: vi.fn() });
+    window.matchMedia = preference;
+    try {
+      renderReadyRunScreen(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
+      expect(screen.getByRole('region', { name: '러닝 게임 화면' })).toHaveAttribute('data-visual-mode', 'calm');
+    } finally { window.matchMedia = original; }
+  });
   it.each(['story', 'endless'] as const)('keeps the %s HUD and controls inside a single playfield', (mode) => {
     renderReadyRunScreen(<RunScreen {...audioProps} characterId="player-default" mode={mode}
       storyStageId={mode === 'story' ? 'dawn-city' : null} onFinish={vi.fn()} onExit={vi.fn()} />);

@@ -20,9 +20,11 @@ import type { PitFallContactResult } from './PitSpawner';
 import { RunnerTrailEffect } from './RunnerTrailEffect';
 import { getRunnerAnimationPlayback } from './runnerAnimationConfig';
 import { getRunnerCameraFrame } from './runnerViewport';
+import type { RunnerVisualMode } from './runnerVisualPreferences';
 import type { RunnerActiveSession, RunnerEngineCheckpoint, RunnerWorldEntityCheckpoint } from './runnerSessionTypes';
 
 export class RunnerScene extends Phaser.Scene {
+  private visualMode: RunnerVisualMode = 'calm';
   private inputBridge!: RunnerInputBridge;
   private player!: RunnerPlayer;
   private snapshot!: RunnerSnapshot;
@@ -78,8 +80,9 @@ export class RunnerScene extends Phaser.Scene {
       mode: this.mode,
       storyStageId: this.registry.get('storyStageId') as StoryStageId | null,
     });
-    this.backdrop = new RunnerBackdrop(this, 0,
-      this.snapshot.mode === 'story' ? this.snapshot.storyStageId ?? null : null);
+    this.visualMode = this.registry.get('runnerVisualMode') === 'standard' ? 'standard' : 'calm';
+    this.backdrop = new RunnerBackdrop(this, this.snapshot.distanceMeters,
+      this.snapshot.mode === 'story' ? this.snapshot.storyStageId ?? null : null, this.visualMode);
     this.passiveEffectArt = this.add.graphics().setDepth(3);
 
     const animationFrames = {
@@ -120,6 +123,7 @@ export class RunnerScene extends Phaser.Scene {
     this.physics.add.collider(sprite, floor, undefined, this.shouldCollideWithFloor);
     this.player = new RunnerPlayer(sprite, characterId);
     this.trailEffect = new RunnerTrailEffect(this, this.registry.get('trailCosmeticId') as string | null);
+    this.trailEffect.setVisualMode(this.visualMode);
     this.spawner = new ObstacleSpawner(this, this.player.gameObject, this.handleHazardOverlap,
       this.registry.get('runnerTutorialEnabled') === true, () => this.player.isSliding);
     this.collectibles = new CollectibleSpawner(this, this.player.gameObject, this.handlePickup, characterId);
@@ -199,6 +203,12 @@ export class RunnerScene extends Phaser.Scene {
         this.emitFinished(result);
       }
     }
+  }
+
+  setVisualMode(mode: RunnerVisualMode): void {
+    this.visualMode = mode;
+    this.backdrop?.setVisualMode(mode);
+    this.trailEffect?.setVisualMode(mode);
   }
 
   setPaused(paused: boolean): void {
@@ -466,7 +476,7 @@ export class RunnerScene extends Phaser.Scene {
       onComplete: () => {
         this.pitFallTween = null;
         if (!this.pitFallCinematicActive || !this.pendingPitFinish) return;
-        this.cameras.main.shake(250, 0.012);
+        if (this.visualMode === 'standard') this.cameras.main.shake(250, 0.012);
         this.pitFinishTimer = this.time.delayedCall(250, this.finalizePitFall);
       },
     });

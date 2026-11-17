@@ -53,11 +53,11 @@ function createScene() {
 describe('RunnerBackdrop', () => {
   it('builds three pixel-filtered layers behind a continuous decorative ground', () => {
     const mock = createScene();
-    const backdrop = new RunnerBackdrop(mock.scene);
+    const backdrop = new RunnerBackdrop(mock.scene, 0, null, 'standard');
     expect(backdrop.biomeId).toBe('dawn-city');
     expect(mock.tileSprites.map((sprite) => sprite.key)).toEqual([
-      'runner-biome-dawn-city-far', 'runner-biome-dawn-city-middle',
-      'runner-biome-dawn-city-near',
+      'runner-biome-dawn-city-standard-far', 'runner-biome-dawn-city-standard-middle',
+      'runner-biome-dawn-city-standard-near',
     ]);
     expect(mock.textureKeys).toHaveLength(3);
     expect(mock.containers[0].children).toHaveLength(5); // sky detail and three depths
@@ -69,7 +69,7 @@ describe('RunnerBackdrop', () => {
 
   it('scrolls at 0.15x, 0.4x, and 1x and crossfades at exact gates', () => {
     const mock = createScene();
-    const backdrop = new RunnerBackdrop(mock.scene);
+    const backdrop = new RunnerBackdrop(mock.scene, 0, null, 'standard');
     expect(getParallaxOffsets(1000)).toEqual({ far: 150, middle: 400, near: 1000 });
     backdrop.update({ distanceMeters: 1999, worldDistance: 5997 }, 16);
     expect(backdrop.biomeId).toBe('dawn-city');
@@ -95,5 +95,20 @@ describe('RunnerBackdrop', () => {
     expect(backdrop.biomeId).toBe('cloud-skyway');
     backdrop.destroy();
     expect(mock.removed).toHaveLength(12);
+  });
+
+  it('keeps calm far scenery stationary and ground distance exact, including a paused mode switch', () => {
+    const mock = createScene();
+    const backdrop = new RunnerBackdrop(mock.scene);
+    backdrop.update({ distanceMeters: 2300, worldDistance: 6900 }, BIOME_CROSSFADE_MS);
+    expect(getParallaxOffsets(6900, 'calm')).toEqual({ far: 0, middle: 828, near: 6900 });
+    expect(mock.tileSprites.slice(-3).map(sprite => sprite.tilePositionX)).toEqual([0, 828, 6900]);
+    backdrop.setVisualMode('standard');
+    expect(backdrop.biomeId).toBe('moonlit-forest');
+    expect(mock.tileSprites.slice(-3).map(sprite => sprite.tilePositionX)).toEqual([1035, 2760, 6900]);
+    const count = mock.textureKeys.length;
+    backdrop.setVisualMode('standard');
+    expect(mock.textureKeys).toHaveLength(count);
+    backdrop.destroy();
   });
 });

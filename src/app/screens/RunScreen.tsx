@@ -20,6 +20,7 @@ import { browserRunnerMusic } from '../../audio/RunnerMusicManager';
 import { getStoryStage } from '../../game/runner/storyConfig';
 import type { RunnerActiveSession } from '../../game/runner/runnerSessionTypes';
 import './RunScreen.css';
+import { getEffectiveVisualMode, readRunnerVisualMode, saveRunnerVisualMode } from '../../game/runner/runnerVisualPreferences';
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -59,6 +60,10 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
   const [recentBonus, setRecentBonus] = useState<RunnerHudCue | null>(null);
   const [exitConfirmation, setExitConfirmation] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [visualMode, setVisualMode] = useState(readRunnerVisualMode);
+  const [reducedMotion, setReducedMotion] = useState(() =>
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true);
+  const effectiveVisualMode = getEffectiveVisualMode(visualMode, reducedMotion);
   const [inputBridge] = useState(() => new RunnerInputBridge());
   const bonusTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gateBurstTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -68,6 +73,13 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
   const pauseButtonRef = useRef<HTMLButtonElement>(null);
   const settingsInvokerRef = useRef<HTMLElement | null>(null);
   const exitConfirmButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const preference = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    const update = (event: MediaQueryListEvent): void => setReducedMotion(event.matches);
+    preference?.addEventListener?.('change', update);
+    return () => preference?.removeEventListener?.('change', update);
+  }, []);
 
   useEffect(() => {
     if (snapshot.phase === 'paused') {
@@ -277,8 +289,9 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
     <main className="run-screen run-screen--immersive" aria-label={`${character.displayName} 달리기`}>
       {storageWarning && <div className="runner-session-warning" role="alert">{storageWarning}</div>}
       <div className={`runner-stage${gateBurstActive ? ' is-gate-boosting' : ''}${snapshot.giantRemainingMs > 0 ? ' is-giant-active' : ''}`}
-        role="region" aria-label="러닝 게임 화면">
+        data-visual-mode={effectiveVisualMode} role="region" aria-label="러닝 게임 화면">
         <RunnerGame characterId={characterId} mode={mode} storyStageId={storyStageId} trailCosmeticId={trailCosmeticId}
+          visualMode={effectiveVisualMode}
           inputBridge={inputBridge} paused={paused}
           tutorialEnabled={tutorialEnabled}
           onSnapshot={(next) => {
@@ -301,6 +314,10 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
           <CountdownOverlay value={countdownValue} />}
         {paused && !guideOpen && !exitConfirmation && (
           <PauseOverlay onResume={resumeRun} onExit={requestExit} portrait={portrait}
+            visualMode={visualMode} reducedMotion={reducedMotion} onVisualModeChange={(next) => {
+              setVisualMode(next);
+              saveRunnerVisualMode(next);
+            }}
             onOpenGuide={openGuideFromPause} guideButtonRef={pauseGuideButtonRef}
             onOpenAudioSettings={() => { settingsInvokerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; onUnlockAudio(); setSettingsOpen(true); }} />
         )}

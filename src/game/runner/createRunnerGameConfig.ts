@@ -7,6 +7,7 @@ import { RUNNER_CONFIG } from './runnerConfig';
 import type { RunnerEvent } from './runnerEvents';
 import type { RunnerActiveSession } from './runnerSessionTypes';
 import { RUNNER_VIEWPORT } from './runnerViewport';
+import type { RunnerVisualMode } from './runnerVisualPreferences';
 
 export type RunnerGameCallbacks = {
   onSnapshot(snapshot: RunnerSnapshot): void;
@@ -27,6 +28,7 @@ export function createRunnerGameConfig(
   callbacks: RunnerGameCallbacks,
   tutorialEnabled: boolean,
   initialSession: RunnerActiveSession | null = null,
+  visualMode: RunnerVisualMode = 'calm',
 ): Phaser.Types.Core.GameConfig {
   return {
     type: Phaser.AUTO,
@@ -55,6 +57,7 @@ export function createRunnerGameConfig(
         game.registry.set('onError', callbacks.onError);
         game.registry.set('runnerTutorialEnabled', tutorialEnabled);
         game.registry.set('initialRunnerSession', initialSession);
+        game.registry.set('runnerVisualMode', visualMode);
       },
     },
   };
