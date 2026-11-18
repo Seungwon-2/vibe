@@ -96,7 +96,9 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
           </div>
 
           <section className="selector-grid-detail" aria-labelledby="selector-detail-name">
-            {selected && <div className="selector-grid-preview">
+            {selected && <div className="selector-grid-preview"
+              style={{ '--character-accent': selected.accentColor } as CSSProperties}>
+              <span className="selector-grid-preview-stars" aria-hidden="true" />
               <CharacterPreview key={selected.id} character={selected} selected animation="victory"
                 loop={false} playbackRate={0.8} />
             </div>}

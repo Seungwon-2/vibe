@@ -82,16 +82,12 @@
   background: linear-gradient(155deg, #f4f3fa, #e5e9f5);
 }
 
-.selector-grid-card-art,
-.selector-grid-preview {
-  background: #fff;
-}
-
 .selector-grid-card-art {
   display: block;
   position: relative;
   flex: 1;
   min-height: 0;
+  background: #fff;
 }
 
 .selector-grid-card-art img {
@@ -178,10 +174,83 @@
 }
 
 .selector-grid-preview {
+  position: relative;
   height: min(clamp(124px, 43svh, 370px), 100cqw);
   container-type: size;
   border-radius: 10px;
   overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 39%, rgb(255 255 255 / 82%), transparent 68%),
+    linear-gradient(155deg, color-mix(in srgb, var(--character-accent) 24%, #f1efff), #fbf7f5 72%);
+}
+
+.selector-grid-preview::before,
+.selector-grid-preview::after,
+.selector-grid-preview-stars {
+  position: absolute;
+  pointer-events: none;
+}
+
+.selector-grid-preview::before,
+.selector-grid-preview::after {
+  content: '';
+  left: 50%;
+  translate: -50% 0;
+}
+
+.selector-grid-preview::before {
+  top: 8%;
+  width: min(68%, 81cqh);
+  aspect-ratio: 1;
+  border: 1px solid rgb(255 255 255 / 88%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 clamp(4px, 2cqh, 8px) rgb(255 255 255 / 32%);
+}
+
+.selector-grid-preview::after {
+  bottom: 10.5%;
+  width: min(68%, 79cqh);
+  height: 7%;
+  border: 1px solid rgb(255 255 255 / 90%);
+  border-radius: 50%;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--character-accent) 13%, white),
+    color-mix(in srgb, var(--character-accent) 27%, #f2effa)
+  );
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--character-accent) 26%, transparent);
+}
+
+.selector-grid-preview-stars {
+  inset: 0;
+  background:
+    radial-gradient(circle at 12% 51%, white 0 1px, transparent 2px),
+    radial-gradient(circle at 25% 68%, #fff4d7 0 2px, transparent 3px),
+    radial-gradient(circle at 37% 16%, white 0 1px, transparent 2px),
+    radial-gradient(circle at 72% 17%, white 0 2px, transparent 3px),
+    radial-gradient(circle at 77% 71%, white 0 1px, transparent 2px),
+    radial-gradient(circle at 89% 51%, #fff4d7 0 2px, transparent 3px);
+}
+
+.selector-grid-preview-stars::before,
+.selector-grid-preview-stars::after {
+  content: '';
+  position: absolute;
+  width: clamp(10px, 5cqh, 20px);
+  aspect-ratio: 1;
+  clip-path: polygon(50% 0, 64% 36%, 100% 50%, 64% 64%, 50% 100%, 36% 64%, 0 50%, 36% 36%);
+}
+
+.selector-grid-preview-stars::before {
+  top: 29%;
+  left: 19%;
+  background: #fff;
+}
+
+.selector-grid-preview-stars::after {
+  top: 37%;
+  right: 16%;
+  background: #eed8a4;
 }
 
 .selector-grid-preview .character-preview {
