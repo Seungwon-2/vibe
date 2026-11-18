@@ -82,10 +82,6 @@
   background: linear-gradient(155deg, #f4f3fa, #e5e9f5);
 }
 
-.selector-grid-silhouette {
-  padding: clamp(4px, 0.8vmin, 10px);
-}
-
 .selector-grid-card-art,
 .selector-grid-full-art {
   background: #fff;
