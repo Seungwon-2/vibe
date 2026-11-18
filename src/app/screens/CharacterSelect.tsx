@@ -18,6 +18,13 @@ const SELECTOR_CHARACTERS = [...CHARACTERS].sort((left, right) => {
     - (rightOrder < 0 ? Number.MAX_SAFE_INTEGER : rightOrder);
 });
 const EMPTY_SLOTS = Array.from({ length: Math.max(0, 15 - SELECTOR_CHARACTERS.length) }, (_, index) => index);
+const COMPACT_NAMES: Partial<Record<CharacterId, string>> = {
+  'player-default': '린',
+  'hanayo-hiyori': '히요리',
+  'tokino-mary': '메리',
+  'goth-student': '토아',
+  'cogane-rang': '랑',
+};
 const UNLOCK_STAGES: Partial<Record<CharacterId, string>> = {
   'goth-student': '수정 광산',
   'cogane-rang': '구름 위 하늘길',
@@ -61,15 +68,20 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
                     <span className="selector-grid-card-art">
                       <img src={getCharacterSelectArt(character).faceUrl} alt="" draggable={false} />
                       {!unlocked && <span className="selector-grid-lock" aria-hidden="true">{status}</span>}
+                      {!unlocked && hint && <small id={`unlock-${character.id}`} className="selector-grid-hint">{hint}</small>}
                       {picked && <span className="selector-grid-picked" aria-hidden="true">선택됨</span>}
                     </span>
-                    <span className="selector-grid-name">{character.displayName}</span>
-                    {!unlocked && hint && <small id={`unlock-${character.id}`} className="selector-grid-hint">{hint}</small>}
+                    <span className="selector-grid-name">
+                      <span className="selector-grid-name-full">{character.displayName}</span>
+                      <span className="selector-grid-name-compact">{COMPACT_NAMES[character.id] ?? character.displayName}</span>
+                    </span>
                   </button>
                 );
               })}
               {EMPTY_SLOTS.map((index) => (
-                <span className="selector-grid-empty" data-grid-slot aria-hidden="true" key={`empty-${index}`} />
+                <span className="selector-grid-empty" data-grid-slot aria-hidden="true" key={`empty-${index}`}>
+                  <span className="selector-grid-silhouette" />
+                </span>
               ))}
             </div>
             <footer className="selector-grid-navigation">
