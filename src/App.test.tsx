@@ -119,6 +119,15 @@ beforeEach(() => {
 });
 
 describe('App flow', () => {
+  it('opens story stage selection from the character detail start button', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /달리기 시작/ }));
+    fireEvent.click(screen.getByRole('button', { name: /스토리 스테이지/ }));
+    fireEvent.click(screen.getByRole('button', { name: '하나요 히요리' }));
+    fireEvent.click(screen.getByRole('button', { name: '달리기 시작' }));
+    expect(screen.getByRole('heading', { name: '달릴 스테이지를 선택하세요' })).toBeInTheDocument();
+  });
+
   it('keeps local best hidden while login records resolve and the cloud best loads', async () => {
     const oldLocalBest = { rank: 1, displayName: 'Local Player', characterId: 'player-default',
       distanceMeters: 17687, coins: 12, finishedAtIso: '2026-11-13T00:00:00.000Z' };
@@ -180,7 +189,7 @@ describe('App flow', () => {
 
     openEndlessCharacterSelect();
     fireEvent.click(screen.getByRole('button', { name: '아오쿠모 린' }));
-    fireEvent.click(document.querySelector('.selector-footer .selector-confirm')!);
+    fireEvent.click(screen.getByRole('button', { name: '달리기 시작' }));
     expect(await screen.findByTestId('runner-mock')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'mock time out' }));
     await waitFor(() => expect(runGatewayMock.submitRun).toHaveBeenCalledOnce());
@@ -238,7 +247,7 @@ describe('App flow', () => {
     expect(document.querySelector('.main-menu-help')).toBeInTheDocument();
     openEndlessCharacterSelect();
     fireEvent.click(screen.getByRole('button', { name: '하나요 히요리' }));
-    fireEvent.click(document.querySelector('.selector-footer .selector-confirm')!);
+    fireEvent.click(screen.getByRole('button', { name: '달리기 시작' }));
     expect(await screen.findByTestId('runner-mock')).toHaveAttribute('data-tutorial-enabled', 'true');
     fireEvent.click(screen.getByRole('button', { name: '안내를 확인하고 시작' }));
     expect(localStorage.getItem('runner-action:tutorial:v1:seen')).toBe('1');
@@ -257,7 +266,7 @@ describe('App flow', () => {
     fireEvent.click(document.querySelector('.mode-option--endless')!);
     expect(screen.getByRole('heading', { name: '누구와 달려볼까요?' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '하나요 히요리' }));
-    fireEvent.click(document.querySelector('.selector-footer .selector-confirm')!);
+    fireEvent.click(screen.getByRole('button', { name: '달리기 시작' }));
     expect(await screen.findByTestId('runner-mock')).toHaveAttribute('data-character', 'hanayo-hiyori');
     expect(screen.getByRole('region', { name: '러닝 게임 화면' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'mock time out' }));
@@ -277,7 +286,7 @@ describe('App flow', () => {
     render(<App />);
     openEndlessCharacterSelect();
     fireEvent.click(screen.getByRole('button', { name: '하나요 히요리' }));
-    fireEvent.click(document.querySelector('.selector-footer .selector-confirm')!);
+    fireEvent.click(screen.getByRole('button', { name: '달리기 시작' }));
     await screen.findByTestId('runner-mock');
     await act(async () => {
       runnerMock.finish?.('hanayo-hiyori', 'personal-best');
@@ -307,7 +316,7 @@ describe('App flow', () => {
     runGatewayMock.submitRun.mockRejectedValueOnce(new Error('storage denied'));
     render(<App />);
     openEndlessCharacterSelect();
-    fireEvent.click(document.querySelector('.selector-footer .selector-confirm')!);
+    fireEvent.click(screen.getByRole('button', { name: '달리기 시작' }));
     fireEvent.click(screen.getByRole('button', { name: 'mock time out' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('기록을 저장하지 못했습니다');
     expect(screen.getByText('1,250')).toBeInTheDocument();
@@ -317,7 +326,7 @@ describe('App flow', () => {
   it('does not label a successful save as failed when the separate best lookup fails', async () => {
     render(<App />);
     openEndlessCharacterSelect();
-    fireEvent.click(document.querySelector('.selector-footer .selector-confirm')!);
+    fireEvent.click(screen.getByRole('button', { name: '달리기 시작' }));
     await screen.findByTestId('runner-mock');
     runGatewayMock.getBest.mockRejectedValueOnce(new Error('best lookup unavailable'));
     fireEvent.click(screen.getByRole('button', { name: 'mock time out' }));

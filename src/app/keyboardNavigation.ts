@@ -70,13 +70,24 @@ export function moveDirectionalFocus(event: globalThis.KeyboardEvent): void {
 
 /** Move focus within a bounded button grid without capturing gameplay/form keys. */
 export function moveGridFocus(event: KeyboardEvent<HTMLElement>, columns: number): void {
-  const deltaByKey: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -columns, ArrowDown: columns };
-  const delta = deltaByKey[event.key];
-  if (delta === undefined) return;
-  const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'));
-  const index = buttons.indexOf(event.target as HTMLButtonElement);
-  const next = buttons[index + delta];
-  if (index < 0 || !next) return;
-  event.preventDefault();
-  next.focus();
+  const direction = ARROW_DIRECTIONS[event.key];
+  if (!direction || columns < 1 || !(event.target instanceof Element)) return;
+
+  const markedSlots = event.currentTarget.querySelectorAll<HTMLElement>('[data-grid-slot]');
+  const slots = Array.from(markedSlots.length ? markedSlots : event.currentTarget.querySelectorAll('button'));
+  const index = slots.indexOf(event.target.closest('button') as HTMLElement);
+  if (index < 0) return;
+  if (markedSlots.length) event.stopPropagation();
+
+  const [dx, dy] = direction;
+  const row = Math.floor(index / columns);
+  const step = dx || dy * columns;
+  for (let next = index + step; next >= 0 && next < slots.length; next += step) {
+    if (dx && Math.floor(next / columns) !== row) break;
+    const slot = slots[next];
+    if (!(slot instanceof HTMLButtonElement) || slot.disabled) continue;
+    event.preventDefault();
+    slot.focus();
+    break;
+  }
 }

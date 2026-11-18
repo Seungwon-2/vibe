@@ -1,8 +1,28 @@
-import { fireEvent, render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
 import { moveDirectionalFocus, moveGridFocus } from './keyboardNavigation';
 
+afterEach(cleanup);
+
 describe('moveGridFocus', () => {
+  it('skips unavailable slots without changing columns or wrapping into another row', () => {
+    const { getByText } = render(<div onKeyDown={(event) => moveGridFocus(event, 3)}>
+      <button data-grid-slot>first</button><button data-grid-slot disabled>locked</button><button data-grid-slot>last</button>
+      <span data-grid-slot /><button data-grid-slot>wrong column</button><span data-grid-slot />
+      <button data-grid-slot>same column</button>
+    </div>);
+    const first = getByText('first');
+    const last = getByText('last');
+    first.focus();
+    fireEvent.keyDown(first, { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(last);
+    fireEvent.keyDown(last, { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(last);
+    first.focus();
+    fireEvent.keyDown(first, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(getByText('same column'));
+  });
+
   it('moves focus within enabled buttons and leaves native activation keys alone', () => {
     const { getByText } = render(<div onKeyDown={(event) => moveGridFocus(event, 2)}>
       <button>one</button><button>two</button><button>three</button><button disabled>locked</button>

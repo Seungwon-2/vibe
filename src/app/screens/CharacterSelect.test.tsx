@@ -1,97 +1,76 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+﻿import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CharacterSelect } from './CharacterSelect';
-import { CHARACTERS } from '../../game/characters/characterCatalog';
+import { getCharacter } from '../../game/characters/characterCatalog';
 import { getCharacterPassive } from '../../game/characters/characterAbilities';
+import { DEFAULT_PLAYER_PROFILE } from '../../services/LocalPlayerProfileStore';
 
-afterEach(() => {
-  cleanup();
-  vi.useRealTimers();
-  vi.restoreAllMocks();
-});
+const order = ['player-default', 'hanayo-hiyori', 'tokino-mary', 'goth-student', 'cogane-rang'] as const;
 
-const selectorCharacters = [...CHARACTERS].sort((left, right) => {
-  const order = ['player-default', 'hanayo-hiyori', 'tokino-mary', 'goth-student', 'cogane-rang'];
-  const leftIndex = order.indexOf(left.id);
-  const rightIndex = order.indexOf(right.id);
-  return (leftIndex < 0 ? Number.MAX_SAFE_INTEGER : leftIndex)
-    - (rightIndex < 0 ? Number.MAX_SAFE_INTEGER : rightIndex);
-});
+afterEach(cleanup);
 
 describe('CharacterSelect', () => {
-  it('renders every registered character from catalog art and passive data', () => {
+  it('shows five face cards followed by ten non-interactive slots', () => {
     render(<CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />);
-
-    const rosterGroup = screen.getByRole('group', { name: '플레이할 캐릭터' });
-    const cards = [...rosterGroup.querySelectorAll<HTMLButtonElement>('.character-card--runner')];
-    expect(rosterGroup).toHaveAttribute('data-roster-layout', 'adaptive');
-    expect(rosterGroup).toHaveAttribute('data-character-count', String(selectorCharacters.length));
-    expect(cards).toHaveLength(CHARACTERS.length);
-    expect(cards.map((card) => card.getAttribute('aria-label')))
-      .toEqual(selectorCharacters.map((character) => character.displayName));
-    expect(cards.every((card) => card.parentElement === rosterGroup)).toBe(true);
-
-    for (const [index, character] of selectorCharacters.entries()) {
-      const card = cards[index];
-      expect(card).toHaveAttribute('aria-pressed', index === 0 ? 'true' : 'false');
-      expect(card.querySelector('img.character-card__illustration')).toHaveAttribute('src', character.portraitUrl);
-      expect(card.querySelector('.character-preview')).toBeNull();
-      expect(card.querySelector('.character-card__name')).toHaveTextContent(character.displayName);
-
-      const passive = getCharacterPassive(character.id);
-      expect(card.querySelector('.character-card__passive-copy strong')).toHaveTextContent(passive.name);
-      expect(card.querySelector('.character-card__passive-copy small')).toHaveTextContent(passive.effectLabel);
-      if (passive.icon) {
-        expect(card.querySelector('.character-ability-icon')).toHaveAttribute('data-icon', passive.icon);
-      }
+    const roster = screen.getByRole('group', { name: '플레이할 캐릭터' });
+    const cards = within(roster).getAllByRole('button');
+    expect(cards).toHaveLength(5);
+    expect(roster.querySelectorAll('[data-grid-slot][aria-hidden="true"]')).toHaveLength(10);
+    for (const [index, id] of order.entries()) {
+      expect(cards[index]).toHaveAccessibleName(getCharacter(id).displayName);
+      expect(cards[index].querySelector('img')).toHaveAttribute('src', `/assets/character/selector-art/roster/${id}-face.webp`);
     }
   });
 
-  it('animates each registered character run frames in the lower preview lane at 20 fps', () => {
-    vi.useFakeTimers();
-    render(<CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />);
-
-    const availableCharacters = selectorCharacters.filter((character) => character.available);
-    expect(screen.getByRole('region', { name: '캐릭터 달리기 미리보기' })).toBeInTheDocument();
-    for (const character of availableCharacters) {
-      const runner = screen.getByTestId(`selector-runner-${character.id}`);
-      const image = runner.querySelector('img');
-      expect(image).toHaveClass('selector-runner-frame');
-      expect(image).toHaveAttribute('src', character.qualityAnimations.run[0]?.url);
-    }
-
-    act(() => vi.advanceTimersByTime(50));
-    for (const character of availableCharacters) {
-      const image = screen.getByTestId(`selector-runner-${character.id}`).querySelector('img');
-      expect(image).toHaveAttribute('src', character.qualityAnimations.run[1]?.url);
-    }
-  });
-
-  it('selects a character and confirms its unchanged catalog ID', () => {
+  it('updates Hiyori’s portrait and passive together and confirms the catalog ID', () => {
     const onConfirm = vi.fn();
-    render(<CharacterSelect selectedCharacterId="player-default" onConfirm={onConfirm} onBack={vi.fn()} />);
-    const nextCharacter = selectorCharacters.find((character) => character.available && character.id !== 'player-default');
-    expect(nextCharacter).toBeDefined();
-    const card = screen.getByRole('button', { name: nextCharacter!.displayName });
-    fireEvent.click(card);
-
-    expect(card).toHaveAttribute('aria-pressed', 'true');
-    expect(card).toHaveClass('is-selected');
-    expect(screen.getByTestId(`selector-runner-${nextCharacter!.id}`)).toHaveClass('is-selected');
-    fireEvent.click(screen.getByRole('button', { name: `${nextCharacter!.displayName} · 달리기 시작 ▶` }));
-    expect(onConfirm).toHaveBeenCalledWith(nextCharacter!.id);
+    render(<CharacterSelect profile={DEFAULT_PLAYER_PROFILE} selectedCharacterId="player-default"
+      onConfirm={onConfirm} onBack={vi.fn()} />);
+    const hiyori = screen.getByRole('button', { name: '하나요 히요리' });
+    fireEvent.click(hiyori);
+    expect(hiyori).toHaveAttribute('aria-pressed', 'true');
+    const detail = screen.getByRole('region', { name: '하나요 히요리' });
+    const passive = getCharacterPassive('hanayo-hiyori');
+    expect(within(detail).getByRole('img', { name: '하나요 히요리 전신' })).toHaveAttribute('src',
+      '/assets/character/selector-art/roster/hanayo-hiyori-full.webp');
+    expect(within(detail).getByText(passive.name)).toBeInTheDocument();
+    expect(within(detail).getByText(passive.effectLabel)).toBeInTheDocument();
+    expect(detail.querySelector('.character-ability-icon')).toHaveAttribute('data-icon', passive.icon);
+    fireEvent.click(within(detail).getByRole('button', { name: '달리기 시작' }));
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('hanayo-hiyori');
   });
 
-  it('preserves the back action and uses the selected catalog display name', () => {
+  it('guards locked characters and rechecks selection when profile access changes', () => {
     const onConfirm = vi.fn();
     const onBack = vi.fn();
-    const character = selectorCharacters.find((candidate) => candidate.available && candidate.id === 'cogane-rang')
-      ?? selectorCharacters.find((candidate) => candidate.available)!;
-    render(<CharacterSelect selectedCharacterId={character.id} onConfirm={onConfirm} onBack={onBack} />);
-
-    expect(screen.getByRole('button', { name: `${character.displayName} · 달리기 시작 ▶` })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: '← 타이틀로' }));
-    expect(onBack).toHaveBeenCalledOnce();
+    const { rerender } = render(<CharacterSelect profile={DEFAULT_PLAYER_PROFILE} selectedCharacterId="goth-student"
+      onConfirm={onConfirm} onBack={onBack} />);
+    const toa = screen.getByRole('button', { name: '시즈키 토아 잠김' });
+    expect(toa).toBeDisabled();
+    expect(toa).toHaveAccessibleDescription('수정 광산 완주 후 해금');
+    fireEvent.click(toa);
+    expect(screen.getByRole('button', { name: '아오쿠모 린' })).toHaveAttribute('aria-pressed', 'true');
+    rerender(<CharacterSelect profile={{ ...DEFAULT_PLAYER_PROFILE, unlockedCharacterIds: [] }}
+      selectedCharacterId="goth-student" onConfirm={onConfirm} onBack={onBack} />);
+    const start = screen.getByRole('button', { name: '달리기 시작' });
+    expect(start).toBeDisabled();
+    fireEvent.click(start);
     expect(onConfirm).not.toHaveBeenCalled();
+  });
+
+  it('keeps arrows separate from selection and exposes the menu and shop actions', () => {
+    const onBack = vi.fn();
+    const onShop = vi.fn();
+    render(<CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={onBack} onShop={onShop} />);
+    const rin = screen.getByRole('button', { name: '아오쿠모 린' });
+    const hiyori = screen.getByRole('button', { name: '하나요 히요리' });
+    rin.focus();
+    fireEvent.keyDown(rin, { key: 'ArrowRight' });
+    expect(hiyori).toHaveFocus();
+    expect(rin).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: '← 타이틀로' }));
+    fireEvent.click(screen.getByRole('button', { name: '코인 상점' }));
+    expect(onBack).toHaveBeenCalledOnce();
+    expect(onShop).toHaveBeenCalledOnce();
   });
 });
