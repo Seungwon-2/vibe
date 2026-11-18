@@ -1,4 +1,4 @@
-﻿import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+﻿import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CharacterSelect } from './CharacterSelect';
 import { getCharacter } from '../../game/characters/characterCatalog';
@@ -7,7 +7,10 @@ import { DEFAULT_PLAYER_PROFILE } from '../../services/LocalPlayerProfileStore';
 
 const order = ['player-default', 'hanayo-hiyori', 'tokino-mary', 'goth-student', 'cogane-rang'] as const;
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 describe('CharacterSelect', () => {
   it('shows five face cards followed by ten non-interactive silhouettes', () => {
@@ -27,7 +30,8 @@ describe('CharacterSelect', () => {
     }
   });
 
-  it('updates Hiyori’s portrait and passive together and confirms the catalog ID', () => {
+  it('plays one victory sequence per selection, holds the final pose and confirms the catalog ID', () => {
+    vi.useFakeTimers();
     const onConfirm = vi.fn();
     render(<CharacterSelect profile={DEFAULT_PLAYER_PROFILE} selectedCharacterId="player-default"
       onConfirm={onConfirm} onBack={vi.fn()} />);
@@ -36,13 +40,24 @@ describe('CharacterSelect', () => {
     expect(hiyori).toHaveAttribute('aria-pressed', 'true');
     const detail = screen.getByRole('region', { name: '하나요 히요리' });
     const passive = getCharacterPassive('hanayo-hiyori');
-    expect(within(detail).getByRole('img', { name: '하나요 히요리 전신' })).toHaveAttribute('src',
-      '/assets/character/selector-art/roster/hanayo-hiyori-full.webp');
+    const { qualityAnimations, qualityAnimationFps } = getCharacter('hanayo-hiyori');
+    const preview = within(detail).getByTestId('character-preview-hanayo-hiyori');
+    expect(preview).toHaveAttribute('data-animation', 'victory');
+    expect(preview).toHaveAttribute('src', qualityAnimations.victory[0].url);
+    for (const frame of qualityAnimations.victory.slice(1)) {
+      act(() => vi.advanceTimersByTime(1000 / qualityAnimationFps.victory));
+      expect(preview).toHaveAttribute('src', frame.url);
+    }
+    act(() => vi.advanceTimersByTime(2000));
+    expect(preview).toHaveAttribute('src', qualityAnimations.victory.at(-1)?.url);
     expect(within(detail).getByText(passive.name)).toBeInTheDocument();
     expect(within(detail).getByText(passive.effectLabel)).toBeInTheDocument();
     expect(detail.querySelector('.character-ability-icon')).toHaveAttribute('data-icon', passive.icon);
     fireEvent.click(within(detail).getByRole('button', { name: '달리기 시작' }));
     expect(onConfirm).toHaveBeenCalledExactlyOnceWith('hanayo-hiyori');
+    fireEvent.click(screen.getByRole('button', { name: '아오쿠모 린' }));
+    fireEvent.click(hiyori);
+    expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('src', qualityAnimations.victory[0].url);
   });
 
   it('guards locked characters and rechecks selection when profile access changes', () => {

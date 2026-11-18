@@ -1,11 +1,12 @@
 ﻿import { useState, type CSSProperties } from 'react';
 import { moveGridFocus } from '../keyboardNavigation';
 import { CharacterAbilityIcon } from '../components/CharacterAbilityIcon';
+import { CharacterPreview } from '../components/CharacterPreview';
 import { CHARACTERS } from '../../game/characters/characterCatalog';
 import { getCharacterPassive } from '../../game/characters/characterAbilities';
 import type { CharacterId } from '../../game/characters/characterTypes';
 import type { PlayerProfile } from '../../services/PlayerProfile';
-import { getCharacterSelectArt, upcomingCharacterSilhouettes } from './characterSelectArt';
+import { getCharacterSelectFaceUrl, upcomingCharacterSilhouettes } from './characterSelectArt';
 import './CharacterSelect.css';
 
 const SELECTOR_ORDER: readonly CharacterId[] = [
@@ -67,7 +68,7 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
                     aria-describedby={!unlocked && hint ? `unlock-${character.id}` : undefined}
                     aria-pressed={picked} disabled={!unlocked} onClick={() => setCandidateId(character.id)}>
                     <span className="selector-grid-card-art">
-                      <img src={getCharacterSelectArt(character).faceUrl} alt="" draggable={false} />
+                      <img src={getCharacterSelectFaceUrl(character)} alt="" draggable={false} />
                       {!unlocked && <span className="selector-grid-lock" aria-hidden="true">{status}</span>}
                       {!unlocked && hint && <small id={`unlock-${character.id}`} className="selector-grid-hint">{hint}</small>}
                       {picked && <span className="selector-grid-picked" aria-hidden="true">선택됨</span>}
@@ -95,8 +96,8 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
           </div>
 
           <section className="selector-grid-detail" aria-labelledby="selector-detail-name">
-            {selected && <div className="selector-grid-full-art">
-              <img src={getCharacterSelectArt(selected).fullUrl} alt={`${selected.displayName} 전신`} draggable={false} />
+            {selected && <div className="selector-grid-preview">
+              <CharacterPreview key={selected.id} character={selected} selected animation="victory" loop={false} />
             </div>}
             <h2 id="selector-detail-name">{selected?.displayName ?? '선택 가능한 캐릭터가 없습니다'}</h2>
             {selected && passive && <div className="selector-grid-passive">

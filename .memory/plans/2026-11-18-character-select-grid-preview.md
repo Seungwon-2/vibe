@@ -10,6 +10,6 @@
 
 | 단계 | 상태 | 범위 | 작업표 |
 | --- | --- | --- | --- |
-| P01 | `done` | 선택창 이미지·화면 구현과 자동 검증. 브라우저 실화면 확인 대기 | [P01](../phases/2026-11-18-character-select-grid-preview/P01-selector/phase.md) |
+| P01 | `done` | 선택창 이미지·화면 구현과 상세 승리 모션 적용 및 검증 | [P01](../phases/2026-11-18-character-select-grid-preview/P01-selector/phase.md) |
 
 `project02`에서 작업별 검증과 커밋을 진행한다. 선택창 작업을 완료하면 이전 게임 화면 성능 검증 [P01-T02](../phases/2026-11-17-runner-visual-comfort/P01-comfort-and-measurement/T02-background-transition-cache.md)로 복귀한다. 실제 기기 측정은 대기 상태다.

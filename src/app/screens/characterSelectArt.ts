@@ -1,7 +1,5 @@
 import type { CharacterDefinition, CharacterId } from '../../game/characters/characterTypes';
 
-export type CharacterSelectArt = Readonly<{ faceUrl: string; fullUrl: string }>;
-
 const rosterArtIds: ReadonlySet<CharacterId> = new Set([
   'player-default',
   'hanayo-hiyori',
@@ -16,10 +14,8 @@ export const upcomingCharacterSilhouettes = [
   'shirayuki-hina', 'neneko-mashiro', 'akane-lize', 'arahashi-tabi', 'airi-kanna',
 ].map((id, index) => ({ id, url: `/assets/character/selector-art/roster/upcoming-${index + 1}.webp` }));
 
-export function getCharacterSelectArt(character: CharacterDefinition): CharacterSelectArt {
-  if (!rosterArtIds.has(character.id)) {
-    return { faceUrl: character.portraitUrl, fullUrl: character.portraitUrl };
-  }
-  const baseUrl = `/assets/character/selector-art/roster/${character.id}`;
-  return { faceUrl: `${baseUrl}-face.webp`, fullUrl: `${baseUrl}-full.webp` };
+export function getCharacterSelectFaceUrl(character: CharacterDefinition): string {
+  return rosterArtIds.has(character.id)
+    ? `/assets/character/selector-art/roster/${character.id}-face.webp`
+    : character.portraitUrl;
 }

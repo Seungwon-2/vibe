@@ -44,21 +44,19 @@ export function CharacterPreview({ character, selected, animation, loop = true, 
       image.src = url;
       return image;
     });
-    const safePlaybackRate = Number.isFinite(playbackRate) ? Math.max(0.1, playbackRate) : 1;
-    const interval = frames.length < 2 ? undefined : window.setInterval(() => {
-      setPlayhead((current) => {
-        const currentIndex = current.animationKey === animationKey ? current.frameIndex : 0;
-        return {
-          animationKey,
-          frameIndex: currentIndex >= frames.length - 1 ? loop ? 0 : currentIndex : currentIndex + 1,
-        };
-      });
-    }, 1000 / (character.qualityAnimationFps[animationName] * safePlaybackRate));
     return () => {
-      if (interval !== undefined) window.clearInterval(interval);
       for (const image of preloadedFrames) image.onload = null;
     };
-  }, [animationKey, animationName, character.qualityAnimationFps, frames, loop, playbackRate]);
+  }, [frames]);
+
+  useEffect(() => {
+    if (frames.length < 2 || (!loop && frameIndex >= frames.length - 1)) return;
+    const safePlaybackRate = Number.isFinite(playbackRate) ? Math.max(0.1, playbackRate) : 1;
+    const timeout = window.setTimeout(() => {
+      setPlayhead({ animationKey, frameIndex: (frameIndex + 1) % frames.length });
+    }, 1000 / (character.qualityAnimationFps[animationName] * safePlaybackRate));
+    return () => window.clearTimeout(timeout);
+  }, [animationKey, animationName, character.qualityAnimationFps, frameIndex, frames.length, loop, playbackRate]);
 
   const variantClass = variant ? ` character-preview--${variant}` : '';
   return (
