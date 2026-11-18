@@ -4,9 +4,9 @@ import { describe, expect, it } from 'vitest';
 import { RUNNER_MUSIC } from './musicCatalog';
 
 describe('runner music catalog', () => {
-  it('maps the title and four course themes to local looping OGG assets', () => {
+  it('maps the title and all course themes to local looping OGG assets', () => {
     expect(Object.keys(RUNNER_MUSIC).sort()).toEqual([
-      'cloud-skyway', 'crystal-mine', 'dawn-city', 'moonlit-forest', 'title',
+      'cloud-skyway', 'crystal-mine', 'dawn-city', 'moonlit-forest', 'starlight-rainbow', 'title',
     ]);
     for (const track of Object.values(RUNNER_MUSIC)) {
       expect(track.loop).toBe(true);

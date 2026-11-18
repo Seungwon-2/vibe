@@ -9,7 +9,8 @@
 | T03 | `done` | Add persistent audio preferences and an effects playback controller; defer music playback until a reference file is supplied | [T03 Audio controller](./T03-audio-controller.md) |
 | T04 | `done` | Add settings and credits UI for effects controls; defer background music routing | [T04 Settings and music routing](./T04-settings-and-music-routing.md) |
 | T05 | `done` | Connect runner actions and results to sound effects and verify the integrated audio flow | [T05 Gameplay sound effects](./T05-gameplay-sound-effects.md) |
+| T06 | `done` | Connect the user-provided Starlight Rainbow Road track | [T06 Starlight Rainbow Road](./T06-starlight-rainbow-music.md) |
 
 ## Progress
 
-- done: 4/5 (T01 deferred pending a user-provided music reference; no active implementation task)
+- done: 5/6 (initial music composition deferred)

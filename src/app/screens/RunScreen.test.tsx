@@ -4,11 +4,14 @@ import { createRunnerSnapshot, startRunner } from '../../game/runner/RunnerSimul
 import type { RunnerEvent } from '../../game/runner/runnerEvents';
 import type { RunnerVisualMode } from '../../game/runner/runnerTypes';
 import { DEFAULT_AUDIO_PREFERENCES } from '../../audio/audioPreferences';
+import { getBiomeForDistance } from '../../game/visuals/runnerBiomes';
 import type { ReactElement } from 'react';
 
 const runMock = vi.hoisted(() => ({ paused: false }));
 const audioMock = vi.hoisted(() => ({ playEffect: vi.fn() }));
+const musicMock = vi.hoisted(() => ({ play: vi.fn(), pause: vi.fn() }));
 vi.mock('../../audio/RunnerAudioManager', () => ({ browserRunnerAudio: audioMock }));
+vi.mock('../../audio/RunnerMusicManager', () => ({ browserRunnerMusic: musicMock }));
 
 vi.mock('../../game/runner/RunnerGame', () => ({
   RunnerGame: ({ paused, tutorialEnabled, visualMode, onSnapshot, onEvent }: {
@@ -48,6 +51,9 @@ vi.mock('../../game/runner/RunnerGame', () => ({
         onEvent({ type: 'gate', gateId: 'gate-10000', awardedMs: 20_000 });
         onEvent({ type: 'gate', gateId: 'gate-12000', awardedMs: 20_000 });
       }}>cross starlight gates</button>
+      {[9_999, 10_000, 12_000].map((distanceMeters) => <button key={distanceMeters} type="button" onClick={() =>
+        onSnapshot({ ...startRunner(createRunnerSnapshot('player-default')), distanceMeters,
+          biomeId: getBiomeForDistance(distanceMeters).id })}>reach {distanceMeters}m</button>)}
     </div>;
   },
 }));
@@ -75,6 +81,15 @@ function renderReadyRunScreen(element: ReactElement): ReturnType<typeof render> 
 }
 
 describe('RunScreen', () => {
+  it('switches from Cloud Skyway to Starlight Rainbow at its entrance without restarting at the next gate', () => {
+    renderReadyRunScreen(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
+    musicMock.play.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'reach 9999m' }));
+    fireEvent.click(screen.getByRole('button', { name: 'reach 10000m' }));
+    fireEvent.click(screen.getByRole('button', { name: 'reach 12000m' }));
+    expect(musicMock.play.mock.calls).toEqual([['cloud-skyway'], ['starlight-rainbow']]);
+  });
+
   it('uses the calm presentation despite old preferences and offers the four pause actions', () => {
     localStorage.setItem('runner-action:visual:v1', JSON.stringify({ version: 1, mode: 'standard' }));
     renderReadyRunScreen(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);

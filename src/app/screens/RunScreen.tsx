@@ -58,7 +58,7 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
   const [snapshot, setSnapshot] = useState<RunnerSnapshot>(() => initialSession?.snapshot ?? createRunnerSnapshot(characterId, new Date(), { mode, storyStageId }));
   const musicId = mode === 'story' && storyStageId
     ? getStoryStage(storyStageId).biomeId
-    : snapshot.biomeId === 'starlight-rainbow' ? 'cloud-skyway' : snapshot.biomeId;
+    : snapshot.biomeId;
   const [countdownValue, setCountdownValue] = useState<number | null>(() => initialSession ? null : 3);
   const [recentBonus, setRecentBonus] = useState<RunnerHudCue | null>(null);
   const [exitConfirmation, setExitConfirmation] = useState(false);

@@ -20,6 +20,8 @@ Add an offline-capable audio system to the current React + Phaser runner. Genera
 | :--- | :--- | :--- | :--- |
 | P01 | `deferred` | Gameplay sound effects are complete; background music waits for a user-provided reference file | [P01 Runner Audio](../phases/2026-10-29-runner-audio/P01-runner-audio/phase.md) |
 
+The 2026-11-18 follow-up connects a user-provided track for Starlight Rainbow Road. [T06](../phases/2026-10-29-runner-audio/P01-runner-audio/T06-starlight-rainbow-music.md)
+
 ## Scope Notes
 
 - This plan does not add Azure or Entra ID work.
