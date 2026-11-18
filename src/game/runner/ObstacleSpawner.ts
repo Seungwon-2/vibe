@@ -52,7 +52,7 @@ export class ObstacleSpawner {
     this.activeStoryStageId = snapshot.mode === 'story' ? snapshot.storyStageId ?? null : null;
     const visibleLeadMeters = (960 - RUNNER_PLAYER_X) * METERS_PER_WORLD_UNIT;
     if (snapshot.mode === 'story' && snapshot.storyStageId) {
-      const course = getStoryHazardSchedule(snapshot.storyStageId);
+      const course = getStoryHazardSchedule(snapshot.storyStageId, snapshot.storyCourseRevision ?? 1);
       while (this.nextPatternIndex < course.length &&
         course[this.nextPatternIndex].distanceMeters <= snapshot.distanceMeters + visibleLeadMeters) {
         const placement = course[this.nextPatternIndex++];

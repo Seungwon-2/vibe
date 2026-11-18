@@ -7,6 +7,7 @@ export type RunnerMode = 'endless' | 'story';
 export type RunnerVisualMode = 'calm' | 'standard';
 export type RunnerPickupKind = 'coin' | 'time' | 'giant' | 'speed';
 export type StoryStageId = 'dawn-city' | 'moonlit-forest' | 'crystal-mine' | 'cloud-skyway';
+export type StoryCourseRevision = 1 | 2;
 export type RunnerBiomeId = StoryStageId | 'starlight-rainbow';
 export type StoryChallengeId = 'no-hit' | 'coin-target';
 export type RunnerGateId = `gate-${number}`;
@@ -17,6 +18,8 @@ export type RunnerSnapshot = Readonly<{
   /** Optional during migration; populated by the mode-aware simulation task. */
   mode?: RunnerMode;
   storyStageId?: StoryStageId | null;
+  /** Saves without a revision still use the original layout. */
+  storyCourseRevision?: StoryCourseRevision;
   livesRemaining?: number;
   nearMissScore?: number;
   hitsTaken?: number;

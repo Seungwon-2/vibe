@@ -48,7 +48,7 @@ describe('wide double-jump pit schedule', () => {
     validateStoryCourses();
     for (const stage of STORY_STAGES) {
       const pits = getStoryPitDefinitions(stage.id, stage.lengthMeters);
-      const widePits = pits.filter((pit) => pit.widthMeters === RUNNER_CONFIG.storyWidePitWidthMeters);
+      const widePits = pits.filter((pit) => pit.id === `${stage.id}-wide-pit`);
       expect(widePits).toHaveLength(1);
       expect(widePits[0].tutorialWarning).toBe(true);
       expect(widePits[0].distanceMeters).toBeLessThan(stage.lengthMeters);
@@ -109,9 +109,9 @@ describe('wide double-jump pit schedule', () => {
       .toBeGreaterThanOrEqual(RUNNER_CONFIG.widePitWidthMeters);
 
     for (const stage of STORY_STAGES) {
-      const width = RUNNER_CONFIG.storyWidePitWidthMeters;
       const pit = getStoryPitDefinitions(stage.id, stage.lengthMeters)
-        .find((item) => item.widthMeters === width)!;
+        .find((item) => item.id === `${stage.id}-wide-pit`)!;
+      const width = pit.widthMeters;
       const speed = speedAtDistance('story', pit.distanceMeters, stage.id);
       expect(speed * singleFlightSeconds * RUNNER_CONFIG.metersPerWorldUnit).toBeLessThan(width);
       expect(speed * doubleFlightSeconds * RUNNER_CONFIG.metersPerWorldUnit).toBeGreaterThanOrEqual(width);

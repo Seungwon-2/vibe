@@ -197,6 +197,7 @@ export function createRunnerSnapshot(
     characterId,
     mode,
     storyStageId,
+    ...(mode === 'story' && storyStageId === 'cloud-skyway' ? { storyCourseRevision: 2 as const } : {}),
     livesRemaining: mode === 'story' ? RUNNER_CONFIG.storyLivesPerStage : RUNNER_CONFIG.endlessLivesPerRun,
     nearMissScore: 0,
     hitsTaken: 0,

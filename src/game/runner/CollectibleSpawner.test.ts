@@ -134,8 +134,7 @@ describe('authored collectible schedule', () => {
     expect(RUNNER_CONFIG.safePickupSpacingMeters).toBe(90);
     for (const stage of STORY_STAGES) {
       const safe = generatePickupSchedule(stage.lengthMeters, stage.id)
-        .filter((item) => !item.motifSectionId && !item.optionalJump && !item.guideAction &&
-          item.kind !== 'giant' && item.kind !== 'speed');
+        .filter((item) => item.id.startsWith('safe-') || item.kind === 'time');
       expect(safe.some((item) => item.kind === 'time'), `${stage.id} should retain speed-boost pickups`).toBe(true);
       expect(safe.length, `${stage.id} should retain its safe-route pickups`).toBeGreaterThan(0);
       for (const item of safe) {
@@ -175,8 +174,10 @@ describe('authored collectible schedule', () => {
           const distanceGap = Math.abs(right.distanceMeters - left.distanceMeters);
           const motifDistanceGap = Math.hypot(distanceGap / METERS_PER_WORLD_UNIT,
             right.heightUnits - left.heightUnits);
+          const spatiallyPlaced = left.motifSectionId !== undefined || right.motifSectionId !== undefined ||
+            left.id.startsWith('skyway-air-') || right.id.startsWith('skyway-air-');
           expect((motifPair ? motifDistanceGap >= 22
-            : left.motifSectionId !== undefined || right.motifSectionId !== undefined
+            : spatiallyPlaced
               ? motifDistanceGap >= minimumGap / METERS_PER_WORLD_UNIT
               : distanceGap >= minimumGap) || sameGuideLine,
             `${left.id} and ${right.id} overlap in schedule ${scheduleIndex}`).toBe(true);
@@ -552,6 +553,29 @@ describe('swept pickup collection', () => {
     expect(onPickup).toHaveBeenCalledWith(expect.objectContaining({ id: speed.id, kind: 'speed' }));
     spawner.destroy();
   });
+});
+
+it.each([undefined, 2] as const)('restores the same Skyway pickup order for course revision %s', (revision) => {
+  const player = {} as Phaser.Physics.Arcade.Sprite;
+  const spawner = new CollectibleSpawner(makeSpawnerScene().scene, player, vi.fn(), 'player-default');
+  const restored = new CollectibleSpawner(makeSpawnerScene().scene, player, vi.fn(), 'player-default');
+  const snapshot = { ...startRunner(createRunnerSnapshot('player-default', new Date(0),
+    { mode: 'story', storyStageId: 'cloud-skyway' })), storyCourseRevision: revision };
+  const at = (distanceMeters: number) => ({ ...snapshot, distanceMeters,
+    worldDistance: distanceMeters / METERS_PER_WORLD_UNIT });
+  spawner.update(at(1_460));
+  const checkpoint = spawner.createCheckpoint();
+  expect(checkpoint.entities.some(({ id }) => id.startsWith('skyway-air-middle-'))).toBe(revision === 2);
+  expect(restored.restoreCheckpoint(checkpoint, { ...at(1_460), phase: 'paused' })).toBe(true);
+  spawner.update(at(1_570));
+  restored.update(at(1_570));
+  const uninterrupted = spawner.createCheckpoint();
+  const resumed = restored.createCheckpoint();
+  expect(resumed.pickupCursor).toBe(uninterrupted.pickupCursor);
+  expect(resumed.entities.map(({ id, distanceMeters }) => [id, distanceMeters]))
+    .toEqual(uninterrupted.entities.map(({ id, distanceMeters }) => [id, distanceMeters]));
+  spawner.destroy();
+  restored.destroy();
 });
 
 describe('pickup collision radius', () => {

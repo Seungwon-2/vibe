@@ -1,7 +1,7 @@
 import { getStoryStage } from './storyConfig';
 import { RUNNER_CONFIG } from './runnerConfig';
 import type { PitDefinition } from './pitTypes';
-import type { StoryStageId } from './runnerTypes';
+import type { StoryCourseRevision, StoryStageId } from './runnerTypes';
 
 const WIDE_PIT_DISTANCE_BY_STAGE: Readonly<Record<StoryStageId, number>> = Object.freeze({
   'dawn-city': 2_300,
@@ -13,6 +13,7 @@ const WIDE_PIT_DISTANCE_BY_STAGE: Readonly<Record<StoryStageId, number>> = Objec
 export function getStoryPitDefinitions(
   stageId: StoryStageId,
   maxDistanceMeters: number,
+  revision: StoryCourseRevision = 2,
 ): readonly PitDefinition[] {
   const stage = getStoryStage(stageId);
   const scheduled = [
@@ -22,7 +23,8 @@ export function getStoryPitDefinitions(
     },
     {
       id: `${stageId}-wide-pit`, distanceMeters: WIDE_PIT_DISTANCE_BY_STAGE[stageId],
-      widthMeters: RUNNER_CONFIG.storyWidePitWidthMeters, tutorialWarning: true,
+      widthMeters: stageId === 'cloud-skyway' && revision === 2 ? 120 : RUNNER_CONFIG.storyWidePitWidthMeters,
+      tutorialWarning: true,
     },
   ];
   return scheduled.filter((pit) => pit.distanceMeters <= stage.lengthMeters &&

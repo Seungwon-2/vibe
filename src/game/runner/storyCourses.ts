@@ -2,7 +2,7 @@ import { getStoryStage } from './storyConfig';
 import { RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
 import { isPitClearance } from './PitSpawner';
 import type { HazardDefinition, HazardKind } from './hazardTypes';
-import type { StoryStageId } from './runnerTypes';
+import type { StoryCourseRevision, StoryStageId } from './runnerTypes';
 import { isGateClearance } from './hazardPatterns';
 import { getStoryPitDefinitions, validateStoryPitSpacing } from './storyPitSchedule';
 
@@ -61,9 +61,23 @@ const STORY_COURSES: Readonly<Record<StoryStageId, readonly StoryHazardPlacement
   ]),
 });
 
+const SKYWAY_AERIAL_COURSE = Object.freeze(STORY_COURSES['cloud-skyway'].flatMap((entry) => {
+  switch (entry.id) {
+    case 'skyway-slide-04':
+    case 'skyway-slide-06': return [];
+    case 'skyway-jump-04': return [placement(entry.id, 1_785, 'ground')];
+    case 'skyway-jump-06': return [placement(entry.id, 3_290, 'ground')];
+    case 'skyway-slide-07': return [placement(entry.id, 3_700, 'overhead')];
+    default: return [entry];
+  }
+}));
+
 export function validateStoryCourses(): void {
   validateStoryPitSpacing();
-  for (const [stageId, course] of Object.entries(STORY_COURSES) as [StoryStageId, readonly StoryHazardPlacement[]][]) {
+  const layouts = (Object.keys(STORY_COURSES) as StoryStageId[]).map((stageId) =>
+    ({ stageId, revision: 1 as const }));
+  for (const { stageId, revision } of [...layouts, { stageId: 'cloud-skyway', revision: 2 }] as const) {
+    const course = getStoryHazardSchedule(stageId, revision);
     const stage = getStoryStage(stageId);
     for (let index = 0; index < course.length; index += 1) {
       const current = course[index];
@@ -76,7 +90,7 @@ export function validateStoryCourses(): void {
       if (previous && current.distanceMeters - previous.distanceMeters < 220) {
         throw new Error(`Invalid Story hazard spacing in ${stageId}: ${previous.id} and ${current.id}`);
       }
-      if (getStoryPitDefinitions(stageId, stage.lengthMeters).some((pit) => isPitClearance(current.distanceMeters, pit,
+      if (getStoryPitDefinitions(stageId, stage.lengthMeters, revision).some((pit) => isPitClearance(current.distanceMeters, pit,
         RUNNER_CONFIG.pitHazardClearanceMeters + halfWidthMeters))) {
         throw new Error(`Story hazard ${current.id} conflicts with a pit`);
       }
@@ -88,7 +102,8 @@ export function validateStoryCourses(): void {
   }
 }
 
-export function getStoryHazardSchedule(stageId: StoryStageId): readonly StoryHazardPlacement[] {
+export function getStoryHazardSchedule(stageId: StoryStageId, revision: StoryCourseRevision = 2): readonly StoryHazardPlacement[] {
+  if (stageId === 'cloud-skyway' && revision === 2) return SKYWAY_AERIAL_COURSE;
   const course = STORY_COURSES[stageId];
   if (!course) throw new Error('Unknown Story course: ' + stageId);
   return course;

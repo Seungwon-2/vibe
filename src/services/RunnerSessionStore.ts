@@ -88,6 +88,8 @@ function isSnapshot(value: unknown, characterId: CharacterId, mode: RunnerMode):
   return snapshot.phase === 'paused' && snapshot.characterId === characterId &&
     (snapshot.mode === undefined || snapshot.mode === mode) &&
     (snapshot.storyStageId === undefined || snapshot.storyStageId === null || isStoryStageId(snapshot.storyStageId)) &&
+    (snapshot.storyCourseRevision === undefined || (mode === 'story' && snapshot.storyStageId === 'cloud-skyway' &&
+      (snapshot.storyCourseRevision === 1 || snapshot.storyCourseRevision === 2))) &&
     Number.isFinite(snapshot.elapsedMs) && (Number.isFinite(snapshot.remainingMs) ||
       (mode === 'story' && snapshot.remainingMs === Number.POSITIVE_INFINITY)) &&
     Number.isFinite(snapshot.distanceMeters) && Number.isFinite(snapshot.worldDistance) &&

@@ -133,6 +133,20 @@ describe('BrowserRunnerSessionStore', () => {
     expect(store.read(accountA, new Date(savedAt))).toEqual({ ok: true, value: pausedCheckpoint });
   });
 
+  it.each([undefined, 2] as const)('round-trips Skyway course revision %s', (storyCourseRevision) => {
+    const store = new BrowserRunnerSessionStore(new MemoryStorage());
+    const envelope = storyActiveEnvelope(accountA);
+    if (envelope.kind !== 'active') throw new Error('Expected active envelope');
+    const storyStageId = 'cloud-skyway' as const;
+    const checkpoint = { ...envelope, payload: { ...envelope.payload, storyStageId,
+      snapshot: { ...envelope.payload.snapshot, storyStageId, storyCourseRevision },
+      engine: { ...envelope.payload.engine, pickupStageId: storyStageId } } };
+    expect(store.write(checkpoint).ok).toBe(true);
+    const loaded = store.read(accountA, new Date(savedAt));
+    if (!loaded.ok || loaded.value?.kind !== 'active') throw new Error('Expected restored Skyway session');
+    expect(loaded.value.payload.snapshot.storyCourseRevision).toBe(storyCourseRevision);
+  });
+
   it('round-trips the real unlimited Story timer through JSON and continues after resuming', () => {
     const storage = new MemoryStorage();
     const store = new BrowserRunnerSessionStore(storage);

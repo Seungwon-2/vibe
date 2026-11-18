@@ -3,7 +3,7 @@ import { getCharacterPassive } from '../characters/characterAbilities';
 import type { CharacterId } from '../characters/characterTypes';
 import { ENDLESS_GATE_INTERVAL_METERS, isEndlessGateClearance, isEndlessGateDistance,
   RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from './runnerConfig';
-import type { RunnerPickupKind, RunnerSnapshot, StoryStageId } from './runnerTypes';
+import type { RunnerPickupKind, RunnerSnapshot, StoryCourseRevision, StoryStageId } from './runnerTypes';
 import { getDenseWaveSchedule, getHazardDistance, getPatternForDistance, getPatternStartDistance,
   getMaximumRunSpeedUnitsPerSecond, isGateClearance,
   METERS_PER_WORLD_UNIT } from './hazardPatterns';
@@ -260,9 +260,10 @@ function hasPickupVisualClearance(existing: PickupDefinition, candidate: PickupD
   return Math.abs(existing.distanceMeters - candidate.distanceMeters) >= clearance;
 }
 
-function getScheduledHazards(maxDistanceMeters: number, storyStageId: StoryStageId | null): ScheduledHazard[] {
+function getScheduledHazards(maxDistanceMeters: number, storyStageId: StoryStageId | null,
+  revision: StoryCourseRevision): ScheduledHazard[] {
   if (storyStageId) {
-    return getStoryHazardSchedule(storyStageId)
+    return getStoryHazardSchedule(storyStageId, revision)
       .filter(({ distanceMeters }) => distanceMeters <= maxDistanceMeters)
       .map(({ distanceMeters, definition, id }, patternIndex) => ({ distanceMeters, definition, patternIndex, id }));
   }
@@ -364,7 +365,7 @@ function getMotifSectionPickups(
   });
 }
 
-function hasMotifPointClearance(
+function hasSpatialCoinClearance(
   candidates: readonly PickupDefinition[],
   retainedPickups: readonly PickupDefinition[],
 ): boolean {
@@ -463,7 +464,7 @@ function addCoinMotifSections(
         pickup.id.startsWith('safe-') && pickup.guideAction === undefined &&
         pickup.distanceMeters >= start && pickup.distanceMeters <= end;
       const retained = scheduled.filter((pickup) => !replaceableSafeCoin(pickup));
-      return hasMotifPointClearance(candidates, retained);
+      return hasSpatialCoinClearance(candidates, retained);
     });
     if (center === undefined) continue;
 
@@ -493,14 +494,35 @@ function getStoryGiantTargets(hazards: readonly ScheduledHazard[]): GiantChallen
   }));
 }
 
+const SKYWAY_COIN_ROWS = {
+  middle: { startMeters: 1_550, spacingMeters: 16, heights: [80, 122, 169, 214, 240, 244, 224, 195] },
+  late: { startMeters: 3_232, spacingMeters: 20, heights: [72, 116, 155, 197, 230, 250, 244, 220, 172, 121] },
+  pit: { startMeters: 2_720, spacingMeters: 18, heights: [118, 86, 52] },
+  wall: { startMeters: 2_943, spacingMeters: 18, heights: [220, 224, 206] },
+} as const;
+
+function addSkywayCoinRows(pickups: readonly PickupDefinition[], maxDistanceMeters: number,
+  hazards: readonly ScheduledHazard[], pits: readonly PitDefinition[]): PickupDefinition[] {
+  const authored = Object.entries(SKYWAY_COIN_ROWS).flatMap(([group, row]) =>
+    row.heights.map((heightUnits, index): PickupDefinition => ({
+      id: `skyway-air-${group}-${index}`, kind: 'coin', heightUnits,
+      distanceMeters: row.startMeters + row.spacingMeters * index,
+      optionalJump: heightUnits > 68,
+    }))).filter((pickup) => pickup.distanceMeters <= maxDistanceMeters &&
+    isPickupDistanceSafe(pickup.distanceMeters, pickup.heightUnits, hazards, pits, undefined, 'cloud-skyway'));
+  const retained = pickups.filter((existing) => !existing.id.startsWith('safe-') || authored.every((pickup) =>
+    hasSpatialCoinClearance([pickup], [existing])));
+  return [...retained, ...authored.filter((pickup) => hasSpatialCoinClearance([pickup], retained))];
+}
+
 /** Generate stable, absolute-distance pickups for any requested course length. */
 export function generatePickupSchedule(maxDistanceMeters: number,
-  storyStageId: StoryStageId | null = null): readonly PickupDefinition[] {
+  storyStageId: StoryStageId | null = null, revision: StoryCourseRevision = 2): readonly PickupDefinition[] {
   if (!Number.isFinite(maxDistanceMeters) || maxDistanceMeters < SAFE_PICKUP_START_METERS) return [];
-  const hazards = getScheduledHazards(maxDistanceMeters + PICKUP_PIT_CLEARANCE_METERS, storyStageId);
+  const hazards = getScheduledHazards(maxDistanceMeters + PICKUP_PIT_CLEARANCE_METERS, storyStageId, revision);
   const initialPitHorizon = maxDistanceMeters + PICKUP_PIT_CLEARANCE_METERS;
   const getPits = (horizon: number) => storyStageId
-    ? getStoryPitDefinitions(storyStageId, horizon)
+    ? getStoryPitDefinitions(storyStageId, horizon, revision)
     : getPitDefinitions(horizon);
   const initialPits = getPits(initialPitHorizon);
   // Preserve the existing Endless horizon behavior while using the same mode's
@@ -588,8 +610,13 @@ export function generatePickupSchedule(maxDistanceMeters: number,
       [...safePickups, ...optionalPickups].every((existing) => hasPickupVisualClearance(existing, pickup))));
     if (row) optionalPickups.push(...row);
   }
-  const existingPickups = [...safePickups, ...optionalPickups];
+  const basePickups = [...safePickups, ...optionalPickups];
+  const hasSkywayAerialRoutes = storyStageId === 'cloud-skyway' && revision === 2;
+  const existingPickups = hasSkywayAerialRoutes
+    ? addSkywayCoinRows(basePickups, maxDistanceMeters, hazards, pits) : basePickups;
   const giantPickups: PickupDefinition[] = [];
+  // Taking the early giant is optional so the player can approach the first coin arc at normal speed.
+  const giantPickupHeight = hasSkywayAerialRoutes ? 132 : 52;
   let giantIndex = 0;
   const giantPickupLead = RUNNER_CONFIG.giantPickupLeadMeters;
   const giantTargets: GiantChallengeTarget[] = [];
@@ -618,14 +645,14 @@ export function generatePickupSchedule(maxDistanceMeters: number,
       candidate <= Math.min(maxDistanceMeters, target + RUNNER_CONFIG.giantPickupSearchRadiusMeters,
         challenge.startMeters - 1) &&
       (challenge.endMeters - candidate) / fastestMetersPerSecond <= RUNNER_CONFIG.giantDurationMs / 1_000 &&
-      isPickupDistanceSafe(candidate, 52, hazards, pits, undefined, storyStageId) &&
+      isPickupDistanceSafe(candidate, giantPickupHeight, hazards, pits, undefined, storyStageId) &&
       [...existingPickups, ...giantPickups].every((pickup) =>
         Math.abs(pickup.distanceMeters - candidate) >= 30) &&
       hasPowerUpSpacing(candidate, 'giant', [...existingPickups, ...giantPickups], storyStageId !== null),
     );
     if (distanceMeters === undefined) continue;
     giantPickups.push({ id: `giant-${giantIndex++}`, kind: 'giant', distanceMeters,
-      heightUnits: 52, optionalJump: false });
+      heightUnits: giantPickupHeight, optionalJump: hasSkywayAerialRoutes });
   }
   const scheduledPickups = [...existingPickups, ...giantPickups];
   const speedPickups: PickupDefinition[] = [];
@@ -682,6 +709,7 @@ export class CollectibleSpawner {
   private activePickupSchedule: readonly PickupDefinition[] = PICKUP_SCHEDULE;
   private endlessPickupScheduleHorizonMeters = 15_000;
   private scheduledStoryStageId: StoryStageId | null = null;
+  private scheduledStoryCourseRevision: StoryCourseRevision = 1;
   private active: ActivePickup[] = [];
   private gates: GateArt[] = [];
   private goal: GoalArt | null = null;
@@ -707,10 +735,12 @@ export class CollectibleSpawner {
     const stageBiome = storyStage ? getBiomeById(storyStage.biomeId) : null;
     this.activeStoryBiome = stageBiome;
     const storyStageId = storyStage?.id ?? null;
-    if (storyStageId !== this.scheduledStoryStageId) {
+    const revision = snapshot.storyCourseRevision ?? 1;
+    if (storyStageId !== this.scheduledStoryStageId || revision !== this.scheduledStoryCourseRevision) {
       this.scheduledStoryStageId = storyStageId;
+      this.scheduledStoryCourseRevision = revision;
       this.activePickupSchedule = storyStage
-        ? generatePickupSchedule(storyStage.lengthMeters, storyStage.id)
+        ? generatePickupSchedule(storyStage.lengthMeters, storyStage.id, revision)
         : PICKUP_SCHEDULE;
       this.nextPickupIndex = 0;
     }
@@ -875,7 +905,7 @@ export class CollectibleSpawner {
       new Set(checkpoint.createdGateDistances).size !== checkpoint.createdGateDistances.length) return false;
 
     const schedule = storyStage
-      ? generatePickupSchedule(storyStage.lengthMeters, storyStage.id)
+      ? generatePickupSchedule(storyStage.lengthMeters, storyStage.id, snapshot.storyCourseRevision ?? 1)
       : generatePickupSchedule(checkpoint.pickupHorizonMeters);
     if (checkpoint.pickupCursor > schedule.length) return false;
 
@@ -919,8 +949,9 @@ export class CollectibleSpawner {
       ? getStoryStage(snapshot.storyStageId) : null;
     this.activeStoryBiome = storyStage ? getBiomeById(storyStage.biomeId) : null;
     this.scheduledStoryStageId = checkpoint.pickupStageId;
+    this.scheduledStoryCourseRevision = snapshot.storyCourseRevision ?? 1;
     this.activePickupSchedule = storyStage
-      ? generatePickupSchedule(storyStage.lengthMeters, storyStage.id)
+      ? generatePickupSchedule(storyStage.lengthMeters, storyStage.id, this.scheduledStoryCourseRevision)
       : generatePickupSchedule(checkpoint.pickupHorizonMeters);
     if (checkpoint.pickupCursor > this.activePickupSchedule.length) return false;
     this.nextPickupIndex = checkpoint.pickupCursor;

@@ -99,7 +99,8 @@ export class PitSpawner {
     this.activeStoryBiome = snapshot.mode === 'story' && snapshot.storyStageId
       ? getBiomeById(getStoryStage(snapshot.storyStageId).biomeId) : null;
     const visiblePits = snapshot.mode === 'story' && snapshot.storyStageId
-      ? getStoryPitDefinitions(snapshot.storyStageId, snapshot.distanceMeters + visibleLeadMeters)
+      ? getStoryPitDefinitions(snapshot.storyStageId, snapshot.distanceMeters + visibleLeadMeters,
+        snapshot.storyCourseRevision ?? 1)
       : getPitDefinitions(snapshot.distanceMeters + visibleLeadMeters);
     while (this.nextPitIndex < visiblePits.length) {
       const pit = visiblePits[this.nextPitIndex];
