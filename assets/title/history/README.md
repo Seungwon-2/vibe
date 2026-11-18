@@ -4,6 +4,7 @@
 | --- | --- | --- |
 | 01 | [별빛 하늘길](./01-skyway.webp) | 다섯 러너가 등장한 초기 타이틀. 교체 전 화면은 Git `50ae6d1`에 있다. |
 | 02 | [별빛 무지개길 시안](./02-rainbow-draft.webp) | 첫 교체에 사용한 시안. 당시 타이틀 배치는 Git `72b1333`에 있다. |
-| 03 | [별빛 무지개길 최종본](../../../public/assets/title/title-hero.webp) | 교체된 원본을 WebP로 변환해 적용한 현재 타이틀. |
+| 03 | [별빛 무지개길 보정본](./03-rainbow-corrected.webp) | 교체된 원본을 WebP로 변환해 적용한 타이틀. 당시 화면은 Git `edc8be1`에 있다. |
+| 04 | [별빛 무지개길 새 일러스트](../../../public/assets/title/title-hero.webp) | 새로 받은 `title-two.png`를 WebP로 변환해 적용한 현재 타이틀. |
 
 게임은 `public/assets/title/title-hero.webp`를 사용한다. 이전 버전은 이 폴더에서 열어볼 수 있으며 Vite 배포 출력에 포함되지 않는다. 다음에 교체할 때는 현재 WebP를 버전 번호가 붙은 파일로 보관한 뒤 이 목록을 갱신한다.
