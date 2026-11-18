@@ -16,6 +16,19 @@ const portraits = [
   { id: 'cogane-rang', source: '07_kogane_rang_master.png', left: 166, top: 100 },
 ];
 
+const upcomingSources = [
+  '03_ayatsuno_yuni_master.png',
+  '04_tenko_shibuki_master.png',
+  '05_hanako_nana_master.png',
+  '09_yuzuha_riko_master.png',
+  '10_sakihane_fuya_master.png',
+  '11_shirayuki_hina_master.png',
+  '12_neneko_mashiro_master.png',
+  '13_akane_rize_master.png',
+  '14_arahashi_tabi_master.png',
+  '15_airi_kanna_master.png',
+];
+
 function getFullCrop(pixels, width, height, channels) {
   let left = width;
   let top = height;
@@ -63,8 +76,23 @@ async function buildPortrait({ id, source, left, top }) {
   }
 }
 
-async function main(check) {
+async function buildSilhouette(source, index) {
+  const { data, info: { width, height, channels } } = await sharp(await readFile(new URL(source, sourceDirectory)))
+    .toColourspace('srgb').ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const crop = getFullCrop(data, width, height, channels);
+  for (let offset = 0; offset < data.length; offset += channels) {
+    data[offset] = 22;
+    data[offset + 1] = 24;
+    data[offset + 2] = 31;
+  }
+  const bytes = await sharp(data, { raw: { width, height, channels } }).extract(crop)
+    .resize({ width: 192, height: 224, fit: 'inside' }).webp({ lossless: true }).toBuffer();
+  return { name: `upcoming-${index + 1}.webp`, bytes };
+}
+
+async function main(check, includeUpcoming) {
   const outputs = (await Promise.all(portraits.map(buildPortrait))).flat();
+  if (includeUpcoming) outputs.push(...await Promise.all(upcomingSources.map(buildSilhouette)));
   if (!check) await mkdir(outputDirectory, { recursive: true });
   for (const { name, bytes } of outputs) {
     const target = new URL(name, outputDirectory);
@@ -78,7 +106,7 @@ async function main(check) {
   console.log(`선택창 이미지 ${outputs.length}개 ${check ? '검증' : '생성'} 완료`);
 }
 
-main(process.argv.includes('--check')).catch((error) => {
+main(process.argv.includes('--check'), process.argv.includes('--upcoming')).catch((error) => {
   console.error(error.message);
   process.exitCode = 1;
 });

@@ -10,6 +10,12 @@ const rosterArtIds: ReadonlySet<CharacterId> = new Set([
   'cogane-rang',
 ]);
 
+// Matches the numbered silhouette assets produced by build-selector-portraits.mjs.
+export const upcomingCharacterSilhouettes = [
+  'ayatsuno-yuni', 'tenko-shibuki', 'hanako-nana', 'yuzuha-riko', 'sakihane-fuya',
+  'shirayuki-hina', 'neneko-mashiro', 'akane-lize', 'arahashi-tabi', 'airi-kanna',
+].map((id, index) => ({ id, url: `/assets/character/selector-art/roster/upcoming-${index + 1}.webp` }));
+
 export function getCharacterSelectArt(character: CharacterDefinition): CharacterSelectArt {
   if (!rosterArtIds.has(character.id)) {
     return { faceUrl: character.portraitUrl, fullUrl: character.portraitUrl };

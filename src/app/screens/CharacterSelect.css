@@ -1,22 +1,10 @@
-.selector-shell.selector-shell--runner.selector-shell--grid {
-  --selector-outer-padding: clamp(8px, 1.4vmin, 20px);
-  --selector-panel-padding: clamp(12px, 2vmin, 28px);
-
-  grid-template-columns: minmax(0, 1fr);
-  align-content: start;
-  height: 100dvh;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden auto;
-  padding: var(--selector-outer-padding);
-}
-
 .selector-grid-panel {
-  width: min(100%, 1360px);
-  min-width: 0;
-  padding: var(--selector-panel-padding);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  container-type: size;
+  overflow: hidden auto;
   border: 1px solid var(--ui-border);
-  border-radius: clamp(16px, 2vw, 28px);
   background: linear-gradient(145deg, rgb(255 255 255 / 83%), rgb(255 250 253 / 87%));
   color: var(--ui-text);
   box-shadow: var(--ui-shadow);
@@ -31,6 +19,7 @@
 
 .selector-grid-layout {
   display: grid;
+  flex: 1 0 auto;
   grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
   align-items: start;
   gap: clamp(12px, 2vw, 28px);
@@ -47,7 +36,7 @@
 
 .selector-grid-roster {
   /* Leave room for the heading, row gaps, and footer before sizing the three rows. */
-  --selector-row-limit: calc((100dvh - 2 * var(--selector-outer-padding) - 2 * var(--selector-panel-padding) - 124px) / 3);
+  --selector-row-limit: calc((100cqh - 148px) / 3);
 
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -57,20 +46,19 @@
 
 .selector-grid-card,
 .selector-grid-empty {
-  min-width: 0;
-  border: 1px solid var(--ui-border);
-  border-radius: clamp(6px, 1vw, 14px);
-}
-
-.selector-grid-card {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  min-width: 0;
   padding: 0;
   overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: clamp(6px, 1vw, 14px);
   background: var(--ui-surface-soft);
   color: var(--ui-text);
+}
+
+.selector-grid-card {
   cursor: pointer;
 }
 
@@ -86,34 +74,16 @@
 }
 
 .selector-grid-empty {
-  display: grid;
-  place-items: center;
-  border-style: dashed;
-  background: rgb(234 231 246 / 38%);
+  background: #edf0f6;
+  text-align: center;
+}
+
+.selector-grid-empty .selector-grid-card-art {
+  background: linear-gradient(155deg, #f4f3fa, #e5e9f5);
 }
 
 .selector-grid-silhouette {
-  position: relative;
-  width: min(54%, 64px);
-  aspect-ratio: 1;
-  color: #222530;
-}
-
-.selector-grid-silhouette::before,
-.selector-grid-silhouette::after {
-  position: absolute;
-  content: '';
-  background: currentColor;
-}
-
-.selector-grid-silhouette::before {
-  inset: 7% 29% 49%;
-  border-radius: 50%;
-}
-
-.selector-grid-silhouette::after {
-  inset: 48% 7% 8%;
-  border-radius: 50% 50% 16% 16% / 80% 80% 24% 24%;
+  padding: clamp(4px, 0.8vmin, 10px);
 }
 
 .selector-grid-card-art,

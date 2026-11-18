@@ -5,7 +5,7 @@ import { CHARACTERS } from '../../game/characters/characterCatalog';
 import { getCharacterPassive } from '../../game/characters/characterAbilities';
 import type { CharacterId } from '../../game/characters/characterTypes';
 import type { PlayerProfile } from '../../services/PlayerProfile';
-import { getCharacterSelectArt } from './characterSelectArt';
+import { getCharacterSelectArt, upcomingCharacterSilhouettes } from './characterSelectArt';
 import './CharacterSelect.css';
 
 const SELECTOR_ORDER: readonly CharacterId[] = [
@@ -17,7 +17,8 @@ const SELECTOR_CHARACTERS = [...CHARACTERS].sort((left, right) => {
   return (leftOrder < 0 ? Number.MAX_SAFE_INTEGER : leftOrder)
     - (rightOrder < 0 ? Number.MAX_SAFE_INTEGER : rightOrder);
 });
-const EMPTY_SLOTS = Array.from({ length: Math.max(0, 15 - SELECTOR_CHARACTERS.length) }, (_, index) => index);
+const upcomingSlots = upcomingCharacterSilhouettes.filter(({ id }) => !CHARACTERS.some((character) => character.id === id));
+const EMPTY_SLOTS = Array.from({ length: Math.max(0, 15 - SELECTOR_CHARACTERS.length) }, (_, index) => upcomingSlots[index]?.url);
 const COMPACT_NAMES: Partial<Record<CharacterId, string>> = {
   'player-default': '린',
   'hanayo-hiyori': '히요리',
@@ -46,8 +47,8 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
   const passive = selected ? getCharacterPassive(selected.id) : null;
 
   return (
-    <main className="selector-shell selector-shell--runner selector-shell--grid">
-      <section className="selector-grid-panel" aria-labelledby="character-select-title">
+    <main className="selection-screen selector-shell--grid">
+      <section className="selection-panel selector-grid-panel" aria-labelledby="character-select-title">
         <h1 id="character-select-title">누구와 달려볼까요?</h1>
         <div className="selector-grid-layout">
           <div className="selector-grid-list">
@@ -78,9 +79,12 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
                   </button>
                 );
               })}
-              {EMPTY_SLOTS.map((index) => (
+              {EMPTY_SLOTS.map((url, index) => (
                 <span className="selector-grid-empty" data-grid-slot aria-hidden="true" key={`empty-${index}`}>
-                  <span className="selector-grid-silhouette" />
+                  <span className="selector-grid-card-art">
+                    {url && <img className="selector-grid-silhouette" src={url} alt="" draggable={false} />}
+                  </span>
+                  <span className="selector-grid-name">???</span>
                 </span>
               ))}
             </div>

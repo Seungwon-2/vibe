@@ -17,8 +17,8 @@ export function StageSelect({ profile, selectedStageId, onSelect, onStart, onAch
   const selected = STORY_STAGES.find((stage) => stage.id === selectedStageId) ?? STORY_STAGES[0];
 
   return (
-    <main className="progression-screen progression-screen--stages">
-      <section className="progression-panel" aria-labelledby="stage-select-title">
+    <main className="selection-screen progression-screen progression-screen--stages">
+      <section className="selection-panel progression-panel" aria-labelledby="stage-select-title">
         <p className="eyebrow">STORY COURSE</p>
         <h1 id="stage-select-title">달릴 스테이지를 선택하세요</h1>
         <p className="progression-intro">코인을 모으고 도전을 완료해 다음 코스와 러너를 해금하세요.</p>

@@ -10,12 +10,17 @@ const order = ['player-default', 'hanayo-hiyori', 'tokino-mary', 'goth-student',
 afterEach(cleanup);
 
 describe('CharacterSelect', () => {
-  it('shows five face cards followed by ten non-interactive slots', () => {
+  it('shows five face cards followed by ten non-interactive silhouettes', () => {
     render(<CharacterSelect selectedCharacterId="player-default" onConfirm={vi.fn()} onBack={vi.fn()} />);
     const roster = screen.getByRole('group', { name: '플레이할 캐릭터' });
     const cards = within(roster).getAllByRole('button');
     expect(cards).toHaveLength(5);
-    expect(roster.querySelectorAll('[data-grid-slot][aria-hidden="true"]')).toHaveLength(10);
+    const upcoming = [...roster.querySelectorAll('[data-grid-slot][aria-hidden="true"]')];
+    expect(upcoming).toHaveLength(10);
+    for (const [index, slot] of upcoming.entries()) {
+      expect(slot).toHaveTextContent('???');
+      expect(slot.querySelector('img')).toHaveAttribute('src', `/assets/character/selector-art/roster/upcoming-${index + 1}.webp`);
+    }
     for (const [index, id] of order.entries()) {
       expect(cards[index]).toHaveAccessibleName(getCharacter(id).displayName);
       expect(cards[index].querySelector('img')).toHaveAttribute('src', `/assets/character/selector-art/roster/${id}-face.webp`);
