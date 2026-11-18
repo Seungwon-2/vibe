@@ -44,8 +44,14 @@ describe('CharacterSelect', () => {
     const preview = within(detail).getByTestId('character-preview-hanayo-hiyori');
     expect(preview).toHaveAttribute('data-animation', 'victory');
     expect(preview).toHaveAttribute('src', qualityAnimations.victory[0].url);
-    for (const frame of qualityAnimations.victory.slice(1)) {
-      act(() => vi.advanceTimersByTime(1000 / qualityAnimationFps.victory));
+    const normalFrameMs = 1000 / qualityAnimationFps.victory;
+    const previewFrameMs = normalFrameMs / 0.8;
+    act(() => vi.advanceTimersByTime(normalFrameMs));
+    expect(preview).toHaveAttribute('src', qualityAnimations.victory[0].url);
+    act(() => vi.advanceTimersByTime(previewFrameMs - normalFrameMs));
+    expect(preview).toHaveAttribute('src', qualityAnimations.victory[1].url);
+    for (const frame of qualityAnimations.victory.slice(2)) {
+      act(() => vi.advanceTimersByTime(previewFrameMs));
       expect(preview).toHaveAttribute('src', frame.url);
     }
     act(() => vi.advanceTimersByTime(2000));

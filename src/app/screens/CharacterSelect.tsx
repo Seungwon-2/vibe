@@ -97,7 +97,8 @@ export function CharacterSelect({ selectedCharacterId, profile, onConfirm, onBac
 
           <section className="selector-grid-detail" aria-labelledby="selector-detail-name">
             {selected && <div className="selector-grid-preview">
-              <CharacterPreview key={selected.id} character={selected} selected animation="victory" loop={false} />
+              <CharacterPreview key={selected.id} character={selected} selected animation="victory"
+                loop={false} playbackRate={0.8} />
             </div>}
             <h2 id="selector-detail-name">{selected?.displayName ?? '선택 가능한 캐릭터가 없습니다'}</h2>
             {selected && passive && <div className="selector-grid-passive">
