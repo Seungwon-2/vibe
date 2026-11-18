@@ -46,7 +46,7 @@ export function MainMenu({ onStart, onRankings, onHistory, onAchievements, onSho
   return (
     <main className="landing-shell main-menu-scene">
       <img className="main-menu-hero" src="/assets/title/title-hero.webp"
-        alt="다섯 러너가 별빛이 흐르는 하늘길을 함께 달리는 모습" />
+        alt="네 러너가 별빛 아래 무지개길을 달리는 모습" />
       <div className="main-menu-shade" aria-hidden="true" />
       <div className="main-menu-starfield" aria-hidden="true" />
       <section className="title-card main-menu-card" aria-labelledby="game-title">

@@ -1588,11 +1588,12 @@ h1 {
 /* Keep the title in the open sky and let the supplied character artwork read clearly. */
 .main-menu-card.title-card { justify-content: flex-start; }
 .main-menu-copy {
-  margin: clamp(18px, 2.2vh, 30px) auto 0;
+  margin: clamp(18px, 2.2vh, 30px) auto 0 clamp(20px, 5vw, 72px);
   padding: 0 0 12px;
+  text-align: left;
 }
 .main-menu-copy .eyebrow { margin-bottom: 8px; }
-.main-menu-copy h1 { font-size: clamp(3.2rem, 8vw, 7.2rem); }
+.main-menu-copy h1 { font-size: clamp(3.2rem, min(6.4vw, 11vh), 6.5rem); }
 .main-menu-shade {
   background:
     linear-gradient(180deg, rgb(12 17 53 / 18%) 0%, transparent 33%, rgb(15 16 49 / 8%) 72%, rgb(15 16 49 / 18%) 100%),
@@ -3096,13 +3097,14 @@ input:focus-visible {
   .main-menu-topbar { padding: 6px 16px 0; }
   .main-menu-brand { font-size: .68rem; }
   .main-menu-edition { font-size: .58rem; }
+  .main-menu-hero { object-position: center 22%; }
   .main-menu-copy {
     width: min(calc(100% - 32px), 900px);
-    margin: 2px auto auto;
+    margin: 2px auto auto 16px;
     padding: 0 0 6px;
   }
   .main-menu-copy .eyebrow { margin-bottom: 2px; font-size: .6rem; }
-  .main-menu-copy h1 { font-size: clamp(2.1rem, 7.5vw, 3.8rem); line-height: .95; }
+  .main-menu-copy h1 { font-size: clamp(2.1rem, min(6vw, 11vh), 3.6rem); line-height: .95; }
   .main-menu-dock {
     grid-template-columns: minmax(150px, .72fr) minmax(0, 1.5fr);
     gap: 10px;
@@ -3118,13 +3120,14 @@ input:focus-visible {
     grid-template-rows: 38px repeat(2, 32px);
     gap: 5px;
   }
-  .main-menu-actions .home-start {
+  .main-menu-card .main-menu-actions > .home-start {
     grid-column: 1 / -1;
     grid-row: 1;
     min-height: 38px;
+    padding-block: 4px;
     font-size: .82rem;
   }
-  .main-menu-actions .main-menu-secondary { grid-column: auto; grid-row: auto; min-height: 32px; padding: 4px 5px; font-size: .62rem; white-space: normal; line-height: 1.2; }
+  .main-menu-card .main-menu-actions > .main-menu-secondary { grid-column: auto; grid-row: auto; min-height: 32px; padding: 4px 5px; font-size: .62rem; white-space: normal; line-height: 1.2; }
   .main-menu-actions .main-menu-sound,
   .main-menu-actions .main-menu-credits { grid-column: auto; grid-row: auto; }
 
@@ -3224,6 +3227,14 @@ input:focus-visible {
 }
 
 @media (max-width: 600px) and (orientation: portrait) {
+  .main-menu-hero {
+    inset: clamp(92px, 16svh, 144px) 0 auto;
+    height: auto;
+    animation: none;
+    mask-image: linear-gradient(to bottom, transparent, #000 9%, #000 89%, transparent);
+  }
+
+  .main-menu-copy { margin-inline: auto; text-align: center; }
   .main-menu-card .main-menu-record { width: 100%; }
   .main-menu-actions .main-menu-secondary { min-height: 40px; padding: 5px 6px; font-size: .68rem; white-space: normal; line-height: 1.2; }
 }
