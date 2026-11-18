@@ -674,7 +674,7 @@ type ActivePickup = {
   sparkle: Phaser.GameObjects.Graphics | null;
 };
 
-type GateArt = { distanceMeters: number; art: Phaser.GameObjects.Graphics; label: Phaser.GameObjects.Text };
+type GateArt = { distanceMeters: number; art: Phaser.GameObjects.Graphics; label?: Phaser.GameObjects.Text };
 type GoalArt = { distanceMeters: number; art: Phaser.GameObjects.Graphics; label: Phaser.GameObjects.Text };
 
 export class CollectibleSpawner {
@@ -806,25 +806,15 @@ export class CollectibleSpawner {
         this.createdGates.has(distanceMeters) ||
         snapshot.distanceMeters > distanceMeters + 100) continue;
       this.createdGates.add(distanceMeters);
-      const biome = stageBiome ?? getBiomeForDistance(distanceMeters);
-      const { palette, landmark } = biome;
-      const art = this.scene.add.graphics().setDepth(-5);
-      // Story milestones are visual landmarks only; Endless retains its gate rewards.
-      drawRunnerGate(art, biome);
-      const label = this.scene.add.text(0, 0, `${landmark} · ${distanceMeters.toLocaleString()}m`,
-        { color: `#${palette.hazardContrast.toString(16).padStart(6, '0')}`,
-          fontSize: '15px', fontFamily: 'monospace',
-          backgroundColor: '#fffffff0', padding: { x: 5, y: 3 } }).setOrigin(0.5)
-        .setDepth(5);
-      this.gates.push({ distanceMeters, art, label });
+      this.spawnGate(distanceMeters);
     }
     for (const gate of [...this.gates]) {
       const x = this.screenX(gate.distanceMeters, snapshot.distanceMeters);
       gate.art.setPosition(x, RUNNER_GROUND_Y);
-      gate.label.setPosition(x, RUNNER_GROUND_Y - 190);
+      gate.label?.setPosition(x, RUNNER_GROUND_Y - 190);
       if (x < -30) {
         gate.art.destroy();
-        gate.label.destroy();
+        gate.label?.destroy();
         this.gates = this.gates.filter((item) => item !== gate);
         this.createdGates.delete(gate.distanceMeters);
       }
@@ -954,7 +944,7 @@ export class CollectibleSpawner {
           this.onPickup(pickup.definition);
           this.removePickup(pickup);
         });
-      } else if (entity.kind === 'gate') this.restoreGate(entity.distanceMeters);
+      } else if (entity.kind === 'gate') this.spawnGate(entity.distanceMeters);
       else if (entity.kind === 'goal') this.restoreGoal(entity.distanceMeters, storyStage);
     }
     this.previousDistanceMeters = snapshot.distanceMeters;
@@ -962,12 +952,12 @@ export class CollectibleSpawner {
     return true;
   }
 
-  private restoreGate(distanceMeters: number): void {
+  private spawnGate(distanceMeters: number): void {
     const biome = this.activeStoryBiome ?? getBiomeForDistance(distanceMeters);
     const { palette, landmark } = biome;
     const art = this.scene.add.graphics().setDepth(-5);
     drawRunnerGate(art, biome);
-    const label = this.scene.add.text(0, 0, `${landmark} · ${distanceMeters.toLocaleString()}m`, {
+    const label = biome.hideGateTooltip ? undefined : this.scene.add.text(0, 0, `${landmark} · ${distanceMeters.toLocaleString()}m`, {
       color: `#${palette.hazardContrast.toString(16).padStart(6, '0')}`,
       fontSize: '15px', fontFamily: 'monospace', backgroundColor: '#fffffff0',
       padding: { x: 5, y: 3 },
@@ -990,7 +980,7 @@ export class CollectibleSpawner {
 
   destroy(): void {
     for (const pickup of [...this.active]) this.removePickup(pickup);
-    for (const gate of this.gates) { gate.art.destroy(); gate.label.destroy(); }
+    for (const gate of this.gates) { gate.art.destroy(); gate.label?.destroy(); }
     this.gates = [];
     this.goal?.art.destroy();
     this.goal?.label.destroy();

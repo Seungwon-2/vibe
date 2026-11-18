@@ -18,6 +18,7 @@ import type { AudioPreferences } from '../../audio/audioPreferences';
 import { browserRunnerAudio } from '../../audio/RunnerAudioManager';
 import { browserRunnerMusic } from '../../audio/RunnerMusicManager';
 import { getStoryStage } from '../../game/runner/storyConfig';
+import { getBiomeForDistance } from '../../game/visuals/runnerBiomes';
 import type { RunnerActiveSession } from '../../game/runner/runnerSessionTypes';
 import './RunScreen.css';
 import { getEffectiveVisualMode, readRunnerVisualMode, saveRunnerVisualMode } from '../../game/runner/runnerVisualPreferences';
@@ -273,7 +274,8 @@ export function RunScreen({ characterId, mode = 'endless', storyStageId = null, 
     } else if (event.type === 'gate') {
       browserRunnerAudio.playEffect('gate');
       showGateBurst();
-      if (event.awardedMs > 0) {
+      const gateDistanceMeters = Number(event.gateId.slice('gate-'.length));
+      if (event.awardedMs > 0 && !getBiomeForDistance(gateDistanceMeters).hideGateTooltip) {
         showBonusCue(event.gateId, event.type, event.awardedMs);
       }
     }

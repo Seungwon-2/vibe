@@ -5,6 +5,7 @@ export type RunnerBiomeDefinition = Readonly<{
   id: RunnerBiomeId;
   startDistanceMeters: number;
   landmark: string;
+  hideGateTooltip?: boolean;
   palette: Readonly<{
     sky: number;
     far: number;
@@ -63,6 +64,7 @@ export const RUNNER_BIOMES: readonly RunnerBiomeDefinition[] = Object.freeze([
   {
     id: 'starlight-rainbow', startDistanceMeters: RUNNER_GATE_DISTANCES_M[4],
     landmark: '별빛 무지개길',
+    hideGateTooltip: true,
     palette: {
       sky: 0x292d57, far: 0x404673, middle: 0xb3a7e0, ground: 0xd7d9f2,
       accent: 0xffd993, hazardContrast: 0x201a42, groundTop: 0xada8df,

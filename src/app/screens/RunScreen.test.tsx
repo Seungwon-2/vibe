@@ -42,6 +42,10 @@ vi.mock('../../game/runner/RunnerGame', () => ({
         onEvent({ type: 'pit-fall-started' });
         onEvent({ type: 'passive-triggered', passiveId: 'hiyori-guard', remainingCharges: 1, trigger: 'pit' });
       }}>play effects</button>
+      <button type="button" onClick={() => {
+        onEvent({ type: 'gate', gateId: 'gate-10000', awardedMs: 20_000 });
+        onEvent({ type: 'gate', gateId: 'gate-12000', awardedMs: 20_000 });
+      }}>cross starlight gates</button>
     </div>;
   },
 }));
@@ -127,6 +131,15 @@ describe('RunScreen', () => {
     act(() => vi.advanceTimersByTime(1_199));
     expect(document.querySelector('.runner-hud__bonus')).toBeInTheDocument();
     act(() => vi.advanceTimersByTime(1));
+    expect(document.querySelector('.runner-hud__bonus')).not.toBeInTheDocument();
+  });
+
+  it('keeps the starlight gate sound and burst without drawing a time tooltip', () => {
+    audioMock.playEffect.mockClear();
+    renderReadyRunScreen(<RunScreen {...audioProps} characterId="player-default" onFinish={vi.fn()} onExit={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'cross starlight gates' }));
+    expect(audioMock.playEffect.mock.calls).toEqual([['gate'], ['gate']]);
+    expect(document.querySelector('.runner-stage')).toHaveClass('is-gate-boosting');
     expect(document.querySelector('.runner-hud__bonus')).not.toBeInTheDocument();
   });
 

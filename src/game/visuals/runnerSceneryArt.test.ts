@@ -5,10 +5,16 @@ import { drawSceneryLayer, drawScenerySky, getScenerySkyColor } from './runnerSc
 
 function recorder() {
   const calls: { method: string; args: number[] }[] = [];
-  const g: Record<string, (...args: number[]) => typeof g> = {};
+  const g: Record<string, unknown> = {};
   for (const method of ['fillStyle', 'lineStyle', 'fillRect', 'fillRoundedRect',
     'fillEllipse', 'fillCircle', 'fillTriangle', 'lineBetween']) {
     g[method] = (...args: number[]) => { calls.push({ method, args }); return g; };
+  }
+  for (const method of ['fillPoints', 'strokePoints']) {
+    g[method] = (points: { x: number; y: number }[]) => {
+      calls.push({ method, args: points.flatMap(({ x, y }) => [x, y]) });
+      return g;
+    };
   }
   return { graphics: g as unknown as Phaser.GameObjects.Graphics, calls };
 }
@@ -45,7 +51,9 @@ describe('theme scenery illustrations', () => {
           : method === 'fillEllipse' ? y + h / 2
           : method === 'fillCircle' ? y + args[2]
           : method === 'fillTriangle' ? Math.max(args[1], args[3], args[5])
-          : method === 'lineBetween' ? Math.max(args[1], args[3]) : 0;
+          : method === 'lineBetween' ? Math.max(args[1], args[3])
+          : method === 'fillPoints' || method === 'strokePoints'
+            ? Math.max(...args.filter((_, index) => index % 2 === 1)) : 0;
         expect(bottom, biome.id + '/' + method).toBeLessThan(400);
       }
     }

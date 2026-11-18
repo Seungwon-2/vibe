@@ -21,6 +21,7 @@ function createScene() {
           fillStyle: vi.fn(() => graphics), fillRect: vi.fn(() => graphics),
           fillRoundedRect: vi.fn(() => graphics), fillEllipse: vi.fn(() => graphics),
           fillCircle: vi.fn(() => graphics), fillTriangle: vi.fn(() => graphics),
+          fillPoints: vi.fn(() => graphics), strokePoints: vi.fn(() => graphics),
           lineStyle: vi.fn(() => graphics), lineBetween: vi.fn(() => graphics),
           generateTexture: vi.fn((key: string) => { textureKeys.push(key); }),
           destroy: vi.fn(),

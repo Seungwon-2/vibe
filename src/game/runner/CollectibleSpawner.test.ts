@@ -716,8 +716,28 @@ describe('themed pickup art', () => {
     expect(gateArt!.calls.setPosition).toHaveBeenCalledWith(
       RUNNER_PLAYER_X + (2_000 - 1_780) / METERS_PER_WORLD_UNIT, RUNNER_GROUND_Y,
     );
+    expect(mock.texts).toHaveLength(1);
     expect((mock.scene.physics.add.overlap as ReturnType<typeof vi.fn>).mock.calls.length)
       .toBe(mock.rectangles.length);
     spawner.destroy();
+  });
+
+  it.each([10_000, 12_000])('draws the %im starlight gate without a label before and after resuming', (distanceMeters) => {
+    const player = {} as Phaser.Physics.Arcade.Sprite;
+    const mock = makeSpawnerScene();
+    const spawner = new CollectibleSpawner(mock.scene, player, vi.fn(), 'player-default');
+    const snapshot = { ...startRunner(createRunnerSnapshot('player-default')),
+      distanceMeters: distanceMeters - 150, worldDistance: (distanceMeters - 150) / METERS_PER_WORLD_UNIT };
+    spawner.update(snapshot);
+    expect(mock.graphics.some(({ calls }) => calls.setDepth?.mock.calls[0]?.[0] === -5)).toBe(true);
+    expect(mock.texts).toHaveLength(0);
+
+    const restoredMock = makeSpawnerScene();
+    const restoredSpawner = new CollectibleSpawner(restoredMock.scene, player, vi.fn(), 'player-default');
+    expect(restoredSpawner.restoreCheckpoint(spawner.createCheckpoint(), { ...snapshot, phase: 'paused' })).toBe(true);
+    expect(restoredMock.graphics.some(({ calls }) => calls.setDepth?.mock.calls[0]?.[0] === -5)).toBe(true);
+    expect(restoredMock.texts).toHaveLength(0);
+    spawner.destroy();
+    restoredSpawner.destroy();
   });
 });

@@ -9,7 +9,7 @@ const THEMES = {
   'moonlit-forest': { sky: 0xdce6e1, far: 0xbbcfc5, face: 0x96b4a6, edge: 0x739589, light: 0xf1eacb, accent: 0xc4d7c0 },
   'crystal-mine': { sky: 0xe2deeb, far: 0xc7bdd5, face: 0xa99bbd, edge: 0x897b9f, light: 0xe1efeb, accent: 0xa6c7c6 },
   'cloud-skyway': { sky: 0xdfeaf0, far: 0xc2d5df, face: 0xa2bac9, edge: 0x7f9baa, light: 0xf6f1de, accent: 0xd3c9dc },
-  'starlight-rainbow': { sky: 0x292d57, far: 0x404673, face: 0x555884, edge: 0x6c6b9d, light: 0xffe6bc, accent: 0x9b97c6 },
+  'starlight-rainbow': { sky: 0x171d3e, far: 0x2e375f, face: 0x414974, edge: 0x666b9b, light: 0xffe6bc, accent: 0xa3b7f3 },
 } as const;
 
 export const STARLIGHT_RAINBOW_BANDS = [0xe7acc9, 0xecd0a4, 0xb9dfce, 0x9fcfea, 0xc5aee5] as const;
@@ -49,36 +49,68 @@ export function drawScenerySky(g: Art, biome: RunnerBiomeDefinition): void {
 }
 
 function drawStarlightSky(g: Art, p: Colors): void {
-  g.fillStyle(p.far, 0.72).fillEllipse(636, 176, 726, 232);
-  g.fillStyle(p.face, 0.42).fillEllipse(651, 181, 534, 147);
-
-  // The road tapers toward the horizon. Its bright colors stop above the running lane.
-  const path = Array.from({ length: 13 }, (_, index) => {
-    const t = index / 12;
-    return { x: -10 + t * 980, y: 330 - t * 207 + Math.sin(t * Math.PI * 2) * 38, width: 64 - t * 49 };
-  });
-  for (const [band, color] of STARLIGHT_RAINBOW_BANDS.entries()) {
-    const start = band / STARLIGHT_RAINBOW_BANDS.length - 0.5;
-    const end = start + 1 / STARLIGHT_RAINBOW_BANDS.length;
-    g.fillStyle(color, 0.88);
-    for (let index = 1; index < path.length; index += 1) {
-      const a = path[index - 1];
-      const b = path[index];
-      const ay = a.y + a.width * start;
-      const by = b.y + b.width * start;
-      g.fillTriangle(a.x, ay, b.x, by, a.x, a.y + a.width * end)
-        .fillTriangle(b.x, by, b.x, b.y + b.width * end, a.x, a.y + a.width * end);
+  // Layered, low-opacity haze gives the stars depth without lighting up the lane.
+  for (const [x, y, width, height, color] of [
+    [88, 224, 530, 245, 0x6e5794],
+    [360, 177, 570, 205, 0x655bb6],
+    [676, 106, 640, 200, 0x5c69bd],
+    [882, 44, 470, 164, 0x8173c4],
+  ]) {
+    g.fillStyle(color, 0.045);
+    for (let ring = 0; ring < 8; ring += 1) {
+      const scale = 1 - ring * 0.09;
+      g.fillEllipse(x, y, width * scale, height * scale);
     }
   }
 
-  g.fillStyle(p.light, 0.72);
-  for (const [x, y, radius] of [[103, 104, 2], [168, 184, 1.5], [278, 132, 1.5], [334, 213, 2],
-    [410, 75, 2], [532, 155, 1.5], [615, 101, 2], [700, 207, 1.5], [847, 78, 2], [914, 181, 1.5]]) {
-    g.fillCircle(x, y, radius);
+  const starLayers = [
+    { count: 34, color: p.accent, alpha: 0.45, radius: 0.9 },
+    { count: 21, color: 0xe4e9ff, alpha: 0.73, radius: 1.25 },
+  ];
+  for (const [layer, { count, color, alpha, radius }] of starLayers.entries()) {
+    g.fillStyle(color, alpha);
+    for (let index = 0; index < count; index += 1) {
+      const seed = index + layer * 67;
+      const x = 16 + (seed * 181 + seed * seed * 13) % 932;
+      const y = 29 + (seed * 107 + seed * seed * 7) % 313;
+      g.fillCircle(x, y, radius + (seed % 3) * 0.18);
+    }
   }
-  g.lineStyle(1.5, p.light, 0.85);
-  for (const [x, y, size] of [[214, 117, 9], [458, 161, 7], [747, 106, 10], [872, 231, 8]]) {
-    g.lineBetween(x - size / 2, y, x + size / 2, y).lineBetween(x, y - size, x, y + size);
+
+  g.lineStyle(1, p.accent, 0.34).lineBetween(171, 150, 280, 92)
+    .lineBetween(489, 132, 544, 102);
+
+  // A fixed ribbon with a tapered profile and soft edges.
+  const path = Array.from({ length: 33 }, (_, index) => {
+    const t = index / 32;
+    return {
+      x: -14 + t * 988,
+      y: 312 - t * 189 + Math.sin(t * Math.PI * 2) * 41,
+      width: 58 - t * 42,
+    };
+  });
+  const trace = (offset: number) => path.map(({ x, y, width }) => ({ x, y: y + width * offset }));
+  const ribbon = (top: number, bottom: number) => [...trace(top), ...trace(bottom).reverse()];
+  g.fillStyle(0xb19ae9, 0.14).fillPoints(ribbon(-0.86, 0.86), true);
+  g.fillStyle(0xc4b7f8, 0.18).fillPoints(ribbon(-0.65, 0.65), true);
+  for (const [band, color] of STARLIGHT_RAINBOW_BANDS.entries()) {
+    const start = band / STARLIGHT_RAINBOW_BANDS.length - 0.5;
+    const end = start + 1 / STARLIGHT_RAINBOW_BANDS.length;
+    g.fillStyle(color, 0.79).fillPoints(ribbon(start, end), true);
+  }
+  g.lineStyle(1.5, 0xf8eaff, 0.62).strokePoints(trace(-0.5)).strokePoints(trace(0.5));
+
+  for (const [x, y, size] of [[96, 188, 7], [280, 92, 8], [358, 237, 12], [544, 102, 6],
+    [646, 218, 7], [744, 148, 12], [874, 94, 6], [913, 233, 8]]) {
+    const waist = size * 0.21;
+    g.fillStyle(p.accent, 0.12).fillCircle(x, y, size * 1.28);
+    g.fillStyle(p.light, 0.14).fillCircle(x, y, size * 0.65);
+    g.fillStyle(p.light, 0.93).fillPoints([
+      { x, y: y - size }, { x: x + waist, y: y - waist },
+      { x: x + size * 0.7, y }, { x: x + waist, y: y + waist },
+      { x, y: y + size }, { x: x - waist, y: y + waist },
+      { x: x - size * 0.7, y }, { x: x - waist, y: y - waist },
+    ], true);
   }
 }
 
@@ -189,13 +221,18 @@ function sky(g: Art, p: Colors, layer: 'far' | 'middle'): void {
 
 function starlight(g: Art, p: Colors, layer: 'far' | 'middle'): void {
   if (layer === 'far') {
-    cloud(g, 35, 279, 1.32, p.far);
-    cloud(g, 411, 249, 1.5, p.far);
+    for (const [x, y, width] of [[0, 350, 172], [143, 364, 204], [322, 346, 196], [480, 350, 172]]) {
+      g.fillStyle(p.far, 0.89).fillEllipse(x, y, width, 44)
+        .fillEllipse(x + width * 0.12, y - 9, width * 0.58, 45);
+      g.fillStyle(p.edge, 0.18).fillEllipse(x + width * 0.12, y - 21, width * 0.46, 11);
+    }
     return;
   }
-  cloud(g, 0, 356, 1.55, p.face);
-  cloud(g, 258, 368, 1.25, p.far);
-  cloud(g, 480, 356, 1.55, p.face);
+  for (const [x, y, width] of [[0, 377, 154], [239, 382, 212], [480, 377, 154]]) {
+    g.fillStyle(p.face, 0.65).fillEllipse(x, y, width, 31)
+      .fillEllipse(x - width * 0.12, y - 8, width * 0.52, 34);
+    g.fillStyle(p.edge, 0.2).fillEllipse(x - width * 0.12, y - 18, width * 0.42, 9);
+  }
 }
 
 export function drawSceneryLayer(g: Art, biome: RunnerBiomeDefinition, layer: 'far' | 'middle'): void {
