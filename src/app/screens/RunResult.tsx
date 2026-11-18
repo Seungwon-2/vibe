@@ -5,7 +5,6 @@ import type { RunnerFinishOutcome, RunnerResult } from '../../game/runner/runner
 import type { PersonalBestRecord } from '../../services/RunGateway';
 import type { SettlementResult } from '../../services/PlayerProgression';
 import { getAchievementDisplayName } from '../../services/AchievementCatalog';
-import { getCharacterSelectArt } from './characterSelectArt';
 
 export type RunResultProps = {
   result: RunnerResult;
@@ -36,7 +35,7 @@ export function RunResult({ result, outcome, bestDistanceMeters, submittedRank =
       <section className="result-panel" aria-labelledby="result-title">
         <div className="result-character" style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
           <div className="result-character__stage">
-            <img className="result-character__portrait" src={getCharacterSelectArt(character).fullUrl}
+            <img className="result-character__portrait" src={character.portraitUrl}
               alt="" data-testid="result-character-portrait" draggable={false} />
             <span className="result-character__badge" aria-hidden="true" data-testid="result-character-badge">
               {isNewBest ? 'NEW PERSONAL BEST' : 'RUN COMPLETE'}

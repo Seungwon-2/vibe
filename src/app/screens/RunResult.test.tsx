@@ -25,7 +25,7 @@ describe('RunResult', () => {
     expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-animation', 'victory');
     expect(screen.getByTestId('character-preview-hanayo-hiyori')).toHaveAttribute('data-frame', 'hanayo-hiyori:quality:victory:1');
     expect(screen.getByTestId('result-character-portrait')).toHaveAttribute('src',
-      '/assets/character/selector-art/roster/hanayo-hiyori-full.webp');
+      '/assets/character/selector-art/hanayo-hiyori.webp');
     expect(screen.getByTestId('result-character-badge')).toHaveTextContent('NEW PERSONAL BEST');
   });
 

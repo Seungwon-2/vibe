@@ -5,7 +5,6 @@ import type { RunnerResult, StoryStageId } from '../../game/runner/runnerTypes';
 import { getAchievementDisplayName } from '../../services/AchievementCatalog';
 import { getCosmeticDisplayName } from '../../services/CosmeticCatalog';
 import type { SettlementResult } from '../../services/PlayerProgression';
-import { getCharacterSelectArt } from './characterSelectArt';
 
 export type StoryResultProps = {
   result: RunnerResult;
@@ -31,7 +30,7 @@ export function StoryResult({ result, settlement, newlyUnlockedAchievementIds, a
       <section className="result-panel story-result-panel" aria-labelledby="story-result-title">
         <div className="result-character" style={{ '--character-accent': character.accentColor } as React.CSSProperties}>
           <div className="result-character__stage">
-            <img className="result-character__portrait" src={getCharacterSelectArt(character).fullUrl}
+            <img className="result-character__portrait" src={character.portraitUrl}
               alt="" data-testid="result-character-portrait" draggable={false} />
             <span className="result-character__badge">{cleared ? 'COURSE CLEAR' : 'TRY AGAIN'}</span>
             <CharacterPreview character={character} selected={false} playbackRate={0.6}

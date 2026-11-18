@@ -55,6 +55,12 @@ Improve the readability and responsive layout of endless/story results, local ra
 - `src/styles/global.css`의 공통 카드 스타일에 세로 비율과 레이어 순서를 지정한다. 좁은 화면과 낮은 가로 화면의 카드 크기도 같은 비율로 조정한다.
 - 로컬 Edge에서 데스크톱의 다섯 캐릭터와 모바일 세로·가로의 무한·스토리 결과를 확인했다. 카드 비율 `13 / 18`과 배지, 승리·실패 포즈가 카드 안에 들어간다.
 
+### 결과 배경의 흰 여백 수정
+
+- 흰 바탕을 기준으로 정리한 전신 이미지의 흰 여백이 어두운 결과 카드에서 보인다는 피드백을 받았다. 두 결과 화면의 배경에 이전 결과 화면에서 사용했던 640×640 투명 초상화를 연결하고, 얼굴과 상반신에 맞춰 확대와 하단 페이드를 조정한다.
+- `RunResult.tsx`와 `StoryResult.tsx`에서 `character.portraitUrl`로 배경을 표시하고 공통 CSS의 카드 비율과 앞쪽 포즈를 사용한다.
+- 로컬 Edge에서 다섯 배경 이미지를 확인했다. 가로·세로 모바일의 결과 카드에서도 반투명 얼굴·상반신과 전경 포즈가 카드에 들어간다. 관련 테스트 16개, 린트, 빌드 통과.
+
 ## Commit Message
 ```text
 fix(ui): polish results and progression screens
