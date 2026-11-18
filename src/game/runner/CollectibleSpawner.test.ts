@@ -280,6 +280,7 @@ describe('authored collectible schedule', () => {
       const biome = getBiomeForDistance(center);
       const motifByBiome = {
         'dawn-city': 'star', 'moonlit-forest': 'flower', 'crystal-mine': 'music-note', 'cloud-skyway': 'cloud',
+        'starlight-rainbow': 'cloud',
       } as const;
       expect(motif.motifId).toBe(motifByBiome[biome.id]);
       expect(hazards.some(({ distanceMeters, definition }) =>

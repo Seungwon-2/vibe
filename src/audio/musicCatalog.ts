@@ -1,6 +1,6 @@
-import type { RunnerBiomeId } from '../game/runner/runnerTypes';
+import type { StoryStageId } from '../game/runner/runnerTypes';
 
-export type RunnerMusicId = 'title' | RunnerBiomeId;
+export type RunnerMusicId = 'title' | StoryStageId;
 
 export const RUNNER_MUSIC: Readonly<Record<RunnerMusicId, Readonly<{ src: string; loop: true }>>> = Object.freeze({
   title: Object.freeze({ src: '/audio/music/title.ogg', loop: true }),

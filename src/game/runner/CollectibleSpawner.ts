@@ -39,7 +39,13 @@ const COIN_MOTIF_BY_BIOME = Object.freeze({
   'moonlit-forest': 'flower',
   'crystal-mine': 'music-note',
   'cloud-skyway': 'cloud',
-} as const satisfies Readonly<Record<RunnerBiomeDefinition['id'], CoinMotifId>>);
+} as const satisfies Readonly<Record<StoryStageId, CoinMotifId>>);
+
+function getEndlessCoinMotifBiome(distanceMeters: number): StoryStageId {
+  const { id } = getBiomeForDistance(distanceMeters);
+  // Preserve coin positions and checkpoint cursors in runs saved before the new scenery.
+  return id === 'starlight-rainbow' ? 'cloud-skyway' : id;
+}
 
 /** Stable normalized outlines used to lay out collectible coin formations. */
 export function getCoinMotifPoints(motifId: CoinMotifId): readonly MotifPoint[] {
@@ -110,6 +116,10 @@ export function drawPickupArt(
         art.fillStyle(0x96601f).fillTriangle(-1, -4, 1, -1, 0, 0)
           .fillTriangle(4, -1, 1, 1, 0, 0).fillTriangle(1, 4, -1, 1, 0, 0)
           .fillTriangle(-4, 1, -1, -1, 0, 0);
+        break;
+      case 'starlight-rainbow':
+        art.lineBetween(-4, 2, 0, -4).lineBetween(0, -4, 4, 2).lineBetween(4, 2, -4, 2)
+          .lineBetween(-2, 2, 0, 5).lineBetween(0, 5, 2, 2);
         break;
     }
     return;
@@ -381,7 +391,7 @@ function hasMotifPointClearance(
 
 function isMotifSectionClear(
   centerMeters: number,
-  expectedBiomeId: RunnerBiomeDefinition['id'],
+  expectedBiomeId: StoryStageId,
   isStoryCourse: boolean,
   maxDistanceMeters: number,
   hazards: readonly ScheduledHazard[],
@@ -391,8 +401,8 @@ function isMotifSectionClear(
   const startMeters = centerMeters - halfWindow;
   const endMeters = centerMeters + halfWindow;
   if (startMeters < SAFE_PICKUP_START_METERS || endMeters > maxDistanceMeters) return false;
-  if (!isStoryCourse && (getBiomeForDistance(startMeters).id !== expectedBiomeId ||
-      getBiomeForDistance(endMeters - 0.01).id !== expectedBiomeId)) return false;
+  if (!isStoryCourse && (getEndlessCoinMotifBiome(startMeters) !== expectedBiomeId ||
+      getEndlessCoinMotifBiome(endMeters - 0.01) !== expectedBiomeId)) return false;
 
   const hazardMarginMeters = (PICKUP_ART_RADIUS_PX + PICKUP_VISUAL_MARGIN_PX) *
     RUNNER_CONFIG.metersPerWorldUnit;
@@ -436,14 +446,12 @@ function addCoinMotifSections(
   ).sort((left, right) => Math.abs(left) - Math.abs(right) || left - right);
 
   for (const anchor of anchors) {
-    const anchorBiome = storyStageId
-      ? getBiomeById(getStoryStage(storyStageId).biomeId)
-      : getBiomeForDistance(anchor);
-    const motifId = COIN_MOTIF_BY_BIOME[anchorBiome.id];
+    const anchorBiomeId = storyStageId ? getStoryStage(storyStageId).biomeId : getEndlessCoinMotifBiome(anchor);
+    const motifId = COIN_MOTIF_BY_BIOME[anchorBiomeId];
     const center = searchOffsets.map((offset) => anchor + offset).find((candidateCenter) => {
-      if (!isMotifSectionClear(candidateCenter, anchorBiome.id, storyStageId !== null,
+      if (!isMotifSectionClear(candidateCenter, anchorBiomeId, storyStageId !== null,
         maxDistanceMeters, hazards, pits)) return false;
-      const sectionId = `${storyStageId ?? anchorBiome.id}-${anchor}-${candidateCenter}`;
+      const sectionId = `${anchorBiomeId}-${anchor}-${candidateCenter}`;
       const candidates = getMotifSectionPickups(motifId, sectionId, candidateCenter);
       const start = candidateCenter - RUNNER_CONFIG.coinMotifSafeWindowMeters / 2;
       const end = candidateCenter + RUNNER_CONFIG.coinMotifSafeWindowMeters / 2;
@@ -461,7 +469,7 @@ function addCoinMotifSections(
 
     const start = center - RUNNER_CONFIG.coinMotifSafeWindowMeters / 2;
     const end = center + RUNNER_CONFIG.coinMotifSafeWindowMeters / 2;
-    const sectionId = `${storyStageId ?? anchorBiome.id}-${anchor}-${center}`;
+    const sectionId = `${anchorBiomeId}-${anchor}-${center}`;
     scheduled = scheduled.filter((pickup) => !(pickup.kind === 'coin' && pickup.id.startsWith('safe-') &&
       pickup.guideAction === undefined && pickup.distanceMeters >= start && pickup.distanceMeters <= end));
     scheduled.push(...getMotifSectionPickups(motifId, sectionId, center));

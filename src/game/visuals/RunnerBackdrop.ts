@@ -3,7 +3,7 @@ import type { RunnerSnapshot, StoryStageId } from '../runner/runnerTypes';
 import { getStoryStage } from '../runner/storyConfig';
 import { getBiomeById, getBiomeForDistance, RUNNER_BIOMES, type RunnerBiomeDefinition } from './runnerBiomes';
 import type { RunnerVisualMode } from '../runner/runnerVisualPreferences';
-import { drawSceneryLayer, drawScenerySky, getScenerySkyColor } from './runnerSceneryArt';
+import { drawSceneryLayer, drawScenerySky, getScenerySkyColor, STARLIGHT_RAINBOW_BANDS } from './runnerSceneryArt';
 
 const WIDTH = 960;
 const HEIGHT = 540;
@@ -30,6 +30,13 @@ function drawNear(graphics: Phaser.GameObjects.Graphics, biome: RunnerBiomeDefin
   rect(graphics, p.groundTop, 0, GROUND_Y, TILE_WIDTH, 13);
   rect(graphics, 0xffffff, 0, GROUND_Y, TILE_WIDTH, 5, 0.88);
   rect(graphics, p.groundFace, 0, GROUND_Y + 13, TILE_WIDTH, HEIGHT - GROUND_Y - 13);
+  if (biome.id === 'starlight-rainbow') {
+    const bandHeight = 9;
+    for (const [index, color] of STARLIGHT_RAINBOW_BANDS.entries()) {
+      rect(graphics, color, 0, GROUND_Y + 13 + index * bandHeight, TILE_WIDTH, bandHeight, 0.53);
+    }
+    return;
+  }
   rect(graphics, p.ground, 0, GROUND_Y + 14, TILE_WIDTH, 1, 0.45);
   // Broad upright seams repeat exactly at the texture edge. Dense diagonal
   // grids can appear to reverse direction during fast scrolling.

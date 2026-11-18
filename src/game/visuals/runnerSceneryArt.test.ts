@@ -30,7 +30,7 @@ describe('theme scenery illustrations', () => {
       signatures.add(JSON.stringify(first.calls));
       expect(getScenerySkyColor(biome.id)).toBeGreaterThan(0);
     }
-    expect(signatures.size).toBe(4);
+    expect(signatures.size).toBe(RUNNER_BIOMES.length);
   });
 
   it('leaves the foreground running lane below y400 free of scenery details', () => {

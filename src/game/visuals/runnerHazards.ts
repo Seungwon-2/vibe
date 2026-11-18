@@ -66,6 +66,16 @@ export function drawRunnerHazard(
           .lineBetween(22, 8, 34, 8);
         break;
       }
+      case 'starlight-rainbow': {
+        // A solid amber beacon reads as a barrier against the darker sky.
+        graphics.fillStyle(p.hazardContrast).fillRoundedRect(3, 34, width - 6, 12, 4);
+        graphics.fillStyle(p.gate).fillRoundedRect(7, 13, width - 14, 27, 6);
+        graphics.lineStyle(2, p.groundFace).strokeRoundedRect(7, 13, width - 14, 27, 6);
+        const x = width / 2;
+        graphics.fillStyle(p.accent).fillTriangle(x - 9, 25, x, 16, x + 9, 25)
+          .fillTriangle(x - 9, 25, x, 35, x + 9, 25);
+        break;
+      }
     }
     return;
   }
@@ -120,6 +130,17 @@ export function drawRunnerHazard(
           graphics.fillStyle(p.hazardContrast, 0.92).fillCircle(width / 2, y + 7, 2.5);
         }
         graphics.lineStyle(3, p.hazardContrast, 0.94).lineBetween(2, bottom - 1, width - 2, bottom - 1);
+        break;
+      }
+      case 'starlight-rainbow': {
+        graphics.fillStyle(p.gate).fillRoundedRect(5, 2, width - 10, bottom - 2, 9);
+        graphics.fillStyle(p.middle).fillTriangle(7, bottom - 5, width / 2, 8, width - 7, bottom - 5);
+        graphics.lineStyle(3, p.groundFace).lineBetween(8, 8, 8, bottom - 6)
+          .lineBetween(width - 8, 8, width - 8, bottom - 6);
+        for (let y = 30; y < bottom - 20; y += 34) {
+          graphics.lineStyle(3, p.accent).lineBetween(width / 2 - 11, y + 6, width / 2, y - 5)
+            .lineBetween(width / 2, y - 5, width / 2 + 11, y + 6);
+        }
         break;
       }
     }
@@ -194,6 +215,16 @@ export function drawRunnerHazard(
         graphics.fillStyle(0xffffff, 0.86).fillCircle(width / 2, y + 4, 3);
       }
       graphics.lineStyle(3, p.hazardContrast, 0.88).lineBetween(3, barrierBottom - 2, width - 3, barrierBottom - 2);
+      break;
+    }
+    case 'starlight-rainbow': {
+      graphics.fillStyle(p.gate).fillRect(3, 0, width - 6, barrierBottom - 3);
+      graphics.lineStyle(3, p.middle).lineBetween(9, 0, 9, barrierBottom - 10)
+        .lineBetween(width - 9, 0, width - 9, barrierBottom - 10);
+      for (let y = 25; y < barrierBottom - 16; y += 53) {
+        const x = width / 2;
+        graphics.fillStyle(p.accent).fillTriangle(x - 10, y - 5, x + 10, y - 5, x, y + 10);
+      }
       break;
     }
   }

@@ -103,7 +103,7 @@ describe('themed hazard art', () => {
     }
   });
 
-  it('uses different silhouettes for both lanes and all four biomes', () => {
+  it('uses different silhouettes for all obstacle kinds and biomes', () => {
     const signature = (biomeId: (typeof RUNNER_BIOMES)[number]['id'], kind: HazardDefinition['kind']) => {
       const biome = RUNNER_BIOMES.find((candidate) => candidate.id === biomeId)!;
       const graphics = makeGraphics();

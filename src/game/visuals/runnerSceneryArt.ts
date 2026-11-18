@@ -9,7 +9,10 @@ const THEMES = {
   'moonlit-forest': { sky: 0xdce6e1, far: 0xbbcfc5, face: 0x96b4a6, edge: 0x739589, light: 0xf1eacb, accent: 0xc4d7c0 },
   'crystal-mine': { sky: 0xe2deeb, far: 0xc7bdd5, face: 0xa99bbd, edge: 0x897b9f, light: 0xe1efeb, accent: 0xa6c7c6 },
   'cloud-skyway': { sky: 0xdfeaf0, far: 0xc2d5df, face: 0xa2bac9, edge: 0x7f9baa, light: 0xf6f1de, accent: 0xd3c9dc },
+  'starlight-rainbow': { sky: 0x292d57, far: 0x404673, face: 0x555884, edge: 0x6c6b9d, light: 0xffe6bc, accent: 0x9b97c6 },
 } as const;
+
+export const STARLIGHT_RAINBOW_BANDS = [0xe7acc9, 0xecd0a4, 0xb9dfce, 0x9fcfea, 0xc5aee5] as const;
 
 type Art = Phaser.GameObjects.Graphics;
 type Colors = (typeof THEMES)[RunnerBiomeId];
@@ -25,6 +28,10 @@ function cloud(g: Art, x: number, y: number, scale: number, color: number): void
 export function drawScenerySky(g: Art, biome: RunnerBiomeDefinition): void {
   const p = THEMES[biome.id];
   // Still landmarks; no particle shimmer, blur filters or competing movement.
+  if (biome.id === 'starlight-rainbow') {
+    drawStarlightSky(g, p);
+    return;
+  }
   if (biome.id === 'moonlit-forest') {
     g.fillStyle(p.light, 0.24).fillCircle(758, 158, 73);
     g.fillStyle(p.light).fillCircle(758, 158, 43);
@@ -39,6 +46,40 @@ export function drawScenerySky(g: Art, biome: RunnerBiomeDefinition): void {
   g.fillStyle(p.light).fillCircle(760, 157, 44);
   cloud(g, 194, 180, 0.86, 0xf5f5f0);
   if (biome.id === 'cloud-skyway') cloud(g, 515, 138, 0.65, 0xf5f5f0);
+}
+
+function drawStarlightSky(g: Art, p: Colors): void {
+  g.fillStyle(p.far, 0.72).fillEllipse(636, 176, 726, 232);
+  g.fillStyle(p.face, 0.42).fillEllipse(651, 181, 534, 147);
+
+  // The road tapers toward the horizon. Its bright colors stop above the running lane.
+  const path = Array.from({ length: 13 }, (_, index) => {
+    const t = index / 12;
+    return { x: -10 + t * 980, y: 330 - t * 207 + Math.sin(t * Math.PI * 2) * 38, width: 64 - t * 49 };
+  });
+  for (const [band, color] of STARLIGHT_RAINBOW_BANDS.entries()) {
+    const start = band / STARLIGHT_RAINBOW_BANDS.length - 0.5;
+    const end = start + 1 / STARLIGHT_RAINBOW_BANDS.length;
+    g.fillStyle(color, 0.88);
+    for (let index = 1; index < path.length; index += 1) {
+      const a = path[index - 1];
+      const b = path[index];
+      const ay = a.y + a.width * start;
+      const by = b.y + b.width * start;
+      g.fillTriangle(a.x, ay, b.x, by, a.x, a.y + a.width * end)
+        .fillTriangle(b.x, by, b.x, b.y + b.width * end, a.x, a.y + a.width * end);
+    }
+  }
+
+  g.fillStyle(p.light, 0.72);
+  for (const [x, y, radius] of [[103, 104, 2], [168, 184, 1.5], [278, 132, 1.5], [334, 213, 2],
+    [410, 75, 2], [532, 155, 1.5], [615, 101, 2], [700, 207, 1.5], [847, 78, 2], [914, 181, 1.5]]) {
+    g.fillCircle(x, y, radius);
+  }
+  g.lineStyle(1.5, p.light, 0.85);
+  for (const [x, y, size] of [[214, 117, 9], [458, 161, 7], [747, 106, 10], [872, 231, 8]]) {
+    g.lineBetween(x - size / 2, y, x + size / 2, y).lineBetween(x, y - size, x, y + size);
+  }
 }
 
 function city(g: Art, p: Colors, layer: 'far' | 'middle'): void {
@@ -146,7 +187,19 @@ function sky(g: Art, p: Colors, layer: 'far' | 'middle'): void {
   }
 }
 
+function starlight(g: Art, p: Colors, layer: 'far' | 'middle'): void {
+  if (layer === 'far') {
+    cloud(g, 35, 279, 1.32, p.far);
+    cloud(g, 411, 249, 1.5, p.far);
+    return;
+  }
+  cloud(g, 0, 356, 1.55, p.face);
+  cloud(g, 258, 368, 1.25, p.far);
+  cloud(g, 480, 356, 1.55, p.face);
+}
+
 export function drawSceneryLayer(g: Art, biome: RunnerBiomeDefinition, layer: 'far' | 'middle'): void {
-  const draw = { 'dawn-city': city, 'moonlit-forest': forest, 'crystal-mine': mine, 'cloud-skyway': sky };
+  const draw = { 'dawn-city': city, 'moonlit-forest': forest, 'crystal-mine': mine, 'cloud-skyway': sky,
+    'starlight-rainbow': starlight };
   draw[biome.id](g, THEMES[biome.id], layer);
 }

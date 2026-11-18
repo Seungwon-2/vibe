@@ -60,6 +60,16 @@ export const RUNNER_BIOMES: readonly RunnerBiomeDefinition[] = Object.freeze([
       gate: 0x829fca,
     },
   },
+  {
+    id: 'starlight-rainbow', startDistanceMeters: RUNNER_GATE_DISTANCES_M[4],
+    landmark: '별빛 무지개길',
+    palette: {
+      sky: 0x292d57, far: 0x404673, middle: 0xb3a7e0, ground: 0xd7d9f2,
+      accent: 0xffd993, hazardContrast: 0x201a42, groundTop: 0xada8df,
+      groundFace: 0xe3e0f4, pickupCoin: 0x93651e, pickupTime: 0x4585a2,
+      gate: 0x7063b0,
+    },
+  },
 ]);
 
 const BIOME_BY_ID = new Map(RUNNER_BIOMES.map((biome) => [biome.id, biome]));

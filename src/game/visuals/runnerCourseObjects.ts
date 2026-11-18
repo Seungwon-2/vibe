@@ -112,6 +112,18 @@ export function drawRunnerGate(
         .lineBetween(10, -22, 17, -22);
       break;
     }
+    case 'starlight-rainbow': {
+      graphics.lineStyle(8, p.gate).lineBetween(-22, -4, -22, -127)
+        .lineBetween(22, -4, 22, -127).lineBetween(-22, -127, 0, -155)
+        .lineBetween(22, -127, 0, -155);
+      graphics.lineStyle(2, p.hazardContrast, 1).lineBetween(-25, -4, -25, -119)
+        .lineBetween(25, -4, 25, -119);
+      graphics.lineStyle(3, p.groundFace).lineBetween(-19, -8, -19, -122)
+        .lineBetween(19, -8, 19, -122);
+      graphics.fillStyle(p.accent).fillTriangle(-10, -148, 0, -165, 10, -148)
+        .fillTriangle(-10, -148, 0, -132, 10, -148);
+      break;
+    }
   }
 }
 
@@ -187,6 +199,13 @@ export function drawRunnerPit(
         .lineBetween(half, 2, half - bankWidth * 0.9, 2);
       graphics.fillStyle(p.middle, 0.9).fillEllipse(-half + bankWidth * 0.52, 28, bankWidth * 0.75, 7)
         .fillEllipse(half - bankWidth * 0.52, 28, bankWidth * 0.75, 7);
+      break;
+    }
+    case 'starlight-rainbow': {
+      graphics.fillStyle(p.gate).fillTriangle(-half, 1, -half + edge, 1, -half + 2, 26)
+        .fillTriangle(half, 1, half - edge, 1, half - 2, 26);
+      graphics.lineStyle(2, p.accent).lineBetween(-half + 2, 2, -half + edge - 1, 2)
+        .lineBetween(half - 2, 2, half - edge + 1, 2);
       break;
     }
   }

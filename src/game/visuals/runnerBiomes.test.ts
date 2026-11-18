@@ -17,23 +17,24 @@ function contrastRatio(left: number, right: number): number {
 }
 
 describe('runner biome catalog', () => {
-  it('uses the first three gates as exact scenery transitions', () => {
+  it('starts the starlight rainbow at the fifth gate after the cloud course', () => {
+    const transitionGates = [0, 1, 2, 4].map((index) => RUNNER_GATE_DISTANCES_M[index]);
     expect(RUNNER_BIOMES.map((biome) => biome.startDistanceMeters))
-      .toEqual([0, ...RUNNER_GATE_DISTANCES_M.slice(0, 3)]);
+      .toEqual([0, ...transitionGates]);
     expect(RUNNER_BIOMES.map((biome) => biome.landmark))
-      .toEqual(['새벽 도심', '달빛 숲길', '수정 광산', '구름 위 하늘길']);
+      .toEqual(['새벽 도심', '달빛 숲길', '수정 광산', '구름 위 하늘길', '별빛 무지개길']);
     expect(getBiomeForDistance(-10).id).toBe('dawn-city');
-    for (const [index, distance] of RUNNER_GATE_DISTANCES_M.slice(0, 3).entries()) {
+    for (const [index, distance] of transitionGates.entries()) {
       expect(getBiomeForDistance(distance - 0.01).id).toBe(RUNNER_BIOMES[index].id);
       expect(getBiomeForDistance(distance).id).toBe(RUNNER_BIOMES[index + 1].id);
     }
     expect(getBiomeForDistance(8_000).id).toBe('cloud-skyway');
-    expect(getBiomeForDistance(10_000).id).toBe('cloud-skyway');
+    expect(getBiomeForDistance(12_000).id).toBe('starlight-rainbow');
   });
 
   it('provides distinct editable colors with legible hazard outlines', () => {
-    expect(new Set(RUNNER_BIOMES.map((biome) => biome.palette.sky)).size).toBe(4);
-    expect(new Set(RUNNER_BIOMES.map((biome) => biome.palette.accent)).size).toBe(4);
+    expect(new Set(RUNNER_BIOMES.map((biome) => biome.palette.sky)).size).toBe(RUNNER_BIOMES.length);
+    expect(new Set(RUNNER_BIOMES.map((biome) => biome.palette.accent)).size).toBe(RUNNER_BIOMES.length);
     for (const { palette } of RUNNER_BIOMES) {
       expect(contrastRatio(palette.hazardContrast, palette.ground)).toBeGreaterThanOrEqual(4.5);
       expect(palette.groundTop).not.toBe(palette.pickupCoin);

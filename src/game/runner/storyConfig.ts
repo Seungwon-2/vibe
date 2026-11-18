@@ -1,11 +1,11 @@
 import type { CharacterId } from '../characters/characterTypes';
-import type { RunnerBiomeId, StoryStageId } from './runnerTypes';
+import type { StoryStageId } from './runnerTypes';
 
 export type StoryStageDefinition = Readonly<{
   id: StoryStageId;
   order: 1 | 2 | 3 | 4;
   name: string;
-  biomeId: RunnerBiomeId;
+  biomeId: StoryStageId;
   lengthMeters: number;
   unlockCharacterId: CharacterId | null;
   coinTarget: number;

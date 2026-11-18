@@ -5,6 +5,7 @@ import { CharacterAbilityIcon } from './CharacterAbilityIcon';
 import { ENDLESS_GATE_INTERVAL_METERS, RUNNER_CONFIG, RUNNER_GATE_DISTANCES_M } from '../../game/runner/runnerConfig';
 import { getStoryStage } from '../../game/runner/storyConfig';
 import type { RunnerSnapshot } from '../../game/runner/runnerTypes';
+import { getBiomeForDistance } from '../../game/visuals/runnerBiomes';
 
 export type RunnerHudProps = {
   snapshot: RunnerSnapshot;
@@ -22,13 +23,6 @@ export type RunnerHudCue =
   | Readonly<{ id: string; kind: 'passive-triggered'; passiveId: 'hiyori-guard'; remainingCharges: number; trigger: 'obstacle' | 'pit' }>
   | Readonly<{ id: string; kind: 'passive-triggered'; passiveId: 'toa-ghost-glide'; remainingCharges: 0; trigger: 'slide' }>;
 
-const BIOME_LABELS = {
-  'dawn-city': '새벽 도심',
-  'moonlit-forest': '달빛 숲길',
-  'crystal-mine': '수정 광산',
-  'cloud-skyway': '구름 위 하늘길',
-} as const;
-
 function formatTime(remainingMs: number): string {
   const seconds = Math.ceil(Math.max(0, remainingMs) / 1_000);
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
@@ -42,11 +36,12 @@ export function RunnerHud({ snapshot, character, recentBonus, onPause, onOpenGui
   const nextGate = snapshot.mode === 'story'
     ? RUNNER_GATE_DISTANCES_M.find((distance) => distance > snapshot.distanceMeters)
     : nextEndlessGate;
+  const biomeName = getBiomeForDistance(snapshot.distanceMeters).landmark;
   const landmark = storyStage
     ? storyStage.name + ' · 골인까지 ' + Math.ceil(Math.max(0, storyStage.lengthMeters - snapshot.distanceMeters)).toLocaleString() + 'm'
     : nextGate !== undefined
-    ? `${BIOME_LABELS[snapshot.biomeId]} · 다음 보너스까지 ${Math.ceil(nextGate - snapshot.distanceMeters).toLocaleString()}m`
-    : BIOME_LABELS[snapshot.biomeId];
+    ? `${biomeName} · 다음 보너스까지 ${Math.ceil(nextGate - snapshot.distanceMeters).toLocaleString()}m`
+    : biomeName;
   const warning = !storyStage && snapshot.remainingMs <= 10_000;
   const passive = getCharacterPassive(character.id);
   const showBonus = recentBonus !== null && (recentBonus.kind === 'passive-triggered' ||

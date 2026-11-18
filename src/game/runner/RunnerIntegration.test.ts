@@ -54,7 +54,7 @@ describe('offline runner integration', () => {
     expect(result.finishReason).toBe('lives-exhausted');
     expect(state.phase).toBe('finished');
     expect(state.livesRemaining).toBe(0);
-    expect(state.biomeId).toBe('cloud-skyway');
+    expect(state.biomeId).toBe('starlight-rainbow');
 
     const storage = createMemoryStorage();
     const gateway = new LocalRunGateway(storage);
