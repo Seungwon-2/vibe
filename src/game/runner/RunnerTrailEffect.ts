@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import type { RunnerVisualMode } from './runnerVisualPreferences';
+import type { RunnerVisualMode } from './runnerTypes';
 
 type TrailParticle = { x: number; y: number; bornAt: number; radius: number };
 

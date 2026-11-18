@@ -1,13 +1,12 @@
 import Phaser from 'phaser';
 import type { CharacterId } from '../characters/characterTypes';
-import type { RunnerFinishOutcome, RunnerMode, RunnerResult, RunnerSnapshot, StoryStageId } from './runnerTypes';
+import type { RunnerFinishOutcome, RunnerMode, RunnerResult, RunnerSnapshot, RunnerVisualMode, StoryStageId } from './runnerTypes';
 import type { RunnerInputBridge } from './RunnerInput';
 import { RunnerScene } from './RunnerScene';
 import { RUNNER_CONFIG } from './runnerConfig';
 import type { RunnerEvent } from './runnerEvents';
 import type { RunnerActiveSession } from './runnerSessionTypes';
 import { RUNNER_VIEWPORT } from './runnerViewport';
-import type { RunnerVisualMode } from './runnerVisualPreferences';
 
 export type RunnerGameCallbacks = {
   onSnapshot(snapshot: RunnerSnapshot): void;

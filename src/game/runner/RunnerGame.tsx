@@ -3,11 +3,10 @@ import Phaser from 'phaser';
 import type { CharacterId } from '../characters/characterTypes';
 import { createRunnerGameConfig } from './createRunnerGameConfig';
 import type { RunnerInputBridge } from './RunnerInput';
-import type { RunnerFinishOutcome, RunnerMode, RunnerResult, RunnerSnapshot, StoryStageId } from './runnerTypes';
+import type { RunnerFinishOutcome, RunnerMode, RunnerResult, RunnerSnapshot, RunnerVisualMode, StoryStageId } from './runnerTypes';
 import { RunnerScene } from './RunnerScene';
 import type { RunnerEvent } from './runnerEvents';
 import type { RunnerActiveSession } from './runnerSessionTypes';
-import type { RunnerVisualMode } from './runnerVisualPreferences';
 
 export type RunnerGameProps = {
   characterId: CharacterId;

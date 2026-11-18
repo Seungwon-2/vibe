@@ -4,6 +4,7 @@ export type RunnerPhase = 'countdown' | 'running' | 'paused' | 'finished';
 export type RunnerFinishOutcome = 'personal-best' | 'completed';
 export type RunnerFinishReason = 'timeout' | 'pit' | 'lives-exhausted' | 'stage-complete';
 export type RunnerMode = 'endless' | 'story';
+export type RunnerVisualMode = 'calm' | 'standard';
 export type RunnerPickupKind = 'coin' | 'time' | 'giant' | 'speed';
 export type StoryStageId = 'dawn-city' | 'moonlit-forest' | 'crystal-mine' | 'cloud-skyway';
 export type RunnerBiomeId = StoryStageId | 'starlight-rainbow';

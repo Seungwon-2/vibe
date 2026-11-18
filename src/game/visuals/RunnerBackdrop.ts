@@ -1,8 +1,7 @@
 import Phaser from 'phaser';
-import type { RunnerSnapshot, StoryStageId } from '../runner/runnerTypes';
+import type { RunnerSnapshot, RunnerVisualMode, StoryStageId } from '../runner/runnerTypes';
 import { getStoryStage } from '../runner/storyConfig';
 import { getBiomeById, getBiomeForDistance, RUNNER_BIOMES, type RunnerBiomeDefinition } from './runnerBiomes';
-import type { RunnerVisualMode } from '../runner/runnerVisualPreferences';
 import { drawSceneryLayer, drawScenerySky, getScenerySkyColor, STARLIGHT_RAINBOW_BANDS } from './runnerSceneryArt';
 
 const WIDTH = 960;

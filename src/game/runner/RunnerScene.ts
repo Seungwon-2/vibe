@@ -4,7 +4,7 @@ import type { CharacterId } from '../characters/characterTypes';
 import { advanceRunner, beginRunnerSlide, collectPickup, createRunnerSnapshot, pauseRunner, resumeRunner, startRunner } from './RunnerSimulation';
 import { RunnerPlayer, RUNNER_GROUND_Y, RUNNER_PLAYER_X } from './RunnerPlayer';
 import type { RunnerInputBridge } from './RunnerInput';
-import type { RunnerGateId, RunnerMode, RunnerResult, RunnerSnapshot, StoryStageId } from './runnerTypes';
+import type { RunnerGateId, RunnerMode, RunnerResult, RunnerSnapshot, RunnerVisualMode, StoryStageId } from './runnerTypes';
 import { RUNNER_CONFIG } from './runnerConfig';
 import { ObstacleSpawner } from './ObstacleSpawner';
 import { tryResolveHazardHit, tryResolvePitFall } from './CollisionSystem';
@@ -20,7 +20,6 @@ import type { PitFallContactResult } from './PitSpawner';
 import { RunnerTrailEffect } from './RunnerTrailEffect';
 import { getRunnerAnimationPlayback } from './runnerAnimationConfig';
 import { getRunnerCameraFrame } from './runnerViewport';
-import type { RunnerVisualMode } from './runnerVisualPreferences';
 import type { RunnerActiveSession, RunnerEngineCheckpoint, RunnerWorldEntityCheckpoint } from './runnerSessionTypes';
 
 export class RunnerScene extends Phaser.Scene {
