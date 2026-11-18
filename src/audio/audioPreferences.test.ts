@@ -17,8 +17,8 @@ function memoryStorage(initial: Record<string, string> = {}) {
 }
 
 describe('audio preferences', () => {
-  it('starts with centered slider defaults and deliberately quiet output', () => {
-    expect(DEFAULT_AUDIO_PREFERENCES).toEqual({ muted: false, musicVolume: 0.5, effectsVolume: 0.5 });
+  it('starts with the music at 50% and effects at 45%', () => {
+    expect(DEFAULT_AUDIO_PREFERENCES).toEqual({ muted: false, musicVolume: 0.5, effectsVolume: 0.45 });
   });
 
   it('maps the slider to a capped, quiet media-gain range', () => {

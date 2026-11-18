@@ -9,5 +9,5 @@ export const RUNNER_MUSIC: Readonly<Record<RunnerMusicId, RunnerMusicTrack>> = O
   'moonlit-forest': Object.freeze({ src: '/audio/music/forest.ogg', loop: true }),
   'crystal-mine': Object.freeze({ src: '/audio/music/mine.ogg', loop: true }),
   'cloud-skyway': Object.freeze({ src: '/audio/music/sky.ogg', loop: true }),
-  'starlight-rainbow': Object.freeze({ src: '/audio/music/starlight-rainbow-road.ogg', loop: true, gain: 1.26 }),
+  'starlight-rainbow': Object.freeze({ src: '/audio/music/starlight-rainbow-road.ogg', loop: true, gain: 1.55 }),
 });

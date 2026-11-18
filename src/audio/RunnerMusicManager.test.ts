@@ -40,14 +40,14 @@ describe('RunnerMusicManager', () => {
     const manager = new RunnerMusicManager({ audioFactory: (src) => src === sky.src ? sky : rainbow });
     manager.unlock();
     manager.play('starlight-rainbow');
-    expect(rainbow.volume).toBeCloseTo(0.0126, 8);
+    expect(rainbow.volume).toBeCloseTo(0.0155, 8);
 
     manager.setPreferences({ ...DEFAULT_AUDIO_PREFERENCES, musicVolume: 0.25 });
-    expect(rainbow.volume).toBeCloseTo(0.0063, 8);
+    expect(rainbow.volume).toBeCloseTo(0.00775, 8);
     manager.setPreferences({ ...DEFAULT_AUDIO_PREFERENCES, muted: true });
     expect(rainbow.volume).toBe(0);
     manager.setPreferences({ ...DEFAULT_AUDIO_PREFERENCES });
-    expect(rainbow.volume).toBeCloseTo(0.0126, 8);
+    expect(rainbow.volume).toBeCloseTo(0.0155, 8);
 
     manager.play('cloud-skyway');
     expect(sky.volume).toBeCloseTo(0.01, 8);

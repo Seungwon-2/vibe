@@ -49,6 +49,12 @@ Improve the readability and responsive layout of endless/story results, local ra
 - `npm run build` — production build completes.
 - Manual visual review at 1440×900, 915×412, and 390×844; inspect long labels, empty/error/loading states, locked/progress cards, and shop actions.
 
+## 결과 카드 후속 조정
+
+- 두 결과 화면의 전신 원본에서 얼굴과 상반신을 중심으로 확대해 표시하고, 배경 그림을 반투명하게 처리한다. 포즈는 카드 하단 가운데에 두고, 결과별 모션과 재생 속도는 기존 동작을 사용한다.
+- `src/styles/global.css`의 공통 카드 스타일에 세로 비율과 레이어 순서를 지정한다. 좁은 화면과 낮은 가로 화면의 카드 크기도 같은 비율로 조정한다.
+- 로컬 Edge에서 데스크톱의 다섯 캐릭터와 모바일 세로·가로의 무한·스토리 결과를 확인했다. 카드 비율 `13 / 18`과 배지, 승리·실패 포즈가 카드 안에 들어간다.
+
 ## Commit Message
 ```text
 fix(ui): polish results and progression screens

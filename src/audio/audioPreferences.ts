@@ -8,7 +8,7 @@ export const DEFAULT_AUDIO_PREFERENCES: Readonly<AudioPreferences> = Object.free
   muted: false,
   // The slider controls a deliberately quiet 0-2% media-gain range.
   musicVolume: 0.5,
-  effectsVolume: 0.5,
+  effectsVolume: 0.45,
 });
 
 export const AUDIO_PREFERENCES_STORAGE_KEY = 'runner-audio:preferences:v2';
