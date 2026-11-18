@@ -25,7 +25,7 @@ export class RunnerMusicManager {
 
   setPreferences(preferences: AudioPreferences): void {
     this.preferences = preferences;
-    if (this.current) this.current.volume = preferences.muted ? 0 : audioGainFromPreference(preferences.musicVolume);
+    if (this.current && this.currentId) this.current.volume = this.getTrackVolume(this.currentId);
   }
 
   play(id: RunnerMusicId | null): void {
@@ -60,6 +60,12 @@ export class RunnerMusicManager {
     this.unlocked = false;
   }
 
+  private getTrackVolume(id: RunnerMusicId): number {
+    if (this.preferences.muted) return 0;
+    const trackGain = RUNNER_MUSIC[id].gain ?? 1;
+    return Math.min(1, audioGainFromPreference(this.preferences.musicVolume) * trackGain);
+  }
+
   private start(id: RunnerMusicId): void {
     if (!this.unlocked || this.paused || this.currentId !== id) return;
     if (this.playbackAttempt) return;
@@ -69,7 +75,7 @@ export class RunnerMusicManager {
       this.current.loop = track.loop;
     }
     const audio = this.current;
-    audio.volume = this.preferences.muted ? 0 : audioGainFromPreference(this.preferences.musicVolume);
+    audio.volume = this.getTrackVolume(id);
     try {
       const attempt = audio.play().catch(() => {
         // Playback can be rejected by browser policy; the next real gesture retries it.

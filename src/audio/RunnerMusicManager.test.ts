@@ -34,6 +34,25 @@ describe('RunnerMusicManager', () => {
     expect(tracks[0].play).toHaveBeenCalledTimes(2);
   });
 
+  it('applies the Starlight Rainbow gain across volume changes and keeps mute and other tracks at their usual levels', () => {
+    const sky = makeAudio(RUNNER_MUSIC['cloud-skyway'].src);
+    const rainbow = makeAudio(RUNNER_MUSIC['starlight-rainbow'].src);
+    const manager = new RunnerMusicManager({ audioFactory: (src) => src === sky.src ? sky : rainbow });
+    manager.unlock();
+    manager.play('starlight-rainbow');
+    expect(rainbow.volume).toBeCloseTo(0.0126, 8);
+
+    manager.setPreferences({ ...DEFAULT_AUDIO_PREFERENCES, musicVolume: 0.25 });
+    expect(rainbow.volume).toBeCloseTo(0.0063, 8);
+    manager.setPreferences({ ...DEFAULT_AUDIO_PREFERENCES, muted: true });
+    expect(rainbow.volume).toBe(0);
+    manager.setPreferences({ ...DEFAULT_AUDIO_PREFERENCES });
+    expect(rainbow.volume).toBeCloseTo(0.0126, 8);
+
+    manager.play('cloud-skyway');
+    expect(sky.volume).toBeCloseTo(0.01, 8);
+  });
+
   it('does not issue overlapping play requests when pointer and click both unlock audio', () => {
     const tracks: RunnerMusicElement[] = [];
     const manager = new RunnerMusicManager({ audioFactory: (src) => {
