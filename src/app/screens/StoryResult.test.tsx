@@ -19,9 +19,9 @@ describe('StoryResult', () => {
       ...settlement.newlyClaimedCosmeticIds, stage.challengeRewardCosmeticIds.noHit, 'removed-internal-reward',
     ] }} newlyUnlockedAchievementIds={[]} achievementBonusCoins={0}
       onRetry={vi.fn()} onNextStage={vi.fn()} onStageSelect={vi.fn()} />);
-    expect(screen.getByTestId('result-character-portrait')).toHaveAttribute('src',
-      '/assets/character/selector-art/aokumo-rin.webp');
     expect(screen.getByTestId('character-preview-player-default')).toHaveAttribute('data-animation', 'victory');
+    expect(screen.getByTestId('character-preview-player-default').closest('.result-character__stage')
+      ?.querySelectorAll('img')).toHaveLength(1);
     expect(screen.getAllByText(`꾸미기 보상 해금 · ${stage.name} 무피격 궤적`)).toHaveLength(1);
     expect(screen.getByText(`꾸미기 보상 해금 · ${stage.name} 코인 배지`)).toBeInTheDocument();
     expect(screen.getByText('꾸미기 보상 해금 · 알 수 없는 꾸미기')).toBeInTheDocument();

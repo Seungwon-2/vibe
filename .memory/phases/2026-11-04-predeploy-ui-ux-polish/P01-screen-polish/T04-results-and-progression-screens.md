@@ -61,6 +61,12 @@ Improve the readability and responsive layout of endless/story results, local ra
 - `RunResult.tsx`와 `StoryResult.tsx`에서 `character.portraitUrl`로 배경을 표시하고 공통 CSS의 카드 비율과 앞쪽 포즈를 사용한다.
 - 로컬 Edge에서 다섯 배경 이미지를 확인했다. 가로·세로 모바일의 결과 카드에서도 반투명 얼굴·상반신과 전경 포즈가 카드에 들어간다. 관련 테스트 16개, 린트, 빌드 통과.
 
+### 결과 카드를 모션 중심으로 변경
+
+- 사용자 요청에 따라 무한·스토리 결과 카드의 초상화 레이어를 제거한다. 캐릭터 승리·실패 모션을 가운데에 놓고 카드 너비에 따라 크기를 조정한다.
+- `RunResult.tsx`와 `StoryResult.tsx`에서 카드의 이미지 요소를 모션 프레임으로 한정한다. `src/styles/global.css`의 공통 카드 스타일에서 포즈 크기와 중심 배치를 담당한다.
+- 로컬 Edge에서 다섯 캐릭터의 데스크톱 승리 포즈, 스토리 실패 포즈와 모바일 가로·세로 카드의 크기·배치·잘림을 확인했다. 테스트 16개, 린트, 빌드 통과.
+
 ## Commit Message
 ```text
 fix(ui): polish results and progression screens
