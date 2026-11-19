@@ -5,12 +5,13 @@ import type { CharacterAnimationName, CharacterId } from '../characters/characte
 import { getQualitySpriteY, getSlidePose, getTerminalSpriteY, RUNNER_GROUND_Y, RUNNER_PLAYER_X,
   STANDING_BODY_HEIGHT, STANDING_BODY_WIDTH } from './runnerPose';
 import { RUNNER_CONFIG } from './runnerConfig';
+import { usesSlideTransitions } from './runnerAnimationConfig';
 import type { RunnerPlayerCheckpoint } from './runnerSessionTypes';
 
 export { RUNNER_PLAYER_X, RUNNER_GROUND_Y } from './runnerPose';
 type RunnerAction = 'run' | 'jump' | 'doubleJump' | 'slide' | 'hurt' | 'victory' | 'gameOver';
 type AirPhase = 'ascending' | 'descending';
-type RunnerAnimation = RunnerAction | 'jump-fall' | 'double-jump-fall';
+type RunnerAnimation = RunnerAction | 'jump-fall' | 'double-jump-fall' | 'slide-enter' | 'slide-exit';
 
 export class RunnerPlayer {
   private jumpsUsed = 0;
@@ -88,7 +89,7 @@ export class RunnerPlayer {
       checkpoint.scaleX, checkpoint.scaleY, checkpoint.alpha, checkpoint.animationFrame,
       checkpoint.animationElapsedMs];
     const validAnimations: RunnerAnimation[] = ['run', 'jump', 'doubleJump', 'slide', 'hurt',
-      'victory', 'gameOver', 'jump-fall', 'double-jump-fall'];
+      'victory', 'gameOver', 'jump-fall', 'double-jump-fall', 'slide-enter', 'slide-exit'];
     if (!finite.every(Number.isFinite) || ![0, 1, 2].includes(checkpoint.jumpsUsed) ||
       !validAnimations.includes(checkpoint.animation as RunnerAnimation) ||
       !Number.isInteger(checkpoint.animationFrame) || checkpoint.animationFrame < 0 ||
@@ -105,7 +106,7 @@ export class RunnerPlayer {
 
     const animationKey = `${this.characterId}:${checkpoint.animation}`;
     const animation = this.sprite.anims.animationManager.get(animationKey);
-    return Boolean(animation?.frames[checkpoint.animationFrame]);
+    return Boolean(animation?.frames[Math.max(0, checkpoint.animationFrame - 1)]);
   }
 
   restoreCheckpoint(checkpoint: RunnerPlayerCheckpoint): boolean {
@@ -134,7 +135,7 @@ export class RunnerPlayer {
     this.body.prevFrame.copy(this.body.position);
     const animationKey = `${this.characterId}:${checkpoint.animation}`;
     const animation = this.sprite.anims.animationManager.get(animationKey)!;
-    const frame = animation.frames[checkpoint.animationFrame];
+    const frame = animation.frames[Math.max(0, checkpoint.animationFrame - 1)];
     this.sprite.anims.play(animationKey, true);
     this.sprite.anims.setCurrentFrame(frame);
     this.sprite.anims.accumulator = checkpoint.animationElapsedMs;
@@ -168,8 +169,7 @@ export class RunnerPlayer {
     }
     if (held && !this.grounded) return false;
     this.slidingHeld = held;
-    if (this.isSliding) this.play('slide');
-    else if (this.animation === 'slide') this.play('run');
+    if (this.isSliding || wasSliding) this.play(this.getGroundedAnimation());
     this.applyPose();
     return !wasSliding && this.isSliding;
   }
@@ -298,10 +298,9 @@ export class RunnerPlayer {
       this.grounded = false;
     }
     if (!this.grounded && this.body.velocity.y >= 0) this.airPhase = 'descending';
-    this.play(this.hurt ? 'hurt' : this.isSliding ? 'slide' :
-      !this.grounded ? this.jumpsUsed === 2
+    this.play(this.hurt ? 'hurt' : !this.grounded ? this.jumpsUsed === 2
         ? this.airPhase === 'descending' ? 'double-jump-fall' : 'doubleJump'
-        : this.airPhase === 'descending' ? 'jump-fall' : 'jump' : 'run');
+        : this.airPhase === 'descending' ? 'jump-fall' : 'jump' : this.getGroundedAnimation());
     this.applyPose();
   }
 
@@ -356,11 +355,22 @@ export class RunnerPlayer {
     this.body.prevFrame.copy(this.body.position);
   }
 
+  private getGroundedAnimation(): RunnerAnimation {
+    const transitions = usesSlideTransitions(this.characterId);
+    if (this.isSliding) return transitions && this.animation !== 'slide' ? 'slide-enter' : 'slide';
+    if (!transitions) return 'run';
+    if (this.animation === 'slide' || this.animation === 'slide-enter') {
+      return this.sprite.anims.isPlaying ? this.animation : 'slide-exit';
+    }
+    return this.animation === 'slide-exit' && this.sprite.anims.isPlaying ? 'slide-exit' : 'run';
+  }
+
   private play(name: RunnerAnimation): void {
     if (this.animation === name) return;
     const key = `${this.characterId}:${name}`;
     const catalogName: CharacterAnimationName = name === 'jump-fall' ? 'jump'
-      : name === 'double-jump-fall' ? 'doubleJump' : name;
+      : name === 'double-jump-fall' ? 'doubleJump'
+        : name === 'slide-enter' || name === 'slide-exit' ? 'slide' : name;
     if (this.character.qualityAnimations[catalogName].length === 0) {
       throw new Error(`Missing ${this.characterId}:${catalogName} animation`);
     }

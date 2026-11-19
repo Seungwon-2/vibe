@@ -56,12 +56,18 @@ function createPlayer(characterId: CharacterId) {
     setTint: vi.fn(),
     clearTint: vi.fn(),
     anims: {
-      currentFrame: { index: 0 },
+      currentFrame: { index: 1 },
+      isPlaying: false,
       accumulator: 0,
-      animationManager: { get: vi.fn(() => ({ frames: Array.from({ length: 20 }, (_, index) => ({ index })) })) },
+      animationManager: { get: vi.fn((key: string) => {
+        const frameCount = key.endsWith(':slide-enter') ? 4
+          : key.endsWith(':slide') || key.endsWith(':slide-exit') ? 2 : 12;
+        return { frames: Array.from({ length: frameCount }, (_, index) => ({ index: index + 1 })) };
+      }) },
       play: vi.fn((key: string) => {
         sprite.frame.name = key.endsWith(':slide') ? 'slide-00' : 'run-00';
-        sprite.anims.currentFrame = { index: 0 };
+        sprite.anims.currentFrame = { index: 1 };
+        sprite.anims.isPlaying = true;
         sprite.anims.accumulator = 0;
       }),
       setCurrentFrame: vi.fn((frame: { index: number }) => { sprite.anims.currentFrame = frame; }),
@@ -153,11 +159,13 @@ describe('RunnerPlayer and input bridge', () => {
   it('restores a held slide and rejects invalid checkpoint data before mutation', () => {
     const source = createPlayer('player-default');
     source.player.setSliding(true);
+    source.sprite.anims.currentFrame = { index: 4 };
     const checkpoint = source.player.createCheckpoint();
     const restored = createPlayer('player-default');
 
     expect(restored.player.restoreCheckpoint(checkpoint)).toBe(true);
     expect(restored.player.isSliding).toBe(true);
+    expect(restored.sprite.anims.currentFrame.index).toBe(4);
     expect(restored.body.width).toBe(checkpoint.bodyWidth);
     expect(restored.body.height).toBe(checkpoint.bodyHeight);
 
@@ -166,6 +174,16 @@ describe('RunnerPlayer and input bridge', () => {
     expect(restored.player.restoreCheckpoint(invalid)).toBe(false);
     expect(restored.sprite.x).toBe(before.x);
     expect(restored.sprite.y).toBe(before.y);
+  });
+
+  it('restores the final pose of a legacy slide without replaying the entry', () => {
+    const { player, sprite } = createPlayer('goth-student');
+    player.setSliding(true);
+    const active = player.createCheckpoint();
+    expect(player.restoreCheckpoint({ ...active, animation: 'slide', animationFrame: 2 })).toBe(true);
+    expect(sprite.anims.currentFrame.index).toBe(2);
+    player.update(16);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('goth-student:slide', true);
   });
 
   it('allows exactly two jumps with shared physics and resets on landing', () => {
@@ -258,8 +276,8 @@ describe('RunnerPlayer and input bridge', () => {
     expect(body.width).toBeCloseTo(64);
     expect(body.height).toBeCloseTo(48);
     expect(body.bottom).toBeCloseTo(470);
-    expect(sprite.scaleX).toBeCloseTo(getCharacter('goth-student').qualityScale * 0.82);
-    expect(sprite.scaleY).toBeCloseTo(getCharacter('goth-student').qualityScale * 0.82);
+    expect(sprite.scaleX).toBeCloseTo(getCharacter('goth-student').qualityScale);
+    expect(sprite.scaleY).toBeCloseTo(getCharacter('goth-student').qualityScale);
     expect(sprite.y).toBeGreaterThan(470);
     expect(player.jump()).toBe(false);
     player.setSliding(false);
@@ -297,13 +315,20 @@ describe('RunnerPlayer and input bridge', () => {
     expect(sprite.scaleX).toBeCloseTo(getCharacter('player-default').qualityScale * 1.35);
     expect(body.width).toBeCloseTo(80, 8);
     expect(body.height).toBeCloseTo(48, 8);
-    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:slide', true);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:slide-enter', true);
     player.setGiant(false);
     expect(sprite.scaleX).toBeCloseTo(getCharacter('player-default').qualityScale);
     expect(body.width).toBeCloseTo(80, 8);
     expect(body.height).toBeCloseTo(48, 8);
-    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:slide', true);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:slide-enter', true);
     player.setSliding(false);
+    player.update(16);
+    expect(player.isSliding).toBe(false);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:slide-enter', true);
+    sprite.anims.isPlaying = false;
+    player.update(16);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:slide-exit', true);
+    sprite.anims.isPlaying = false;
     player.update(16);
     expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:run', true);
   });
@@ -323,7 +348,7 @@ describe('RunnerPlayer and input bridge', () => {
     body.velocity.y = 0;
     player.update(16);
     player.setSliding(true);
-    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:slide', true);
+    expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:slide-enter', true);
     player.setHurt(true);
     expect(sprite.anims.play).toHaveBeenLastCalledWith('player-default:hurt', true);
   });

@@ -19,5 +19,7 @@ describe('runner animation playback settings', () => {
     expect(getRunnerAnimationPlayback('run', character)).toEqual({ frameRate: 20, repeat: -1 });
     expect(getRunnerAnimationPlayback('jump-fall', character)).toEqual({ frameRate: 6, repeat: -1 });
     expect(getRunnerAnimationPlayback('slide', character)).toEqual({ frameRate: 18, repeat: 0 });
+    expect(getRunnerAnimationPlayback('slide-enter', character)).toEqual({ frameRate: 18, repeat: 0 });
+    expect(getRunnerAnimationPlayback('slide-exit', character)).toEqual({ frameRate: 18, repeat: 0 });
   });
 });

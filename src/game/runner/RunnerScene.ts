@@ -18,7 +18,7 @@ import { getHurtAnimationFrames } from './hurtAnimation';
 import { PitSpawner } from './PitSpawner';
 import type { PitFallContactResult } from './PitSpawner';
 import { RunnerTrailEffect } from './RunnerTrailEffect';
-import { getRunnerAnimationPlayback } from './runnerAnimationConfig';
+import { getRunnerAnimationPlayback, usesSlideTransitions } from './runnerAnimationConfig';
 import { getRunnerCameraFrame } from './runnerViewport';
 import type { RunnerActiveSession, RunnerEngineCheckpoint, RunnerWorldEntityCheckpoint } from './runnerSessionTypes';
 
@@ -84,19 +84,25 @@ export class RunnerScene extends Phaser.Scene {
       this.snapshot.mode === 'story' ? this.snapshot.storyStageId ?? null : null, this.visualMode);
     this.passiveEffectArt = this.add.graphics().setDepth(3);
 
+    const { slide, doubleJump } = character.qualityAnimations;
+    const doubleJumpFall = doubleJump.slice(4);
     const animationFrames = {
       run: character.qualityAnimations.run,
       jump: character.qualityAnimations.jump.slice(0, 4),
       'jump-fall': character.qualityAnimations.jump.slice(4),
       // A second jump reaches its apex after about 0.47s. All six frames at
       // 12 fps fit the ascent, including the spin recovery in frames 4–5.
-      doubleJump: character.qualityAnimations.doubleJump,
-      'double-jump-fall': character.qualityAnimations.doubleJump.slice(4),
-      // The first curated slide is a tall entry pose; start at the low pose
-      // so the visible art clears the overhead hazard at its native scale.
-      slide: character.available
-        ? character.qualityAnimations.slide.slice(2, 4)
-        : character.qualityAnimations.slide.slice(1, 4),
+      doubleJump,
+      // Keep both frame slots readable by saved runs while Toa holds the last pose.
+      'double-jump-fall': characterId === 'goth-student'
+        ? doubleJumpFall.map(() => doubleJump[5])
+        : doubleJumpFall,
+      // Keep the old low-pose animation for saved runs.
+      slide: character.available ? slide.slice(2, 4) : slide.slice(1, 4),
+      ...(usesSlideTransitions(characterId) && {
+        'slide-enter': slide.slice(0, 4),
+        'slide-exit': slide.slice(4),
+      }),
       hurt: getHurtAnimationFrames(character.qualityAnimations.hurt),
       victory: character.qualityAnimations.victory,
       gameOver: character.qualityAnimations.gameOver,
@@ -124,7 +130,8 @@ export class RunnerScene extends Phaser.Scene {
     this.trailEffect = new RunnerTrailEffect(this, this.registry.get('trailCosmeticId') as string | null);
     this.trailEffect.setVisualMode(this.visualMode);
     this.spawner = new ObstacleSpawner(this, this.player.gameObject, this.handleHazardOverlap,
-      this.registry.get('runnerTutorialEnabled') === true, () => this.player.isSliding);
+      this.registry.get('runnerTutorialEnabled') === true, () => this.player.isSliding,
+      characterId === 'goth-student' ? 68 : undefined);
     this.collectibles = new CollectibleSpawner(this, this.player.gameObject, this.handlePickup, characterId);
     this.pits = new PitSpawner(this, this.player.gameObject, this.handlePitFall,
       this.registry.get('runnerTutorialEnabled') === true);

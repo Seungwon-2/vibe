@@ -45,6 +45,7 @@ export class ObstacleSpawner {
     private readonly onOverlap: (definition: HazardDefinition) => void,
     private readonly tutorialEnabled: boolean,
     private readonly isGroundedSliding: () => boolean = () => false,
+    private readonly slideOpeningHeight?: number,
   ) {}
 
   update(snapshot: RunnerSnapshot): void {
@@ -203,7 +204,7 @@ export class ObstacleSpawner {
     const biome = this.activeStoryStageId
       ? getBiomeById(getStoryStage(this.activeStoryStageId).biomeId)
       : getBiomeForDistance(atMeters);
-    drawRunnerHazard(art, definition, biome, visual.height);
+    drawRunnerHazard(art, definition, biome, visual.height, this.slideOpeningHeight);
     const showWarning = this.tutorialEnabled && !this.warnedKinds.has(definition.kind);
     const warning = showWarning ? this.scene.add.text(0, 0,
       getTutorialLabel(definition.kind),

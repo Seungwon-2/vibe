@@ -21,16 +21,6 @@ export function getTerminalSpriteY(characterId: CharacterId): number {
 export const SLIDING_BODY_WIDTH = 80;
 export const SLIDING_BODY_HEIGHT = 48;
 
-// The curated slides already share the standing artwork's scale. The older
-// placeholder sheets remain smaller until they receive matching slide art.
-const SLIDE_SCALE: Readonly<Record<CharacterId, number>> = {
-  'player-default': 1,
-  'goth-student': 0.82,
-  'cogane-rang': 1,
-  'hanayo-hiyori': 1,
-  'tokino-mary': 1,
-};
-
 // Opaque bottom edge (maxY + 1) of the active slide frames, measured at alpha > 20.
 const SLIDE_FRAME_BOTTOM: Readonly<Record<CharacterId, number>> = {
   'player-default': 90,
@@ -42,19 +32,16 @@ const SLIDE_FRAME_BOTTOM: Readonly<Record<CharacterId, number>> = {
 
 export function getSlidePose(characterId: CharacterId) {
   const opaqueBottom = SLIDE_FRAME_BOTTOM[characterId];
-  const scale = SLIDE_SCALE[characterId];
-  const bodyWidth = scale === 1 ? SLIDING_BODY_WIDTH : 64;
-  const sourceBodyWidth = bodyWidth / scale;
-  const sourceBodyHeight = SLIDING_BODY_HEIGHT / scale;
+  const bodyWidth = characterId === 'goth-student' ? 64 : SLIDING_BODY_WIDTH;
   return {
     key: 'slide',
-    spriteY: RUNNER_GROUND_Y + (96 - opaqueBottom) * scale,
-    scaleX: scale,
-    scaleY: scale,
+    spriteY: RUNNER_GROUND_Y + 96 - opaqueBottom,
+    scaleX: 1,
+    scaleY: 1,
     bodyWidth,
-    sourceBodyWidth,
-    sourceBodyHeight,
-    offsetX: (96 - sourceBodyWidth) / 2,
-    offsetY: opaqueBottom - sourceBodyHeight,
+    sourceBodyWidth: bodyWidth,
+    sourceBodyHeight: SLIDING_BODY_HEIGHT,
+    offsetX: (96 - bodyWidth) / 2,
+    offsetY: opaqueBottom - SLIDING_BODY_HEIGHT,
   } as const;
 }

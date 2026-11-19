@@ -8,6 +8,7 @@ export function drawRunnerHazard(
   definition: HazardDefinition,
   biome: RunnerBiomeDefinition,
   visualHeight = definition.height,
+  slideOpeningHeight = 54,
 ): void {
   const { width, kind } = definition;
   const p = biome.palette;
@@ -156,7 +157,7 @@ export function drawRunnerHazard(
 
   // A themed overhead barrier fills the jump-blocking lane and leaves the same low crawl gap
   // as the slide collision pose. It is drawn independently of the collider dimensions.
-  const barrierBottom = Math.max(0, visualHeight - 54);
+  const barrierBottom = Math.max(0, visualHeight - slideOpeningHeight);
   switch (biome.id) {
     case 'dawn-city': {
       // A roadworks barricade wall with a lit warning stripe and steel supports.
